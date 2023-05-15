@@ -1,0 +1,160 @@
+#sideNavBox{
+  display: none;
+}
+#contentBox {
+  margin-left: 10px!important;
+}
+.navbar {
+  padding: 15px 10px;
+  background: #fff;
+  border: none;
+  border-radius: 0;
+  margin-bottom: 40px;
+  -webkit-box-shadow: 1px 1px 3px rgba(0,0,0,.1);
+  box-shadow: 1px 1px 3px rgba(0,0,0,.1)
+}
+
+.navbar-btn {
+  -webkit-box-shadow: none;
+  box-shadow: none;
+  outline: none!important;
+  border: none;
+}
+
+.wrapper {
+  width: 100%
+}
+
+.sidebar {
+  min-width: 230px;
+  max-width: 230px;
+  background: #dcddde;
+  color: #666666!important;
+  -webkit-transition: all .3s;
+  -o-transition: all .3s;
+  transition: all .3s;
+  position: relative;
+  padding: 12px;
+}
+.sidebar a{
+color: #666666!important;
+}
+.ul-leftnav{
+  padding-left: 10px;
+}
+.ul-leftnav li{
+  list-style-type: none;
+  padding: 4px 6px;
+}
+.ul-leftnav li a:hover{
+  background-color: rgba(197,233,234,.5);
+  text-decoration: none;
+}
+#sidebar .h6 {
+  color: #fff;
+}
+
+#sidebar.active {
+  margin-left:-270px;
+}
+
+#sidebar.active .custom-menu {
+  margin-right: -50px;
+}
+
+#sidebar h1 {
+  margin-bottom: 20px;
+  font-weight: 700;
+}
+
+#sidebar h1 .logo {
+  color: #fff;
+}
+
+#sidebar ul.components {
+  padding: 0;
+}
+
+#sidebar ul li {
+  font-size: 16px;
+}
+
+#sidebar ul li>ul {
+  margin-left: 10px;
+}
+
+#sidebar ul li>ul li {
+  font-size: 14px;
+}
+
+#sidebar ul li a {
+  padding: 10px 0;
+  display: block;
+  color: rgba(255,255,255,.6);
+  border-bottom: 1px solid rgba(255,255,255,.1);
+}
+
+#sidebar ul li a:hover {
+  color: #fff;
+}
+
+#sidebar ul li.active>a {
+  background: 0 0;
+  color: #fff;
+}
+
+@media(max-width: 991.98px) {
+  #sidebar {
+      margin-left:-270px;
+  }
+
+  #sidebar.active {
+      margin-left: 0;
+  }
+
+  #sidebar .custom-menu {
+      margin-right: -60px!important;
+      top: 10px!important;
+  }
+}
+
+#sidebar .custom-menu {
+  display: inline-block;
+  position: absolute;
+  top: 20px;
+  right: 0;
+  margin-right: -20px;
+  -webkit-transition: .3s;
+  -o-transition: .3s;
+  transition: .3s;
+}
+
+#sidebar .custom-menu .btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+      z-index: 1;
+  position: relative;
+}
+.toggle-menu:hover {
+  color: #bbbdff;
+}
+.toggle-menu {
+  background-color: #5155bb;
+  color: white;
+}
+
+@media(max-width: 991.98px) {
+  #sidebarCollapse span {
+      display:none;
+  }
+}
+
+#content {
+  width: 100%;
+  padding: 0;
+  min-height: 100vh;
+  -webkit-transition: all .3s;
+  -o-transition: all .3s;
+  transition: all .3s;
+}
