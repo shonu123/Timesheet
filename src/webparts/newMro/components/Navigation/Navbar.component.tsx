@@ -104,14 +104,15 @@ class NavBar extends React.Component<NavBarProps, NavBarState> {
                                     <li className="" id="lipurchaserequestlistLink" onClick={(event) => this.onNavItemClick(event)}>
                                         <NavLink className="" to="/purchaserequestlist"><span className=""><span className="">Requisition</span></span></NavLink>
                                     </li>
-                                    <li className="" id="lisearchbypolistlink" onClick={(event) => this.onNavItemClick(event)}>
-                                        <NavLink className="" to="/searchbypolist"><span className=""><span className="">Search by PO</span></span></NavLink>
-                                    </li>
+                                    
                                     {/* <li className="">
                                         <NavLink className="" to="/requisitionreport"><span className=""><span className="">Reports</span></span></NavLink>
                                     </li> */}
                                 </ul>
                             </li>:''}
+                            <li className="" id="lisearchbypolistlink" onClick={(event) => this.onNavItemClick(event)}>
+                                <NavLink className="" to="/searchbypolist"><span className=""><span className="">Search by PO</span></span></NavLink>
+                            </li>
                             <li id="liDashboardLink" className="" onClick={(event) => this.onNavItemClick(event)}>
                                 <NavLink className="" to="/dashboard"><span className=""><span className="">Dashboard</span></span></NavLink>
                             </li>
