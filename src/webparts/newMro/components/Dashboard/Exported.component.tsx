@@ -104,13 +104,14 @@ class Exported extends React.Component<ExportedProps,ExportedState> {
                 name: "Department",
                // selector: "Department",
                 selector: (row, i) => row.Department,
-                sortable: true
+                sortable: true,
+                width: '135px'
             },
             {
                 name: "Vendor",
                 selector: 'VendorName',
-                sortable: true
-
+                sortable: true,
+                width: '150px'
             },
             {
                 name: "Requisitioner",
@@ -166,7 +167,7 @@ class Exported extends React.Component<ExportedProps,ExportedState> {
                // selector: "TotalAmount",
                 selector: (row, i) => row.TotalAmount,
                 sortable: true,
-                width: '100px'
+                width: '135px'
             },
             
             

@@ -101,7 +101,7 @@ class Pending extends React.Component<PendingProps,PendingState> {
                         </React.Fragment>
                     );
                 },
-                width: '100px'
+                width: '100px',
             },
             {
                 name: "Plant",
@@ -120,14 +120,14 @@ class Pending extends React.Component<PendingProps,PendingState> {
             {
                 name: "Vendor",
                 selector: 'VendorName',
-                sortable: true
-
+                sortable: true,
+                width: '150px',
             },
             {
                 name: "Requisitioner",
                 //selector: "Requisitioner.Title",
                 selector: (row, i) => row.Requisitioner.Title,
-                width: '135px',
+                width: '150px',
                 cell: record => {
                     return (
                         record.Requisitioner.Title
@@ -186,7 +186,7 @@ class Pending extends React.Component<PendingProps,PendingState> {
                 //selector: "TotalAmount",
                 selector: (row, i) => row.TotalAmount,
                 sortable: true,
-                width: '100px'
+                width: '135px'
             },
             
             

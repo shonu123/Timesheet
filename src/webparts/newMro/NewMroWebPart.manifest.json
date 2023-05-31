@@ -1,6 +1,6 @@
 {
   "$schema": "https://developer.microsoft.com/json-schemas/spfx/client-side-web-part-manifest.schema.json",
-  "id": "008b3b6a-73eb-4763-8b3f-0fc9afbbb774",
+  "id": "008b3b6a-73eb-4763-8b3f-0fc9afbbb775",
   "alias": "NewMroWebPart",
   "componentType": "WebPart",
 
@@ -14,11 +14,11 @@
   "preconfiguredEntries": [{
     "groupId": "5c03119e-3074-46fd-976b-c60198311f70", 
     "group": { "default": "Advanced" },
-    "title": { "default": "NewMRO" },
-    "description": { "default": "NewMRO description" },
+    "title": { "default": "NewMROPROD" },
+    "description": { "default": "NewMRO descriptio Productionn" },
     "officeFabricIconFontName": "Page",
     "properties": {
-      "description": "NewMRO"
+      "description": "NewMRO-PROD"
     }
   }]
 }

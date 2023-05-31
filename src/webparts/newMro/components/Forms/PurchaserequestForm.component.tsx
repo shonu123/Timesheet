@@ -492,6 +492,7 @@ class PurchaseRequestForm extends React.Component<PurchaseRequestProps, Purchase
     }
 
     private handlePlantChange = (event) => {
+      
         const formData = { ...this.state.formData };
         const { name } = event.target;
         const value = event.target.value;
@@ -513,10 +514,12 @@ class PurchaseRequestForm extends React.Component<PurchaseRequestProps, Purchase
         //     this.onError();
         //     console.log(e);
         // });
+        
     }
 
     private async loadVendoronPlantChange(Plant, formData) {
         try {
+            this.setState({ loading:true });
             let departments: any = await this.rootweb.lists.getByTitle('Department').items.filter("Plant/Title eq '" + formData.Plant + "'").select("*").orderBy("Title").get();
            // let vendors: any = await sp.web.lists.getByTitle('Vendor').items.filter(`IsActive eq 1 and Database eq '${formData.Database}' `).select("*").orderBy('Title').getAll();
             let vendors:any= await sp.web.lists.getByTitle("Vendor").items.select("*").orderBy('Title').getAll();
@@ -529,9 +532,10 @@ class PurchaseRequestForm extends React.Component<PurchaseRequestProps, Purchase
             RequsitionerCodes = sortDataByTitle(RequsitionerCodes, "Requsitioner_x0020_Desc");
             Buyers = sortDataByTitle(Buyers, "Title");
 
-            this.setState({ Vendors: vendors, formData, RequsitionerCode: RequsitionerCodes, Buyers: Buyers, Departments: departments,Vendor:vendors });
+            this.setState({ Vendors: vendors, formData, RequsitionerCode: RequsitionerCodes, Buyers: Buyers, Departments: departments,Vendor:vendors,loading:false });
         } catch (error) {
             this.onError();
+            this.setState({ loading:false });
             console.log(error);
         }
     }
@@ -585,7 +589,7 @@ class PurchaseRequestForm extends React.Component<PurchaseRequestProps, Purchase
             Requisitioner: { val: this.state.RequisitionerUserId, required: true, Name: 'Requisitioner', Type: ControlType.people, Focusid: 'divRequisitioner' },
             requsitionerCode: { val: this.state.formData.RequsitionerCode, required: true, Name: 'Requisitioner Code', Type: ControlType.string, Focusid: this.RequsitionerCode },
             buyerCode: { val: this.state.formData.Buyer, required: true, Name: 'Buyer', Type: ControlType.string, Focusid: this.buyercode },
-            vendorCode: { val: this.state.formData.Vendor, required: true, Name: 'Vendor', Type: ControlType.string, Focusid: this.ddlVendor },
+            vendorCode: { val: this.state.formData.Vendor, required: false, Name: 'Vendor', Type: ControlType.string, Focusid: this.ddlVendor },
             // projectCode: { val: this.state.formData.ProjectCode, required: true, Name: 'Project code', Type: ControlType.string, Focusid: this.ddlProjectCode },
             //commodityCategoryCode: { val: this.state.formData.CommodityCategory, required: true, Name: 'Commodity category', Type: ControlType.string, Focusid: this.ddlCommodityCategory },
             description: { val: this.state.formData.Description, required: true, Name: 'Reason', Type: ControlType.string, Focusid: this.description },
@@ -609,7 +613,7 @@ class PurchaseRequestForm extends React.Component<PurchaseRequestProps, Purchase
             Requisitioner: { val: this.state.RequisitionerUserId, required: true, Name: 'Requisitioner', Type: ControlType.people, Focusid: 'divRequisitioner' },
             requsitionerCode: { val: this.state.formData.RequsitionerCode, required: true, Name: 'Requisitioner Code', Type: ControlType.string, Focusid: this.RequsitionerCode },
             buyerCode: { val: this.state.formData.Buyer, required: true, Name: 'Buyer', Type: ControlType.string, Focusid: this.buyercode },
-            vendorCode: { val: this.state.formData.Vendor, required: true, Name: 'Vendor', Type: ControlType.string, Focusid: this.ddlVendor },
+            vendorCode: { val: this.state.formData.Vendor, required: false, Name: 'Vendor', Type: ControlType.string, Focusid: this.ddlVendor },
             // projectCode: { val: this.state.formData.ProjectCode, required: true, Name: 'Project code', Type: ControlType.string, Focusid: this.ddlProjectCode },
             //commodityCategoryCode: { val: this.state.formData.CommodityCategory, required: true, Name: 'Commodity category', Type: ControlType.string, Focusid: this.ddlCommodityCategory },
             description: { val: this.state.formData.Description, required: true, Name: 'Reason', Type: ControlType.string, Focusid: this.description },
@@ -1070,6 +1074,7 @@ class PurchaseRequestForm extends React.Component<PurchaseRequestProps, Purchase
             try {
                 sp.web.lists.getByTitle(this.TrListname).items.add(formData)
                     .then((res) => {
+                        if(emaildetails!=''&& emaildetails.length!=0)
                         emaildetails.Subject= "Purchase Request [" +res.data.Id+ "] - "+actionStatus;
                         this.AddorUpdatelistItem(res.data.Id, actionStatus,emaildetails);
                     }, (Error) => {
@@ -1088,6 +1093,7 @@ class PurchaseRequestForm extends React.Component<PurchaseRequestProps, Purchase
             sp.web.lists.getByTitle(this.TrListname).items.getById(this.state.ItemID).update(formData).then((res) => {
                 if (formData.Status == ApprovalStatus.PurchasingTeamUpdated || formData.Status == ApprovalStatus.Approved)
                     this.ExportExcel();
+                if(emaildetails!=''&& emaildetails.length!=0)
                 emaildetails.Subject= "Purchase Request [" +this.state.ItemID+ "] - "+actionStatus;
                 this.AddorUpdatelistItem(this.state.ItemID, actionStatus,emaildetails);
             }, (Error) => {
@@ -1318,6 +1324,14 @@ class PurchaseRequestForm extends React.Component<PurchaseRequestProps, Purchase
                     this.checkUserInPurchasingGroup();
                     this.setState({
                         isInitiatorEdit: false,
+                        DynamicDisabled:true,
+                        showHideDraftButton:true
+                    });
+                }
+                if(selRequisitions.AuthorId == this.userContext.userId && selRequisitions.Status == "Draft"){
+                    this.checkUserInPurchasingGroup();
+                    this.setState({
+                        isInitiatorEdit: true,
                         DynamicDisabled:true,
                         showHideDraftButton:true
                     });

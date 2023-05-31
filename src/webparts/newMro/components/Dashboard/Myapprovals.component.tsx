@@ -138,24 +138,6 @@ class Myapprovals extends React.Component<MyapprovalsProps, MyapprovalsState> {
                 },
                 width: '135px'
             },
-            // {
-            //     name: "Buyer",
-            //     selector: 'Buyer',
-            //     sortable: true
-
-            // },
-            // {
-            //     name: "Project Code",
-            //     selector: 'ProjectCode',
-            //     sortable: true
-
-            // },
-            // {
-            //     name: "Commodity Category",
-            //     selector: 'CommodityCategory',
-            //     sortable: true
-
-            // },
             {
                 name: "Created",
                 //selector: 'Created',

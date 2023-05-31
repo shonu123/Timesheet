@@ -107,11 +107,13 @@ class Myrequests extends React.Component<MyrequestsProps, MyrequestsState> {
                 name: "Department",
                 //selector: "Department",
                 selector: (row, i) => row.Department,
+                width: '110px',
                 sortable: true
             },
             {
                 name: "Vendor",
                 selector: 'VendorName',
+                width: '150px',
                 sortable: true
 
             },
@@ -125,7 +127,7 @@ class Myrequests extends React.Component<MyrequestsProps, MyrequestsState> {
                         record.Requisitioner.Title
                     );
                 },
-                width: '135px'
+                width: '150px'
             },
             {
                 name: "Created",
@@ -150,13 +152,14 @@ class Myrequests extends React.Component<MyrequestsProps, MyrequestsState> {
                 name: "Total Amount",
                 //selector: "TotalAmount",
                 selector: (row, i) => row.TotalAmount,
-                width: '100px',
+                width: '135px',
                 sortable: true
             },
             {
                 name: "Status",
                 //selector: "Status",
                 selector: (row, i) => row.Status,
+                width: '135px',
                 sortable: true
             }
         ];

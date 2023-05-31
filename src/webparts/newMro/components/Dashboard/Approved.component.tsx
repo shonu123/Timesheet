@@ -156,7 +156,7 @@ class Approved extends React.Component<ApprovedProps,ApprovedState> {
                         </React.Fragment>
                     );
                 },
-                width: '100px'
+                width: '100px',
             },
             {
                 name: "Plant",
@@ -169,14 +169,14 @@ class Approved extends React.Component<ApprovedProps,ApprovedState> {
                 name: "Department",
                 //selector: "Department",
                 selector: (row, i) => row.Department,
-                width: '135px',
+                width: '150px',
                 sortable: true
             },
             {
                 name: "Requisitioner",
                 //selector: "Requisitioner.Title",
                 selector: (row, i) => row.Requisitioner.Title,
-                width: '135px',
+                width: '150px',
                 cell: record => {
                     return (
                         record.Requisitioner.Title
@@ -187,7 +187,7 @@ class Approved extends React.Component<ApprovedProps,ApprovedState> {
             {
                 name: "Vendor",
                 selector: 'VendorName',
-                width: '135px',
+                width: '150px',
                 sortable: true
 
             },
@@ -201,7 +201,7 @@ class Approved extends React.Component<ApprovedProps,ApprovedState> {
                         record.DateApproved != null?new Date(record.DateApproved).toLocaleDateString():""
                     );
                 },
-                width: '110px',
+                width: '135px',
             },
             {
                 name: "Processed",
@@ -239,7 +239,7 @@ class Approved extends React.Component<ApprovedProps,ApprovedState> {
                 //selector: "TotalAmount",
                 selector: (row, i) => row.TotalAmount,
                 sortable: true,
-                width: '100px'
+                width: '135px'
             },
             
             
@@ -252,7 +252,7 @@ class Approved extends React.Component<ApprovedProps,ApprovedState> {
             <ModalPopUp title={"Success"} modalText={"Record updated successfully"} isVisible={this.state.showHideModal} onClose={this.handleConfirm} isSuccess={this.state.isSuccess} ></ModalPopUp>
             {this.state.loading && <Loader />}
             <div>
-                <div>
+                <div className='table-head-1st-td'>
                     <TableGenerator columns={columns} data={this.state.approvals} fileName={'Approved'} showExportExcel={false} onChange={this.onPageChange} onSortChange={this.sortOrder} prvPageNumber={this.state.pageNumber} prvDirection={this.state.sortOrder} prvSort={this.state.sortBy}></TableGenerator>
                 </div>
             </div>
