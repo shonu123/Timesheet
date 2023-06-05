@@ -624,7 +624,7 @@ class PurchaseRequestForm extends React.Component<PurchaseRequestProps, Purchase
     private handlePurchageSubmit = async (event) => {
         let masterData = this.formData();
         let emaildetails ={toemail:[],ccemail:[],subject:"Purchase Request waiting for your Approval",bodyString:"Purchase Request has been submitted successfully.",body:'' };
-        let tableContent ={Company:this.state.formData.Company,Plant:this.state.formData.Plant,Department:this.state.formData.Department,Buyer:this.state.formData.Buyer,TotalAmount:this.state.trFormdata.TotalAmount};
+        let tableContent ={Company:this.state.formData.Company,Plant:this.state.formData.Plant,Department:this.state.formData.Department,Vendor:this.state.formData.Vendor,Buyer:this.state.formData.Buyer,TotalAmount:this.state.trFormdata.TotalAmount,Reason:this.state.formData.Description};
         emaildetails.body = this.emailBodyPreparation(this.siteURL+'/SitePages/Home.aspx#/purchaserequest/'+this.state.ItemID,tableContent,emaildetails.bodyString,this.userContext.userDisplayName);
         const data = { ...this.state.trFormdata,...this.state.formData, RequisitionerId: this.state.RequisitionerUserId, isEscalate: false };
         data.Status = ApprovalStatus.InProgress;
@@ -1332,8 +1332,8 @@ class PurchaseRequestForm extends React.Component<PurchaseRequestProps, Purchase
                     this.checkUserInPurchasingGroup();
                     this.setState({
                         isInitiatorEdit: true,
-                        DynamicDisabled:true,
-                        showHideDraftButton:true
+                        // DynamicDisabled:true,
+                        // showHideDraftButton:true
                     });
                 }
                 if ((selRequisitions.AssignToId != null && selRequisitions.Pendingwith == PendingStatus.Level1 && selRequisitions.AuthorId==this.userContext.userId && selRequisitions.AssignToId !=this.userContext.userId && !this.state.userGroupIds.includes(this.state.trFormdata.AssignToId)) ||(selRequisitions.AssignToId == null && selRequisitions.ApprovalLevel == null && selRequisitions.AuthorId==this.userContext.userId && !this.state.userGroupIds.includes(this.state.trFormdata.AssignToId))) {
