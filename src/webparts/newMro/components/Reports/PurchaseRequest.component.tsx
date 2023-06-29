@@ -125,7 +125,7 @@ class PurchaseReports extends React.Component<ReportsProps, ReportsState>{
                 let UnitPrice = '';
                 let Unit = '';
                 let VPT = '';
-                let Vendor = '';
+                let VendorName = '';
                 let Program = '';
                 let ItemDescription = '';
 
@@ -156,7 +156,7 @@ class PurchaseReports extends React.Component<ReportsProps, ReportsState>{
                 UnitPrice = Items.UnitPrice;
                 Unit = Items.Unit;
                 VPT = Items.VPT;
-                Vendor = Items.Vendor;
+                //Vendor = Items.Vendor;
                 Program = Items.Program;
                 ItemDescription = Items.Description;
               //Below code is to prepare customised data for export exel.
@@ -185,7 +185,7 @@ class PurchaseReports extends React.Component<ReportsProps, ReportsState>{
                     QuantityUnit: QuantityUnit,
                     Unit: Unit,
                     VPT: VPT,
-                    Vendor: Vendor,
+                    Vendor: Item.VendorName,
                     Program: Program,
                     ItemDescription: ItemDescription,
 
@@ -438,7 +438,7 @@ class PurchaseReports extends React.Component<ReportsProps, ReportsState>{
             },
             {
                 name: "Vendor",
-                selector: 'Vendor',
+                selector: 'VendorName',
                 //selector: (row, i) => row.Vendor,
             },
             {
