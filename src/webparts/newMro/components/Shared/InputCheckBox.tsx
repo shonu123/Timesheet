@@ -28,7 +28,7 @@ const InputCheckBox = ({ label, name, checked, onChange,isforMasters }: InputTex
         <div className="col-md-3">
             <div className='mt-3'>
                 <input type='checkbox' checked={checked} required={false} onChange={onChange} name={name} autoComplete="off" />
-                <label className="col-form-label p-0">{label}</label>
+                <label className="col-form-label pl-1">{label}</label>
             </div>
         </div>
     );
