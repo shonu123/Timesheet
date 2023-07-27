@@ -960,7 +960,7 @@ class PurchaseRequestForm extends React.Component<PurchaseRequestProps, Purchase
                 formData.Description = selRequisitions.Description;
                 formData.Department = selRequisitions.Department;
                 formData.CMSMstr = null; //selRequisitions.CMSMstr;
-                formData.CapitalInvestment=selRequisitions.CapitalInvestment!=null?true:false;
+                formData.CapitalInvestment=selRequisitions.CapitalInvestment!=null?selRequisitions.CapitalInvestment:false;
                 trFormdata.Approver1Id = null; //selRequisitions.Approver1Id;
                 trFormdata.Approver2Id = null; //selRequisitions.Approver2Id;
                 trFormdata.Approver3Id = null; //selRequisitions.Approver3Id;
