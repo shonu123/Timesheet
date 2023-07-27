@@ -59,7 +59,7 @@ class PurchasingManager extends React.Component<PurchasingManagerProps,Purchasin
     }
     private loadListData = (qryAssignedTO) => {
         const userId = this.props.spContext.userId;
-        var filterString = `(IsActive ne 0 and AssignToId eq ${userId} ${qryAssignedTO}) and Status ne 'Approved' and Status ne '${ApprovalStatus.Withdraw}' and (ReviewerId eq ${userId} ${qryAssignedTO})`;
+        var filterString = `((ReviewerId eq ${userId} ${qryAssignedTO}) and IsActive ne 0 and AssignToId eq ${userId} ${qryAssignedTO}) and Status ne 'Approved' and Status ne '${ApprovalStatus.Withdraw}'`;
         sp.web.lists.getByTitle('PurchaseRequest').items.top(2000).filter(filterString).expand("Author", "Requisitioner").select('Author/Title', 'Requisitioner/Title', '*').orderBy('Modified', false).get()
             .then((response) => {
                 this.setState({approvals: response,loading:false});
@@ -166,13 +166,6 @@ class PurchasingManager extends React.Component<PurchasingManagerProps,Purchasin
                 },
             },
             {
-                name: "Description",
-                //selector: 'Description',
-                selector: (row, i) => row.Description,
-                //width: '200px',
-                sortable: true
-            },
-            {
                 name: "Total Amount",
                 //selector: "TotalAmount",
                 selector: (row, i) => row.TotalAmount,
@@ -183,6 +176,13 @@ class PurchasingManager extends React.Component<PurchasingManagerProps,Purchasin
                 name: "Status",
                 //selector: "Status",
                 selector: (row, i) => row.Status,
+                sortable: true
+            },
+            {
+                name: "Description",
+                //selector: 'Description',
+                selector: (row, i) => row.Description,
+                //width: '200px',
                 sortable: true
             }
         ];

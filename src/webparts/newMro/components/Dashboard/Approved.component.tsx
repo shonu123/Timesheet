@@ -12,6 +12,7 @@ import "@pnp/sp/lists";
 import "@pnp/sp/items";
 import Loader from '../Shared/Loader';
 import { confirm } from 'react-confirm-box';
+import ModalPopUpConfirm from '../Shared/ModalPopUpConfirm';
 
 export interface ApprovedProps {
     match: any;
@@ -30,9 +31,11 @@ export interface ApprovedState {
     sortBy:number;
     sortOrder:boolean;
     groups:any;
+    showHideModalConfirm:boolean;
+    formData:any;
 }
-
 class Approved extends React.Component<ApprovedProps,ApprovedState> {
+    private ItemID=0;
     constructor(props: ApprovedProps) {
         super(props);
         sp.setup({
@@ -43,13 +46,14 @@ class Approved extends React.Component<ApprovedProps,ApprovedState> {
         this.state = {approvals: [],loading:true,showHideModal: false,isSuccess: true,
             pageNumber:MyrequestsJson != null && MyrequestsJson.tab =='Approved'? MyrequestsJson.PageNumber:1,
             sortBy:MyrequestsJson != null && MyrequestsJson.tab =='Approved' ? MyrequestsJson.sortBy:1,
-            sortOrder:MyrequestsJson != null && MyrequestsJson.tab =='Approved' && MyrequestsJson.sortOrder=='asc' ? true:false,groups:[]
-
+            sortOrder:MyrequestsJson != null && MyrequestsJson.tab =='Approved' && MyrequestsJson.sortOrder=='asc' ? true:false,groups:[],
+            showHideModalConfirm:false,formData:{PONumber:'',isPOProcessed:false,IsincludedinPOExcel:false }
         };
     }
     public componentDidMount() {
         //console.log(this.props);
         this.loadListData();
+        // Modal.setAppElement('#mainModal');
     }
     private  loadListData = async() => {
         let now = new Date();
@@ -61,7 +65,7 @@ class Approved extends React.Component<ApprovedProps,ApprovedState> {
             Groups.push(grp.Id);// += ' or ReviewerId eq ' + grp.Id;
         });
         Groups.push(this.props.spContext.userId);
-        var filterString = `( IsActive ne 0 and Status eq 'Approved' or Status eq 'Purchasing Team Updated') and (Modified ge datetime'${last07days.toISOString()}' and Modified le datetime'${addonemoreday.toISOString()}') `;
+        var filterString = `((Modified ge datetime'${last07days.toISOString()}' and Modified le datetime'${addonemoreday.toISOString()}') and IsActive ne 0 and Status eq 'Approved' or Status eq 'Purchasing Team Updated')`;
         sp.web.lists.getByTitle('PurchaseRequest').items.top(2000).filter(filterString).expand("Author", "Requisitioner").select('Author/Title', 'Requisitioner/Title', '*').orderBy('Created', false).get()
             .then((response) => {
                 let FinalData=[];
@@ -78,7 +82,26 @@ class Approved extends React.Component<ApprovedProps,ApprovedState> {
     private onError = () => {
         this.setState({ showHideModal: true, loading: false, isSuccess: false});
     }
+    private handleChangeDaynamic = (event) => { 
+        const formData = {...this.state.formData};     
+        const { name } = event.target;
+        const value = event.target.value;
+        formData[name] = value;
+        if(value !=undefined && value !="")
+            formData["IsincludedinPOExcel"] = true;
+        else
+            formData["IsincludedinPOExcel"] = false;
+        this.setState({ formData });   
+    }
     private handleChange = (event) => {
+        const formData = {...this.state.formData};
+        this.ItemID = parseInt(event.target.id);
+        const { name } = event.target;
+        const value = event.target.type == 'checkbox' ? event.target.checked : event.target.value;
+        formData[name] = value;
+        this.setState({ formData,showHideModalConfirm:true });
+    }
+    private handleChange1 = (event) => {
         const formData = {};
         const itemId = parseInt(event.target.id);
         const { name } = event.target;
@@ -98,7 +121,6 @@ class Approved extends React.Component<ApprovedProps,ApprovedState> {
             if(res1){
             sp.web.lists.getByTitle('PurchaseRequest').items.getById(itemId).update(formData).then((res) => {
                 console.log('updated');
-                //let approval = this.state.approvals.map(rec=> {if(rec.ID==itemId) {return {...rec, isPOProcessed:true}} else return rec;});
                 this.setState({ showHideModal: true, loading: false, isSuccess: true});
                 
                 }, (Error) => {
@@ -113,6 +135,22 @@ class Approved extends React.Component<ApprovedProps,ApprovedState> {
                 return;
             }
         });
+    }
+    public submitData=() => {
+        sp.web.lists.getByTitle('PurchaseRequest').items.getById(this.ItemID).update(this.state.formData).then((res) => {
+            console.log('updated');
+            this.setState({ showHideModalConfirm: false,showHideModal:true,loading:true});
+            }, (Error) => {
+                console.log(Error);
+                this.onError();
+            }).catch((err) => {
+                this.onError();
+                console.log(err);
+            });
+    }
+    public cancelData=()=>{
+        this.ItemID=0;
+        this.setState({ showHideModalConfirm: false,showHideModal:false,formData:{PONumber:'',isPOProcessed:false,IsincludedinPOExcel:false}});
     }
     public handleConfirm = () => {
         this.setState({ showHideModal: false });
@@ -137,7 +175,6 @@ class Approved extends React.Component<ApprovedProps,ApprovedState> {
         lsMyrequests.tab ='Approved';
         localStorage.setItem('PrvData', JSON.stringify(lsMyrequests));
     }
-   
     public render() {
         const columns = [
             {
@@ -228,20 +265,19 @@ class Approved extends React.Component<ApprovedProps,ApprovedState> {
             //     width: '100px',
             // },
             {
-                name: "Description",
-                //selector: 'Description',
-                selector: (row, i) => row.Description,
-                //width: '165px',
-                sortable: true
-            },
-            {
                 name: "Total Amount",
                 //selector: "TotalAmount",
                 selector: (row, i) => row.TotalAmount,
                 sortable: true,
                 width: '135px'
             },
-            
+            {
+                name: "Description",
+                //selector: 'Description',
+                selector: (row, i) => row.Description,
+                //width: '165px',
+                sortable: true
+            },
             
         ];
         return (
@@ -250,12 +286,38 @@ class Approved extends React.Component<ApprovedProps,ApprovedState> {
             .confirm-box__overlay{ 'background-color: rgb(0 0 0 / 32%)!important;' }
             </style>
             <ModalPopUp title={"Success"} modalText={"Record updated successfully"} isVisible={this.state.showHideModal} onClose={this.handleConfirm} isSuccess={this.state.isSuccess} ></ModalPopUp>
+            {/* <ModalPopUpConfirm title={"Are you sure?"} message={"Record updated successfully"} isVisible={this.state.showHideModalConfirm} onConfirm={this.handleConfirm} onCancel={this.handleCancel} isSuccess={this.state.isSuccess} ></ModalPopUpConfirm> */}
             {this.state.loading && <Loader />}
             <div>
                 <div className='table-head-1st-td'>
                     <TableGenerator columns={columns} data={this.state.approvals} fileName={'Approved'} showExportExcel={false} onChange={this.onPageChange} onSortChange={this.sortOrder} prvPageNumber={this.state.pageNumber} prvDirection={this.state.sortOrder} prvSort={this.state.sortBy}></TableGenerator>
                 </div>
             </div>
+            {this.state.showHideModalConfirm &&
+            <div className="modal" tabIndex={-1} style={{display:'block',background:'rgb(165 165 165 / 25%)'}} >
+                <div className="modal-dialog modal-dialog-centered">
+                <div className="modal-content">
+                    <div className={`modal-header txt-white bc-dblue`}>
+                    <h5 className="modal-title txt-white">{'Are you sure?'}</h5>
+                    </div>
+                    <div className="modal-body">
+                        <div className="row pt-2 px-2">
+                            <div className="col-md-3">
+                                <div className="light-text">
+                                    <label>PO# </label>
+                                    <input className="form-control" required={true} placeholder="" name="PONumber" title="PONumber" value={this.state.formData.PONumber || ''} onChange={this.handleChangeDaynamic} autoComplete="off" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div className="modal-footer">
+                    <button type="button" onClick={this.submitData} className={`btn bc-dblue txt-white modalclosesuccess bc-dblue`} data-dismiss="modal">Confirm</button>
+                    <button type="button" onClick={this.cancelData} className={`btn bc-dblue txt-white modalclosesuccess bc-dblue`} data-dismiss="modal">Cancel</button>
+                    </div>
+                </div>
+                </div>
+            </div>
+            }
             </React.Fragment>
         );
     }

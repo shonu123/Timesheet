@@ -36,7 +36,8 @@ interface VendorState {
         Company: string,
         Plant: string,
         Database: string,
-        PlantCode: string
+        PlantCode: string,
+        Currency: string
     };
     SaveUpdateText: string;
     vendors: any;
@@ -50,6 +51,7 @@ interface VendorState {
     addNewvendor: boolean;
     isNewform: boolean;
     Plants: any;
+    Currencies:any;
     Companys: any;
     ImportedExcelData: any;
 }
@@ -60,6 +62,7 @@ class Vendor extends Component<VendorProps, VendorState> {
     private vendorNumber;
     private inputCompany;
     private inputPlant;
+    private inputCurrency;
     private oweb;
     private Company: string;
     private database;
@@ -73,6 +76,7 @@ class Vendor extends Component<VendorProps, VendorState> {
         this.inputCompany = React.createRef();
         this.inputPlant = React.createRef();
         this.database = React.createRef();
+        this.inputCurrency = React.createRef();
         this.siteURL = this.props.spContext.webAbsoluteUrl;
 
         this.state = {
@@ -83,10 +87,12 @@ class Vendor extends Component<VendorProps, VendorState> {
                 Company: '',
                 Plant: '',
                 Database: '',
-                PlantCode: ''
+                PlantCode: '',
+                Currency:'',
             },
             SaveUpdateText: 'Submit',
             vendors: [],
+            Currencies:["MX","US"],
             showLabel: false,
             errorMessage: '',
             loading: false,
@@ -121,7 +127,8 @@ class Vendor extends Component<VendorProps, VendorState> {
                 formData: {
                     Title: '', Company: '', Plant: '',
                     Database: '',
-                    PlantCode: '', IsActive: true, Vendor_x0020_Number: null
+                    PlantCode: '', IsActive: true, Vendor_x0020_Number: null,
+                    Currency:'',
                 }, SaveUpdateText: 'Submit', addNewvendor: false
             });
     }
@@ -146,17 +153,12 @@ class Vendor extends Component<VendorProps, VendorState> {
         const formData = { ...this.state.formData };
         let name = event.target.name;
         formData[name] = event.target.value != 'None' ? event.target.value : null;
-
         // let customAttrDatabase = event.currentTarget.options[event.currentTarget.selectedIndex] && event.currentTarget.options[event.currentTarget.selectedIndex].getAttribute('data-database');
         let customAttrPlantCode = event.currentTarget.options[event.currentTarget.selectedIndex] && event.currentTarget.options[event.currentTarget.selectedIndex].getAttribute('data-plantcode');
-
         var selectedIndex = event.nativeEvent.target.selectedIndex;
-
         // formData[name] = event.nativeEvent.target[selectedIndex].text;
-
         // formData['Database'] = customAttrDatabase != 'None' ? customAttrDatabase : null;
         formData['PlantCode'] = customAttrPlantCode != 'None' ? customAttrPlantCode : null;
-
         this.setState({ formData });
     }
     private handleChangeNumber = (event) => {
@@ -176,7 +178,8 @@ class Vendor extends Component<VendorProps, VendorState> {
             Plant: { val: this.state.formData.Plant, required: false, Name: 'Plant', Type: ControlType.string, Focusid: this.inputPlant },
             venderName: { val: this.state.formData.Title, required: true, Name: 'Vendor Name', Type: ControlType.string, Focusid: this.vendorName },
             Database: { val: this.state.formData.Database, required: false, Name: 'Database', Type: ControlType.string, Focusid: this.database },
-            venderNumber: { val: this.state.formData.Vendor_x0020_Number, required: true, Name: 'Vendor Number', Type: ControlType.string, Focusid: this.vendorNumber }
+            venderNumber: { val: this.state.formData.Vendor_x0020_Number, required: true, Name: 'Vendor Number', Type: ControlType.string, Focusid: this.vendorNumber },
+            Currency: { val: this.state.formData.Currency.toLocaleUpperCase(), required: true, Name: 'Currency', Type: ControlType.string, Focusid: this.inputCurrency },
         };
 
         const formdata = { ...this.state.formData };
@@ -292,7 +295,7 @@ class Vendor extends Component<VendorProps, VendorState> {
                 this.setState({
                     vendors: response.map(o => ({
                         Id: o.Id, Company: o.Company, PlantCode: o.PlantCode, Plant: o.Plant,
-                        Database: o.Database,
+                        Database: o.Database, Currency:o.Currency,
                         Title: o.Title, IsActive: o.IsActive == true ? 'Active' : 'In-Active', Vendor_x0020_Number: o.Vendor_x0020_Number
                     })),
                     SaveUpdateText: 'Submit',
@@ -321,7 +324,8 @@ class Vendor extends Component<VendorProps, VendorState> {
                 formData: {
                     Title: response.Title, Company: response.Company, Plant: response.Plant, PlantCode: response.PlantCode,
                     Database: response.Database,
-                    IsActive: response.IsActive, Vendor_x0020_Number: response.Vendor_x0020_Number.trim()
+                    IsActive: response.IsActive, Vendor_x0020_Number: response.Vendor_x0020_Number.trim(),
+                    Currency:response.Currency
                 },
                 SaveUpdateText: 'Update',
                 showLabel: false,
@@ -342,7 +346,8 @@ class Vendor extends Component<VendorProps, VendorState> {
             formData: {
                 Title: '', Plant: '', Company: '',
                 Database: '',
-                PlantCode: '', IsActive: true, Vendor_x0020_Number: null
+                PlantCode: '', IsActive: true, Vendor_x0020_Number: null,
+                Currency:''
             }, SaveUpdateText: 'Submit', addNewvendor: false
         });
         //this.props.history.push('/vendor');
@@ -394,6 +399,7 @@ class Vendor extends Component<VendorProps, VendorState> {
                             VendorsData[j].Database = VendorsData[j].Database.trim();
                             VendorsData[j].Title = VendorsData[j].Title.trim();
                             VendorsData[j].Vendor_x0020_Number = VendorsData[j].Vendor_x0020_Number.trim();
+                            VendorsData[j].Currency = VendorsData[j].Currency != undefined ? VendorsData[j].Currency.trim():'US';
                             statusChangedRec.push(VendorsData[j]);
                             excelData.splice(i, 1);
                         }
@@ -409,6 +415,7 @@ class Vendor extends Component<VendorProps, VendorState> {
                     obj["PlantCode"] = item["Plant Code"];
                     obj["Database"] = item.Database.trim();
                     obj["Company"] = item.Company;
+                    obj["Currency"] = item.Currency;
                     obj["IsActive"] = item.Status == "Active" ? true : false;
 
                     nonDuplicateRec.push(obj);
@@ -581,6 +588,10 @@ class Vendor extends Component<VendorProps, VendorState> {
                 dataKey: 'Database'
             },
             {
+                name: "Currency",
+                selector: "Currency",
+            },
+            {
                 name: "Status",
                 selector: "IsActive",
             }
@@ -655,6 +666,14 @@ class Vendor extends Component<VendorProps, VendorState> {
                 dataKey: 'Database'
             },
             {
+                name: "Currency",
+                //selector: "Currency",
+                selector: (row, i) => row.Currency,
+                sortable: true,
+                header: 'Currency',
+                dataKey: 'Currency'
+            },
+            {
                 name: "Status",
                 //selector: "IsActive",
                 selector: (row, i) => row.IsActive,
@@ -696,7 +715,7 @@ class Vendor extends Component<VendorProps, VendorState> {
 
                                     <div className={this.state.addNewvendor ? 'mx-2 activediv' : 'mx-2'}>
                                         <div className="text-right pt-2">
-                                            <ImportExcel ErrorFileSelect={this.ErrorFileSelect} columns={["Vendor Name", "Vendor Number", "Status", "Database"]} filename="Vendors" onDataFetch={this.fetchImportedExcelData} submitData={this.submitImportedExcelData}></ImportExcel>
+                                            <ImportExcel ErrorFileSelect={this.ErrorFileSelect} columns={["Vendor Name", "Vendor Number", "Status", "Database", "Currency"]} filename="Vendors" onDataFetch={this.fetchImportedExcelData} submitData={this.submitImportedExcelData}></ImportExcel>
 
                                             <button type="button" id="btnSubmit" className="SubmitButtons btn" onClick={this.addNewVendorMaster}>Add</button>
                                         </div>
@@ -769,6 +788,28 @@ class Vendor extends Component<VendorProps, VendorState> {
                                                             maxlength={50}
                                                             onBlur={this.handleonBlur}
                                                         />
+                                                        {/* <InputText
+                                                            type='text'
+                                                            label={"Currency"}
+                                                            name={"Currency"}
+                                                            value={this.state.formData.Currency || ''}
+                                                            isRequired={true}
+                                                            onChange={this.handleChange}
+                                                            refElement={this.inputCurrency}
+                                                            maxlength={50}
+                                                            onBlur={this.handleonBlur}
+                                                        /> */}
+                                                        <div className="col-md-4">
+                                                            <div className="light-text">
+                                                                <label>Currency <span className="mandatoryhastrick">*</span></label>
+                                                                <select className="form-control" required={true} name="Currency" title="Currency" value={this.state.formData.Currency} onChange={this.handleChange} ref={this.inputCurrency}>
+                                                                    <option value=''>None</option>
+                                                                    {this.state.Currencies.map((option) => (
+                                                                        <option value={option} selected={this.state.formData.Currency != ''}>{option}</option>
+                                                                    ))}
+                                                                </select>
+                                                            </div>
+                                                        </div>
                                                         <div className="col-md-4">
                                                             <div className="light-text">
                                                                 <label>Database <span className="mandatoryhastrick">*</span></label>

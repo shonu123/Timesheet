@@ -53,7 +53,7 @@ class Myrequests extends React.Component<MyrequestsProps, MyrequestsState> {
     }
     private loadListData = () => {
         const userId = this.props.spContext.userId;
-        var filterString = `IsActive ne 0 and RequisitionerId eq ${userId} and Status ne '${ApprovalStatus.Withdraw}'`;
+        var filterString = `RequisitionerId eq ${userId} and IsActive ne 0 and Status ne '${ApprovalStatus.Withdraw}'`;
         sp.web.lists.getByTitle('PurchaseRequest').items.top(2000).filter(filterString).expand("Author", "Requisitioner").select('Author/Title', 'Requisitioner/Title', '*').orderBy('Modified', false).get()
             .then((response) => {
                 this.setState({requests: response,loading:false});
@@ -142,13 +142,6 @@ class Myrequests extends React.Component<MyrequestsProps, MyrequestsState> {
                 },
             },
             {
-                name: "Description",
-                //selector: 'Description',
-                selector: (row, i) => row.Description,
-                //width: '135px',
-                sortable: true
-            },
-            {
                 name: "Total Amount",
                 //selector: "TotalAmount",
                 selector: (row, i) => row.TotalAmount,
@@ -160,6 +153,13 @@ class Myrequests extends React.Component<MyrequestsProps, MyrequestsState> {
                 //selector: "Status",
                 selector: (row, i) => row.Status,
                 width: '135px',
+                sortable: true
+            },
+            {
+                name: "Description",
+                //selector: 'Description',
+                selector: (row, i) => row.Description,
+                //width: '135px',
                 sortable: true
             }
         ];

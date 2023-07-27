@@ -50,7 +50,7 @@ class Exported extends React.Component<ExportedProps,ExportedState> {
     private loadListData = () => {
         let now = new Date();
         let last30days = new Date(now.setDate(now.getDate() - 31));
-        let filterQuery =`(IsActive ne 0 and Status eq 'Approved' or Status eq 'Purchasing Team Updated') and Modified ge datetime'${last30days.toISOString()}'`;
+        let filterQuery =`Modified ge datetime'${last30days.toISOString()}' and (IsActive ne 0 and Status eq 'Approved' or Status eq 'Purchasing Team Updated')`;
         sp.web.lists.getByTitle('PurchaseRequest').items.top(4000).filter(filterQuery).expand("Author", "Requisitioner").select('Author/Title', 'Requisitioner/Title', '*').orderBy('Modified', false).get()
             .then((response) => {
                 this.setState({Exported: response,loading:false});
@@ -125,24 +125,6 @@ class Exported extends React.Component<ExportedProps,ExportedState> {
                 },
                 width: '135px'
             },
-            // {
-            //     name: "Buyer",
-            //     selector: 'Buyer',
-            //     sortable: true
-
-            // },
-            // {
-            //     name: "Project Code",
-            //     selector: 'ProjectCode',
-            //     sortable: true
-
-            // },
-            // {
-            //     name: "Commodity Category",
-            //     selector: 'CommodityCategory',
-            //     sortable: true
-
-            // },
             {
                 name: "Created",
                 //selector: 'Created',
@@ -156,20 +138,19 @@ class Exported extends React.Component<ExportedProps,ExportedState> {
                 },
             },
             {
-                name: "Description",
-                //selector: 'Description',
-                selector: (row, i) => row.Description,
-                //width: '135px',
-                sortable: true
-            },
-            {
                 name: "Total Amount",
                // selector: "TotalAmount",
                 selector: (row, i) => row.TotalAmount,
                 sortable: true,
                 width: '135px'
             },
-            
+            {
+                name: "Description",
+                //selector: 'Description',
+                selector: (row, i) => row.Description,
+                //width: '135px',
+                sortable: true
+            }
             
         ];
         return (

@@ -151,25 +151,23 @@ class Myapprovals extends React.Component<MyapprovalsProps, MyapprovalsState> {
                 },
             },
             {
-                name: "Description",
-                //selector: 'Description',
-                selector: (row, i) => row.Description,
-                //width: '135px',
-                sortable: true
-            },
-            {
                 name: "Total Amount",
                 //selector: "TotalAmount",
                 selector: (row, i) => row.TotalAmount,
                 sortable: true,
                 width: '100px'
             },
-            
-            
             {
                 name: "Status",
                 //selector: "Status",
                 selector: (row, i) => row.Status,
+                sortable: true
+            },
+            {
+                name: "Description",
+                //selector: 'Description',
+                selector: (row, i) => row.Description,
+                //width: '135px',
                 sortable: true
             }
         ];
