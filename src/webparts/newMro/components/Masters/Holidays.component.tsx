@@ -527,6 +527,7 @@ class Holidays extends React.Component<HolidaysProps, HolidaysState>{
                             name={"IsActive"}
                             checked={this.state.formData.IsActive}
                             onChange={this.handleChange}
+                            isforMasters={true}
                           />
 
                         </div>

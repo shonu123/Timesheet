@@ -652,6 +652,7 @@ class RequsitionerCodes extends Component<RequsitionerCodesProps, RequsitionerCo
                                                             name={"IsActive"}
                                                             checked={this.state.formData.IsActive}
                                                             onChange={this.handleChange}
+                                                            isforMasters={true}
                                                         />
 
                                                        

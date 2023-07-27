@@ -5,13 +5,14 @@ interface InputTextProps {
     name: string;
     checked: boolean;
     onChange: any;
+    isforMasters:boolean;
     //isRequired: boolean;
     //refElement: any;
 }
 
-const InputCheckBox = ({ label, name, checked, onChange }: InputTextProps) => {
+const InputCheckBox = ({ label, name, checked, onChange,isforMasters }: InputTextProps) => {
 
-    return (
+    return isforMasters?(
         <div className="col-md-4">
             <div className='row mt-3'>
                 <div className="col-sm-4">
@@ -21,6 +22,13 @@ const InputCheckBox = ({ label, name, checked, onChange }: InputTextProps) => {
                 <div className="col-sm-7">
                     <input type='checkbox' checked={checked} required={true} onChange={onChange} name={name} autoComplete="off" />
                 </div>
+            </div>
+        </div>
+    ):(
+        <div className="col-md-3">
+            <div className='mt-3'>
+                <input type='checkbox' checked={checked} required={false} onChange={onChange} name={name} autoComplete="off" />
+                <label className="col-form-label p-0">{label}</label>
             </div>
         </div>
     );

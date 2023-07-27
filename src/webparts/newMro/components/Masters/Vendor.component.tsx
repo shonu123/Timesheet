@@ -826,6 +826,7 @@ class Vendor extends Component<VendorProps, VendorState> {
                                                             name={"IsActive"}
                                                             checked={this.state.formData.IsActive}
                                                             onChange={this.handleChange}
+                                                            isforMasters={true}
                                                         />
                                                     </div>
                                                 </div>

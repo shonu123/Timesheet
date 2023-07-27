@@ -520,6 +520,7 @@ class Commodity extends React.Component<CommodityProps, CommodityState>{
                             name={"IsActive"}
                             checked={this.state.IsActive}
                             onChange={this.handleChange}
+                            isforMasters={true}
                           />
 
                         </div>

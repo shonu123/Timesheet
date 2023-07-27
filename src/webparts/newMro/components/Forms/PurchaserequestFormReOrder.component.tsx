@@ -1456,16 +1456,13 @@ class PurchaseRequestForm extends React.Component<PurchaseRequestProps, Purchase
                                                     </div>
                                                 </div>
                                                 <div className="row pt-2 px-2">
-                                                    <div className="col-md-3">
-                                                        <div className="light-text">
-                                                        <InputCheckBox
-                                                            label={"Capital Investment"}
-                                                            name={"CapitalInvestment"}
-                                                            checked={this.state.formData.CapitalInvestment}
-                                                            onChange={this.handleChange}
-                                                        />
-                                                        </div>
-                                                    </div>
+                                                    <InputCheckBox
+                                                        label={"Capital Investment"}
+                                                        name={"CapitalInvestment"}
+                                                        checked={this.state.formData.CapitalInvestment}
+                                                        onChange={this.handleChange}
+                                                        isforMasters={false}
+                                                    />
                                                     <div className="col-md-9">
                                                     <div className="light-text mt-1">
                                                             <label className="floatingTextarea2">Reason <span className="mandatoryhastrick">*</span></label>
