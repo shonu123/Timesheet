@@ -50,7 +50,7 @@ class Exported extends React.Component<ExportedProps,ExportedState> {
     private loadListData = () => {
         let now = new Date();
         let last30days = new Date(now.setDate(now.getDate() - 31));
-        let filterQuery =`Modified ge datetime'${last30days.toISOString()}' and (IsActive ne 0 and Status eq 'Approved' or Status eq 'Purchasing Team Updated')`;
+        let filterQuery =`Modified ge datetime'${last30days.toISOString()}' and IsActive ne 0 and (Status eq 'Approved' or Status eq 'Purchasing Team Updated')`;
         sp.web.lists.getByTitle('PurchaseRequest').items.top(4000).filter(filterQuery).expand("Author", "Requisitioner").select('Author/Title', 'Requisitioner/Title', '*').orderBy('Modified', false).get()
             .then((response) => {
                 this.setState({Exported: response,loading:false});

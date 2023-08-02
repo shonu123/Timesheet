@@ -65,7 +65,7 @@ class Approved extends React.Component<ApprovedProps,ApprovedState> {
             Groups.push(grp.Id);// += ' or ReviewerId eq ' + grp.Id;
         });
         Groups.push(this.props.spContext.userId);
-        var filterString = `((Modified ge datetime'${last07days.toISOString()}' and Modified le datetime'${addonemoreday.toISOString()}') and IsActive ne 0 and Status eq 'Approved' or Status eq 'Purchasing Team Updated')`;
+        var filterString = `(Modified ge datetime'${last07days.toISOString()}' and Modified le datetime'${addonemoreday.toISOString()}' and IsActive ne 0 and (Status eq 'Approved' or Status eq 'Purchasing Team Updated'))`;
         sp.web.lists.getByTitle('PurchaseRequest').items.top(2000).filter(filterString).expand("Author", "Requisitioner").select('Author/Title', 'Requisitioner/Title', '*').orderBy('Created', false).get()
             .then((response) => {
                 let FinalData=[];
