@@ -109,7 +109,8 @@ class Exported extends React.Component<ExportedProps,ExportedState> {
             },
             {
                 name: "Vendor",
-                selector: 'VendorName',
+               // selector: 'VendorName',
+               selector: (row, i) => row.VendorName,
                 sortable: true,
                 width: '150px'
             },

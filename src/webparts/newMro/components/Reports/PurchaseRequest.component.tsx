@@ -36,7 +36,8 @@ class PurchaseReports extends React.Component<ReportsProps, ReportsState>{
     public state = {
         Company: '', Plant: '', Department: '', FromDate: null, ToDate: null, Departments: [], Plants: [], data: [], loading: true, modalText: '', modalTitle: '', isSuccess: false, showHideModal: false, errorMessage: '', ItemID: 0, displayListView: false, reportsData: [], ExportData: []
         , ReportType: ['All', 'Requisitioner', 'Approver'], Companys: JSON.parse(Dropdowns.Companys), ReportFor: '', filterLable: 'All', filterData: [], filterText: 'All', defaultUsers: null, redirect: false,
-        ExportExcelReportsData :[]
+        ExportExcelReportsData :[],
+        ApproverType:['User','Group'],ApproverFor:'',filterApproverLable:'User',filterApproverText: 'User',selectedUSername:''
     };
     private ddlPlant;
     private ddlDepartment;
@@ -85,7 +86,7 @@ class PurchaseReports extends React.Component<ReportsProps, ReportsState>{
     private _getPeoplePickerItems = (People, fildname) => {
         let returnObj = {};
         if (People.length > 0)
-            returnObj[fildname] = People[0].id;
+            returnObj[fildname] = People[0].id, returnObj['selectedUSername']=People[0].text; 
         else
             returnObj[fildname] = null;
         this.setState(returnObj);
@@ -101,16 +102,47 @@ class PurchaseReports extends React.Component<ReportsProps, ReportsState>{
             filterQuery += ` and Department eq  '` + this.state.Department + `'`;
         if (this.state.filterLable == 'Requisitioner')
             filterQuery += ` and RequisitionerId eq  '` + this.state.filterText + `'`;
-        if (this.state.filterLable == 'Approver')
+        if (this.state.filterLable == 'Approver' && this.state.filterApproverLable=='Group')
             filterQuery += ` and (Approver1Id eq ` + this.state.filterText + ` or Approver2Id eq ` + this.state.filterText + ` or Approver3Id eq ` + this.state.filterText + ` or ReviewerId eq ` + this.state.filterText + `)`;
-        var reportsData: any = await sp.web.lists.getByTitle('PurchaseRequest').items.filter(filterQuery).expand("Author", "Requisitioner").select("Author/Title", "Requisitioner/Title,*").orderBy("Modified", true).getAll();
+        if (this.state.filterLable == 'Approver' && this.state.filterApproverLable=='User')
+        filterQuery +=``;
+
+        var  tempreportsData: any = await sp.web.lists.getByTitle('PurchaseRequest').items.filter(filterQuery).expand("Author", "Requisitioner").select("Author/Title", "Requisitioner/Title,*").orderBy("Modified", true).getAll();
+       var reportsData:any=[];
+       if(this.state.filterLable == 'Approver' && this.state.filterApproverLable=='User'){
+       for (let index = 0; index < tempreportsData.length; index++) {
+        let element = tempreportsData[index];
+        let CommentItemsSData= JSON.parse(element.Comments);
+        for (let index = 0; index < CommentItemsSData.length; index++) {
+            let commentelement = CommentItemsSData[index];
+            if(['Approver 1','Approver 2','Approver 3','Approver 4','Purchasing manager'].includes(commentelement.Role) && commentelement.User==this.state.selectedUSername ) {
+                reportsData.push(element);
+                break;
+            }
+        }
+        
+       }
+    }
+    else{
+        reportsData=tempreportsData;
+    }
+    //    reportsData.forEach((Item,i) => {
+    //         let isexits=false;
+    //         let CommentItemsSData= JSON.parse(Item.Comments, i);
+    //         CommentItemsSData.forEach((itm)=>{
+    //                 if(['Approver 1','Approver 2','Approver 3','Approver 4','Purchasing manager'].includes(itm.Role) && itm.User==this.state.selectedUSername ) 
+    //                 isexits=true;                    
+    //             });
+    //             if(isexits)
+    //             tempreportsData.push(Item);
+              
+    //     });
         let excelData = [];
         let tableData =[];
         reportsData.forEach((Item) => {
             let date = new Date(Item.Created).getMonth() + 1 + '/' + new Date(Item.Created).getDate() + '/' + new Date(Item.Created).getFullYear();
 
-            let Itemsdata = JSON.parse(Item.ItemsDatajson);
-           
+            let Itemsdata = JSON.parse(Item.ItemsDatajson);  
 
             Itemsdata.map((Items, i) => {
                 let newDateFormat = '';
@@ -235,8 +267,21 @@ class PurchaseReports extends React.Component<ReportsProps, ReportsState>{
         returnObj['filterLable'] = event.target.value;
         returnObj['filterText'] = null;
         returnObj['defaultUsers'] = null;
+        returnObj['filterApproverLable'] ='User';
         this.setState(returnObj);
     }
+    private handleChangeApprover = (event) => {
+        let returnObj = {};
+        returnObj[event.target.name] = event.target.value;
+        //let currentCtrlName = event.target.name;
+        //let val = event.target.value;
+        //let listname = '';
+        returnObj['filterApproverLable'] = event.target.value;
+        returnObj['filterApproverText'] = null;
+        returnObj['defaultUsers'] = null;
+        this.setState(returnObj);
+    }
+    
     private handleChange = (event) => {
         let returnObj = {};
         returnObj[event.target.name] = event.target.value != "None" ? event.target.value : null;
@@ -281,6 +326,7 @@ class PurchaseReports extends React.Component<ReportsProps, ReportsState>{
             // Company: { val: this.state.Company, required: true, Name:'Company', Type: ControlType.string, Focusid: this.ddlCompany },
             //Plant: { val: this.state.Plant, required: true, Name:'Plant', Type: ControlType.string, Focusid: this.ddlPlant },
             //Department: { val: this.state.Department, required: true, Name:'Department', Type: ControlType.string, Focusid: this.ddlDepartment },
+           // ApproverFor: { val: filterApprovertext, required: true, Name: this.state.filterApproverLable, Type: type, Focusid: foucesitem },
             ReportFor: { val: filtertext, required: true, Name: this.state.filterLable, Type: type, Focusid: foucesitem },
             FromDate: { val: this.state.FromDate, required: true, Name: 'From Date', Type: ControlType.date, Focusid: 'divFDate' },
             ToDate: { val: this.state.ToDate, required: true, Name: 'To Date', Type: ControlType.date, Focusid: 'divTDate' },
@@ -296,7 +342,8 @@ class PurchaseReports extends React.Component<ReportsProps, ReportsState>{
 
     private dynamicFields = () => {
         let section = [];
-        if (this.state.filterLable != 'Approver') {
+        if(this.state.filterLable == 'Requisitioner'  || this.state.filterApproverLable=='User')
+        {
             section.push(<div className="col-md-4">
                 <div className="light-text">
                     <label>{this.state.filterLable} <span className="mandatoryhastrick">*</span></label>
@@ -317,8 +364,9 @@ class PurchaseReports extends React.Component<ReportsProps, ReportsState>{
                     </div>
                 </div>
             </div>);
-        } else {
-            section.push(<div className="col-md-4">
+        } else if(this.state.filterApproverLable=='Group'){
+            section.push(                
+            <div className="col-md-4">
                 <div></div>
                 <div className="light-text">
                     <label>{this.state.filterLable} <span className="mandatoryhastrick">*</span></label>
@@ -338,8 +386,55 @@ class PurchaseReports extends React.Component<ReportsProps, ReportsState>{
                             resolveDelay={1000} peoplePickerCntrlclassName={"input-peoplePicker-custom"} />
                     </div>
                 </div>
-            </div>);
+            </div>
+            );
         }
+        // if (this.state.filterLable != 'Approver' ) {
+        //     section.push(<div className="col-md-4">
+        //         <div className="light-text">
+        //             <label>{this.state.filterLable} <span className="mandatoryhastrick">*</span></label>
+        //             <div className="custom-peoplepicker" id="divRequisitioner">
+        //                 <PeoplePicker
+        //                     context={this.props.context}
+        //                     titleText=""
+        //                     personSelectionLimit={1}
+        //                     showtooltip={false}
+        //                     disabled={false}
+        //                     onChange={(e) => this._getPeoplePickerItems(e, 'filterText')}
+        //                     showHiddenInUI={false}
+        //                     ensureUser={true}
+        //                     required={true}
+        //                     defaultSelectedUsers={[this.state.defaultUsers]}
+        //                     principalTypes={[PrincipalType.User]}
+        //                     resolveDelay={1000} peoplePickerCntrlclassName={"input-peoplePicker-custom"} />
+        //             </div>
+        //         </div>
+        //     </div>);
+        // } else {
+        //     section.push(                
+        //     <div className="col-md-4">
+        //         <div></div>
+        //         <div className="light-text">
+        //             <label>{this.state.filterLable} <span className="mandatoryhastrick">*</span></label>
+        //             <div className="custom-peoplepicker" id="divRequisitioner">
+        //                 <PeoplePicker
+        //                     context={this.props.context}
+        //                     titleText=""
+        //                     personSelectionLimit={1}
+        //                     showtooltip={false}
+        //                     disabled={false}
+        //                     onChange={(e) => this._getPeoplePickerItems(e, 'filterText')}
+        //                     showHiddenInUI={false}
+        //                     ensureUser={true}
+        //                     required={true}
+        //                     defaultSelectedUsers={[]}
+        //                     principalTypes={[PrincipalType.SharePointGroup]}
+        //                     resolveDelay={1000} peoplePickerCntrlclassName={"input-peoplePicker-custom"} />
+        //             </div>
+        //         </div>
+        //     </div>
+        //     );
+        // }
         //}
         return section;
     }
@@ -600,7 +695,16 @@ class PurchaseReports extends React.Component<ReportsProps, ReportsState>{
                                                 </select>
                                             </div>
                                         </div>
-
+                                        {this.state.ReportFor=="Approver"?
+                                         <div className="col-md-4">
+                                            <div className='light-text'>
+                                                <label>Approver  Type <span className="mandatoryhastrick">*</span></label>
+                                                <select name="ApproverFor" className="form-select form-control" onChange={this.handleChangeApprover}>
+                                                    {this.state.ApproverType.map((Name, index) => <option key={index} value={Name} selected={Name == this.state.ApproverFor}>{Name}</option>)}
+                                                </select>
+                                            </div>
+                                        </div>:""
+                                        }
                                         {this.state.filterLable != 'All' && this.dynamicFields()}
 
                                         {/* <div className="col-md-4" hidden={this.state.filterLable =='All' || this.state.filterLable=='Requisitioner' ||this.state.filterLable=='Approver'}>

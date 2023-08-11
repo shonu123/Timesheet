@@ -343,7 +343,7 @@ class PurchaseRequestForm extends React.Component<PurchaseRequestProps, Purchase
                     <div className="col-md-3">
                         <div className="light-text">
                             <label>Quantity <span className="mandatoryhastrick">*</span></label>
-                            <input className="form-control" required={true} placeholder="" name="Quantity" title="Quantity" value={this.state.trFormdata.ItemsData[i].Quantity || ''} onChange={this.handleChangeonlyNumaric} id={i + '_Quantity'} maxLength={10} autoComplete="off" disabled={this.state.DynamicDisabled} ref={this[i + "Quantity"]} />
+                            <input className="form-control" required={true} placeholder="" name="Quantity" title="Quantity" value={this.state.trFormdata.ItemsData[i].Quantity || ''} onChange={this.handleChangeonlyNumaricwithDecmials} id={i + '_Quantity'} maxLength={10} autoComplete="off" disabled={this.state.DynamicDisabled} ref={this[i + "Quantity"]} />
                         </div>
                     </div>
                     <div className="col-md-3">

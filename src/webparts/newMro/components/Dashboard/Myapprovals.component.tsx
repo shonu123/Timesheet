@@ -122,7 +122,8 @@ class Myapprovals extends React.Component<MyapprovalsProps, MyapprovalsState> {
             },
             {
                 name: "Vendor",
-                selector: 'VendorName',
+                //selector: 'VendorName',
+                selector: (row, i) => row.VendorName,
                 sortable: true
 
             },

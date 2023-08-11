@@ -119,7 +119,8 @@ class PurchasingManager extends React.Component<PurchasingManagerProps,Purchasin
             },
             {
                 name: "Vendor",
-                selector: 'VendorName',
+                //selector: 'VendorName',
+                selector: (row, i) => row.VendorName,
                 sortable: true
 
             },

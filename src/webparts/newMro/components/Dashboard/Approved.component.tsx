@@ -223,7 +223,8 @@ class Approved extends React.Component<ApprovedProps,ApprovedState> {
             },
             {
                 name: "Vendor",
-                selector: 'VendorName',
+                //selector: 'VendorName',
+                selector: (row, i) => row.VendorName,
                 width: '150px',
                 sortable: true
 

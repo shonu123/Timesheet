@@ -55,7 +55,7 @@ class Pending extends React.Component<PendingProps,PendingState> {
         let last30days = new Date(now.setDate(now.getDate() - 60));
 
         const userId = this.props.spContext.userId;
-        var filterString = `(Modified ge datetime'${last30days.toISOString()}' and Modified le datetime'${addonemoreday.toISOString()}' and IsActive ne 0 and Status ne 'Approved' and Status ne 'Purchasing Team Updated' and Status ne '${ApprovalStatus.Withdraw}')`;
+        var filterString = `(Modified ge datetime'${last30days.toISOString()}' and Modified le datetime'${addonemoreday.toISOString()}' and IsActive ne 0 and Status ne 'Approved' and Status ne 'Purchasing Team Updated' and Status ne '${ApprovalStatus.draft}' and Status ne '${ApprovalStatus.Msave}' and Status ne '${ApprovalStatus.Withdraw}')`;
         sp.web.lists.getByTitle('PurchaseRequest').items.top(4000).filter(filterString).expand("Author", "Requisitioner").select('Author/Title', 'Requisitioner/Title', '*').orderBy('Created', false).get()
             .then((response) => {
                 this.setState({approvals: response,loading:false});
@@ -119,7 +119,8 @@ class Pending extends React.Component<PendingProps,PendingState> {
             },
             {
                 name: "Vendor",
-                selector: 'VendorName',
+                //selector: 'VendorName',
+                selector: (row, i) => row.VendorName,
                 sortable: true,
                 width: '150px',
             },
