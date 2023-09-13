@@ -87,6 +87,9 @@ class NavBar extends React.Component<NavBarProps, NavBarState> {
                                     <li className="" id="priceunit" onClick={(event) => this.onNavItemClick(event)}>
                                         <NavLink className="" to="/priceunit"><span className=""><span className="">Price for Units</span></span></NavLink>
                                     </li>
+                                    <li className="" id="tools" onClick={(event) => this.onNavItemClick(event)}>
+                                        <NavLink className="" to="/tools"><span className=""><span className="">Tools</span></span></NavLink>
+                                    </li>
                                 </ul>
                             </li> :''}
                             <li className=""><span className=""><span className=""><span className="">Forms</span></span></span>

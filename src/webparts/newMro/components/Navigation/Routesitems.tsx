@@ -29,6 +29,7 @@ const Searchbypolist = lazy(() => import('../Reports/SearchRequestbyPO.component
 import Plant from '../Masters/Plant.component';
 import RequsitionerCodes from '../Masters/RequsitionerCodes.component';
 import Programs from '../Masters/Programs.component';
+import Tools from '../Masters/Tools.component';
 
 const PurchaseRequestReorder = lazy(() => import('../Forms/PurchaserequestFormReOrder.component'));
 
@@ -79,6 +80,10 @@ class Routesitems extends Component<RoutesProps, RoutesState> {
           const WrapperVendor = (props) => {
             let params =useParams();
             return <Vendor {...this.context}{...this.props}  {...{...props, match: {params}} } />
+          }
+          const WrapperTools = (props) => {
+            let params =useParams();
+            return <Tools {...this.context}{...this.props}  {...{...props, match: {params}} } />
           }
           const WrapperBuyers = (props) => {
             let params =useParams();
@@ -145,6 +150,7 @@ class Routesitems extends Component<RoutesProps, RoutesState> {
                     {/* <Route path='/approvalmasterForm/' element={<ApprovalMasterform {...this.context}{...this.props} />} />  */}
                     {/* <Route path='/vendor/:id?' element={<Vendor {...this.context}{...this.props} />} /> */}
                     <Route path='/vendor/:id?' element={<WrapperVendor/>} />
+                    <Route path='/tools/:id?' element={<WrapperTools/>} />
                     {/* <Route path='/holiday' render={(matchprops) => <Holidays {...matchprops}{...this.props} />} /> */}
                     <Route path='/holiday/:id?' element={<WrapperHolidays/>} />
                     <Route path='/projectcode/:id?' element={<WrapperProjectCode />} />
