@@ -11,6 +11,7 @@ import Home from '../Home/Home.component';
 import ApprovalMaster from '../Masters/Approvalmaster.component';
 import Holidays from '../Masters/Holidays.component';
 import ProjectCode from '../Masters/ProjectCode.component';
+import ProjectCategory from '../Masters/ProjectCategory.component';
 import CommodityCategory from '../Masters/CommodityCategory.component';
 const Purchaserequestlist = lazy(() => import('../Reports/PurchaseRequest.component'));
 // import Purchaserequestlist from '../Reports/PurchaseRequest.component';
@@ -121,6 +122,10 @@ class Routesitems extends Component<RoutesProps, RoutesState> {
             let params =useParams();
             return <ProjectCode {...this.context}{...this.props}  {...{...props, match: {params}} } />
           }
+          const WrapperProjectCategory = (props) => {
+            let params =useParams();
+            return <ProjectCategory {...this.context}{...this.props}  {...{...props, match: {params}} } />
+          }
           const WrapperHolidays = (props) => {
             let params =useParams();
             return <Holidays {...this.context}{...this.props}  {...{...props, match: {params}} } />
@@ -154,6 +159,7 @@ class Routesitems extends Component<RoutesProps, RoutesState> {
                     {/* <Route path='/holiday' render={(matchprops) => <Holidays {...matchprops}{...this.props} />} /> */}
                     <Route path='/holiday/:id?' element={<WrapperHolidays/>} />
                     <Route path='/projectcode/:id?' element={<WrapperProjectCode />} />
+                    <Route path='/ProjectCategory/:id?' element={<WrapperProjectCategory />} />
                     <Route path='/commoditycategory/:id?' element={<WrapperCommodityCategory/>} />
                     {/* <Route path='/Buyers' element={<Buyers {...this.context}{...this.props} />} /> */}
                     {/* <Route path='/Buyers/:id?' element={<Buyers {...this.context}{...this.props} />} /> */}

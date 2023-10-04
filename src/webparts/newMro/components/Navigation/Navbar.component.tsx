@@ -75,6 +75,9 @@ class NavBar extends React.Component<NavBarProps, NavBarState> {
                                     <li className="" id="projectcode" onClick={(event) => this.onNavItemClick(event)}>
                                         <NavLink className="" to="/projectcode"><span className=""><span className="">Project Code</span></span></NavLink>
                                     </li>
+                                    <li className="" id="ProjectCategory" onClick={(event) => this.onNavItemClick(event)}>
+                                        <NavLink className="" to="/ProjectCategory"><span className=""><span className="">Project Category</span></span></NavLink>
+                                    </li>
                                     <li className="" id="RequsitionerCodes" onClick={(event) => this.onNavItemClick(event)}>
                                         <NavLink className="" to="/RequsitionerCodes"><span className=""><span className="">Requisitioner Codes</span></span></NavLink>
                                     </li>
