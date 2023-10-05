@@ -72,7 +72,7 @@ class ProjectCode extends React.Component<ProjectCodeProps, ProjectCodeState>{
   }
   public componentWillReceiveProps(newProps) {
     if (newProps.match.params.id == undefined)
-      this.setState({ ProjectCode: '', IsActive: true, SaveUpdateText: 'Submit', addNewProjectCode: false });
+      this.setState({ ProjectCode: '',ProjectTitle:'', IsActive: true, SaveUpdateText: 'Submit', addNewProjectCode: false });
   }
   private GetOnloadData = () => {
     let TrList = 'ProjectCode';
@@ -232,7 +232,7 @@ class ProjectCode extends React.Component<ProjectCodeProps, ProjectCodeState>{
   }
 
   private resetProjectForm = () => {
-    this.setState({ ProjectCode: '', IsActive: true, SaveUpdateText: 'Submit', addNewProjectCode: false });
+    this.setState({ ProjectCode: '',ProjectTitle:'', IsActive: true, SaveUpdateText: 'Submit', addNewProjectCode: false });
    // this.props.history.push('/projectcode');
    ()=> this.props.history.push('/projectcode');
   }
