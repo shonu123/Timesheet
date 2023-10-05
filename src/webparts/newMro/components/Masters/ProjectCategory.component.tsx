@@ -45,50 +45,32 @@ class ProjectCategory extends React.Component<ProjectCategoryProps, ProjectCateg
     isSuccess: false,
     showHideModal: false,
     errorMessage: '',
-    Department: 'New Project',
     Category:'',
-    Plant:'',
-    dataBase:'',
     IsActive: true,
     SaveUpdateText: 'Submit',
     addNewProjectCategory: false,
     ItemID: 0,
     ImportedExcelData: [],
-    Plants:[]
     
   };
-  private selectDepartment;
   private inputCategory;
-  private inputdataBase;
-  private selectPlant;
-  private oweb;
-  private siteURL: string;
+
 
   constructor(props) {
     super(props);
     sp.setup({
       spfxContext: this.props.context
     });
-    this.selectDepartment = React.createRef();
     this.inputCategory = React.createRef();
-    this.inputdataBase=React.createRef();
-    this.selectPlant=React.createRef();
-    this.siteURL = this.props.spContext.webAbsoluteUrl;
-    if (this.siteURL.includes('mayco')) {
-      this.oweb = Web(this.props.spContext.siteAbsoluteUrl + "/Mayco");
-  } else {
-      this.oweb = Web(this.props.spContext.siteAbsoluteUrl + "/jvis");
-  }
   }
 
   public componentDidMount() {
     highlightCurrentNav("ProjectCategory");
     this.GetOnloadData();
-    this.loadListData();
   }
   public componentWillReceiveProps(newProps) {
     if (newProps.match.params.id == undefined)
-      this.setState({ Department: 'New Project', Category:'', dataBase:'', Plant:'' , IsActive: true, SaveUpdateText: 'Submit', addNewProjectCategory: false });
+      this.setState({  Category:'', IsActive: true, SaveUpdateText: 'Submit', addNewProjectCategory: false });
   }
   private GetOnloadData = () => {
     let TrList = 'ProjectCategory';
@@ -122,10 +104,7 @@ class ProjectCategory extends React.Component<ProjectCategoryProps, ProjectCateg
       //let date = new Date(Item.HolidayDate).getMonth()+1+'/'+new Date(Item.HolidayDate).getDate()+'/'+new Date(Item.HolidayDate).getFullYear();
       data.push({
         Id: Item.Id,
-        Department: Item.Department,
         Category: Item.Title,
-        Plant:Item.Plant,
-        dataBase:Item.dataBase,
         Status: Item.IsActive == true ? 'Active' : 'In-Active',
       });
     });
@@ -141,16 +120,7 @@ class ProjectCategory extends React.Component<ProjectCategoryProps, ProjectCateg
   private handleChange = (event) => {
     let returnObj = {};
     if (event.target.name != 'IsActive')
-    {
-      if(event.target.name == 'Plant')
-      {
-        var dataBaseVal=this.state.Plants.filter(items=>items.Title==event.target.value);
-        returnObj['dataBase']=dataBaseVal[0].Database;
-        returnObj[event.target.name] = event.target.value;
-      }
-    else
       returnObj[event.target.name] = event.target.value;
-    }
     else
       returnObj[event.target.name] = event.target.checked;
     this.setState(returnObj);
@@ -169,16 +139,10 @@ class ProjectCategory extends React.Component<ProjectCategoryProps, ProjectCateg
   private SunmitData = () => {
     let data = {
       Category: { val: this.state.Category, required: true, Name: 'Category', Type: ControlType.string, Focusid: this.inputCategory },
-      Plant: { val: this.state.Plant, required: true, Name: 'Plant', Type: ControlType.string, Focusid: this.selectPlant },
-      dataBase: { val: this.state.dataBase, required: true, Name: 'dataBase', Type: ControlType.string, Focusid: this.inputdataBase },
-      Department: { val: this.state.Department, required: true, Name: 'Department', Type: ControlType.string, Focusid: this.selectDepartment },
-    };
+    }
     let isValid = formValidation.checkValidations(data);
     var formdata = {
-        Department: this.state.Department,
         Title: this.state.Category,
-        Plant:this.state.Plant,
-        dataBase:this.state.dataBase,
       IsActive: this.state.IsActive
     };
     if (isValid.status)
@@ -222,11 +186,11 @@ class ProjectCategory extends React.Component<ProjectCategoryProps, ProjectCateg
   }
 
   private onSucess = () => {
-    this.setState({ modalTitle: 'Success', modalText: 'Project Category submitted successfully', showHideModal: true, loading: false, isSuccess: true, ItemID: 0, Department: "New Project", Category: "", Plant:'', dataBase:'', errorMessage: "" });
+    this.setState({ modalTitle: 'Success', modalText: 'Project Category submitted successfully', showHideModal: true, loading: false, isSuccess: true, ItemID: 0, Category: "", errorMessage: "" });
   }
 
   private onUpdateSucess = () => {
-    this.setState({ modalTitle: 'Success', modalText: 'Project Category updated successfully', showHideModal: true, loading: false, isSuccess: true, ItemID: 0, Department: "New Project", Category: "", Plant:'', dataBase:'', errorMessage: "" });
+    this.setState({ modalTitle: 'Success', modalText: 'Project Category updated successfully', showHideModal: true, loading: false, isSuccess: true, ItemID: 0, Category: "",  errorMessage: "" });
   }
 
   private onError = () => {
@@ -240,9 +204,9 @@ class ProjectCategory extends React.Component<ProjectCategoryProps, ProjectCateg
     var filterString;
     try {
       if (this.state.ItemID == 0)
-        filterString = `(Title eq '${formData.Title}' and Department eq '${formData.Department}' and Plant eq '${formData.Plant}' and dataBase eq '${formData.dataBase}')`;
+        filterString = `(Title eq '${formData.Title}')`;
       else
-        filterString = `(Title eq '${formData.Title}' and Department eq '${formData.Department}' and Plant eq '${formData.Plant}' and dataBase eq '${formData.dataBase}') and Id ne ${this.state.ItemID}`;
+        filterString = `(Title eq '${formData.Title}') and Id ne ${this.state.ItemID}`;
       sp.web.lists.getByTitle(TrList).items.filter(filterString).get().
         then((response: any[]) => {
           if (response.length > 0)
@@ -263,14 +227,13 @@ class ProjectCategory extends React.Component<ProjectCategoryProps, ProjectCateg
   }
 
   private resetProjectForm = () => {
-    this.setState({ Department: 'New Project',Category:'' ,Plant:'',dataBase:'',IsActive: true, SaveUpdateText: 'Submit', addNewProjectCategory: false });
+    this.setState({ Category:'' , IsActive: true, SaveUpdateText: 'Submit', addNewProjectCategory: false });
    // this.props.history.push('/ProjectCategory');
 //    ()=> this.props.history.push('/ProjectCategory');
   }
 
   private handleClose = () => {
     this.GetOnloadData();
-    this.loadListData();
     this.resetProjectForm();
     this.setState({ addNewProjectCategory: false, showHideModal: false, Date: null, pr: '', IsActive: false });
   }
@@ -283,9 +246,6 @@ class ProjectCategory extends React.Component<ProjectCategoryProps, ProjectCateg
           this.setState({
             addNewProjectCategory: true,
             Category: response.Title,
-            Department: response.Department.trim(),
-            Plant:response.Plant,
-            dataBase:response.dataBase,
             IsActive: response.IsActive,
             ItemID: response.Id,
             SaveUpdateText: 'Update',
@@ -300,14 +260,6 @@ class ProjectCategory extends React.Component<ProjectCategoryProps, ProjectCateg
       console.log('failed to fetch data for record :' + id);
     }
   }
-
-  private async loadListData() {
-    var PlantsList: any = await this.oweb.lists.getByTitle('Plant').items.select("*").orderBy("Title").get();
-    //var uniquePlantsList = [];
-    PlantsList.filter(item => {
-        if (item.Database != null) { this.state.Plants.push(item);}
-    });
-}
   public fetchImportedExcelData = (data) => {
     console.log(data);
     if (data.length > 0) {
@@ -344,9 +296,6 @@ class ProjectCategory extends React.Component<ProjectCategoryProps, ProjectCateg
       excelData.forEach(item => {
         var obj = {};
         obj["Category"] = item["Category"];
-        obj["Department"] = item["Department"];
-        obj["Plant"] = item["Plant"];
-        obj["dataBase"] = item["dataBase"];
         obj["IsActive"] = item.Status == "Active" ? true : false;
 
         nonDuplicateRec.push(obj);
@@ -377,7 +326,6 @@ class ProjectCategory extends React.Component<ProjectCategoryProps, ProjectCateg
         }).then((res) => {
             if (!nonDuplicateRec.length) {
                 this.GetOnloadData();
-                this.loadListData();
                 this.setState({
                     modalTitle: 'Success',
                     modalText: 'Project Category updated successfully',
@@ -407,7 +355,6 @@ class ProjectCategory extends React.Component<ProjectCategoryProps, ProjectCateg
       await batch.execute()
         .then((res) => {
           this.GetOnloadData();
-          this.loadListData();
           this.setState({
             modalTitle: 'Success',
             modalText: 'Project Category uploaded successfully',
@@ -456,18 +403,6 @@ class ProjectCategory extends React.Component<ProjectCategoryProps, ProjectCateg
        selector: "Id",    
       },
       {
-        name: "Plant",
-        selector: 'Plant',
-      },
-      {
-        name: "DataBase",
-        selector: 'dataBase',
-      },
-      {
-        name: "Department",
-        selector: 'Department',
-      },
-      {
         name: "Category",
         selector: 'Category',
       },
@@ -492,27 +427,6 @@ class ProjectCategory extends React.Component<ProjectCategoryProps, ProjectCateg
             </React.Fragment>
           );
         }
-      },
-      {
-        name: "Plant",
-        //selector: 'ProjectCategory',
-        selector: (row, i) => row.Plant,
-        sortable: true
-
-      },
-      {
-        name: "DataBase",
-        //selector: 'ProjectCategory',
-        selector: (row, i) => row.dataBase,
-        sortable: true
-
-      },
-      {
-        name: "Department",
-        //selector: 'ProjectCategory',
-        selector: (row, i) => row.Department,
-        sortable: true
-
       },
       {
         name: "Category",
@@ -560,37 +474,6 @@ class ProjectCategory extends React.Component<ProjectCategoryProps, ProjectCateg
                   <div className={this.state.addNewProjectCategory ? '' : 'activediv'}>
                     <div className="my-2">
                       <div className="row">
-                      <div className="col-md-4">
-                                    <div className="light-text">
-                                        <label>Plant <span className="mandatoryhastrick">*</span></label>
-                                        <select className="form-control" required={true} name="Plant" title="Plant" value={this.state.Plant} onChange={this.handleChange} ref={this.selectPlant}>
-                                                    <option value=''>None </option> 
-                                                    {this.state.Plants.map((option) => (
-                                                            <option value={option.Title} data-plantcode={option.Plant_x0020_Code} data-database={option.Database} selected={this.state.Plant == option.Title}>{option.Title}</option>
-                                                        ))}
-                                        </select>
-                                </div>
-                            </div>
-                        <InputText
-                          type='text'
-                          label={"DataBase"}
-                          name={"DataBase"}
-                          value={this.state.dataBase || ''}
-                          isRequired={true}
-                          onChange={this.handleChange}
-                          refElement={this.inputdataBase}
-                          onBlur={this.handleonBlur}
-                          disabled={true}
-                        />
-                      <div className="col-md-4">
-                                    <div className="light-text">
-                                        <label>Department <span className="mandatoryhastrick">*</span></label>
-                                        <select className="form-control" required={true} name="Department" title="Department" value={this.state.Department} onChange={this.handleChange} ref={this.selectDepartment}>
-                                                    <option value='New Project'>New Project</option>
-                                                    <option value='New Project Operations'>New Project Operations </option>
-                                        </select>
-                                </div>
-                            </div>
                         <InputText
                           type='text'
                           label={"Category"}
