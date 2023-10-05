@@ -58,6 +58,9 @@ class Myapprovals extends React.Component<MyapprovalsProps, MyapprovalsState> {
         mroGroups.forEach(grp=>{
             qryAssignedTO += ' or AssignToId eq ' + grp.Id;
         });
+        mroGroups.forEach(grp=>{
+            qryAssignedTO += ' or UrgentApprovalsId eq ' + grp.Id;
+        });
         this.loadListData(qryAssignedTO);
     }
     private loadListData = (qryAssignedTO) => {
