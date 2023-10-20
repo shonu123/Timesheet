@@ -58,6 +58,7 @@ class PurchaseRequestForm extends React.Component<PurchaseRequestProps, Purchase
     private description;
     private txtComments;
     private ddlDepartment;
+    private ddlProjectCategory;
     private rootweb;
     private tempstate;
     // private database;
@@ -82,6 +83,9 @@ class PurchaseRequestForm extends React.Component<PurchaseRequestProps, Purchase
             PlantCode: '',
             CMSMstr: null,
             CapitalInvestment:false,
+            ToolRequired:false,
+            ProjectCategory:'',
+            IsUrgent:false
         },
         trFormdata: {
             ItemsData: [],
@@ -107,6 +111,9 @@ class PurchaseRequestForm extends React.Component<PurchaseRequestProps, Purchase
         CommodityCategory: [],
         Vendor:[],
         Plants: [],
+        Tools:[],
+        isDeptNew:false,
+        projectCategories:[],
         requisitionData: [],
         RequisitionerEmail: '',
         SaveUpdateText: 'Submit',
@@ -166,6 +173,7 @@ class PurchaseRequestForm extends React.Component<PurchaseRequestProps, Purchase
         this.RequsitionerCode = React.createRef();
         this.ddlProjectCode = React.createRef();
         this.ddlCommodityCategory = React.createRef();
+        this.ddlProjectCategory = React.createRef();
         this.ddlVendor = React.createRef();	
         this.description = React.createRef();
         this.ddlDepartment = React.createRef();
@@ -205,6 +213,15 @@ class PurchaseRequestForm extends React.Component<PurchaseRequestProps, Purchase
             let curr =vendorCurrency.length>0?(vendorCurrency[0].Currency!=null?vendorCurrency[0].Currency:'US'):''
             formData["Currency"] = vname != 'None' ? curr : '';
             this.updateAmount(curr);
+        }
+        else if(name=='ToolRequired'){
+            if(!value){
+                for (const tool of this.state.trFormdata.ItemsData) {
+                    tool.ToolNumber="";
+                    tool.ToolDescription="";
+                }
+                console.log(this.state.trFormdata.ItemsData);
+            }
         }
         this.setState({ formData });
     }
@@ -307,6 +324,7 @@ class PurchaseRequestForm extends React.Component<PurchaseRequestProps, Purchase
             else if (value == 'Mold') ProgramLable = 'Mold Number';
             else if (value == 'Press') ProgramLable = 'Press Number';
             trFormdata.ItemsData[rowcount]['ProgramLable'] = ProgramLable;
+            trFormdata.ItemsData[rowcount].ProgramNumber='';
         }
         if(trFormdata.ItemsData[rowcount]["CMSReq"] == undefined)
         {
@@ -320,6 +338,27 @@ class PurchaseRequestForm extends React.Component<PurchaseRequestProps, Purchase
         // if (name == 'MasterRequisition' && value != "0")
         //this.GetRequisitionData(value);
        
+    }
+
+    private handleChangeDaynamicTool = (event) => {
+        const trFormdata = { ...this.state.trFormdata };
+        let rowcount = parseInt(event.target.id.split('_')[0]);
+        const { name } = event.target;
+        const value = event.target.value;
+        const selText=event.target.options[event.target.selectedIndex].text;
+        if(name=='ToolNumber' && value!=""){
+            trFormdata.ItemsData[rowcount]["ToolDescription"] = value;
+        }
+        else if(name=='ToolDescription' && value!=""){
+            trFormdata.ItemsData[rowcount]["ToolNumber"] = value;
+        }
+        if(value==""){
+            trFormdata.ItemsData[rowcount]["ToolNumber"] = "";
+            trFormdata.ItemsData[rowcount]["ToolDescription"] = "";
+        }
+
+        trFormdata.ItemsData[rowcount][name] = selText != 'None' ? selText : "";
+        this.setState({ trFormdata });
     }
     private UpdateDate = (dateprops) => {
         const trFormdata = { ...this.state.trFormdata };
@@ -422,12 +461,34 @@ class PurchaseRequestForm extends React.Component<PurchaseRequestProps, Purchase
                             <input className="form-control" required={true} placeholder="" type="text" name="ProgramNumber" title={this.state.trFormdata.ItemsData[i].ProgramLable} value={this.state.trFormdata.ItemsData[i].ProgramNumber || ''} onChange={this.handleChangeDaynamic} id={i + '_ProgramNumber'} autoComplete="off" disabled={this.state.DynamicDisabled} ref={this[i + "ProgramNumber"]} />
                         </div>
                     </div>
-                    <div className="col-md-6">
-                        <div className="light-text">
-                            <label>Description</label>
-                            <textarea rows={2} className="form-control" maxLength={750} placeholder="" name="Description" title="Description" value={this.state.trFormdata.ItemsData[i].Description || ''} autoComplete="false" onChange={this.handleChangeDaynamic} id={i + '_Description'} disabled={this.state.DynamicDisabled} ref={this[i + "Description"]}></textarea>
+
+                    {this.state.formData.ToolRequired &&
+                        <div className="col-md-3">
+                            <div className="light-text">
+                                <label>Tool Number</label>
+                                <select className="form-control" required={true} name="ToolNumber" title="ToolNumber" disabled={this.state.DynamicDisabled} onChange={this.handleChangeDaynamicTool} id={i + '_ToolNumber'}  value={this.state.trFormdata.ItemsData[i].ToolDescription}>
+                                    <option value=''>None</option>
+                                    {this.state.Tools.map((option) => (
+                                        <option value={option.Tool_x0020_Description+"-"+option.Sequence_x0020_Description}>{option.Tool_x0020_Number+"-"+option.Sequence_x0020_Number}</option>
+                                    ))}
+                                </select>
+                            </div>
                         </div>
-                    </div>
+                    }
+
+                    {this.state.formData.ToolRequired &&
+                        <div className="col-md-3">  
+                            <div className="light-text">
+                                <label>Tool Description</label>
+                                <select className="form-control" required={true} name="ToolDescription" title="ToolDescription" disabled={this.state.DynamicDisabled} onChange={this.handleChangeDaynamicTool} id={i + '_ToolDescription'} value={this.state.trFormdata.ItemsData[i].ToolNumber}>
+                                    <option value=''>None</option>
+                                    {this.state.Tools.map((option) => (
+                                        <option value={option.Tool_x0020_Number+"-"+option.Sequence_x0020_Number}>{option.Tool_x0020_Description+"-"+option.Sequence_x0020_Description}</option>
+                                    ))}
+                                </select>
+                            </div>
+                        </div>
+                    }
 
                     <div className="col-md-3">
                         <div className="light-text">
@@ -435,7 +496,26 @@ class PurchaseRequestForm extends React.Component<PurchaseRequestProps, Purchase
                             <input className="form-control" required={true} placeholder="" name="CMSReq" title="CMSReq" value={this.state.trFormdata.ItemsData[i].CMSReq || ''} autoComplete="off" disabled={true} />
                         </div>
                     </div>
+
+                    {(!this.state.formData.ToolRequired && this.state.trFormdata.ItemsData[i].ProgramLable == '') &&
+                        <div className="col-md-9">
+                            <div className="light-text">
+                                <label>Description</label>
+                                <textarea rows={2} className="form-control" maxLength={750} placeholder="" name="Description" title="Description" value={this.state.trFormdata.ItemsData[i].Description || ''} autoComplete="false" onChange={this.handleChangeDaynamic} id={i + '_Description'} disabled={this.state.DynamicDisabled} ref={this[i + "Description"]}></textarea>
+                            </div>
+                        </div>
+                    }
                 </div>
+                {(this.state.formData.ToolRequired || this.state.trFormdata.ItemsData[i].ProgramLable != ''  ) &&
+                    <div className="row pt-2 px-2">
+                        <div className="col-md-9">
+                                <div className="light-text">
+                                    <label>Description</label>
+                                    <textarea rows={2} className="form-control" maxLength={750} placeholder="" name="Description" title="Description" value={this.state.trFormdata.ItemsData[i].Description || ''} autoComplete="false" onChange={this.handleChangeDaynamic} id={i + '_Description'} disabled={this.state.DynamicDisabled} ref={this[i + "Description"]}></textarea>
+                                </div>
+                        </div>
+                    </div>
+                }
 
             </div>);
         }
@@ -457,6 +537,8 @@ class PurchaseRequestForm extends React.Component<PurchaseRequestProps, Purchase
             Description: '',
             ProgramLable: '',
             ProgramNumber: null,
+            ToolNumber:'',
+            ToolDescription:''
         };
         if(trFormdata.ItemsData.length>0){ let tempitem = trFormdata.ItemsData[trFormdata.ItemsData.length-1];	
             newobj.DateRequired= tempitem.DateRequired;	
@@ -499,6 +581,7 @@ class PurchaseRequestForm extends React.Component<PurchaseRequestProps, Purchase
         });
         Total = currAmount/currValue;
         trFormdata.TotalAmount = Total;
+        trFormdata.CurrencyAmount=currAmount;
         this.setState({ trFormdata, currentdivCount: count });
     }
 
@@ -525,15 +608,19 @@ class PurchaseRequestForm extends React.Component<PurchaseRequestProps, Purchase
             let departments: any = await this.rootweb.lists.getByTitle('Department').items.filter("Plant/Title eq '" + formData.Plant + "'").select("*").orderBy("Title").get();	
            // let vendors: any = await sp.web.lists.getByTitle('Vendor').items.filter(`IsActive eq 1 and Database eq '${formData.Database}' `).select("*").orderBy('Title').getAll();	
             let vendors:any= await sp.web.lists.getByTitle("Vendor").items.select("*").orderBy('Title').getAll();	
+            let tools:any=await sp.web.lists.getByTitle("Tools").items.select("*").orderBy("Tool_x0020_Number").getAll();
+            let Categories:any=await sp.web.lists.getByTitle("ProjectCategory").items.select("*").orderBy("Department").getAll();
             var RequsitionerCodes: any = await sp.web.lists.getByTitle('RequsitionerCodes').items.filter(`IsActive eq 1 and Database eq '${formData.Database}'`).select("*").orderBy('Requsitioner_x0020_Code').getAll();	
            var Buyers: any = await sp.web.lists.getByTitle('Buyers').items.filter(`Database eq '${formData.Database}' and IsActive eq 1`).select("*").orderBy('Title').getAll();	
            // as database = CMSDAT removing it from  rest calls by Riyaz on 1/12/21	
            // var Buyers: any = await sp.web.lists.getByTitle('Buyers').items.filter(`IsActive eq 1`).select("*").orderBy('Title').getAll();	
            vendors=vendors.filter(x=>(x.Database==formData.Database && x.IsActive==true));	
            vendors = sortDataByTitle(vendors, "Title");	
+           tools=tools.filter(x=>(x.Database==formData.Database && x.IsActive==true));
+           tools=sortDataByTitle(tools,"Tool_x0020_Number");
             RequsitionerCodes = sortDataByTitle(RequsitionerCodes, "Requsitioner_x0020_Desc");	
             Buyers = sortDataByTitle(Buyers, "Title");	
-            this.setState({ Vendors: vendors, formData, RequsitionerCode: RequsitionerCodes, Buyers: Buyers, Departments: departments,Vendor:vendors,loading:false});	
+            this.setState({ Vendors: vendors,Tools:tools, formData,projectCategories:Categories, RequsitionerCode: RequsitionerCodes, Buyers: Buyers, Departments: departments,Vendor:vendors,loading:false});	
         } catch (error) {	
             this.onError();	
             console.log(error);	
@@ -544,8 +631,13 @@ class PurchaseRequestForm extends React.Component<PurchaseRequestProps, Purchase
         const formData = { ...this.state.formData };
         const { name } = event.target;
         const value = event.target.value;
+        let deptNew=false;
+
+        if(value.toLowerCase()=="new project" || value.toLowerCase()=="new project operations"){
+            deptNew=true;
+        }
         formData[name] = value != 'None' ? value : null;
-        this.setState({ formData });
+        this.setState({ formData,isDeptNew:deptNew });
         this.getDepartmentsbasedDeatils(formData.Company, formData.Plant, event.target.value);
     }
 
@@ -571,6 +663,10 @@ class PurchaseRequestForm extends React.Component<PurchaseRequestProps, Purchase
 
     private handleMasterSubmit = (event) => {	
         event.preventDefault();	
+        let proCodeRequired=false;
+        if((this.state.formData.Department).toLowerCase()=="new project" || (this.state.formData.Department).toLowerCase()=="new project operations"){
+            proCodeRequired=true;
+        }
         let data = {	
             //Company: { val: this.state.formData.Company, required: true, Name: 'Company', Type: ControlType.string, Focusid: this.Company },	
             plant: { val: this.state.formData.Plant, required: true, Name: 'Plant', Type: ControlType.string, Focusid: this.Plant },	
@@ -579,8 +675,9 @@ class PurchaseRequestForm extends React.Component<PurchaseRequestProps, Purchase
             requsitionerCode: { val: this.state.formData.RequsitionerCode, required: true, Name: 'Requisitioner Code', Type: ControlType.string, Focusid: this.RequsitionerCode },	
             buyerCode: { val: this.state.formData.Buyer, required: true, Name: 'Buyer', Type: ControlType.string, Focusid: this.buyercode },	
             vendorCode: { val: this.state.formData.Vendor, required: false, Name: 'Vendor', Type: ControlType.string, Focusid: this.ddlVendor },	
-            // projectCode: { val: this.state.formData.ProjectCode, required: true, Name: 'Project code', Type: ControlType.string, Focusid: this.ddlProjectCode },	
+            projectCode: { val: this.state.formData.ProjectCode, required: proCodeRequired, Name: 'Project code', Type: ControlType.string, Focusid: this.ddlProjectCode },	
             //commodityCategoryCode: { val: this.state.formData.CommodityCategory, required: true, Name: 'Commodity category', Type: ControlType.string, Focusid: this.ddlCommodityCategory },	
+            projectCategory:{  val: this.state.formData.ProjectCategory, required: proCodeRequired, Name: 'Project Category', Type: ControlType.string, Focusid: this.ddlProjectCategory },
             description: { val: this.state.formData.Description, required: true, Name: 'Reason', Type: ControlType.string, Focusid: this.description },	
         };	
         const formdata = { ...this.state.formData, RequisitionerId: this.state.RequisitionerUserId };	
@@ -595,6 +692,11 @@ class PurchaseRequestForm extends React.Component<PurchaseRequestProps, Purchase
         }	
     }
     private formData =()=>{	
+
+        let proCodeRequired=false;
+        if((this.state.formData.Department).toLowerCase()=="new project" || (this.state.formData.Department).toLowerCase()=="new project operations"){
+            proCodeRequired=true;
+        }
         let data = {	
             //Company: { val: this.state.formData.Company, required: true, Name: 'Company', Type: ControlType.string, Focusid: this.Company },	
             plant: { val: this.state.formData.Plant, required: true, Name: 'Plant', Type: ControlType.string, Focusid: this.Plant },	
@@ -603,8 +705,9 @@ class PurchaseRequestForm extends React.Component<PurchaseRequestProps, Purchase
             requsitionerCode: { val: this.state.formData.RequsitionerCode, required: true, Name: 'Requisitioner Code', Type: ControlType.string, Focusid: this.RequsitionerCode },	
             buyerCode: { val: this.state.formData.Buyer, required: true, Name: 'Buyer', Type: ControlType.string, Focusid: this.buyercode },	
             vendorCode: { val: this.state.formData.Vendor, required: false, Name: 'Vendor', Type: ControlType.string, Focusid: this.ddlVendor },	
-            // projectCode: { val: this.state.formData.ProjectCode, required: true, Name: 'Project code', Type: ControlType.string, Focusid: this.ddlProjectCode },	
+            projectCode: { val: this.state.formData.ProjectCode, required: proCodeRequired, Name: 'Project code', Type: ControlType.string, Focusid: this.ddlProjectCode },	
             //commodityCategoryCode: { val: this.state.formData.CommodityCategory, required: true, Name: 'Commodity category', Type: ControlType.string, Focusid: this.ddlCommodityCategory },	
+            projectCategory:{  val: this.state.formData.ProjectCategory, required: proCodeRequired, Name: 'Project Category', Type: ControlType.string, Focusid: this.ddlProjectCategory },
             description: { val: this.state.formData.Description, required: true, Name: 'Reason', Type: ControlType.string, Focusid: this.description },	
         };	
         return data;	
@@ -612,7 +715,9 @@ class PurchaseRequestForm extends React.Component<PurchaseRequestProps, Purchase
     private handlePurchageSubmit = async (event) => {	
         let masterData = this.formData();	
         this.state.ItemID=0;
-        let emaildetails ={toemail:[],ccemail:[],subject:"Purchase Request waiting for your Approval",bodyString:"Purchase Request has been submitted successfully.",body:'' };	
+        let isUrgent=this.state.formData.IsUrgent;
+        let sub= (isUrgent==true)?"URGENT: Purchase Request waiting for your Approval":"Purchase Request waiting for your Approval"
+        let emaildetails ={toemail:[],ccemail:[],subject:sub,bodyString:"Purchase Request has been submitted successfully.",body:'' };	
         //let tableContent ={Company:this.state.formData.Company,Plant:this.state.formData.Plant,Department:this.state.formData.Department,Buyer:this.state.formData.Buyer,TotalAmount:this.state.trFormdata.TotalAmount};
         let tableContent ={Company:this.state.formData.Company,Plant:this.state.formData.Plant,Department:this.state.formData.Department,Vendor:this.state.formData.VendorName,Buyer:this.state.formData.Buyer,Currency:this.state.formData.Currency,CurrencyAmount:this.state.trFormdata.CurrencyAmount,'TotalAmount(USD)':this.state.trFormdata.TotalAmount,Reason:this.state.formData.Description};	
         emaildetails.body = this.emailBodyPreparation(this.siteURL+'/SitePages/Home.aspx#/purchaserequest/'+this.state.ItemID,tableContent,emaildetails.bodyString,this.userContext.userDisplayName);	
@@ -624,6 +729,10 @@ class PurchaseRequestForm extends React.Component<PurchaseRequestProps, Purchase
                 data.ItemsData[i].Vendor=data.Vendor;
             });
         }
+        else{
+            data.ItemsData.map((item,i)=>{
+                data.ItemsData[i].Vendor='';
+        });}
         let itemsData = JSON.stringify(data.ItemsData);	
         let validationdata = {};	
         var parentthis = this;	
@@ -642,8 +751,10 @@ class PurchaseRequestForm extends React.Component<PurchaseRequestProps, Purchase
         data.ItemsDatajson = itemsData;	
         let isValidMaster = Formvalidator.checkValidations(masterData);	
         let isValid;	
-        if(isValidMaster)	
-            isValid = formValidation.checkValidations(validationdata);	
+        if(isValidMaster.status)	
+            isValid = formValidation.checkValidations(validationdata);
+        else
+            this.setState({ errorMessage: isValidMaster.message });
         if (isValidMaster.status && isValid.status) {	
             let comments = this.state.Comments;	
             let prvComments = data.Commentsdata;	
@@ -884,6 +995,7 @@ class PurchaseRequestForm extends React.Component<PurchaseRequestProps, Purchase
         let projectCode: any = await sp.web.lists.getByTitle('ProjectCode').items.filter("IsActive eq 1").select('*').orderBy('Title').get();
         let commodityCategory: any = await sp.web.lists.getByTitle('CommodityCategory').items.filter("IsActive eq 1").select('*').orderBy('Title').get();
         let Vendors:any=[];	
+        let tools:any=[];	
         // let Vendors: any = await sp.web.lists.getByTitle('Vendor').items.filter("IsActive eq 1").select("*").orderBy('Title').getAll();
         let QUnits: any = await sp.web.lists.getByTitle('Units').items.filter("IsActive eq 1").select("*").orderBy('Title').get();
         let PUnits: any = await sp.web.lists.getByTitle('PriceUnit').items.filter("IsActive eq 1").select("*").orderBy('Title').get();
@@ -900,6 +1012,7 @@ class PurchaseRequestForm extends React.Component<PurchaseRequestProps, Purchase
             let trFormdata = { ...this.state.trFormdata };
             let formData = { ...this.state.formData };
             let ItemID = this.props.match.params.id;
+            let deptNew=false;
             let selRequisitions: any = await sp.web.lists.getByTitle(this.TrListname).items.getById(ItemID).select('Requisitioner/Id', 'Requisitioner/Title', 'Requisitioner/UserName', 'Requisitioner/EMail','Author/Id', 'Author/Title', 'Author/UserName', 'Author/EMail', '*').expand('Requisitioner','Author').get();
             // let files: any = await sp.web.lists.getByTitle('PurchaseRequestDocs').items.filter('ItemID eq ' + ItemID).expand('File').get();
             
@@ -926,6 +1039,8 @@ class PurchaseRequestForm extends React.Component<PurchaseRequestProps, Purchase
                         Description: '',
                         Program: '', ProgramLable: '',
                         ProgramNumber: null,
+                        ToolNumber:'',
+                        ToolDescription:''
                     };
                     itemsdata = [];
                     itemsdata.push(newobj);
@@ -954,6 +1069,9 @@ class PurchaseRequestForm extends React.Component<PurchaseRequestProps, Purchase
                 formData.CommodityCategory = selRequisitions.CommodityCategory;
                 formData.Vendor = selRequisitions.Vendor;
                 formData.VendorName=selRequisitions.VendorName;
+                formData.ToolRequired=selRequisitions.ToolRequired!=null?selRequisitions.ToolRequired:false;
+                formData.IsUrgent=selRequisitions.IsUrgent!=null?selRequisitions.IsUrgent:false;
+                formData.ProjectCategory=selRequisitions.ProjectCategory;
                 formData.Currency=selRequisitions.Currency!=null?selRequisitions.Currency:'';
             //     const vname= event.target.selectedOptions[0].text;
             // formData["VendorName"] = vname != 'None' ? vname : null;
@@ -970,15 +1088,26 @@ class PurchaseRequestForm extends React.Component<PurchaseRequestProps, Purchase
                 trFormdata.Status = ApprovalStatus.draft; //selRequisitions.Status;
                 trFormdata.NextApprovalId = null; //selRequisitions.NextApprovalId;
                 trFormdata.TotalAmount = selRequisitions.TotalAmount;
+                trFormdata.CurrencyAmount = selRequisitions.CurrencyAmount;
                 trFormdata.Pendingwith = ''; //selRequisitions.Pendingwith;
                 trFormdata.ItemsData = itemsdata;
+
+                if((selRequisitions.Department).toLowerCase()=="new project" || selRequisitions.Department.toLowerCase()=="new project operations"){
+                    deptNew=true;
+                }
+
                 let createdById = this.userContext.userId;
                 trFormdata.Commentsdata=[];
                 let Departments: any = await this.rootweb.lists.getByTitle('Department').items.filter("Plant/Title eq '" + formData.Plant + "'").select("*").orderBy("Title").get();
                 let ApprovalsMatrix: any = await sp.web.lists.getByTitle('ApprovalsMatrix').items.filter("IsActive eq 1 and Company eq '" + formData.Company + "' and Plant eq '" + formData.Plant + "' and Department eq '" + formData.Department + "'").select('*').get();
                 let Vendors = await sp.web.lists.getByTitle('Vendor').items.select("*").orderBy('Title').getAll();
+                let tools:any=await sp.web.lists.getByTitle("Tools").items.select("*").orderBy("Tool_x0020_Number").getAll();
+                let Categories:any=await sp.web.lists.getByTitle("ProjectCategory").items.select("*").orderBy("Department").getAll();
+
 
                 Vendors=Vendors.filter(x=>(x.Database==formData.Database && x.IsActive==true));
+                tools=tools.filter(x=>(x.Database==formData.Database && x.IsActive==true));
+                Categories=Categories.filter(x=>(x.IsActive==true));
                 var RequsitionerCodes: any = await sp.web.lists.getByTitle('RequsitionerCodes').items.filter(`IsActive eq 1 and Database eq '${formData.Database}' `).select("*").orderBy('Requsitioner_x0020_Code').getAll();
 
                 var Buyers: any = await sp.web.lists.getByTitle('Buyers').items.filter(`Database eq '${formData.Database}' and IsActive eq 1`).select("*").orderBy('Title').getAll();
@@ -989,12 +1118,13 @@ class PurchaseRequestForm extends React.Component<PurchaseRequestProps, Purchase
                 //     showHideDraftButtonforReject = false;
                 // }
                 Vendors = sortDataByTitle(Vendors, "Title");
+                tools=sortDataByTitle(tools,"Tool_x0020_Number");
                 RequsitionerCodes = sortDataByTitle(RequsitionerCodes, "Requsitioner_x0020_Desc");
                 Buyers = sortDataByTitle(Buyers, "Title");
                 this.setState({
-                    ProjectCode: projectCode, RequsitionerCode: RequsitionerCodes, Buyers: Buyers, CommodityCategory: commodityCategory, RequisitionerEmail: selRequisitions.Requisitioner.EMail, SaveUpdateText: 'Submit', showLabel: false, loading: false, RequisitionerUserId: this.userContext.userId, isFormloadCompleted: true, Vendors: Vendors, Punits: PUnits, Qunits: QUnits, Programs: programs,
+                    ProjectCode: projectCode, RequsitionerCode: RequsitionerCodes, Buyers: Buyers, CommodityCategory: commodityCategory, RequisitionerEmail: selRequisitions.Requisitioner.EMail, SaveUpdateText: 'Submit', showLabel: false, loading: false, RequisitionerUserId: this.userContext.userId, isFormloadCompleted: true, Vendors: Vendors,Tools:tools, isDeptNew:deptNew,  projectCategories:Categories, Punits: PUnits, Qunits: QUnits, Programs: programs,
                     Plants: Plants, Departments: Departments, ApprovalsMatrix: ApprovalsMatrix, formData, trFormdata, DynamicDisabled: DynamicDisabled, redirect: true, ItemID: ItemID, currentdivCount: currentdivCount, fileArr: filesArry, createdById: createdById,
-                    SaveResubmitBtnText: btnTextforRejectStatus, showHideDraftButton: showHideDraftButtonforReject,userGroupIds:groupIds,Vendor:Vendors
+                    SaveResubmitBtnText: btnTextforRejectStatus, showHideDraftButton: showHideDraftButtonforReject,userGroupIds:groupIds,Vendor:Vendors,ExchangeRates:exchangeRates
                 });
                 if(selRequisitions.AssignToId != null && selRequisitions.Status == "Draft"){
                     this.checkUserInPurchasingGroup();
@@ -1022,7 +1152,7 @@ class PurchaseRequestForm extends React.Component<PurchaseRequestProps, Purchase
             // formData.Database = this.database;
             const trFormdata = { ...this.tempstate.trFormdata };
             let filesArry = [];
-            this.setState({ ProjectCode: projectCode, CommodityCategory: commodityCategory, RequisitionerEmail: this.userContext.userEmail, SaveUpdateText: 'Submit', showLabel: false, loading: false, RequisitionerUserId: this.userContext.userId, isFormloadCompleted: true, Vendors: Vendors, Punits: PUnits, Qunits: QUnits, Programs:programs, formData, Plants: Plants, Departments: [], ItemID: 0, trFormdata, redirect: false, fileArr: filesArry, DynamicDisabled: false,ExchangeRates:exchangeRates });
+            this.setState({ ProjectCode: projectCode, CommodityCategory: commodityCategory, RequisitionerEmail: this.userContext.userEmail, SaveUpdateText: 'Submit', showLabel: false, loading: false, RequisitionerUserId: this.userContext.userId, isFormloadCompleted: true, Vendors: Vendors,Tools:tools, Punits: PUnits, Qunits: QUnits, Programs:programs, formData, Plants: Plants, Departments: [], ItemID: 0, trFormdata, redirect: false, fileArr: filesArry, DynamicDisabled: false,ExchangeRates:exchangeRates });
         }
     }
     //#endregion
@@ -1201,8 +1331,8 @@ class PurchaseRequestForm extends React.Component<PurchaseRequestProps, Purchase
                                             </div>
                                             <div className="col-md-3">
                                                 <div className="light-text">
-                                                    <label>Project Code </label>
-                                                    <select className="form-control" name="ProjectCode" ref={this.ddlProjectCode} title="ProjectCode" onChange={this.handleChange} disabled={!this.state.isInitiatorEdit} >
+                                                    <label>Project Code { this.state.isDeptNew && <span className="mandatoryhastrick">*</span>}</label>
+                                                    <select className="form-control" name="ProjectCode" ref={this.ddlProjectCode} title="ProjectCode" onChange={this.handleChange} disabled={!this.state.isInitiatorEdit} required={this.state.isDeptNew}>
                                                         <option>None</option>
                                                         {this.state.ProjectCode.map((item, index) => <option key={index} value={item.Project_x0020_Code} selected={item.Project_x0020_Code == this.state.formData.ProjectCode}>{`${item.Title} (${item.Project_x0020_Code})`}</option>)}
                                                     </select>
@@ -1221,6 +1351,17 @@ class PurchaseRequestForm extends React.Component<PurchaseRequestProps, Purchase
                                                     </select>
                                                 </div>
                                             </div>
+                                            { this.state.isDeptNew && <div className="col-md-3">
+                                                        <div className="light-text">
+                                                            <label>Project Category { this.state.isDeptNew && <span className="mandatoryhastrick">*</span>}</label>
+                                                            <select className="form-control" required={this.state.isDeptNew} name="ProjectCategory" ref={this.ddlProjectCategory} title="Project Category" onChange={this.handleChange} disabled={!this.state.isInitiatorEdit} value={this.state.formData.ProjectCategory}>
+                                                                <option>None</option>
+                                                                {this.state.projectCategories.map((option) => (
+                                                                    <option value={option.Title} selected={option.Title == this.state.formData.ProjectCategory}>{option.Title}</option>
+                                                                ))}
+                                                            </select>
+                                                        </div>
+                                                    </div>}
                                             <div className="col-md-3">
                                                 <div className="light-text">
                                                     <label>Vendor</label>
@@ -1232,18 +1373,24 @@ class PurchaseRequestForm extends React.Component<PurchaseRequestProps, Purchase
                                                     </select>
                                                 </div>
                                             </div>
-                                            <div className="col-md-3">
+                                            <div className="col-md-1">
                                                 <div className="light-text">
                                                     <label>Currency</label>
                                                     <input className="form-control" required={true} placeholder="" name="Currency" title="Currency" value={this.state.formData.Currency} autoComplete="off" disabled={true} />
                                                 </div>
                                             </div>
-                                            <div className="col-md-3">
+                                            <div className="col-md-2">
+                                                <div className="light-text">
+                                                    <label>Curr Amt </label>
+                                                    <input className="form-control" required={true} placeholder="" type="number" name="CurrencyAmount" title="CurrencyAmount" value={this.state.trFormdata.CurrencyAmount!= null ?(this.state.trFormdata.CurrencyAmount).toFixed(4) : 0} disabled={true} />
+                                                </div>
+                                            </div>
+                                            { !(this.state.isDeptNew) && <div className="col-md-3">
                                                 <div className="light-text">
                                                     <label>Total Amount </label>
                                                     <input className="form-control" required={true} placeholder="" type="number" name="Unit" title="Unit" value={this.state.trFormdata.TotalAmount || ''} disabled={true} />
                                                 </div>
-                                            </div>
+                                            </div>}
                                             {/* <div className="col-md-6">
                                                 <div className="light-text">
                                                     <label className="floatingTextarea2">Reason <span className="mandatoryhastrick">*</span></label>
@@ -1252,15 +1399,64 @@ class PurchaseRequestForm extends React.Component<PurchaseRequestProps, Purchase
                                             </div> */}
                                         </div>
                                         <div className="row pt-2 px-2">
-                                            <div className="col-md-9">
+
+                                            { (this.state.isDeptNew) && <div className="col-md-3">
                                                 <div className="light-text">
-                                                    <label className="floatingTextarea2">Reason <span className="mandatoryhastrick">*</span></label>
-                                                    <textarea className="form-control requiredinput" onChange={this.handleChange} value={this.state.formData.Description || ''} placeholder="" maxLength={750} id="txtTargetDescription" name="Description" ref={this.description} disabled={!this.state.isInitiatorEdit}></textarea>
+                                                    <label>Total Amount (USD) </label>
+                                                    <input className="form-control" required={true} placeholder="" type="number" name="TotalAmount" title="TotalAmount" value={this.state.trFormdata.TotalAmount!= null ?(this.state.trFormdata.TotalAmount).toFixed(4) : 0} disabled={true} />
+                                                </div>
+                                            </div>}
+
+                                            {/* <InputCheckBox
+                                                label={"Capital Investment"}
+                                                name={"CapitalInvestment"}
+                                                checked={this.state.formData.CapitalInvestment}
+                                                onChange={this.handleChange}
+                                                isforMasters={false}
+                                                isdisable={!this.state.isInitiatorEdit}
+                                            /> */}
+
+                                            <div className="col-md-3">
+                                                <div className="light-text">
+                                                    <label>Capital Investment</label>
+                                                    <select className="form-control" name="CapitalInvestment"  title="CapitalInvestment" onChange={this.handleChange} value={this.state.formData.CapitalInvestment==true?"true":"false"}>
+                                                    <option value="false">No</option>
+                                                    <option value="true">Yes</option>
+                                                    </select>
                                                 </div>
                                             </div>
-                                        </div>
-                                        <div className="light-box border-box-shadow m-1 p-2">
-                                            <h6 className="p-2 mb-0 c-bg-title">Purchase Requisition Details</h6>
+
+                                            <InputCheckBox
+                                                label={"Tool Required"}
+                                                name={"ToolRequired"}
+                                                checked={this.state.formData.ToolRequired}
+                                                onChange={this.handleChange}
+                                                isforMasters={false}
+                                                isdisable={!this.state.isInitiatorEdit}
+                                            />
+
+                                            <InputCheckBox
+                                                label={"Is Urgent"}
+                                                name={"IsUrgent"}
+                                                checked={this.state.formData.IsUrgent}
+                                                onChange={this.handleChange}
+                                                isforMasters={false}
+                                                isdisable={false}
+                                            />
+                                            </div>
+                                            <div className="row pt-2 px-2">
+                                                <div className="col-md-6">
+                                                    <div className="light-text">
+                                                        <label className="floatingTextarea2">Reason <span className="mandatoryhastrick">*</span></label>
+                                                        <textarea className="form-control requiredinput" onChange={this.handleChange} value={this.state.formData.Description || ''} placeholder="" maxLength={750} id="txtTargetDescription" name="Description" ref={this.description} disabled={!this.state.isInitiatorEdit}></textarea>   
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        <div className="light-box border-box-shadow m-1">
+                                            <div className='p-rel'>
+                                                <h6 className="p-2 mb-0 c-bg-title">Purchase Requisition Details</h6>
+                                                <h6 className='class-grand-total'> Grand Total: {this.state.trFormdata.CurrencyAmount !=null?(this.state.trFormdata.CurrencyAmount).toFixed(2):0} </h6>
+                                            </div>
                                             {this.state.isFormloadCompleted && this.dynamicFields()}
                                         </div>
                                         <div className="px-1 text-right" hidden={this.props.match.params.id == undefined}>
@@ -1416,8 +1612,8 @@ class PurchaseRequestForm extends React.Component<PurchaseRequestProps, Purchase
                                                     </div>
                                                     <div className="col-md-3">
                                                         <div className="light-text">
-                                                            <label>Project Code </label>
-                                                            <select className="form-control" name="ProjectCode" ref={this.ddlProjectCode} title="ProjectCode" onChange={this.handleChange} >
+                                                            <label>Project Code { this.state.isDeptNew && <span className="mandatoryhastrick">*</span>}</label>
+                                                            <select className="form-control" name="ProjectCode" ref={this.ddlProjectCode} title="ProjectCode" onChange={this.handleChange}  required={this.state.isDeptNew} >
                                                                 <option>None</option>
                                                                 {this.state.ProjectCode.map((item, index) => <option key={index} value={item.Project_x0020_Code} selected={item.Project_x0020_Code == this.state.formData.ProjectCode}>{`${item.Title} (${item.Project_x0020_Code})`}</option>)}
                                                             </select>
@@ -1437,6 +1633,19 @@ class PurchaseRequestForm extends React.Component<PurchaseRequestProps, Purchase
                                                             </select>
                                                         </div>
                                                     </div>
+
+                                                    { this.state.isDeptNew && <div className="col-md-3">
+                                                        <div className="light-text">
+                                                            <label>Project Category { this.state.isDeptNew && <span className="mandatoryhastrick">*</span>}</label>
+                                                            <select className="form-control" required={this.state.isDeptNew} name="ProjectCategory" ref={this.ddlProjectCategory} title="Project Category" onChange={this.handleChange} >
+                                                                <option>None</option>
+                                                                {this.state.projectCategories.map((option) => (
+                                                                    <option value={option.Title} selected={option.Title == this.state.formData.ProjectCategory}>{option.Title}</option>
+                                                                ))}
+                                                            </select>
+                                                        </div>
+                                                    </div>}
+
                                                     <div className="col-md-3">
                                                         <div className="light-text">
                                                             <label>Vendor</label>
@@ -1454,21 +1663,66 @@ class PurchaseRequestForm extends React.Component<PurchaseRequestProps, Purchase
                                                             <input className="form-control" required={true} placeholder="" name="Currency" title="Currency" value={this.state.formData.Currency} autoComplete="off" disabled={true} />
                                                         </div>
                                                     </div>
+                                                    { !(this.state.isDeptNew) && <div className="col-md-3">
+                                                        <div className="light-text">
+                                                            <label>Capital Investment</label>
+                                                            <select className="form-control" name="CapitalInvestment"  title="CapitalInvestment" onChange={this.handleChange} value={this.state.formData.CapitalInvestment==true?"true":"false"}>
+                                                            <option value="false" selected>No</option>
+                                                            <option value="true">Yes</option>
+                                                            </select>
+                                                        </div>
+                                                    </div>}
                                                 </div>
                                                 <div className="row pt-2 px-2">
-                                                    <InputCheckBox
+                                                    {/* <InputCheckBox
                                                         label={"Capital Investment"}
                                                         name={"CapitalInvestment"}
                                                         checked={this.state.formData.CapitalInvestment}
                                                         onChange={this.handleChange}
                                                         isforMasters={false}
+                                                        isdisable={false}
+                                                    /> */}
+
+                                                    { (this.state.isDeptNew) && <div className="col-md-3">
+                                                        <div className="light-text">
+                                                            <label>Capital Investment</label>
+                                                            <select className="form-control" name="CapitalInvestment"  title="CapitalInvestment" onChange={this.handleChange} value={this.state.formData.CapitalInvestment==true?"true":"false"}>
+                                                            <option value="false" selected>No</option>
+                                                            <option value="true">Yes</option>
+                                                            </select>
+                                                        </div>
+                                                    </div>}
+                                                    <InputCheckBox
+                                                        label={"Tool Required"}
+                                                        name={"ToolRequired"}
+                                                        checked={this.state.formData.ToolRequired}
+                                                        onChange={this.handleChange}
+                                                        isforMasters={false}
+                                                        isdisable={false}
                                                     />
-                                                    <div className="col-md-9">
-                                                    <div className="light-text mt-1">
+                                                    <InputCheckBox
+                                                        label={"Is Urgent"}
+                                                        name={"IsUrgent"}
+                                                        checked={this.state.formData.IsUrgent}
+                                                        onChange={this.handleChange}
+                                                        isforMasters={false}
+                                                        isdisable={false}
+                                                    />
+                                                     { !(this.state.isDeptNew) &&<div className="col-md-6">
+                                                        <div className="light-text mt-1">
+                                                                <label className="floatingTextarea2">Reason <span className="mandatoryhastrick">*</span></label>
+                                                                <textarea className="form-control requiredinput" onChange={this.handleChange} value={this.state.formData.Description || ''} placeholder="" maxLength={750} id="txtTargetDescription" name="Description" ref={this.description}></textarea>
+                                                            </div>
+                                                        </div>}
+                                                </div>
+
+                                                <div className="row pt-2 px-2">
+                                                { (this.state.isDeptNew) && <div className="col-md-9">
+                                                        <div className="light-text mt-1">
                                                             <label className="floatingTextarea2">Reason <span className="mandatoryhastrick">*</span></label>
                                                             <textarea className="form-control requiredinput" onChange={this.handleChange} value={this.state.formData.Description || ''} placeholder="" maxLength={750} id="txtTargetDescription" name="Description" ref={this.description}></textarea>
                                                         </div>
-                                                    </div>
+                                                    </div>}
                                                 </div>
 
                                             </div>

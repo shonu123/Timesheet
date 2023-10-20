@@ -685,6 +685,7 @@ class Buyer extends Component<BuyerProps, BuyerState> {
                                                             checked={this.state.formData.IsActive}
                                                             onChange={this.handleChange}
                                                             isforMasters={true}
+                                                            isdisable={false}
                                                         />
 
                                                     </div>

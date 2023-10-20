@@ -523,6 +523,7 @@ class ProjectCode extends React.Component<ProjectCodeProps, ProjectCodeState>{
                           checked={this.state.IsActive}
                           onChange={this.handleChange}
                           isforMasters={true}
+                          isdisable={false}
                         />
 
                       </div>

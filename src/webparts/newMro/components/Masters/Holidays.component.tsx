@@ -528,6 +528,7 @@ class Holidays extends React.Component<HolidaysProps, HolidaysState>{
                             checked={this.state.formData.IsActive}
                             onChange={this.handleChange}
                             isforMasters={true}
+                            isdisable={false}
                           />
 
                         </div>

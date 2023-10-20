@@ -22,7 +22,7 @@ import { highlightCurrentNav, sortDataByTitle } from '../../Utilities/HighlightC
 import FileUpload from '../Shared/FileUpload';
 import DatePicker from "../Shared/DatePickerField";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faPlus,faPrint} from "@fortawesome/free-solid-svg-icons";
+import { faL, faPlus,faPrint, fas} from "@fortawesome/free-solid-svg-icons";
 import formValidation from '../../Utilities/Formvalidator';
 import "../Shared/Menuhandler";
 import html2canvas from 'html2canvas';
@@ -30,6 +30,7 @@ import jsPDF from 'jspdf';
 import { Navigate } from 'react-router-dom';
 import { confirm } from 'react-confirm-box';
 import InputCheckBox from '../Shared/InputCheckBox';
+import '../../CSS/approvalflow.css';
 
 export interface PurchaseRequestProps {
     match: any;
@@ -53,6 +54,7 @@ class PurchaseRequestForm extends React.Component<PurchaseRequestProps, Purchase
     private buyercode;
     private ddlProjectCode;
     private ddlCommodityCategory;
+    private ddlProjectCategory;
     private ddlVendor;
     private ddlCurrency;
     private description;
@@ -83,6 +85,9 @@ class PurchaseRequestForm extends React.Component<PurchaseRequestProps, Purchase
             PONumber:null,
             CMSMstr: null,
             CapitalInvestment:false,
+            ToolRequired:false,
+            ProjectCategory:'',
+            IsUrgent:false
         },
         trFormdata: {
             ItemsData: [],
@@ -100,9 +105,24 @@ class PurchaseRequestForm extends React.Component<PurchaseRequestProps, Purchase
             Approver4Id: null,
             ReviewerId: null,
             Comments: '',
-            Commentsdata: []
-            
+            Commentsdata: [],
         },
+        // approvals:{},
+        approvals:{
+            bindData:{},
+            purchasingManager:[],
+            pending:'',
+            nextApproval:'',
+            Status:'',
+            approvalLevel:'',
+            // escalatedlvl:0,
+            requisitioner:''
+            // approvalLvlEscaltion:false
+        },
+        urgentApprovalIds:[],
+        urgentApprovalLvl:'2',
+        isDeptNew:false,
+        escalateLevels:[],
         poData:{PONumber:'',isPOProcessed:false,IsincludedinPOExcel:false},
         showHideModalConfirm:false,
         RequisitionerUserId: null,
@@ -111,6 +131,8 @@ class PurchaseRequestForm extends React.Component<PurchaseRequestProps, Purchase
         CommodityCategory: [],
         Vendor:[],
         Plants: [],
+        Tools:[],
+        projectCategories:[],
         requisitionData: [],
         RequisitionerEmail: '',
         SaveUpdateText: 'Submit',
@@ -171,6 +193,7 @@ class PurchaseRequestForm extends React.Component<PurchaseRequestProps, Purchase
         this.RequsitionerCode = React.createRef();
         this.ddlProjectCode = React.createRef();
         this.ddlCommodityCategory = React.createRef();
+        this.ddlProjectCategory = React.createRef();
         this.ddlVendor = React.createRef();
         this.description = React.createRef();
         this.ddlDepartment = React.createRef();
@@ -179,7 +202,7 @@ class PurchaseRequestForm extends React.Component<PurchaseRequestProps, Purchase
             this.rootweb = Web(this.props.spContext.siteAbsoluteUrl + "/Mayco");
             this.Company = 'Mayco';
             // this.database = 'CMSDAT';
-        } else {
+        } else {    
             this.rootweb = this.props.spContext.siteAbsoluteUrl + "/jvis";
             this.Company = 'Jvis';
             // this.database = 'CMSDAT';
@@ -219,6 +242,346 @@ class PurchaseRequestForm extends React.Component<PurchaseRequestProps, Purchase
         }
     }
 
+    private approvalChecker(commentsData){
+        let apprRole;
+        let approvers=[];
+        for (let i=0;i<commentsData.length;i++) {
+            
+            let comment=commentsData[i];
+
+            if(!(["Approver 1",'Requisitioner','Purchasing manager','Approver Escalation'].includes(comment.Role)) ){
+                apprRole=comment.Role;
+                apprRole=Number(apprRole.substring(apprRole.length-1,apprRole.length));
+                approvers.push(apprRole);
+            }
+            if(comment.Action=='Reject' && commentsData.length>(i+1)){
+                approvers=[];
+            }
+        }
+        return approvers;
+    }
+
+    private BindUrgentApprovalProcess = async () => {
+        let isUrgent=this.state.formData.IsUrgent;
+        let approvals = { ...this.state.approvals };
+        let trFormdata = { ...this.state.trFormdata };
+        let Commentsdata = trFormdata.Commentsdata;
+        let ApprovalsMatrix=this.state.ApprovalsMatrix;
+        let appStatus=approvals.Status;
+        let rejectRole;
+        let escalateStatus='Pending';
+
+        let ap1=(approvals.approvalLevel=='1')?'Pending':(approvals.approvalLevel=='2,3,4')?"Escalated":(this.state.escalateLevels.includes('1'))?'Escalated':"Approved";
+        let pm='Pending';
+        let TotalAmount=this.state.trFormdata.TotalAmount;
+
+        let Clength=Commentsdata.length-1;
+        if(appStatus=='Rejected'){
+            if(Commentsdata[Clength].Action=="Reject"){
+                if(Commentsdata[Clength].Role!="Purchasing manager"){
+                    if(Commentsdata[Clength].Role=='Approver Escalation'){
+                        escalateStatus='Rejected';
+                    }
+                    else{
+                        rejectRole=Commentsdata[Clength].Role;
+                        let rejectRoleNum=Number(rejectRole.substring(rejectRole.length-1,rejectRole.length));
+                        rejectRole=rejectRoleNum;
+                    }
+                }
+                else
+                    rejectRole=5;
+            }
+        }
+        ap1=(rejectRole==1)?"Rejected":ap1;
+
+        if((ap1=='Escalated' && approvals.approvalLevel!='2,3,4') || ap1=='Pending' || ap1=='Rejected'){
+            if(Commentsdata[Clength].Role=='Approver Escalation'){
+                this.state.urgentApprovalLvl='Approver Escalation';
+            }
+            else if(Commentsdata[Clength].Role!='Purchasing manager'){
+                rejectRole=Commentsdata[Clength].Role;
+                this.state.urgentApprovalLvl=(rejectRole.substring(rejectRole.length-1,rejectRole.length));
+            }
+
+            for(let i=2;i<=4;i++){
+                if(i!=parseInt(this.state.urgentApprovalLvl)){
+                    delete approvals.bindData['Approver'+(i)];
+                }
+            }
+        }
+        else if((approvals.approvalLevel=='5' || approvals.approvalLevel=='0')&& isUrgent==true){
+
+            let approvers=[];
+            let index=Clength;
+            if(Commentsdata[Clength].Action=="Approve"){
+                
+                    approvers=this.approvalChecker(Commentsdata);
+                    // if(apprCheck>1){
+                    //     approvers.push(apprCheck);
+                    // }    
+            }
+            for(let i=2;i<=4;i++){
+                if(!(approvers.includes(i)))
+                    delete approvals.bindData['Approver'+(i)];
+            }
+            if(approvers.length>0){
+                for (const ap of approvers) {
+                    approvals.bindData['Approver'+(ap)].push('Approved');
+                }
+            } 
+        }
+
+        approvals.bindData['Approver'+(1)].push(rejectRole==1?'Rejected':ap1);
+        //Purchasing Manager Binding
+        if(TotalAmount>=1000){
+            //ap2,3,4,ET==Pending
+            
+            if(approvals.approvalLevel=='2,3,4'){
+                for(let i=2;i<=4;i++){
+                    if(approvals.bindData['Approver'+(i)]!=undefined){
+                        approvals.bindData['Approver'+(i)].push('Pending');
+                    }
+                }
+                approvals['escalateStatus']='Pending';
+
+                approvals.purchasingManager.push('Not Started');
+            }
+            else if(approvals.approvalLevel=='5'){ //ap2,3,4,ET==Approved
+
+                if( ap1=='Escalated'){
+                    if(this.state.urgentApprovalLvl!='Approver Escalation'){
+                        approvals.bindData['Approver'+(this.state.urgentApprovalLvl)].push("Approved");
+                    }
+                    else{
+                        approvals['escalateStatus']='Approved';
+                    }
+                }
+                approvals.purchasingManager.push(pm);
+
+            }
+            else if(approvals.approvalLevel='0'){ //ap2,3,4,ET==Rejected or PM==Approved or Rejected
+ 
+                if(appStatus=="Approved"){
+                    if(ap1=='Escalated'){
+                        if(this.state.urgentApprovalLvl!='Approver Escalation'){
+                            approvals.bindData['Approver'+(this.state.urgentApprovalLvl)].push("Approved");
+                        }
+                        else{
+                            approvals['escalateStatus']='Approved';
+                        }
+                    }
+                    approvals.purchasingManager.push('Approved');
+                }
+                else{
+                    if(this.state.urgentApprovalLvl!='Approver Escalation' && escalateStatus=='Pending' && rejectRole!=1 && rejectRole!=5){
+                        approvals.bindData['Approver'+(this.state.urgentApprovalLvl)].push("Rejected");
+                    }
+                    else if(rejectRole==1){
+                        approvals.bindData['Approver'+(this.state.urgentApprovalLvl)].push("Not Started");
+                        approvals.purchasingManager.push('Not Started');
+                    }
+                    else if(rejectRole==5){
+                        approvals.purchasingManager.push('Rejected');
+                    }
+                    else{
+                        approvals['escalateStatus']='Rejected';
+                    }
+                }
+            }
+        }
+        else{ //No purchasing Manager
+            if(approvals.approvalLevel=='2,3,4'){
+                //ap2,3,4,ET==Pending
+                for(let i=2;i<=4;i++){
+                    if(approvals.bindData['Approver'+(i)]!=undefined){
+                        approvals.bindData['Approver'+(i)].push('Pending');
+                    }
+                }
+                    approvals['escalateStatus']='Pending';
+            }
+            else{
+                //ap2,3,4,ET=="Approved" or "Rejected"
+                if(appStatus=="Approved"){
+                    if(this.state.urgentApprovalLvl!='Approver Escalation'){
+                        approvals.bindData['Approver'+(this.state.urgentApprovalLvl)].push("Approved");
+                    }
+                    else{
+                        approvals['escalateStatus']='Approved';
+                    }
+                }
+                else{
+                    if(this.state.urgentApprovalLvl!='Approver Escalation' && rejectRole!=1){
+                        approvals.bindData['Approver'+(this.state.urgentApprovalLvl)].push("Rejected");
+                    }
+                    else if(rejectRole==1){
+                        approvals.bindData['Approver'+(this.state.urgentApprovalLvl)].push("Not Started");
+                    }
+                    else{
+                        approvals['escalateStatus']='Rejected';
+                    }
+                }
+            }
+        }
+
+        if(isUrgent==true && ap1=='Escalated' && approvals['escalateStatus']!=undefined){
+            for (var i = 0; i < ApprovalsMatrix.length; i++) {
+                if (ApprovalsMatrix[i].FromBudget <= TotalAmount && ApprovalsMatrix[i].ToBudget >= TotalAmount) {
+                    if(ApprovalsMatrix[i].EscalationId!=null)
+                        approvals['Escalation']=[ApprovalsMatrix[i].EscalationId];
+                }
+            }  
+            let escId=approvals['Escalation'][0];
+            let escGrp=await sp.web.siteGroups.getById(escId).users();
+            
+            let escUsers=[];
+            for (const users of escGrp) {
+                escUsers.push(users.Title);
+            }
+            approvals['Escalation'].push(escUsers);          
+        }
+        
+        if(isUrgent==true){
+            this.setState({approvals:approvals});
+        }
+    }
+
+    private BindApprovalProcess = async () =>{
+        let approvals = { ...this.state.approvals };
+        let trFormdata = { ...this.state.trFormdata };
+        let Commentsdata = this.state.trFormdata.Commentsdata;
+        let appLevel;
+        if(approvals.approvalLevel!="Escalation"){
+            appLevel=parseInt(approvals.approvalLevel);
+        }
+        else{
+            appLevel=approvals.approvalLevel;
+        }
+        let appStatus=approvals.Status;
+
+        let appCount=Object.keys(approvals.bindData).length;
+        let ap1="Pending";
+        let ap2="Queued";
+        let ap3="Not Started";
+        let ap4="Not Started";
+        let pm="Not Started";
+        let rejectRole;
+        let escalateStatus='Pending';
+        let isEscalate=false;
+        let escalateLevel=this.state.escalateLevels;
+
+
+        let approvalLevels=[];
+        let Clength=Commentsdata.length-1;
+        if(appStatus=='Rejected'){
+            if(Commentsdata[Clength].Action=="Reject"){
+                if(Commentsdata[Clength].Role!="Purchasing manager"){
+                    if(Commentsdata[Clength].Role=='Approver Escalation'){
+                        escalateStatus='Rejected';
+                        isEscalate=true;
+                    }
+                    else{
+                        rejectRole=Commentsdata[Clength].Role;
+                        let rejectRoleNum=Number(rejectRole.substring(rejectRole.length-1,rejectRole.length));
+                        rejectRole=rejectRoleNum;
+                    }
+                }
+                else
+                    rejectRole=5;
+            }
+        }
+        else if(appStatus=="In-Progress"){
+            if(Commentsdata[Clength].Role=='Approver Escalation' && Commentsdata[Clength].Action=="Approve"){
+                escalateStatus='Approved';
+                isEscalate=true;
+            }
+
+            if(appLevel=='Escalation'){
+                for (const comment of Commentsdata) {
+                    if(comment['Action']=="Approve"){
+                        let appRole=comment['Role'].substring(comment['Role'].length-1,comment['Role'].length);
+                        approvalLevels.push(appRole);
+                    }
+                }
+            }
+        }
+        else if(appStatus=='Master Submitted' || appStatus=='Draft'){
+            ap1="Not Started";
+            ap2="Not Started";
+        }
+        else if(appLevel=='Escalation'){
+            ap1="Escalated";
+            ap2="Escalated";
+            ap3="Escalated";
+            ap4="Escalated";
+            pm="Escalated";
+        }
+
+        let totalCurr=trFormdata.TotalAmount;
+
+        if((Commentsdata.length>1 && appLevel>=0) || (Commentsdata.length>=1 &&escalateLevel.length>1 )){
+            ap1=escalateLevel.includes('1')?"Escalated":((appLevel==1)?"Pending":"Approved");
+            ap2=escalateLevel.includes('2')?"Escalated":((appLevel==1)?"Queued":(appLevel==2)?"Pending":(rejectRole==2?"Rejected":((rejectRole==1)?"Not Started":"Approved")));
+            ap3=escalateLevel.includes('3')?"Escalated":((appLevel==2)?"Queued":(appLevel==3)?"Pending":(appLevel<2)?((appLevel!=0)?ap3:((rejectRole<3)?ap3:"Approved")):"Approved");
+            ap4=escalateLevel.includes('4')?"Escalated":((appLevel==3)?"Queued":(appLevel==4)?"Pending":(appLevel<3)?((appLevel!=0)?ap4:((rejectRole<4)?ap4:"Approved")):"Approved");
+            pm=escalateLevel.includes('5')?"Escalated":((appLevel==appCount)?"Queued":(appLevel==5)?"Pending":(appLevel<appCount && appLevel!=0)?"Not Started":pm);
+            pm=appStatus=="Approved"?"Approved":appStatus=="Rejected"?(rejectRole==5?"Rejected":pm):pm;
+        }
+
+        let escLev=false;
+        for (var i=0;i<=appCount;i++) {
+
+            if(i==appCount){
+                if(appLevel=="Escalation" || isEscalate==true || escalateLevel.includes(''+appCount)){
+                    if(appStatus=='Approved'){
+                        escalateStatus='Approved'
+    
+                        if(approvals['Escalation']==undefined){
+                            for (var i = 0; i < this.state.ApprovalsMatrix.length; i++) {
+                                if (this.state.ApprovalsMatrix[i].FromBudget <= totalCurr&& this.state.ApprovalsMatrix[i].ToBudget >= totalCurr) {
+                                    if(this.state.ApprovalsMatrix[i].EscalationId!=null)
+                                        approvals['Escalation']=[this.state.ApprovalsMatrix[i].EscalationId];
+                                }
+                            }
+    
+                            let escId=approvals['Escalation'][0];
+                            let escGrp=await sp.web.siteGroups.getById(escId).users();
+                            
+                            let escUsers=[];
+                            for (const users of escGrp) {
+                                escUsers.push(users.Title);
+                            }
+                            approvals['Escalation'].push(escUsers);
+                        }
+                    }
+                    approvals['escalateStatus']=escalateStatus;
+                }
+            }
+
+            if(i<appCount){
+                let appvariable=i==0?ap1:i==1?ap2:i==2?ap3:ap4;
+
+                if(approvalLevels.length>0){
+                    if(approvalLevels.includes((i+1+''))){
+                        appvariable="Approved";
+                        escLev=true;
+                    }
+                    else if(escLev==true && isEscalate==true){
+                        appvariable="Escalated";
+                    }
+                    else{
+                        escLev=false;
+                    }
+                }
+                approvals.bindData['Approver'+(i+1)].push(rejectRole==(i+1)?"Rejected":appvariable);
+            }
+            else{
+                if(totalCurr>=1000)
+                    approvals.purchasingManager.push(pm);
+            }
+        }
+        this.setState({approvals:approvals});
+    }
+
     private handleCommetsChange = (event) => {
         let value = event.target.value;
         this.setState({ Comments: value });
@@ -233,6 +596,9 @@ class PurchaseRequestForm extends React.Component<PurchaseRequestProps, Purchase
         const value = event.target.type == 'checkbox' ? event.target.checked : inputvalue;
         // const value = event.target.value;
         formData[name] = value != 'None' ? value : null;
+        if(name=="CapitalInvestment"){
+            formData[name]=value=="true"?true:false;
+        }
         if(name=='Vendor'){
             const vname= event.target.selectedOptions[0].text;
             formData["VendorName"] = vname != 'None' ? vname : null;
@@ -240,6 +606,15 @@ class PurchaseRequestForm extends React.Component<PurchaseRequestProps, Purchase
             let curr =vendorCurrency.length>0?(vendorCurrency[0].Currency!=null?vendorCurrency[0].Currency:'US'):''
             formData["Currency"] = vname != 'None' ? curr : '';
             this.updateAmount(curr);
+        }
+        else if(name=='ToolRequired'){
+            if(!value){
+                for (const tool of this.state.trFormdata.ItemsData) {
+                    tool.ToolNumber="";
+                    tool.ToolDescription="";
+                }
+                console.log(this.state.trFormdata.ItemsData);
+            }
         }
         this.setState({ formData });
     }
@@ -342,6 +717,7 @@ class PurchaseRequestForm extends React.Component<PurchaseRequestProps, Purchase
             else if (value == 'Mold') ProgramLable = 'Mold Number';
             else if (value == 'Press') ProgramLable = 'Press Number';
             trFormdata.ItemsData[rowcount]['ProgramLable'] = ProgramLable;
+            trFormdata.ItemsData[rowcount].ProgramNumber='';
         }
         if(trFormdata.ItemsData[rowcount]["CMSReq"] == undefined)
         {
@@ -355,6 +731,26 @@ class PurchaseRequestForm extends React.Component<PurchaseRequestProps, Purchase
         // if (name == 'MasterRequisition' && value != "0")
         //this.GetRequisitionData(value);
        
+    }
+    private handleChangeDaynamicTool = (event) => {
+        const trFormdata = { ...this.state.trFormdata };
+        let rowcount = parseInt(event.target.id.split('_')[0]);
+        const { name } = event.target;
+        const value = event.target.value;
+        const selText=event.target.options[event.target.selectedIndex].text;
+        if(name=='ToolNumber' && value!=""){
+            trFormdata.ItemsData[rowcount]["ToolDescription"] = value;
+        }
+        else if(name=='ToolDescription' && value!=""){
+            trFormdata.ItemsData[rowcount]["ToolNumber"] = value;
+        }
+        if(value==""){
+            trFormdata.ItemsData[rowcount]["ToolNumber"] = "";
+            trFormdata.ItemsData[rowcount]["ToolDescription"] = "";
+        }
+
+        trFormdata.ItemsData[rowcount][name] = selText != 'None' ? selText : "";
+        this.setState({ trFormdata });
     }
     private UpdateDate = (dateprops) => {
         const trFormdata = { ...this.state.trFormdata };
@@ -451,6 +847,7 @@ class PurchaseRequestForm extends React.Component<PurchaseRequestProps, Purchase
                         </div>
                     </div>
                 </div>
+                
                 <div className="row pt-2 px-2">
                     <div className="col-md-3" hidden={this.state.trFormdata.ItemsData[i].ProgramLable == ''}>
                         <div className="light-text">
@@ -458,12 +855,33 @@ class PurchaseRequestForm extends React.Component<PurchaseRequestProps, Purchase
                             <input className="form-control" required={true} placeholder="" type="text" name="ProgramNumber" title={this.state.trFormdata.ItemsData[i].ProgramLable} value={this.state.trFormdata.ItemsData[i].ProgramNumber || ''} onChange={this.handleChangeDaynamic} id={i + '_ProgramNumber'} autoComplete="off" disabled={this.state.DynamicDisabled} ref={this[i + "ProgramNumber"]} />
                         </div>
                     </div>
-                    <div className="col-md-6">
-                        <div className="light-text">
-                            <label>Description</label>
-                            <textarea rows={2} className="form-control" maxLength={750} placeholder="" name="Description" title="Description" value={this.state.trFormdata.ItemsData[i].Description || ''} autoComplete="false" onChange={this.handleChangeDaynamic} id={i + '_Description'} disabled={this.state.DynamicDisabled} ref={this[i + "Description"]}></textarea>
+                    {this.state.formData.ToolRequired &&
+                        <div className="col-md-3">
+                            <div className="light-text">
+                                <label>Tool Number</label>
+                                <select className="form-control" required={true} name="ToolNumber" title="ToolNumber" disabled={this.state.DynamicDisabled} onChange={this.handleChangeDaynamicTool} id={i + '_ToolNumber'}  value={this.state.trFormdata.ItemsData[i].ToolDescription}>
+                                    <option value=''>None</option>
+                                    {this.state.Tools.map((option) => (
+                                        <option value={option.Tool_x0020_Description+"-"+option.Sequence_x0020_Description}>{option.Tool_x0020_Number+"-"+option.Sequence_x0020_Number}</option>
+                                    ))}
+                                </select>
+                            </div>
                         </div>
-                    </div>
+                    }
+
+                    {this.state.formData.ToolRequired &&
+                        <div className="col-md-3">
+                            <div className="light-text">
+                                <label>Tool Description</label>
+                                <select className="form-control" required={true} name="ToolDescription" title="ToolDescription" disabled={this.state.DynamicDisabled} onChange={this.handleChangeDaynamicTool} id={i + '_ToolDescription'} value={this.state.trFormdata.ItemsData[i].ToolNumber}>
+                                    <option value=''>None</option>
+                                    {this.state.Tools.map((option) => (
+                                        <option value={option.Tool_x0020_Number+"-"+option.Sequence_x0020_Number}>{option.Tool_x0020_Description+"-"+option.Sequence_x0020_Description}</option>
+                                    ))}
+                                </select>
+                            </div>
+                        </div>
+                    }
 
                     <div className="col-md-3">
                         <div className="light-text">
@@ -471,7 +889,27 @@ class PurchaseRequestForm extends React.Component<PurchaseRequestProps, Purchase
                             <input className="form-control" required={true} placeholder="" name="CMSReq" title="CMSReq" value={this.state.trFormdata.ItemsData[i].CMSReq || ''} autoComplete="off" disabled={true} />
                         </div>
                     </div>
+
+                    {(!this.state.formData.ToolRequired && this.state.trFormdata.ItemsData[i].ProgramLable == '') &&
+                        <div className="col-md-9">
+                            <div className="light-text">
+                                <label>Description</label>
+                                <textarea rows={2} className="form-control" maxLength={750} placeholder="" name="Description" title="Description" value={this.state.trFormdata.ItemsData[i].Description || ''} autoComplete="false" onChange={this.handleChangeDaynamic} id={i + '_Description'} disabled={this.state.DynamicDisabled} ref={this[i + "Description"]}></textarea>
+                            </div>
+                        </div>
+                    }
                 </div>
+
+                {(this.state.formData.ToolRequired || this.state.trFormdata.ItemsData[i].ProgramLable != ''  )&&
+                <div className="row pt-2 px-2">
+                    <div className="col-md-9">
+                        <div className="light-text">
+                            <label>Description</label>
+                            <textarea rows={2} className="form-control" maxLength={750} placeholder="" name="Description" title="Description" value={this.state.trFormdata.ItemsData[i].Description || ''} autoComplete="false" onChange={this.handleChangeDaynamic} id={i + '_Description'} disabled={this.state.DynamicDisabled} ref={this[i + "Description"]}></textarea>
+                        </div>
+                    </div>
+                </div>
+                }
 
             </div>);
         }
@@ -493,6 +931,8 @@ class PurchaseRequestForm extends React.Component<PurchaseRequestProps, Purchase
             Description: '',
             ProgramLable: '',
             ProgramNumber: null,
+            ToolNumber:'',
+            ToolDescription:''
         };
         if(trFormdata.ItemsData.length>0){ let tempitem = trFormdata.ItemsData[trFormdata.ItemsData.length-1];
             newobj.DateRequired= tempitem.DateRequired;
@@ -535,6 +975,7 @@ class PurchaseRequestForm extends React.Component<PurchaseRequestProps, Purchase
         });
         Total = currAmount/currValue;
         trFormdata.TotalAmount = Total;
+        trFormdata.CurrencyAmount=currAmount;
         this.setState({ trFormdata, currentdivCount: count });
     }
 
@@ -570,16 +1011,21 @@ class PurchaseRequestForm extends React.Component<PurchaseRequestProps, Purchase
             let departments: any = await this.rootweb.lists.getByTitle('Department').items.filter("Plant/Title eq '" + formData.Plant + "'").select("*").orderBy("Title").get();
            // let vendors: any = await sp.web.lists.getByTitle('Vendor').items.filter(`IsActive eq 1 and Database eq '${formData.Database}' `).select("*").orderBy('Title').getAll();
             let vendors:any= await sp.web.lists.getByTitle("Vendor").items.select("*").orderBy('Title').getAll();
+            let tools:any=await sp.web.lists.getByTitle("Tools").items.select("*").orderBy("Tool_x0020_Number").getAll();
+            let Categories:any=await sp.web.lists.getByTitle("ProjectCategory").items.select("*").orderBy("Department").getAll();
             var RequsitionerCodes: any = await sp.web.lists.getByTitle('RequsitionerCodes').items.filter(`IsActive eq 1 and Database eq '${formData.Database}'`).select("*").orderBy('Requsitioner_x0020_Code').getAll();
            var Buyers: any = await sp.web.lists.getByTitle('Buyers').items.filter(`Database eq '${formData.Database}' and IsActive eq 1`).select("*").orderBy('Title').getAll();
            // as database = CMSDAT removing it from  rest calls by Riyaz on 1/12/21
            // var Buyers: any = await sp.web.lists.getByTitle('Buyers').items.filter(`IsActive eq 1`).select("*").orderBy('Title').getAll();
            vendors=vendors.filter(x=>(x.Database==formData.Database && x.IsActive==true));
            vendors = sortDataByTitle(vendors, "Title");
+           tools=tools.filter(x=>(x.Database==formData.Database && x.IsActive==true));
+           tools=sortDataByTitle(tools,"Tool_x0020_Number");
+           Categories=Categories.filter(x=>( x.IsActive==true));
             RequsitionerCodes = sortDataByTitle(RequsitionerCodes, "Requsitioner_x0020_Desc");
             Buyers = sortDataByTitle(Buyers, "Title");
 
-            this.setState({ Vendors: vendors, formData, RequsitionerCode: RequsitionerCodes, Buyers: Buyers, Departments: departments,Vendor:vendors,loading:false });
+            this.setState({ Vendors: vendors,Tools:tools, projectCategories:Categories, formData, RequsitionerCode: RequsitionerCodes, Buyers: Buyers, Departments: departments,Vendor:vendors,loading:false });
         } catch (error) {
             this.onError();
             this.setState({ loading:false });
@@ -589,10 +1035,15 @@ class PurchaseRequestForm extends React.Component<PurchaseRequestProps, Purchase
 
     private handleDeparmentChange = (event) => {
         const formData = { ...this.state.formData };
+        let deptNew=false;
         const { name } = event.target;
         const value = event.target.value;
         formData[name] = value != 'None' ? value : null;
-        this.setState({ formData });
+
+        if(value.toLowerCase()=="new project" || value.toLowerCase()=="new project operations"){
+            deptNew=true;
+        }
+        this.setState({ formData,isDeptNew:deptNew});
         this.getDepartmentsbasedDeatils(formData.Company, formData.Plant, event.target.value);
     }
 
@@ -609,7 +1060,7 @@ class PurchaseRequestForm extends React.Component<PurchaseRequestProps, Purchase
 
     private async getDepartmentsbasedDeatils(Company, Plant, Department) {
         let filterQuery = "IsActive eq 1 and Company eq '" + Company + "' and Plant eq '" + Plant + "' and Department eq'" + Department + "'";
-        let ApprovalsMatrix: any = await sp.web.lists.getByTitle('ApprovalsMatrix').items.filter(filterQuery).select('*').get();
+        let ApprovalsMatrix: any = await sp.web.lists.getByTitle('ApprovalsMatrix').items.filter(filterQuery).select('*,Approval1/Title,Approval2/Title,Approval3/Title,Approval4/Title').expand("Approval1","Approval2","Approval3","Approval4").get();
         if (ApprovalsMatrix != null && ApprovalsMatrix.length > 0)
             this.setState({ ApprovalsMatrix: ApprovalsMatrix });
         else {
@@ -629,6 +1080,10 @@ class PurchaseRequestForm extends React.Component<PurchaseRequestProps, Purchase
 
     private handleMasterSubmit = (event) => {
         event.preventDefault();
+        let proCodeRequired=false;
+        if((this.state.formData.Department).toLowerCase()=="new project" || (this.state.formData.Department).toLowerCase()=="new project operations"){
+            proCodeRequired=true;
+        }
         let data = {
             //Company: { val: this.state.formData.Company, required: true, Name: 'Company', Type: ControlType.string, Focusid: this.Company },
             plant: { val: this.state.formData.Plant, required: true, Name: 'Plant', Type: ControlType.string, Focusid: this.Plant },
@@ -637,7 +1092,8 @@ class PurchaseRequestForm extends React.Component<PurchaseRequestProps, Purchase
             requsitionerCode: { val: this.state.formData.RequsitionerCode, required: true, Name: 'Requisitioner Code', Type: ControlType.string, Focusid: this.RequsitionerCode },
             buyerCode: { val: this.state.formData.Buyer, required: true, Name: 'Buyer', Type: ControlType.string, Focusid: this.buyercode },
             vendorCode: { val: this.state.formData.Vendor, required: false, Name: 'Vendor', Type: ControlType.string, Focusid: this.ddlVendor },
-            // projectCode: { val: this.state.formData.ProjectCode, required: true, Name: 'Project code', Type: ControlType.string, Focusid: this.ddlProjectCode },
+            projectCode: { val: this.state.formData.ProjectCode, required: proCodeRequired, Name: 'Project code', Type: ControlType.string, Focusid: this.ddlProjectCode },
+            projectCategory:{  val: this.state.formData.ProjectCategory, required: proCodeRequired, Name: 'Project Category', Type: ControlType.string, Focusid: this.ddlProjectCategory },
             //commodityCategoryCode: { val: this.state.formData.CommodityCategory, required: true, Name: 'Commodity category', Type: ControlType.string, Focusid: this.ddlCommodityCategory },
             description: { val: this.state.formData.Description, required: true, Name: 'Reason', Type: ControlType.string, Focusid: this.description },
         };
@@ -653,6 +1109,10 @@ class PurchaseRequestForm extends React.Component<PurchaseRequestProps, Purchase
         }
     }
     private formData =()=>{
+        let proCodeRequired=false;
+        if((this.state.formData.Department).toLowerCase()=="new project" || (this.state.formData.Department).toLowerCase()=="new project operations"){
+            proCodeRequired=true;
+        }
         let data = {
             //Company: { val: this.state.formData.Company, required: true, Name: 'Company', Type: ControlType.string, Focusid: this.Company },
             plant: { val: this.state.formData.Plant, required: true, Name: 'Plant', Type: ControlType.string, Focusid: this.Plant },
@@ -661,6 +1121,9 @@ class PurchaseRequestForm extends React.Component<PurchaseRequestProps, Purchase
             requsitionerCode: { val: this.state.formData.RequsitionerCode, required: true, Name: 'Requisitioner Code', Type: ControlType.string, Focusid: this.RequsitionerCode },
             buyerCode: { val: this.state.formData.Buyer, required: true, Name: 'Buyer', Type: ControlType.string, Focusid: this.buyercode },
             vendorCode: { val: this.state.formData.Vendor, required: false, Name: 'Vendor', Type: ControlType.string, Focusid: this.ddlVendor },
+
+            projectCode: { val: this.state.formData.ProjectCode, required: proCodeRequired, Name: 'Project code', Type: ControlType.string, Focusid: this.ddlProjectCode },
+            projectCategory:{  val: this.state.formData.ProjectCategory, required: proCodeRequired, Name: 'Project Category', Type: ControlType.string, Focusid: this.ddlProjectCategory },
             // projectCode: { val: this.state.formData.ProjectCode, required: true, Name: 'Project code', Type: ControlType.string, Focusid: this.ddlProjectCode },
             //commodityCategoryCode: { val: this.state.formData.CommodityCategory, required: true, Name: 'Commodity category', Type: ControlType.string, Focusid: this.ddlCommodityCategory },
             description: { val: this.state.formData.Description, required: true, Name: 'Reason', Type: ControlType.string, Focusid: this.description },
@@ -670,15 +1133,21 @@ class PurchaseRequestForm extends React.Component<PurchaseRequestProps, Purchase
     }
     private handlePurchageSubmit = async (event) => {
         let masterData = this.formData();
-        let emaildetails ={toemail:[],ccemail:[],subject:"Purchase Request waiting for your Approval",bodyString:"Purchase Request has been submitted successfully.",body:'' };
+        let isUrgent=this.state.formData.IsUrgent;
+        let sub= (isUrgent==true)?"URGENT: Purchase Request waiting for your Approval":"Purchase Request waiting for your Approval"
+        let emaildetails ={toemail:[],ccemail:[],subject:sub,bodyString:"Purchase Request has been submitted successfully.",body:'' };
         let tableContent ={Company:this.state.formData.Company,Plant:this.state.formData.Plant,Department:this.state.formData.Department,Vendor:this.state.formData.VendorName!=null?this.state.formData.VendorName:'',Buyer:this.state.formData.Buyer,Currency:this.state.formData.Currency,CurrencyAmount:this.state.trFormdata.CurrencyAmount,'TotalAmount(USD)':this.state.trFormdata.TotalAmount,Reason:this.state.formData.Description};
         emaildetails.body = this.emailBodyPreparation(this.siteURL+'/SitePages/Home.aspx#/purchaserequest/'+this.state.ItemID,tableContent,emaildetails.bodyString,this.userContext.userDisplayName);
-        const data = { ...this.state.trFormdata,...this.state.formData, RequisitionerId: this.state.RequisitionerUserId, isEscalate: false };
+        const data = { ...this.state.trFormdata,...this.state.formData, RequisitionerId: this.state.RequisitionerUserId, isEscalate: false,PurchasingTeamId:null};
         data.Status = ApprovalStatus.InProgress;
         //var validationdata = {};
         if(data.Vendor!="" && data.Vendor!=null){
         data.ItemsData.map((item,i)=>{
             data.ItemsData[i].Vendor=data.Vendor;
+        });}
+        else{
+            data.ItemsData.map((item,i)=>{
+                data.ItemsData[i].Vendor='';
         });}
         let itemsData = JSON.stringify(data.ItemsData);
         let validationdata = {};
@@ -698,8 +1167,10 @@ class PurchaseRequestForm extends React.Component<PurchaseRequestProps, Purchase
         data.ItemsDatajson = itemsData;
         let isValidMaster = Formvalidator.checkValidations(masterData);
         let isValid;
-        if(isValidMaster)
+        if(isValidMaster.status)
             isValid = formValidation.checkValidations(validationdata);
+        else
+            this.setState({ errorMessage: isValidMaster.message });
         if (isValidMaster.status && isValid.status) {
             let comments = this.state.Comments;
             let prvComments = data.Commentsdata;
@@ -730,6 +1201,7 @@ class PurchaseRequestForm extends React.Component<PurchaseRequestProps, Purchase
                     data.Approver3Id = this.state.ApprovalsMatrix[i].Approval3Id;
                     data.Approver4Id = this.state.ApprovalsMatrix[i].Approval4Id;
                     data.ReviewerId  =  this.state.ApprovalsMatrix[i].ReviewerId;
+                    data.PurchasingTeamId = this.state.ApprovalsMatrix[i].PurchasingTeamId;                  
                 }
             }
             if (data.AssignToId == null) {
@@ -814,47 +1286,76 @@ class PurchaseRequestForm extends React.Component<PurchaseRequestProps, Purchase
     private handleApprove = async () => {
         //this.ExportExcel();
         const data = { ...this.state.trFormdata };
+        const Approvals={...this.state.approvals};
         let comments = this.state.Comments;
         let prvComments = data.Commentsdata;
-        let emaildetails ={toemail:[],ccemail:[],subject:"Purchase Request waiting for your Approval",bodyString:"Purchase Request has been submitted successfully.",body:'' };
+        let isUrgent=this.state.formData.IsUrgent;
+        let sub= (isUrgent==true)?"URGENT: Purchase Request waiting for your Approval":"Purchase Request waiting for your Approval"
+        let emaildetails ={toemail:[],ccemail:[],subject:sub,bodyString:"Purchase Request has been submitted successfully.",body:'' };
         //let tableContent ={Company:this.state.formData.Company,Plant:this.state.formData.Plant,Department:this.state.formData.Department,Buyer:this.state.formData.Buyer,TotalAmount:this.state.trFormdata.TotalAmount};
         let tableContent ={Company:this.state.formData.Company,Plant:this.state.formData.Plant,Department:this.state.formData.Department,Vendor:this.state.formData.VendorName!=null?this.state.formData.VendorName:'',Buyer:this.state.formData.Buyer,Currency:this.state.formData.Currency,CurrencyAmount:this.state.trFormdata.CurrencyAmount,TotalAmount:this.state.trFormdata.TotalAmount,Reason:this.state.formData.Description};
         // if (comments != '') {
-        let curcomments = { User: this.props.context.pageContext.user.displayName, comments: comments, Action: 'Approve', Role: `${data.ApprovalLevel == "5" ? "Purchasing manager" : "Approver " + data.ApprovalLevel}`, Date: new Date().getDate() + "/" + (new Date().getMonth() + 1) + "/" + new Date().getFullYear() };
+        let appLevel=data.ApprovalLevel==='2,3,4'?((this.state.urgentApprovalLvl!='Approver Escalation')?"Approver " + this.state.urgentApprovalLvl:this.state.urgentApprovalLvl):"Approver " + data.ApprovalLevel;
+        let curcomments = { User: this.props.context.pageContext.user.displayName, comments: comments, Action: 'Approve', Role: `${data.ApprovalLevel == "5" ? "Purchasing manager" : appLevel}`, Date: new Date().getDate() + "/" + (new Date().getMonth() + 1) + "/" + new Date().getFullYear() };
         prvComments.push(curcomments);
         // }
         let prvcommentsdata = JSON.stringify(prvComments);
         var InformToId =0;
-        const submitdata = { AssignToId: null, Status: ApprovalStatus.InProgress, ApprovalLevel: "", NextApprovalId: null, Pendingwith: '', Approver1Id: null, Approver2Id: null, Approver3Id: null,Approver4Id: null, ReviewerId: null,PurchasingTeamId:null, Comments: prvcommentsdata,isEscalate:false,DateApproved:null };
+        const submitdata = { AssignToId: null, Status: ApprovalStatus.InProgress, ApprovalLevel: "", NextApprovalId: null, Pendingwith: '', Approver1Id: null, Approver2Id: null, Approver3Id: null,Approver4Id: null, ReviewerId: null,PurchasingTeamId:null, Comments: prvcommentsdata,isEscalate:false,DateApproved:null, CapitalInvestment:this.state.formData.CapitalInvestment, IsUrgent:this.state.formData.IsUrgent };
         for (var i = 0; i < this.state.ApprovalsMatrix.length; i++) {
             if (this.state.ApprovalsMatrix[i].FromBudget <= data.TotalAmount && this.state.ApprovalsMatrix[i].ToBudget >= data.TotalAmount) {
             var PurchasingTeam =this.state.ApprovalsMatrix[i].PurchasingTeamId;
              InformToId = this.state.ApprovalsMatrix[i].InformToId!= null?this.state.ApprovalsMatrix[i].InformToId:0;
+
+                if (data.ApprovalLevel == "2,3,4"){
+                    if(this.state.formData.IsUrgent==true && data.TotalAmount>=1000){
+                        submitdata.AssignToId = this.state.ApprovalsMatrix[i].ReviewerId;
+                        submitdata.ApprovalLevel = "5";
+                        submitdata.NextApprovalId = null;
+                        submitdata['UrgentApprovalsId']={results:[]};
+                        submitdata.Pendingwith = PendingStatus.Level5; //"Reviewer"; 
+                    }
+                    // else if(this.state.urgentApprovalLvl=='Approver Escalation' && data.TotalAmount>=1000 && this.state.formData.IsUrgent==true){
+                    //     submitdata.AssignToId = this.state.ApprovalsMatrix[i].ReviewerId;
+                    //     submitdata.ApprovalLevel = "5";
+                    //     submitdata.NextApprovalId = null;
+                    //     submitdata['UrgentApprovalsId']={results:[]};
+                    //     submitdata.Pendingwith = PendingStatus.Level5; //"Reviewer"; 
+                    // }
+                    else if(this.state.formData.IsUrgent==false){
+                        data.ApprovalLevel=this.state.urgentApprovalLvl=='Approver Escalation'?'Escalation':this.state.urgentApprovalLvl;
+                        submitdata['UrgentApprovalsId']={results:[]};
+                    }
+                    // else if(this.state.formData.IsUrgent==false && this.state.urgentApprovalLvl=='Approver Escalation'){
+                    //     data.ApprovalLevel="Escalation";
+                    // }
+                }
+
                 if (data.ApprovalLevel == "1") {
                     //if(data.TotalAmount>=1000){
-                        if (this.state.ApprovalsMatrix[i].Approval2Id != null) {
-                            submitdata.AssignToId = this.state.ApprovalsMatrix[i].Approval2Id;
-                            submitdata.ApprovalLevel = "2";
-                            submitdata.NextApprovalId = this.state.ApprovalsMatrix[i].Approval3Id;
-                            submitdata.Pendingwith = PendingStatus.Level2;//"Approver 2"; 
-                        }
-                        else if (this.state.ApprovalsMatrix[i].Approval3Id != null) {
-                            submitdata.AssignToId = this.state.ApprovalsMatrix[i].Approval3Id;
-                            submitdata.ApprovalLevel = "3";
-                            submitdata.NextApprovalId = this.state.ApprovalsMatrix[i].Approval4Id;
-                            submitdata.Pendingwith = PendingStatus.Level3;//"Approver 3"; 
-                        }else if (this.state.ApprovalsMatrix[i].Approval4Id != null) {
-                            submitdata.AssignToId = this.state.ApprovalsMatrix[i].Approval4Id;
-                            submitdata.ApprovalLevel = "4";
-                            submitdata.NextApprovalId = this.state.ApprovalsMatrix[i].ReviewerId;
-                            submitdata.Pendingwith = PendingStatus.Level4;//"Approver 4"; 
-                        }
-                         else if(data.TotalAmount>=1000 && this.state.ApprovalsMatrix[i].ReviewerId != null) {
-                            submitdata.AssignToId = this.state.ApprovalsMatrix[i].ReviewerId;
-                            submitdata.ApprovalLevel = "5";
-                            submitdata.NextApprovalId = null;
-                            submitdata.Pendingwith = PendingStatus.Level5; //"Reviewer"; 
-                        }
+                    if (this.state.ApprovalsMatrix[i].Approval2Id != null) {
+                        submitdata.AssignToId = this.state.ApprovalsMatrix[i].Approval2Id;
+                        submitdata.ApprovalLevel = "2";
+                        submitdata.NextApprovalId = this.state.ApprovalsMatrix[i].Approval3Id;
+                        submitdata.Pendingwith = PendingStatus.Level2;//"Approver 2"; 
+                    }
+                    else if (this.state.ApprovalsMatrix[i].Approval3Id != null) {
+                        submitdata.AssignToId = this.state.ApprovalsMatrix[i].Approval3Id;
+                        submitdata.ApprovalLevel = "3";
+                        submitdata.NextApprovalId = this.state.ApprovalsMatrix[i].Approval4Id;
+                        submitdata.Pendingwith = PendingStatus.Level3;//"Approver 3"; 
+                    }else if (this.state.ApprovalsMatrix[i].Approval4Id != null) {
+                        submitdata.AssignToId = this.state.ApprovalsMatrix[i].Approval4Id;
+                        submitdata.ApprovalLevel = "4";
+                        submitdata.NextApprovalId = this.state.ApprovalsMatrix[i].ReviewerId;
+                        submitdata.Pendingwith = PendingStatus.Level4;//"Approver 4"; 
+                    }
+                        else if(data.TotalAmount>=1000 && this.state.ApprovalsMatrix[i].ReviewerId != null) {
+                        submitdata.AssignToId = this.state.ApprovalsMatrix[i].ReviewerId;
+                        submitdata.ApprovalLevel = "5";
+                        submitdata.NextApprovalId = null;
+                        submitdata.Pendingwith = PendingStatus.Level5; //"Reviewer"; 
+                    }
                    // }
                 }
                 else if (data.ApprovalLevel == "2") {
@@ -902,6 +1403,28 @@ class PurchaseRequestForm extends React.Component<PurchaseRequestProps, Purchase
                     submitdata.ApprovalLevel = "5";
                     submitdata.NextApprovalId = null;
                     submitdata.Pendingwith = PendingStatus.Level5; //"Reviewer"; 
+                }
+
+                if (data.ApprovalLevel != "2,3,4" && this.state.formData.IsUrgent==true){
+                    if(data.ApprovalLevel != "5" ){
+                        if(data.TotalAmount>=1000){
+
+                            submitdata.AssignToId = this.state.ApprovalsMatrix[i].ReviewerId;
+                            submitdata.ApprovalLevel = "5";
+                            submitdata.NextApprovalId = null;
+                            submitdata['UrgentApprovalsId']={results:[]};
+                            submitdata.Pendingwith = PendingStatus.Level5; //"Reviewer"; 
+                        }
+                        else{
+                            submitdata.AssignToId = null;
+                            submitdata.ApprovalLevel = "";
+                            submitdata.NextApprovalId = null;
+                            submitdata['UrgentApprovalsId']={results:[]};
+                            submitdata.Status = ApprovalStatus.Approved;
+                            submitdata.DateApproved = new Date();
+                            submitdata.Pendingwith = PendingStatus.Empty;
+                        }
+                    }
                 }
                 submitdata.Approver1Id = this.state.ApprovalsMatrix[i].Approval1Id;
                 submitdata.Approver2Id = this.state.ApprovalsMatrix[i].Approval2Id;
@@ -1024,11 +1547,12 @@ class PurchaseRequestForm extends React.Component<PurchaseRequestProps, Purchase
             let comments = this.state.Comments;
             let prvComments = this.state.trFormdata.Commentsdata;
             if (comments != '') {
-                let curcomments = { User: this.props.context.pageContext.user.displayName, comments: comments, Action: 'Reject', Role: `${data.ApprovalLevel == "5" ? "Purchasing manager" : "Approver " + data.ApprovalLevel}`, Date: new Date().getDate() + "/" + (new Date().getMonth() + 1) + "/" + new Date().getFullYear() };
+                let appLevel=data.ApprovalLevel==='2,3,4'?((this.state.urgentApprovalLvl!='Approver Escalation')?"Approver " + this.state.urgentApprovalLvl:this.state.urgentApprovalLvl):"Approver " + data.ApprovalLevel;
+                let curcomments = { User: this.props.context.pageContext.user.displayName, comments: comments, Action: 'Reject', Role: `${data.ApprovalLevel == "5" ? "Purchasing manager" : appLevel}`, Date: new Date().getDate() + "/" + (new Date().getMonth() + 1) + "/" + new Date().getFullYear() };
                 prvComments.push(curcomments);
             }
             let prvcommentsdata = JSON.stringify(prvComments);
-            const submitdata = { AssignToId: null, Status: ApprovalStatus.Rejected, ApprovalLevel: "", Pendingwith: PendingStatus.Empty, NextApprovalId: null, Comments: prvcommentsdata };
+            const submitdata = { AssignToId: null, Status: ApprovalStatus.Rejected, ApprovalLevel: "", Pendingwith: PendingStatus.Empty, NextApprovalId: null, Comments: prvcommentsdata , CapitalInvestment:this.state.formData.CapitalInvestment};
             this.setState({ loading: true });
             //this.InsertorUpdatedata(submitdata,ActionStatus.Rejected);
             emaildetails.body = this.emailBodyPreparation(this.siteURL+'/SitePages/Home.aspx#/purchaserequest/'+this.state.ItemID,tableContent,emaildetails.bodyString,this.userContext.userDisplayName);
@@ -1059,7 +1583,7 @@ class PurchaseRequestForm extends React.Component<PurchaseRequestProps, Purchase
                 prvComments.push(curcomments);
             }
             let prvcommentsdata = JSON.stringify(prvComments);
-            const submitdata = { AssignToId: null, Status: ApprovalStatus.Withdraw, ApprovalLevel: "", Pendingwith: PendingStatus.Empty, NextApprovalId: null, Comments: prvcommentsdata };
+            const submitdata = { AssignToId: null, Status: ApprovalStatus.Withdraw, ApprovalLevel: "", Pendingwith: PendingStatus.Empty, NextApprovalId: null, Comments: prvcommentsdata, CapitalInvestment:this.state.formData.CapitalInvestment };
             this.setState({ loading: true });
             //this.InsertorUpdatedata(submitdata,ActionStatus.Rejected);
             emaildetails.body = this.emailBodyPreparation(this.siteURL+'/SitePages/Home.aspx#/purchaserequest/'+this.state.ItemID,tableContent,emaildetails.bodyString,this.userContext.userDisplayName);
@@ -1259,6 +1783,7 @@ class PurchaseRequestForm extends React.Component<PurchaseRequestProps, Purchase
         let projectCode: any = await sp.web.lists.getByTitle('ProjectCode').items.filter("IsActive eq 1").select('*').orderBy('Title').get();
         let commodityCategory: any = await sp.web.lists.getByTitle('CommodityCategory').items.filter("IsActive eq 1").select('*').orderBy('Title').get();
         let Vendors:any=[];
+        let tools:any=[];
         let QUnits: any = await sp.web.lists.getByTitle('Units').items.filter("IsActive eq 1").select("*").orderBy('Title').get();
         let PUnits: any = await sp.web.lists.getByTitle('PriceUnit').items.filter("IsActive eq 1").select("*").orderBy('Title').get();
         let Plants: any = await this.rootweb.lists.getByTitle('Plant').items.filter("Status eq 1").select("*").orderBy("Title").get();
@@ -1273,8 +1798,12 @@ class PurchaseRequestForm extends React.Component<PurchaseRequestProps, Purchase
         if (this.props.match.params.id != undefined) {
             let trFormdata = { ...this.state.trFormdata };
             let formData = { ...this.state.formData };
+            let Approvals = { ...this.state.approvals };
+            let escalateLevels=this.state.escalateLevels;
+            let deptNew=false;
+            let urgentApprovalIds=[];
             let ItemID = this.props.match.params.id;
-            let selRequisitions: any = await sp.web.lists.getByTitle(this.TrListname).items.getById(ItemID).select('Requisitioner/Id', 'Requisitioner/Title', 'Requisitioner/UserName', 'Requisitioner/EMail', 'Author/Id', 'Author/Title', 'Author/UserName', 'Author/EMail', '*').expand('Requisitioner','Author').get();
+            let selRequisitions: any = await sp.web.lists.getByTitle(this.TrListname).items.getById(ItemID).select('Requisitioner/Id', 'Requisitioner/Title', 'Requisitioner/UserName', 'Requisitioner/EMail', 'Author/Id', 'Author/Title', 'Author/UserName', 'Author/EMail','NextApproval/Title','PurchasingTeam/Title','*').expand('Requisitioner','Author','NextApproval','PurchasingTeam').get();
             let files: any = await sp.web.lists.getByTitle('PurchaseRequestDocs').items.filter('ItemID eq ' + ItemID).expand('File').get();            
 
             let filesArry = [];
@@ -1300,6 +1829,8 @@ class PurchaseRequestForm extends React.Component<PurchaseRequestProps, Purchase
                         Description: '',
                         Program: '', ProgramLable: '',
                         ProgramNumber: null,
+                        ToolNumber:'',
+                        ToolDescription:''
                     };
                     itemsdata = [];
                     itemsdata.push(newobj);
@@ -1335,6 +1866,9 @@ class PurchaseRequestForm extends React.Component<PurchaseRequestProps, Purchase
                 formData.CMSMstr = selRequisitions.CMSMstr;
                 formData.PONumber=selRequisitions.PONumber;
                 formData.CapitalInvestment=selRequisitions.CapitalInvestment!=null?selRequisitions.CapitalInvestment:false;
+                formData.ToolRequired=selRequisitions.ToolRequired!=null?selRequisitions.ToolRequired:false;
+                formData.ProjectCategory=selRequisitions.ProjectCategory;
+                formData.IsUrgent=selRequisitions.IsUrgent!=null?selRequisitions.IsUrgent:false;
                 trFormdata.Approver1Id = selRequisitions.Approver1Id;
                 trFormdata.Approver2Id = selRequisitions.Approver2Id;
                 trFormdata.Approver3Id = selRequisitions.Approver3Id;
@@ -1348,6 +1882,94 @@ class PurchaseRequestForm extends React.Component<PurchaseRequestProps, Purchase
                 trFormdata.CurrencyAmount = selRequisitions.CurrencyAmount;
                 trFormdata.Pendingwith = selRequisitions.Pendingwith;
                 trFormdata.ItemsData = itemsdata;
+
+                if((selRequisitions.Department).toLowerCase()=="new project" || selRequisitions.Department.toLowerCase()=="new project operations"){
+                    deptNew=true;
+                }
+
+                ///2
+                // if(selRequisitions.Approver1!=null)
+                //     Approvals["Approver1"]=[selRequisitions.Approver1.Title,"Pending"];
+                // if(selRequisitions.Approver2!=null)
+                //     Approvals["Approver2"]=[selRequisitions.Approver2.Title,"Queued"];
+                // if(selRequisitions.Approver3!=null)
+                //     Approvals["Approver3"]=[selRequisitions.Approver3.Title,"Not Started"];
+                // if(selRequisitions.Approver4!=null)
+                //     Approvals["Approver4"]=[selRequisitions.Approver4.Title,"Not Started"];
+                // if(selRequisitions.PurchasingTeam!=null)
+                //     Approvals["purchasingManager"]=[selRequisitions.PurchasingTeam.Title,"Not Started"];
+
+
+                //1
+                if(selRequisitions.Status!='Master Submitted'){
+
+                    if(selRequisitions.Approver1Id!=null)
+                        Approvals.bindData["Approver1"]=[selRequisitions.Approver1Id];
+                    if(selRequisitions.Approver2Id!=null)
+                        Approvals.bindData["Approver2"]=[selRequisitions.Approver2Id];
+                    if(selRequisitions.Approver3Id!=null)
+                        Approvals.bindData["Approver3"]=[selRequisitions.Approver3Id];
+                    if(selRequisitions.Approver4Id!=null)
+                        Approvals.bindData["Approver4"]=[selRequisitions.Approver4Id];
+                    if(selRequisitions.ReviewerId!=null){
+                        Approvals.purchasingManager=[selRequisitions.ReviewerId];
+
+                        let pmId=Approvals.purchasingManager[0];
+                        let pmGrp=await sp.web.siteGroups.getById(pmId).users();
+                        
+                        let pmUsers=[];
+                        for (const users of pmGrp) {
+                            pmUsers.push(users.Title);
+                        }
+                        Approvals.purchasingManager.push(pmUsers);
+                        console.log(Approvals);
+                        // Approvals['pmStatus']='';
+                    }
+
+                    let appCount=Object.keys(Approvals.bindData).length;
+                    for (const index in Approvals.bindData) {
+                        let approver=Approvals.bindData[index];
+                        let groupId=approver[0];
+
+                        let appgroupUsers=await sp.web.siteGroups.getById(groupId).users();
+
+                        let grpUsers=[];
+                        for (const users of appgroupUsers) {
+                            grpUsers.push(users.Title);
+                        }
+                        Approvals.bindData[index].push(grpUsers);
+                        console.log(appgroupUsers);
+                        // Approvals.bindData[approver].push(await sp.web.siteGroups.getById(groupId).users());
+                    }
+
+                    // console.log(pmUsers);
+                    // Approvals.purchasingManager.push(await sp.web.siteGroups.getById(pmId).users());
+
+
+                    Approvals.pending=selRequisitions.Pendingwith!=null?selRequisitions.Pendingwith:'';
+                    Approvals.nextApproval=selRequisitions.NextApproval!=null?selRequisitions.NextApproval.Title:'';
+                    
+                    // Approvals.purchasingManager=selRequisitions.PurchasingTeam!=null?selRequisitions.PurchasingTeam.Title:'';
+                    if(selRequisitions.ApprovalSteps!=null){
+                        escalateLevels=selRequisitions.ApprovalSteps.split(',');
+                    }
+
+                    if(formData.IsUrgent==true){
+                        urgentApprovalIds=selRequisitions.UrgentApprovalsId;
+                    }
+
+
+                    Approvals.requisitioner=selRequisitions.Requisitioner.Title;
+                    
+                }
+                Approvals.Status=selRequisitions.Status;
+                
+                // Approvals.Approver2=selRequisitions.Approver2!=null?selRequisitions.Approver2.Title:'';
+                // Approvals.Approver3=selRequisitions.Approver3!=null?selRequisitions.Approver3.Title:'';
+                // Approvals.Approver4=selRequisitions.Approver4!=null?selRequisitions.Approver4.Title:'';
+                // Approvals.escalatedlvl=selRequisitions.;
+
+
                 this.state.authorId = selRequisitions.Author;
                 if(selRequisitions.Author.Id == this.state.CurrentuserId && selRequisitions.ApprovalLevel =="1") this.state.IsWithdraw=true;
                 //trFormdata.CMSReq = itemsdata.;
@@ -1356,12 +1978,80 @@ class PurchaseRequestForm extends React.Component<PurchaseRequestProps, Purchase
                     trFormdata.Commentsdata = JSON.parse(selRequisitions.Comments);
                 }
                 let Departments: any = await this.rootweb.lists.getByTitle('Department').items.filter("Plant/Title eq '" + formData.Plant + "'").select("*").orderBy("Title").get();
-                let ApprovalsMatrix: any = await sp.web.lists.getByTitle('ApprovalsMatrix').items.filter("IsActive eq 1 and Company eq '" + formData.Company + "' and Plant eq '" + formData.Plant + "'  and Department eq '" + formData.Department + "'").select('*').get();
+                var ApprovalsMatrix: any = await sp.web.lists.getByTitle('ApprovalsMatrix').items.filter("IsActive eq 1 and Company eq '" + formData.Company + "' and Plant eq '" + formData.Plant + "'  and Department eq '" + formData.Department + "'").select('*').get();
                 
              //   let Vendors = await sp.web.lists.getByTitle('Vendor').items.filter(`Database eq '${formData.Database}' and IsActive eq 1`).select("*").orderBy('Title').getAll();
                 let Vendors = await sp.web.lists.getByTitle('Vendor').items.select("*").orderBy('Title').getAll();
+                let tools:any=await sp.web.lists.getByTitle("Tools").items.select("*").orderBy("Tool_x0020_Number").getAll();
+                let Categories:any=await sp.web.lists.getByTitle("ProjectCategory").items.select("*").orderBy("Department").getAll();
 
                 Vendors=Vendors.filter(x=>(x.Database==formData.Database && x.IsActive==true));
+                tools=tools.filter(x=>(x.Database==formData.Database && x.IsActive==true));
+                Categories=Categories.filter(x=>(x.IsActive==true));
+
+                // let projCategories=[];
+                // if(deptNew){
+                //     projCategories=Categories.filter(cat=> (cat.Department).toLowerCase()==(formData.Department).toLowerCase());
+                // }
+                
+                let Clength=trFormdata.Commentsdata.length-1;
+                if(selRequisitions.Status=='Rejected'){
+                    if(trFormdata.Commentsdata[Clength].Action=="Reject"){
+                        if(trFormdata.Commentsdata[Clength].Role=='Approver Escalation'){
+                            for (var i = 0; i < ApprovalsMatrix.length; i++) {
+                                if (ApprovalsMatrix[i].FromBudget <= selRequisitions.TotalAmount && ApprovalsMatrix[i].ToBudget >= selRequisitions.TotalAmount) {
+                                    if(ApprovalsMatrix[i].EscalationId!=null)
+                                        Approvals['Escalation']=[ApprovalsMatrix[i].EscalationId];
+                                }
+                            }
+                        }
+                    }
+                }
+
+
+                if(selRequisitions.Status!='Master Submitted'){
+
+                    if(selRequisitions.ApprovalLevel!="Escalation"){
+                        if(selRequisitions.ApprovalLevel==null){
+                            Approvals.approvalLevel='0';
+                        }
+                        else{
+                            Approvals.approvalLevel=selRequisitions.ApprovalLevel;
+
+                            if(trFormdata.Commentsdata[Clength].Action=="Approve" || trFormdata.Commentsdata[Clength].Action=="Submit"){
+                                if(trFormdata.Commentsdata[Clength].Role=='Approver Escalation'){
+                                    for (var i = 0; i < ApprovalsMatrix.length; i++) {
+                                        if (ApprovalsMatrix[i].FromBudget <= selRequisitions.TotalAmount && ApprovalsMatrix[i].ToBudget >= selRequisitions.TotalAmount) {
+                                            if(ApprovalsMatrix[i].EscalationId!=null)
+                                                Approvals['Escalation']=[ApprovalsMatrix[i].EscalationId];
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    else{
+                        Approvals.approvalLevel=selRequisitions.ApprovalLevel;
+                        for (var i = 0; i < ApprovalsMatrix.length; i++) {
+                            if (ApprovalsMatrix[i].FromBudget <= selRequisitions.TotalAmount && ApprovalsMatrix[i].ToBudget >= selRequisitions.TotalAmount) {
+                                if(ApprovalsMatrix[i].EscalationId!=null)
+                                    Approvals['Escalation']=[ApprovalsMatrix[i].EscalationId];
+                            }
+                        }
+                    }
+                }
+
+                if(Approvals['Escalation']!=undefined){
+                    let escId=Approvals['Escalation'][0];
+                    let escGrp=await sp.web.siteGroups.getById(escId).users();
+                    
+                    let escUsers=[];
+                    for (const users of escGrp) {
+                        escUsers.push(users.Title);
+                    }
+                    Approvals['Escalation'].push(escUsers);
+                    console.log(Approvals);
+                }
 
                 var RequsitionerCodes: any = await sp.web.lists.getByTitle('RequsitionerCodes').items.filter(`IsActive eq 1 and Database eq '${formData.Database}' `).select("*").orderBy('Requsitioner_x0020_Code').getAll();
                 var Buyers: any = await sp.web.lists.getByTitle('Buyers').items.filter(`Database eq '${formData.Database}' and IsActive eq 1`).select("*").orderBy('Title').getAll();
@@ -1376,6 +2066,7 @@ class PurchaseRequestForm extends React.Component<PurchaseRequestProps, Purchase
                     showHideDraftButtonforReject = false;
                 }
                 Vendors = sortDataByTitle(Vendors, "Title");
+                tools=sortDataByTitle(tools,"Tool_x0020_Number");
                 RequsitionerCodes = sortDataByTitle(RequsitionerCodes, "Requsitioner_x0020_Desc");
                 Buyers = sortDataByTitle(Buyers, "Title");
                 let del =false;
@@ -1383,7 +2074,8 @@ class PurchaseRequestForm extends React.Component<PurchaseRequestProps, Purchase
                 let  PTM = false;
                 if(groupIds.includes(selRequisitions.PurchasingTeamId) && trFormdata.Status == ApprovalStatus.Approved && selRequisitions.isPOProcessed== false) PTM = true;
                 this.setState({
-                    ProjectCode: projectCode, RequsitionerCode: RequsitionerCodes, Buyers: Buyers, CommodityCategory: commodityCategory, RequisitionerEmail: selRequisitions.Requisitioner.EMail, SaveUpdateText: 'Submit', showLabel: false, loading: false, RequisitionerUserId: this.userContext.userId, isFormloadCompleted: true, Vendors: Vendors, Punits: PUnits, Qunits: QUnits, Programs: programs,
+                    ProjectCode: projectCode, RequsitionerCode: RequsitionerCodes, Buyers: Buyers, CommodityCategory: commodityCategory, RequisitionerEmail: selRequisitions.Requisitioner.EMail, SaveUpdateText: 'Submit', showLabel: false, loading: false, RequisitionerUserId: this.userContext.userId, isFormloadCompleted: true, Vendors: Vendors,Tools:tools, projectCategories:Categories, 
+                    urgentApprovalIds:urgentApprovalIds,approvals:Approvals,escalateLevels:escalateLevels, isDeptNew:deptNew, Punits: PUnits, Qunits: QUnits, Programs: programs,
                     Plants: Plants, Departments: Departments, ApprovalsMatrix: ApprovalsMatrix, formData, trFormdata, DynamicDisabled: DynamicDisabled, redirect: true, ItemID: ItemID, currentdivCount: currentdivCount, fileArr: filesArry, createdById: createdById,
                     SaveResubmitBtnText: btnTextforRejectStatus, showHideDraftButton: showHideDraftButtonforReject,userGroupIds:groupIds,DeletePermissions:del,ProcessPoPermissions:PTM,Vendor:Vendors,ExchangeRates:exchangeRates
                 });
@@ -1424,7 +2116,7 @@ class PurchaseRequestForm extends React.Component<PurchaseRequestProps, Purchase
             // formData.Database = this.database;
             const trFormdata = { ...this.tempstate.trFormdata };
             let filesArry = [];    
-            this.setState({ ProjectCode: projectCode, CommodityCategory: commodityCategory, RequisitionerEmail: this.userContext.userEmail, SaveUpdateText: 'Submit', showLabel: false, loading: false, RequisitionerUserId: this.userContext.userId, isFormloadCompleted: true, Vendors: Vendors, Punits: PUnits, Qunits: QUnits, Programs:programs, formData, Plants: Plants, Departments: [], ItemID: 0, trFormdata, redirect: false, fileArr: filesArry, DynamicDisabled: false,ExchangeRates:exchangeRates });
+            this.setState({ ProjectCode: projectCode, CommodityCategory: commodityCategory, RequisitionerEmail: this.userContext.userEmail, SaveUpdateText: 'Submit', showLabel: false, loading: false, RequisitionerUserId: this.userContext.userId, isFormloadCompleted: true, Vendors: Vendors,Tools:tools, Punits: PUnits, Qunits: QUnits, Programs:programs, formData, Plants: Plants, Departments: [], ItemID: 0, trFormdata, redirect: false, fileArr: filesArry, DynamicDisabled: false,ExchangeRates:exchangeRates });
         }
     }
 
@@ -1524,7 +2216,10 @@ class PurchaseRequestForm extends React.Component<PurchaseRequestProps, Purchase
                 CommodityCategoryCode: '',
                 ProjectCode: '',
                 Description: '',
-                CapitalInvestment:false
+                CapitalInvestment:false,
+                ProjectCategory:'',
+                ToolRequired:false,
+                IsUrgent:false
             },
             SaveUpdateText: 'Submit',
             addNewRequisitioner: false
@@ -1617,6 +2312,7 @@ class PurchaseRequestForm extends React.Component<PurchaseRequestProps, Purchase
         //     //  console.log(users);
         // }
     }
+    
     private handleChangePONumber=(event)=>{
         const poData = {...this.state.poData};     
         const { name } = event.target;
@@ -1628,6 +2324,58 @@ class PurchaseRequestForm extends React.Component<PurchaseRequestProps, Purchase
         poData["IsincludedinPOExcel"] = false;
         this.setState({ poData }); 
     }
+
+    private isApproveReject (){
+
+        let visible=true;
+        const formData={...this.state.formData};
+        let isUrgent=formData.IsUrgent;
+
+        let apprUserIds=this.state.urgentApprovalIds;
+        let groups = this.userGroups;
+
+        // (this.state.trFormdata.Status =='Draft' || !(this.state.trFormdata.AssignToId == this.state.CurrentuserId || this.state.userGroupIds.includes(this.state.trFormdata.AssignToId))) || !(this.state.formData.IsUrgent==true && urgentApprVisible)
+
+
+        if(this.state.trFormdata.Status =='Draft'){
+            visible=false;
+        }
+        if(!(this.state.trFormdata.AssignToId == this.state.CurrentuserId || this.state.userGroupIds.includes(this.state.trFormdata.AssignToId))){
+            visible=false;
+        }
+        let approvalLvl=1;
+        if(isUrgent && this.state.escalateLevels.includes('1') && apprUserIds!=null){
+            for (const grp of groups) {
+                if(apprUserIds.includes(grp.Id)){
+                    visible=true;
+                    approvalLvl=grp.Id;
+                    if(this.state.trFormdata.ApprovalLevel=='5'){
+                        visible=false;
+                    }
+                    break;
+                }
+            }
+            this.state.urgentApprovalLvl=(this.state.trFormdata.Approver2Id==approvalLvl)?'2':(this.state.trFormdata.Approver3Id==approvalLvl)?'3':(this.state.trFormdata.Approver4Id==approvalLvl)?'4':'Approver Escalation';
+        }
+        else if(apprUserIds!=null){
+            for (const grp of groups) {
+                if(apprUserIds.includes(grp.Id)){
+                    visible=true;
+                    approvalLvl=grp.Id;
+                    if(this.state.trFormdata.ApprovalLevel=='5'){
+                        visible=false;
+                    }
+                    break;
+                }
+            }
+            this.state.urgentApprovalLvl=(this.state.trFormdata.Approver2Id==approvalLvl)?'2':(this.state.trFormdata.Approver3Id==approvalLvl)?'3':(this.state.trFormdata.Approver4Id==approvalLvl)?'4':'Approver Escalation';
+        }
+        return visible;
+    }
+
+    // var tbody=this.BindApprovalProcess();
+    rcount=0;
+    tbody;
     public render() {
         if (this.state.Homeredirect) {
             let url = `/`;
@@ -1638,11 +2386,16 @@ class PurchaseRequestForm extends React.Component<PurchaseRequestProps, Purchase
             return (<Navigate to={url} />);
         }
         else if (this.state.redirect && this.props.match.params.id > 0) {
+
+            if(this.rcount==0){
+                this.tbody=this.state.formData.IsUrgent==false?(this.BindApprovalProcess()):(this.BindUrgentApprovalProcess());
+                this.rcount++;
+            }
+            let urgentApprVisible=this.isApproveReject();
             return (
                 <React.Fragment>
                     {highlightCurrentNav("lipurchaseLink")}
                     <ModalPopUp title={this.state.modalTitle} modalText={this.state.modalText} isVisible={this.state.showHideModal} onClose={this.handlefullClose} isSuccess={this.state.isSuccess}></ModalPopUp>
-                    
                     <div id="content" className="content p-2 pt-2">
                         <div className='container-fluid'>
                             <div className='FormContent'>
@@ -1751,8 +2504,8 @@ class PurchaseRequestForm extends React.Component<PurchaseRequestProps, Purchase
                                             </div>
                                             <div className="col-md-3">
                                                 <div className="light-text">
-                                                    <label>Project Code </label>
-                                                    <select className="form-control" name="ProjectCode" ref={this.ddlProjectCode} title="ProjectCode" onChange={this.handleChange} disabled={!this.state.isInitiatorEdit} >
+                                                    <label>Project Code { this.state.isDeptNew && <span className="mandatoryhastrick">*</span>} </label>
+                                                    <select className="form-control" name="ProjectCode" ref={this.ddlProjectCode} title="ProjectCode" onChange={this.handleChange} disabled={!this.state.isInitiatorEdit} required={this.state.isDeptNew} value={this.state.formData.ProjectCode} >
                                                         <option>None</option>
                                                         {this.state.ProjectCode.map((item, index) => <option key={index} value={item.Project_x0020_Code} selected={item.Project_x0020_Code == this.state.formData.ProjectCode}>{`${item.Title} (${item.Project_x0020_Code})`}</option>)}
                                                     </select>
@@ -1772,6 +2525,19 @@ class PurchaseRequestForm extends React.Component<PurchaseRequestProps, Purchase
                                                     </select>
                                                 </div>
                                             </div>
+
+                                            { this.state.isDeptNew && <div className="col-md-3">
+                                                        <div className="light-text">
+                                                            <label>Project Category <span className="mandatoryhastrick">*</span></label>
+                                                            <select className="form-control" name="ProjectCategory" ref={this.ddlProjectCategory} title="Project Category" onChange={this.handleChange} disabled={!this.state.isInitiatorEdit} value={this.state.formData.ProjectCategory} required={this.state.isDeptNew}>
+                                                                <option>None</option>
+                                                                {this.state.projectCategories.map((option) => (
+                                                                    <option value={option.Title} selected={option.Title == this.state.formData.ProjectCategory}>{option.Title}</option>
+                                                                ))}
+                                                            </select>
+                                                        </div>
+                                                    </div>}
+
                                             <div className="col-md-3">
                                                 <div className="light-text">
                                                     <label>Vendor</label>
@@ -1791,27 +2557,66 @@ class PurchaseRequestForm extends React.Component<PurchaseRequestProps, Purchase
                                             </div>
                                             <div className="col-md-2">
                                                 <div className="light-text">
-                                                    <label>Currency Amount </label>
+                                                    <label>Curr Amt </label>
                                                     <input className="form-control" required={true} placeholder="" type="number" name="CurrencyAmount" title="CurrencyAmount" value={this.state.trFormdata.CurrencyAmount!= null ?(this.state.trFormdata.CurrencyAmount).toFixed(4) : 0} disabled={true} />
                                                 </div>
                                             </div>
-                                            <div className="col-md-3">
+                                            { !(this.state.isDeptNew) && <div className="col-md-3">
                                                 <div className="light-text">
                                                     <label>Total Amount (USD) </label>
                                                     <input className="form-control" required={true} placeholder="" type="number" name="TotalAmount" title="TotalAmount" value={this.state.trFormdata.TotalAmount!= null ?(this.state.trFormdata.TotalAmount).toFixed(4) : 0} disabled={true} />
                                                 </div>
-                                            </div>
+                                            </div>}
                                             
                                         </div>
                                         
                                         <div className="row pt-2 px-2">
-                                            <InputCheckBox
+                                            {/* <InputCheckBox
                                                 label={"Capital Investment"}
                                                 name={"CapitalInvestment"}
                                                 checked={this.state.formData.CapitalInvestment}
                                                 onChange={this.handleChange}
                                                 isforMasters={false}
+                                                isdisable={!this.state.isInitiatorEdit}
+                                            /> */}
+
+                                            { (this.state.isDeptNew) && <div className="col-md-3">
+                                                <div className="light-text">
+                                                    <label>Total Amount (USD) </label>
+                                                    <input className="form-control" required={true} placeholder="" type="number" name="TotalAmount" title="TotalAmount" value={this.state.trFormdata.TotalAmount!= null ?(this.state.trFormdata.TotalAmount).toFixed(4) : 0} disabled={true} />
+                                                </div>
+                                            </div>}
+
+                                            <div className="col-md-3">
+                                                <div className="light-text">
+                                                    <label>Capital Investment</label>
+                                                    <select className="form-control" name="CapitalInvestment"  title="CapitalInvestment" onChange={this.handleChange} value={this.state.formData.CapitalInvestment==true?"true":"false"}>
+                                                    <option value="false">No</option>
+                                                    <option value="true">Yes</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            
+                                            <InputCheckBox
+                                                label={"Tool Required"}
+                                                name={"ToolRequired"}
+                                                checked={this.state.formData.ToolRequired}
+                                                onChange={this.handleChange}
+                                                isforMasters={false}
+                                                isdisable={!this.state.isInitiatorEdit}
                                             />
+
+                                            <InputCheckBox
+                                                label={"Is Urgent"}
+                                                name={"IsUrgent"}
+                                                checked={this.state.formData.IsUrgent}
+                                                onChange={this.handleChange}
+                                                isforMasters={false}
+                                                isdisable={(this.state.trFormdata.ApprovalLevel=='5')?true:false}
+                                            />
+                                            
+                                        </div>
+                                        <div className="row pt-2 px-2">
                                             <div className="col-md-9">
                                                 <div className="light-text">
                                                     <label className="floatingTextarea2">Reason <span className="mandatoryhastrick">*</span></label>
@@ -1819,6 +2624,7 @@ class PurchaseRequestForm extends React.Component<PurchaseRequestProps, Purchase
                                                 </div>
                                             </div>
                                         </div>
+
                                         <div className="light-box border-box-shadow m-1">
                                             <div className='p-rel'>
                                             <h6 className="p-2 mb-0 c-bg-title">Purchase Requisition Details</h6>
@@ -1856,8 +2662,8 @@ class PurchaseRequestForm extends React.Component<PurchaseRequestProps, Purchase
                                        <button type="button" id="btnWithdraw" onClick={this.handleWithdraw} className="ApproveButtons btn" hidden={!this.state.IsWithdraw} >Withdraw</button>
                                        <button type="button" id="btnDelete" onClick={this.handleDelete} className="RejectButtons btn" hidden={!this.state.DeletePermissions} >Delete</button>
                                        <button type="button" id="btnProcessed" onClick={this.handleProcessPO} className="ApproveButtons btn" hidden={!this.state.ProcessPoPermissions} >Process PO</button>
-                                       <button type="button" id="btnApprove" onClick={this.handleApprove} className="SaveButtons btn" hidden={this.state.trFormdata.Status =='Draft' || !(this.state.trFormdata.AssignToId == this.state.CurrentuserId || this.state.userGroupIds.includes(this.state.trFormdata.AssignToId))} >Approve</button>
-                                        <button type="button" id="btnReject" onClick={this.handleReject} className="RejectButtons btn" hidden={this.state.trFormdata.Status =='Draft' || !(this.state.trFormdata.AssignToId == this.state.CurrentuserId || this.state.userGroupIds.includes(this.state.trFormdata.AssignToId))} >Reject</button>
+                                       <button type="button" id="btnApprove" onClick={this.handleApprove} className="SaveButtons btn" hidden={!(urgentApprVisible)} >Approve</button>
+                                        <button type="button" id="btnReject" onClick={this.handleReject} className="RejectButtons btn" hidden={!(urgentApprVisible)} >Reject</button>
                                         {
                                             (!this.state.isUserExistInPurchasingGroup)&& <button type="button" id="btnSave" onClick={this.handlePurchageSave} className="SaveButtons btn" hidden={this.state.DynamicDisabled || this.state.showHideDraftButton || this.state.trFormdata.Status ==ApprovalStatus.Withdraw ||  this.state.trFormdata.Status ==ApprovalStatus.Approved ||  this.state.trFormdata.Status ==ApprovalStatus.InProgress }>Save as Draft</button>
                                         }
@@ -1869,23 +2675,152 @@ class PurchaseRequestForm extends React.Component<PurchaseRequestProps, Purchase
                                     </div>
                                 </div>
 
-                                <div className="row justify-content-md-left">
-                                    <div className="col-md-12">
-                                        <div className="px-2">
-                                            <table className="table border mt-2">
-                                                <thead>
-                                                    <tr>
-                                                        <th>Action</th>
-                                                        <th>Role</th>
-                                                        <th>User</th>
-                                                        <th>Comments </th>
-                                                        <th>Date </th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody>
-                                                    {this.BindComments()}
-                                                </tbody>
-                                            </table>
+                                <div className='media-m-2 media-p-1'>
+                                    {this.state.trFormdata.Status!='Master Submitted' && this.state.trFormdata.Status!='Draft'  && 
+                                    <div className="row justify-content-md-left">
+                                        <div className="col-md-12">
+                                            <div className="p-rel">
+                                                <h6 className="p-2 mb-0 c-bg-title">Approval Process</h6>
+                                            </div>
+                                            {/* <h6 className="mb-2">Approval Process</h6> */}
+                                            <div className="px-2 mt-3">
+                                                {/* <table className="table border mt-2">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>Requisitioner</th>
+                                                            <th>User Name or Group Name</th>
+                                                            <th>Status</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        { (this.state.approvals.Status!="Master Submitted" && this.state.approvals.Status!="Draft"  && this.state.approvals.Status!="") && this.tbody}
+                                                    </tbody>
+                                                </table> */}
+
+                                                    <table className="outer-table-process">
+                                                        <tbody>
+                                                            <tr>
+                                                                <td>
+                                                                    <div className="outer-div-process">
+                                                                        <div className="circle-div Approved">R</div>
+                                                                        <div className="div-role">Requisitioner</div>
+                                                                        <div className="div-name">{this.state.approvals.requisitioner}</div>
+                                                                    </div>
+                                                                </td>
+                                                                { this.state.approvals.bindData['Approver1']!=undefined &&
+                                                                    <td><span className="span-arrow"> → </span></td>
+                                                                }
+
+                                                                {   this.state.approvals.bindData['Approver1']!=undefined && 
+                                                                    <td>
+                                                                        <div className="outer-div-process">
+                                                                            <div className={(this.state.approvals.bindData['Approver1'][2])=="Not Started"?"notstarted circle-div":(this.state.approvals.bindData['Approver1'][2]+" circle-div")} >A1</div>
+                                                                            <div className="div-role">Approver 1</div>
+                                                                            {this.state.approvals.bindData['Approver1'][1].map((appUsers)=>(<div className="div-name">{appUsers}</div>))}
+                                                                        </div> 
+                                                                    </td>
+                                                                }
+                                                                { this.state.approvals.bindData['Approver2']!=undefined &&
+                                                                    <td><span className="span-arrow"> → </span></td>
+                                                                }
+
+                                                                {   this.state.approvals.bindData['Approver2']!=undefined && 
+                                                                    <td>
+                                                                        <div className="outer-div-process">
+                                                                            <div className={(this.state.approvals.bindData['Approver2'][2])=="Not Started"?"notstarted circle-div":(this.state.approvals.bindData['Approver2'][2]+" circle-div")} >A2</div>
+                                                                            <div className="div-role">Approver 2</div>
+                                                                            {this.state.approvals.bindData['Approver2'][1].map((appUsers)=>(<div className="div-name">{appUsers}</div>))}
+                                                                        </div> 
+                                                                    </td>
+                                                                }
+
+                                                                { this.state.approvals.bindData['Approver3']!=undefined &&
+                                                                    <td><span className="span-arrow"> → </span></td>
+                                                                }
+
+                                                                {   this.state.approvals.bindData['Approver3']!=undefined && 
+                                                                    <td>
+                                                                        <div className="outer-div-process">
+                                                                            <div className={(this.state.approvals.bindData['Approver3'][2])=="Not Started"?"notstarted circle-div":(this.state.approvals.bindData['Approver3'][2]+" circle-div")} >A3</div>
+                                                                            <div className="div-role">Approver 3</div>
+                                                                            {this.state.approvals.bindData['Approver3'][1].map((appUsers)=>(<div className="div-name">{appUsers}</div>))}
+                                                                        </div> 
+                                                                    </td>
+                                                                }
+
+                                                                { this.state.approvals.bindData['Approver4']!=undefined &&
+                                                                    <td><span className="span-arrow"> → </span></td>
+                                                                }
+
+                                                                {   this.state.approvals.bindData['Approver4']!=undefined && 
+                                                                    <td>
+                                                                        <div className="outer-div-process">
+                                                                            <div className={(this.state.approvals.bindData['Approver4'][2])=="Not Started"?"notstarted circle-div":(this.state.approvals.bindData['Approver4'][2]+" circle-div")} >A4</div>
+                                                                            <div className="div-role">Approver 4</div>
+                                                                            {this.state.approvals.bindData['Approver4'][1].map((appUsers)=>(<div className="div-name">{appUsers}</div>))}
+                                                                        </div> 
+                                                                    </td>
+                                                                }
+
+                                                                { (this.state.approvals.approvalLevel=="Escalation" || this.state.approvals['escalateStatus']!=undefined)  &&
+                                                                    <td><span className="span-arrow"> → </span></td>
+                                                                }
+
+                                                                {(this.state.approvals.approvalLevel=="Escalation" || this.state.approvals['escalateStatus']!=undefined) && 
+                                                                    <td>
+                                                                        <div className="outer-div-process">
+                                                                            <div className={(this.state.approvals['escalateStatus']+" circle-div")} >ET</div>
+                                                                            <div className="div-role">Escalation Team</div>
+                                                                            {this.state.approvals['Escalation'][1].map((appUsers)=>(<div className="div-name">{appUsers}</div>))}
+                                                                        </div>
+                                                                    </td> 
+                                                                }
+
+                                                                { (this.state.approvals.purchasingManager.length!=0 && this.state.trFormdata.TotalAmount>1000 )  &&
+                                                                    <td><span className="span-arrow"> → </span></td>
+                                                                }
+
+                                                                {this.state.approvals.purchasingManager.length!=0 && this.state.trFormdata.TotalAmount>1000 && 
+                                                                    <td>
+                                                                        <div className="outer-div-process">
+                                                                            <div className={(this.state.approvals.purchasingManager[2])=="Not Started"?"notstarted circle-div":(this.state.approvals.purchasingManager[2]+" circle-div")} >PM</div>
+                                                                            <div className="div-role">Purchasing Manager</div>
+                                                                            {this.state.approvals.purchasingManager[1].map((appUsers)=>(<div className="div-name">{appUsers}</div>))}
+                                                                        </div> 
+                                                                    </td>
+                                                                }
+                                                            </tr>
+                                                        </tbody>
+                                                    </table>
+                                            </div>
+                                        </div>
+                                    </div>}
+
+
+
+
+                                    <div className="row justify-content-md-left mt-4">
+                                        <div className="col-md-12">
+                                            <div className="p-rel">
+                                                <h6 className="p-2 mb-0 c-bg-title">Comments History</h6>
+                                            </div>
+                                            {/* <h6 className="mb-2">Comments History</h6> */}
+                                            <div className="px-2">
+                                                <table className="table border mt-2">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>Action</th>
+                                                            <th>Role</th>
+                                                            <th>User</th>
+                                                            <th>Comments </th>
+                                                            <th>Date </th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        {this.BindComments()}
+                                                    </tbody>
+                                                </table>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -2038,8 +2973,8 @@ class PurchaseRequestForm extends React.Component<PurchaseRequestProps, Purchase
                                                     </div>
                                                     <div className="col-md-3">
                                                         <div className="light-text">
-                                                            <label>Project Code </label>
-                                                            <select className="form-control" name="ProjectCode" ref={this.ddlProjectCode} title="ProjectCode" onChange={this.handleChange} >
+                                                            <label>Project Code { this.state.isDeptNew && <span className="mandatoryhastrick">*</span>}</label>
+                                                            <select className="form-control" name="ProjectCode" ref={this.ddlProjectCode} required={this.state.isDeptNew} title="ProjectCode" onChange={this.handleChange} >
                                                                 <option>None</option>
                                                                 {this.state.ProjectCode.map((item, index) => <option key={index} value={item.Project_x0020_Code} selected={item.Project_x0020_Code == this.state.formData.ProjectCode}>{`${item.Title} (${item.Project_x0020_Code})`}</option>)}
                                                             </select>
@@ -2059,6 +2994,17 @@ class PurchaseRequestForm extends React.Component<PurchaseRequestProps, Purchase
                                                             </select>
                                                         </div>
                                                     </div>
+                                                    { this.state.isDeptNew && <div className="col-md-3">
+                                                        <div className="light-text">
+                                                            <label>Project Category { this.state.isDeptNew && <span className="mandatoryhastrick">*</span>}</label>
+                                                            <select className="form-control" required={this.state.isDeptNew} name="ProjectCategory" ref={this.ddlProjectCategory} title="Project Category" onChange={this.handleChange} >
+                                                                <option>None</option>
+                                                                {this.state.projectCategories.map((option) => (
+                                                                    <option value={option.Title} selected={option.Title == this.state.formData.ProjectCategory}>{option.Title}</option>
+                                                                ))}
+                                                            </select>
+                                                        </div>
+                                                    </div>}
                                                     <div className="col-md-3">
                                                         <div className="light-text">
                                                             <label>Vendor</label>
@@ -2076,21 +3022,70 @@ class PurchaseRequestForm extends React.Component<PurchaseRequestProps, Purchase
                                                             <input className="form-control" required={true} placeholder="" name="Currency" title="Currency" value={this.state.formData.Currency} autoComplete="off" disabled={true} />
                                                         </div>
                                                     </div>
-                                                    <InputCheckBox
+                                                    {/* <InputCheckBox
                                                             label={"Capital Investment"}
                                                             name={"CapitalInvestment"}
                                                             checked={this.state.formData.CapitalInvestment}
                                                             onChange={this.handleChange}
                                                             isforMasters={false}
-                                                    />
+                                                            isdisable={false}
+                                                    /> */}
+
+                                                   { !(this.state.isDeptNew) && <div className="col-md-3">
+                                                        <div className="light-text">
+                                                            <label>Capital Investment</label>
+                                                            <select className="form-control" name="CapitalInvestment"  title="CapitalInvestment" onChange={this.handleChange} value={this.state.formData.CapitalInvestment==true?"true":"false"}>
+                                                            <option value="false" selected>No</option>
+                                                            <option value="true">Yes</option>
+                                                            </select>
+                                                        </div>
+                                                    </div>}
+                                                   
                                                 </div>
                                                 <div className="row pt-2 px-2">
-                                                    <div className="col-md-9">
-                                                    <div className="light-text mt-1">
+
+                                                { (this.state.isDeptNew) && <div className="col-md-3">
+                                                        <div className="light-text">
+                                                            <label>Capital Investment</label>
+                                                            <select className="form-control" name="CapitalInvestment"  title="CapitalInvestment" onChange={this.handleChange} value={this.state.formData.CapitalInvestment==true?"true":"false"}>
+                                                            <option value="false" selected>No</option>
+                                                            <option value="true">Yes</option>
+                                                            </select>
+                                                        </div>
+                                                    </div>}
+
+                                                    <InputCheckBox
+                                                            label={"Tool Required"}
+                                                            name={"ToolRequired"}
+                                                            checked={this.state.formData.ToolRequired}
+                                                            onChange={this.handleChange}
+                                                            isforMasters={false}
+                                                            isdisable={false}
+                                                    />
+
+                                                    <InputCheckBox
+                                                            label={"Is Urgent"}
+                                                            name={"IsUrgent"}
+                                                            checked={this.state.formData.IsUrgent}
+                                                            onChange={this.handleChange}
+                                                            isforMasters={false}
+                                                            isdisable={(this.state.trFormdata.ApprovalLevel=='5')?true:false}
+                                                    />
+                                                   { !(this.state.isDeptNew) && <div className="col-md-6">
+                                                        <div className="light-text mt-1">
                                                             <label className="floatingTextarea2">Reason <span className="mandatoryhastrick">*</span></label>
                                                             <textarea className="form-control requiredinput" onChange={this.handleChange} value={this.state.formData.Description || ''} placeholder="" maxLength={750} id="txtTargetDescription" name="Description" ref={this.description}></textarea>
                                                         </div>
-                                                    </div>
+                                                    </div>}
+                                                </div>
+
+                                                <div className="row pt-2 px-2">
+                                                { (this.state.isDeptNew) && <div className="col-md-9">
+                                                        <div className="light-text mt-1">
+                                                            <label className="floatingTextarea2">Reason <span className="mandatoryhastrick">*</span></label>
+                                                            <textarea className="form-control requiredinput" onChange={this.handleChange} value={this.state.formData.Description || ''} placeholder="" maxLength={750} id="txtTargetDescription" name="Description" ref={this.description}></textarea>
+                                                        </div>
+                                                    </div>}
                                                 </div>
 
                                             </div>

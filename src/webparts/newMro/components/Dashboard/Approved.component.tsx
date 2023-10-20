@@ -59,13 +59,14 @@ class Approved extends React.Component<ApprovedProps,ApprovedState> {
         let now = new Date();
         let addonemoreday = new Date(now.setDate(now.getDate() + 1)); //new Date(now.getTime() + 86400000);
         let last07days = new Date(now.setDate(now.getDate() - 7));
+        let last90days=new Date(now.setDate(addonemoreday.getDate()-90));
         let mroGroups = await sp.web.currentUser.groups();
         let Groups =[];
         mroGroups.forEach(grp=>{
             Groups.push(grp.Id);// += ' or ReviewerId eq ' + grp.Id;
         });
         Groups.push(this.props.spContext.userId);
-        var filterString = `(Modified ge datetime'${last07days.toISOString()}' and Modified le datetime'${addonemoreday.toISOString()}' and IsActive ne 0 and (Status eq 'Approved' or Status eq 'Purchasing Team Updated'))`;
+        var filterString = `(Modified ge datetime'${last07days.toISOString()}' and Modified le datetime'${addonemoreday.toISOString()}' and IsActive ne 0 and (Status eq 'Approved' or Status eq 'Purchasing Team Updated')) or (Modified ge datetime'${last90days.toISOString()}' and Modified le datetime'${addonemoreday.toISOString()}' and IsActive ne 0 and Status eq 'Approved')`;
         sp.web.lists.getByTitle('PurchaseRequest').items.top(2000).filter(filterString).expand("Author", "Requisitioner").select('Author/Title', 'Requisitioner/Title', '*').orderBy('Created', false).get()
             .then((response) => {
                 let FinalData=[];

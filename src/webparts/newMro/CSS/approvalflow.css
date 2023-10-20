@@ -1,0 +1,89 @@
+.approver,.requisitioner {
+    display: inline-block;
+    text-align: center;
+}
+/* .circle {
+    width: 60px;
+    height: 60px;
+    background-color: white; 
+    border-radius: 50%;
+    line-height: 50px;
+    border: 1px solid black;
+    font-size: 1.25rem;
+} */
+.role {
+    font-size: 12px;
+    text-align: left;
+}
+.name{
+    font-weight: 300;
+    margin-top: 5px;
+    text-align: left;
+}
+/* Style for submitted and approved elements */
+/* .submitted {
+    font-weight: bold;
+} */
+.Approved {
+    background-color: lightgreen !important;
+}
+.Rejected {
+    background-color: red !important;
+}
+/* .process{
+    display: flex;
+} */
+.Pending{
+    background-color: yellow !important;
+}
+.Escalated{
+    background-color: lightgray !important;
+}
+.notstarted,.Queued{
+    background-color: white !important;
+}
+/* .container{
+    display: flex;
+    font-weight: bold;
+    /* align-items: center; */
+    /* justify-content: center; */
+    /* margin: 20px 0 0 20px; */
+/* } */ 
+/* .arrow{
+    /* margin:0 5px 25px; */
+    /* font-size: 350%;
+    margin-right: 50%; */
+/* } */ 
+
+
+
+
+.outer-table-process td .outer-div-process {
+    min-width: 110px;
+    margin: auto;
+    text-align: center;
+}
+.outer-table-process td {
+    text-align: center;
+    vertical-align: top;
+}
+.circle-div {
+    width: 60px;
+    height: 60px;
+    background-color: #fff;
+    border-radius: 50%;
+    border: 1px solid #000;
+    font-size: 1.25rem;
+    text-align: center;
+    padding-top: 0.9rem;
+    margin: auto;
+}
+.div-role{
+    font-weight: bold;
+}
+span.span-arrow {
+    font-size: 3rem;
+    width: 80px;
+    display: block;
+    margin: auto;
+}

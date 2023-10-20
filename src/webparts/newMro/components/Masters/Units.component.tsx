@@ -513,6 +513,7 @@ class Units extends React.Component<UnitsProps, UnitsState>{
                           checked={this.state.IsActive}
                           onChange={this.handleChange}
                           isforMasters={true}
+                          isdisable={false}
                         />
 
                       </div>

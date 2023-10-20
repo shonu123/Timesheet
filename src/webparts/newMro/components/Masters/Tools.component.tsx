@@ -685,6 +685,7 @@ class Tools extends Component<ToolsProps, ToolsState> {
                                                             checked={this.state.formData.IsActive}
                                                             onChange={this.handleChange}
                                                             isforMasters={true}
+                                                            isdisable={false}
                                                         />
 
                                                     </div>

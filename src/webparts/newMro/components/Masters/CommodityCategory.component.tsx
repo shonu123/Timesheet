@@ -521,6 +521,7 @@ class Commodity extends React.Component<CommodityProps, CommodityState>{
                             checked={this.state.IsActive}
                             onChange={this.handleChange}
                             isforMasters={true}
+                            isdisable={false}
                           />
 
                         </div>

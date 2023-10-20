@@ -491,6 +491,7 @@ class ProjectCategory extends React.Component<ProjectCategoryProps, ProjectCateg
                           checked={this.state.IsActive}
                           onChange={this.handleChange}
                           isforMasters={true}
+                          isdisable={false}
                         />
 
                       </div>

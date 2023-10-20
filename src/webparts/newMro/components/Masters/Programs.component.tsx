@@ -509,6 +509,7 @@ class Programs extends React.Component<ProgramsProps, ProgramsState>{
                           checked={this.state.IsActive}
                           onChange={this.handleChange}
                           isforMasters={true}
+                          isdisable={false}
                         />
 
                       </div>

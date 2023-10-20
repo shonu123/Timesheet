@@ -483,6 +483,7 @@ class Plant extends Component<PlantProps, PlantState> {
                                                         checked={this.state.formData.Status}
                                                         onChange={this.handleChange}
                                                         isforMasters={true}
+                                                        isdisable={false}
                                                     />
                                                 </div>
                                             </div>

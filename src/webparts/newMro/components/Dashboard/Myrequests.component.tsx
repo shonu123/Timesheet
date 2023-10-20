@@ -157,6 +157,12 @@ class Myrequests extends React.Component<MyrequestsProps, MyrequestsState> {
                 sortable: true
             },
             {
+                name:"PO Number",
+                selector:(row,i)=> row.PONumber,
+                width: '135px',
+                sortable: true
+            },
+            {
                 name: "Description",
                 //selector: 'Description',
                 selector: (row, i) => row.Description,
