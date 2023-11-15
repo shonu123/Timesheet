@@ -1816,7 +1816,7 @@ class PurchaseRequestForm extends React.Component<PurchaseRequestProps, Purchase
             sp.web.lists.getByTitle('exchangerates').items.select("*").orderBy('Title').get(),
             sp.web.lists.getByTitle("Vendor").items.select("*").orderBy('Title').top(5000).getAll(),
             sp.web.lists.getByTitle("Tools").items.select("*").orderBy("Tool_x0020_Number").top(5000).getAll(),
-            sp.web.lists.getByTitle("ProjectCategory").items.select("*").orderBy("Department").get(),
+            sp.web.lists.getByTitle("ProjectCategory").items.select("*").orderBy("Title").get(),
             sp.web.currentUser.groups()
         ]);
 
@@ -2022,7 +2022,7 @@ class PurchaseRequestForm extends React.Component<PurchaseRequestProps, Purchase
              //   let Vendors = await sp.web.lists.getByTitle('Vendor').items.filter(`Database eq '${formData.Database}' and IsActive eq 1`).select("*").orderBy('Title').getAll();
                 let Vendors = await sp.web.lists.getByTitle('Vendor').items.select("*").orderBy('Title').getAll();
                 let tools:any=await sp.web.lists.getByTitle("Tools").items.select("*").orderBy("Tool_x0020_Number").getAll();
-                let Categories:any=await sp.web.lists.getByTitle("ProjectCategory").items.select("*").orderBy("Department").getAll();
+                let Categories:any=await sp.web.lists.getByTitle("ProjectCategory").items.select("*").orderBy("Title").getAll();
 
                 Vendors=Vendors.filter(x=>(x.Database==formData.Database && x.IsActive==true));
                 tools=tools.filter(x=>(x.Database==formData.Database && x.IsActive==true));

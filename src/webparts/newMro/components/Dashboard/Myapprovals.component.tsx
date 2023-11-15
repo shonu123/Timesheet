@@ -64,8 +64,11 @@ class Myapprovals extends React.Component<MyapprovalsProps, MyapprovalsState> {
         this.loadListData(qryAssignedTO);
     }
     private loadListData = (qryAssignedTO) => {
+        let now = new Date();
+        var last90days=new Date(now.setDate(now.getDate()-90));
+        let currentDate = new Date()
         const userId = this.props.spContext.userId;
-        var filterString = `(AssignToId eq ${userId} ${qryAssignedTO}) and Status ne 'Approved' and Status ne '${ApprovalStatus.Withdraw}'`;
+        var filterString = `(Modified le datetime'${currentDate.toISOString()}' and Modified ge datetime'${last90days.toISOString()}') and (AssignToId eq ${userId} ${qryAssignedTO}) and Status ne 'Approved' and Status ne '${ApprovalStatus.Withdraw}'`;
         sp.web.lists.getByTitle('PurchaseRequest').items.top(2000).filter(filterString).expand("Author", "Requisitioner").select('Author/Title', 'Requisitioner/Title', '*').orderBy('Modified', false).get()
             .then((response) => {
                 this.setState({approvals: response,loading:false });
