@@ -6,7 +6,8 @@ import Formvalidator from '../../Utilities/Formvalidator';
 import { ControlType, Dropdowns, ActionStatus, ApprovalStatus, PendingStatus } from '../../Constants/Constants';
 import ModalPopUp from '../Shared/ModalPopUp';
 import Loader from '../Shared/Loader';
-import { sp } from '@pnp/sp';
+// import { spfi } from "@pnp/sp";
+import { SPBatch, sp } from '@pnp/sp';
 import { Web } from '@pnp/sp/webs';
 import "@pnp/sp/webs";
 import "@pnp/sp/lists";
@@ -31,7 +32,7 @@ import { Navigate } from 'react-router-dom';
 import { confirm } from 'react-confirm-box';
 import InputCheckBox from '../Shared/InputCheckBox';
 import '../../CSS/approvalflow.css';
-
+// import "@pnp/sp/batching";
 export interface PurchaseRequestProps {
     match: any;
     spContext: any;
@@ -177,6 +178,7 @@ class PurchaseRequestForm extends React.Component<PurchaseRequestProps, Purchase
         reorder:false,
         authorId:null,
         IsWithdraw: false,
+        Categories: [],
         //GrandTotal:0,
     };
 
@@ -1010,9 +1012,12 @@ class PurchaseRequestForm extends React.Component<PurchaseRequestProps, Purchase
             this.setState({ loading:true });
             let departments: any = await this.rootweb.lists.getByTitle('Department').items.filter("Plant/Title eq '" + formData.Plant + "'").select("*").orderBy("Title").get();
            // let vendors: any = await sp.web.lists.getByTitle('Vendor').items.filter(`IsActive eq 1 and Database eq '${formData.Database}' `).select("*").orderBy('Title').getAll();
-            let vendors:any= await sp.web.lists.getByTitle("Vendor").items.select("*").orderBy('Title').getAll();
-            let tools:any=await sp.web.lists.getByTitle("Tools").items.select("*").orderBy("Tool_x0020_Number").getAll();
-            let Categories:any=await sp.web.lists.getByTitle("ProjectCategory").items.select("*").orderBy("Department").getAll();
+            // let vendors:any= await sp.web.lists.getByTitle("Vendor").items.select("*").orderBy('Title').getAll();
+            // let tools:any=await sp.web.lists.getByTitle("Tools").items.select("*").orderBy("Tool_x0020_Number").getAll();
+            // let Categories:any=await sp.web.lists.getByTitle("ProjectCategory").items.select("*").orderBy("Department").getAll();
+            let vendors = this.state.Vendors
+            let tools = this.state.Tools
+            let Categories = this.state.Categories
             var RequsitionerCodes: any = await sp.web.lists.getByTitle('RequsitionerCodes').items.filter(`IsActive eq 1 and Database eq '${formData.Database}'`).select("*").orderBy('Requsitioner_x0020_Code').getAll();
            var Buyers: any = await sp.web.lists.getByTitle('Buyers').items.filter(`Database eq '${formData.Database}' and IsActive eq 1`).select("*").orderBy('Title').getAll();
            // as database = CMSDAT removing it from  rest calls by Riyaz on 1/12/21
@@ -1780,16 +1785,50 @@ class PurchaseRequestForm extends React.Component<PurchaseRequestProps, Purchase
 
     //#region Load Data
     private async GetMasterListData() {
-        let projectCode: any = await sp.web.lists.getByTitle('ProjectCode').items.filter("IsActive eq 1").select('*').orderBy('Title').get();
-        let commodityCategory: any = await sp.web.lists.getByTitle('CommodityCategory').items.filter("IsActive eq 1").select('*').orderBy('Title').get();
-        let Vendors:any=[];
-        let tools:any=[];
-        let QUnits: any = await sp.web.lists.getByTitle('Units').items.filter("IsActive eq 1").select("*").orderBy('Title').get();
-        let PUnits: any = await sp.web.lists.getByTitle('PriceUnit').items.filter("IsActive eq 1").select("*").orderBy('Title').get();
-        let Plants: any = await this.rootweb.lists.getByTitle('Plant').items.filter("Status eq 1").select("*").orderBy("Title").get();
-        let programs: any = await sp.web.lists.getByTitle('Programs').items.filter("IsActive eq 1").select("*").orderBy('Title').get();
-        let exchangeRates: any = await sp.web.lists.getByTitle('exchangerates').items.select("*").orderBy('Title').get();
-        let groups = await sp.web.currentUser.groups();
+        // let projectCode: any = await sp.web.lists.getByTitle('ProjectCode').items.filter("IsActive eq 1").select('*').orderBy('Title').get();
+        // let commodityCategory: any = await sp.web.lists.getByTitle('CommodityCategory').items.filter("IsActive eq 1").select('*').orderBy('Title').get();
+
+        // // let Vendors:any=[];
+        // // let tools:any=[];
+
+        // let QUnits: any = await sp.web.lists.getByTitle('Units').items.filter("IsActive eq 1").select("*").orderBy('Title').get();
+        // let PUnits: any = await sp.web.lists.getByTitle('PriceUnit').items.filter("IsActive eq 1").select("*").orderBy('Title').get();
+        // let Plants: any = await this.rootweb.lists.getByTitle('Plant').items.filter("Status eq 1").select("*").orderBy("Title").get();
+        // let programs: any = await sp.web.lists.getByTitle('Programs').items.filter("IsActive eq 1").select("*").orderBy('Title').get();
+        // let exchangeRates: any = await sp.web.lists.getByTitle('exchangerates').items.select("*").orderBy('Title').get();
+
+        // let Vendors:any= await sp.web.lists.getByTitle("Vendor").items.select("*").orderBy('Title').top(5000).getAll();
+        // let tools:any=await sp.web.lists.getByTitle("Tools").items.select("*").orderBy("Tool_x0020_Number").top(5000).getAll();
+        // let Categories:any=await sp.web.lists.getByTitle("ProjectCategory").items.select("*").orderBy("Department").top(5000).getAll();
+        // this.setState({
+        //     Vendors: Vendors,
+        //     Categories: Categories,
+        //     Tools:tools,
+        // })
+
+        let [projectCode,commodityCategory,QUnits,PUnits,Plants,programs,exchangeRates,Vendors,tools,Categories,groups] = await Promise.all([
+            sp.web.lists.getByTitle('ProjectCode').items.filter("IsActive eq 1").select('*').orderBy('Title').get(),
+            sp.web.lists.getByTitle('CommodityCategory').items.filter("IsActive eq 1").select('*').orderBy('Title').get(),
+            sp.web.lists.getByTitle('Units').items.filter("IsActive eq 1").select("*").orderBy('Title').get(),
+            sp.web.lists.getByTitle('PriceUnit').items.filter("IsActive eq 1").select("*").orderBy('Title').get(),
+            this.rootweb.lists.getByTitle('Plant').items.filter("Status eq 1").select("*").orderBy("Title").get(),
+            sp.web.lists.getByTitle('Programs').items.filter("IsActive eq 1").select("*").orderBy('Title').get(),
+            sp.web.lists.getByTitle('exchangerates').items.select("*").orderBy('Title').get(),
+            sp.web.lists.getByTitle("Vendor").items.select("*").orderBy('Title').top(5000).getAll(),
+            sp.web.lists.getByTitle("Tools").items.select("*").orderBy("Tool_x0020_Number").top(5000).getAll(),
+            sp.web.lists.getByTitle("ProjectCategory").items.select("*").orderBy("Department").get(),
+            sp.web.currentUser.groups()
+        ]);
+
+        console.log(projectCode,commodityCategory,QUnits,PUnits,Plants,programs,exchangeRates,Vendors,tools,Categories);
+       
+          this.setState({
+                Vendors: Vendors,
+                Categories: Categories,
+                Tools:tools,
+            })
+
+        // let groups
         this.userGroups=groups.filter(c=>c.Title.includes('MRO'));
         let groupIds = this.userGroups.map(grp=>grp.Id);
         let DynamicDisabled = false;
