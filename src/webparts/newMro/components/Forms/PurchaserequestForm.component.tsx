@@ -2030,13 +2030,14 @@ class PurchaseRequestForm extends React.Component<PurchaseRequestProps, Purchase
                 var ApprovalsMatrix: any = await sp.web.lists.getByTitle('ApprovalsMatrix').items.filter("IsActive eq 1 and Company eq '" + formData.Company + "' and Plant eq '" + formData.Plant + "'  and Department eq '" + formData.Department + "'").select('*').get();
                 
              //   let Vendors = await sp.web.lists.getByTitle('Vendor').items.filter(`Database eq '${formData.Database}' and IsActive eq 1`).select("*").orderBy('Title').getAll();
-                let Vendors = await sp.web.lists.getByTitle('Vendor').items.select("*").orderBy('Title').getAll();
-                let tools:any=await sp.web.lists.getByTitle("Tools").items.select("*").orderBy("Tool_x0020_Number").getAll();
-                let Categories:any=await sp.web.lists.getByTitle("ProjectCategory").items.select("*").orderBy("Title").getAll();
+                //commented on 7/12/2023
+                // let Vendors = await sp.web.lists.getByTitle('Vendor').items.select("*").orderBy('Title').top(5000).getAll();
+                // let tools:any=await sp.web.lists.getByTitle("Tools").items.select("*").orderBy("Tool_x0020_Number").top(5000).getAll();
+                // let Categories:any=await sp.web.lists.getByTitle("ProjectCategory").items.select("*").orderBy("Title").getAll();
 
-                Vendors=Vendors.filter(x=>(x.Database==formData.Database && x.IsActive==true));
-                tools=tools.filter(x=>(x.Database==formData.Database && x.IsActive==true));
-                Categories=Categories.filter(x=>(x.IsActive==true));
+                Vendors=this.state.Vendors.filter(x=>(x.Database==formData.Database && x.IsActive==true));
+                tools=this.state.Tools.filter(x=>(x.Database==formData.Database && x.IsActive==true));
+                Categories=this.state.Categories.filter(x=>(x.IsActive==true));
 
                 // let projCategories=[];
                 // if(deptNew){
