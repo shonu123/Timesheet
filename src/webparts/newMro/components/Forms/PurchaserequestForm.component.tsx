@@ -1729,23 +1729,33 @@ class PurchaseRequestForm extends React.Component<PurchaseRequestProps, Purchase
             for (const i in newFileArry) {
                 let file = newFileArry[i];
                 let siteAbsoluteURL = this.props.context.pageContext.web.serverRelativeUrl;
-                sp.web.getFolderByServerRelativeUrl(siteAbsoluteURL + "/PurchaseRequestDocs").files.add(file.name, file, true).then((f) => {
-                    f.file.getItem().then(item => {
-                        item.update({
-                            ItemID: ItemID
-                        }).then((myupdate) => {
-                            processedFiles = processedFiles + 1;
-                            if (newFileArry.length == processedFiles) {
-                              
-                                this.onSucess(actionStatus, ItemID,emaildetails);
-                            }
-                        });
-                    });
-
-                }, (err) => {
-                    console.log(Error);
-                    this.onError();
+                const fileUpload = await sp.web.getFolderByServerRelativeUrl(siteAbsoluteURL + "/PurchaseRequestDocs").files.add(file.name, file, true);
+                const item1 = await sp.web.getFileByServerRelativePath(siteAbsoluteURL + "/PurchaseRequestDocs/"+file.name).getItem();
+                // const item = await fileUpload.file.getItem();
+                await item1.update({
+                    ItemID: ItemID
                 });
+                processedFiles = processedFiles + 1;
+                if (newFileArry.length == processedFiles) {
+                    this.onSucess(actionStatus, ItemID,emaildetails);
+                }
+                // sp.web.getFolderByServerRelativeUrl(siteAbsoluteURL + "/PurchaseRequestDocs").files.top(1000).add(file.name, file, true).then((f) => {
+                //     f.file.getItem().then(item => {
+                //         item.update({
+                //             ItemID: ItemID
+                //         }).then((myupdate) => {
+                //             processedFiles = processedFiles + 1;
+                //             if (newFileArry.length == processedFiles) {
+                              
+                //                 this.onSucess(actionStatus, ItemID,emaildetails);
+                //             }
+                //         });
+                //     });
+
+                // }, (err) => {
+                //     console.log(Error);
+                //     this.onError();
+                // });
             }
         } else {
             this.onSucess(actionStatus, ItemID,emaildetails);

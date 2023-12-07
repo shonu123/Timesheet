@@ -15,7 +15,7 @@
     "groupId": "5c03119e-3074-46fd-976b-c60198311f70", 
     "group": { "default": "Advanced" },
     "title": { "default": "NewMROPROD" },
-    "description": { "default": "NewMRO descriptio Productionn" }, 
+    "description": { "default": "NewMRO description Production" }, 
     "officeFabricIconFontName": "Page",
     "properties": {
       "description": "NewMRO-PROD"
