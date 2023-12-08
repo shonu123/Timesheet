@@ -41,7 +41,15 @@ class NavBar extends React.Component<NavBarProps, NavBarState> {
     public render() {
         return (
             <div className=''>
-                <nav id="" className="sidebar">
+                <div id="btnHideLeftNav" className="nav-icon">
+                    <span>
+                    </span>
+                    <span>
+                    </span>
+                    <span>
+                    </span>
+                </div>
+                <nav id="content-r" className="sidebar">
                     <div className="">
                         <ul className="list-unstyled ul-leftnav components mb-5">
                         {(this.props.currentUserGroups.includes('MRO Purchasing Team') || this.props.currentUserGroups.includes('SharePoint – MRO Administrator'))?

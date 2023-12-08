@@ -1483,7 +1483,7 @@ class PurchaseRequestForm extends React.Component<PurchaseRequestProps, Purchase
         let last0days = new Date(now.setDate(now.getDate() - 1));
         // let filterQuery = `(Status eq 'Purchasing Team Updated' or Status eq 'Approved') and (Modified ge datetime'${last0days.toISOString()}' and Modified le datetime'${addonemoreday.toISOString()}')`;
         let filterQuery = `(Status eq 'Purchasing Team Updated' or Status eq 'Approved') and (Modified ge datetime'${last0days.toISOString()}')`;
-        let selRequisitions: any = await sp.web.lists.getByTitle(this.TrListname).items.filter(filterQuery).select('Requisitioner/Id', 'Requisitioner/Title', 'Requisitioner/UserName', '*').expand('Requisitioner').get();
+        let selRequisitions: any = await sp.web.lists.getByTitle(this.TrListname).items.filter(filterQuery).select('Requisitioner/Id', 'Requisitioner/Title', 'Requisitioner/UserName', '*').expand('Requisitioner').getAll();
         // let newfileContent = "Master Req#\t Company\t Plant\t Plant Code\t Database\t Department\t Buyer\t Project Code\t Commodity Category\t Description\t Total Amount \t Purchase Req# \t Quantity\t Quantity for Unit\t Unit Price\tPrice for Unit\tVPT# \tDate required \tVendor \tProgram \tDescription/Reason \tRequsitioner Code \tCMS Req# \n ";
         let newfileContent = "Master Req# , Company , Plant , Plant Code , Database , Department , Requsitioner Code , Buyer , Project Code , Commodity Category , Reason , Total Amount , Purchase Req# , Quantity , Quantity for Unit ,  Unit Price , Price for Unit , VPT# , Date required , Vendor , Program , Description , CMS Req# \n ";
         selRequisitions.map((selItem, index) => {
