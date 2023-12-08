@@ -1012,10 +1012,10 @@ class PurchaseRequestForm extends React.Component<PurchaseRequestProps, Purchase
     private async loadVendoronPlantChange(Plant, formData) {
         try {
             this.setState({ loading:true });
-            //commented on 08/Dec/2023
-            // let departments: any = await this.rootweb.lists.getByTitle('Department').items.filter("Plant/Title eq '" + formData.Plant + "'").select("*").orderBy("Title").get();
-            let departments = this.state.Departments
-            //--**--//
+           
+             let departments: any = await this.rootweb.lists.getByTitle('Department').items.filter("Plant/Title eq '" + formData.Plant + "'").select("*").orderBy("Title").get();
+            
+            
            // let vendors: any = await sp.web.lists.getByTitle('Vendor').items.filter(`IsActive eq 1 and Database eq '${formData.Database}' `).select("*").orderBy('Title').getAll();
             // let vendors:any= await sp.web.lists.getByTitle("Vendor").items.select("*").orderBy('Title').getAll();
             // let tools:any=await sp.web.lists.getByTitle("Tools").items.select("*").orderBy("Tool_x0020_Number").getAll();
@@ -1023,11 +1023,9 @@ class PurchaseRequestForm extends React.Component<PurchaseRequestProps, Purchase
             let vendors = this.state.Vendors
             let tools = this.state.Tools
             let Categories = this.state.Categories
-            //commented on 08/Dec/2023
-            let RequsitionerCodes = this.state.RequsitionerCode
-            let Buyers = this.state.Buyers
-        //     var RequsitionerCodes: any = await sp.web.lists.getByTitle('RequsitionerCodes').items.filter(`IsActive eq 1 and Database eq '${formData.Database}'`).select("*").orderBy('Requsitioner_x0020_Code').top(5000).getAll();
-        //    var Buyers: any = await sp.web.lists.getByTitle('Buyers').items.filter(`Database eq '${formData.Database}' and IsActive eq 1`).select("*").orderBy('Title').top(5000).getAll();
+            
+            var RequsitionerCodes: any = await sp.web.lists.getByTitle('RequsitionerCodes').items.filter(`IsActive eq 1 and Database eq '${formData.Database}'`).select("*").orderBy('Requsitioner_x0020_Code').top(5000).getAll();
+          var Buyers: any = await sp.web.lists.getByTitle('Buyers').items.filter(`Database eq '${formData.Database}' and IsActive eq 1`).select("*").orderBy('Title').top(5000).getAll();
            // as database = CMSDAT removing it from  rest calls by Riyaz on 1/12/21
            // var Buyers: any = await sp.web.lists.getByTitle('Buyers').items.filter(`IsActive eq 1`).select("*").orderBy('Title').getAll();
            vendors=vendors.filter(x=>(x.Database==formData.Database && x.IsActive==true));
