@@ -179,6 +179,8 @@ class PurchaseRequestForm extends React.Component<PurchaseRequestProps, Purchase
         authorId:null,
         IsWithdraw: false,
         Categories: [],
+        RequsitionerCodesData : [],
+        BuyersData : [],
         //GrandTotal:0,
     };
 
@@ -1010,7 +1012,10 @@ class PurchaseRequestForm extends React.Component<PurchaseRequestProps, Purchase
     private async loadVendoronPlantChange(Plant, formData) {
         try {
             this.setState({ loading:true });
-            let departments: any = await this.rootweb.lists.getByTitle('Department').items.filter("Plant/Title eq '" + formData.Plant + "'").select("*").orderBy("Title").get();
+            //commented on 08/Dec/2023
+            // let departments: any = await this.rootweb.lists.getByTitle('Department').items.filter("Plant/Title eq '" + formData.Plant + "'").select("*").orderBy("Title").get();
+            let departments = this.state.Departments
+            //--**--//
            // let vendors: any = await sp.web.lists.getByTitle('Vendor').items.filter(`IsActive eq 1 and Database eq '${formData.Database}' `).select("*").orderBy('Title').getAll();
             // let vendors:any= await sp.web.lists.getByTitle("Vendor").items.select("*").orderBy('Title').getAll();
             // let tools:any=await sp.web.lists.getByTitle("Tools").items.select("*").orderBy("Tool_x0020_Number").getAll();
@@ -1018,8 +1023,11 @@ class PurchaseRequestForm extends React.Component<PurchaseRequestProps, Purchase
             let vendors = this.state.Vendors
             let tools = this.state.Tools
             let Categories = this.state.Categories
-            var RequsitionerCodes: any = await sp.web.lists.getByTitle('RequsitionerCodes').items.filter(`IsActive eq 1 and Database eq '${formData.Database}'`).select("*").orderBy('Requsitioner_x0020_Code').getAll();
-           var Buyers: any = await sp.web.lists.getByTitle('Buyers').items.filter(`Database eq '${formData.Database}' and IsActive eq 1`).select("*").orderBy('Title').getAll();
+            //commented on 08/Dec/2023
+            let RequsitionerCodes = this.state.RequsitionerCode
+            let Buyers = this.state.Buyers
+        //     var RequsitionerCodes: any = await sp.web.lists.getByTitle('RequsitionerCodes').items.filter(`IsActive eq 1 and Database eq '${formData.Database}'`).select("*").orderBy('Requsitioner_x0020_Code').top(5000).getAll();
+        //    var Buyers: any = await sp.web.lists.getByTitle('Buyers').items.filter(`Database eq '${formData.Database}' and IsActive eq 1`).select("*").orderBy('Title').top(5000).getAll();
            // as database = CMSDAT removing it from  rest calls by Riyaz on 1/12/21
            // var Buyers: any = await sp.web.lists.getByTitle('Buyers').items.filter(`IsActive eq 1`).select("*").orderBy('Title').getAll();
            vendors=vendors.filter(x=>(x.Database==formData.Database && x.IsActive==true));
@@ -1029,7 +1037,6 @@ class PurchaseRequestForm extends React.Component<PurchaseRequestProps, Purchase
            Categories=Categories.filter(x=>( x.IsActive==true));
             RequsitionerCodes = sortDataByTitle(RequsitionerCodes, "Requsitioner_x0020_Desc");
             Buyers = sortDataByTitle(Buyers, "Title");
-
             this.setState({ Vendors: vendors,Tools:tools, projectCategories:Categories, formData, RequsitionerCode: RequsitionerCodes, Buyers: Buyers, Departments: departments,Vendor:vendors,loading:false });
         } catch (error) {
             this.onError();
@@ -1478,7 +1485,7 @@ class PurchaseRequestForm extends React.Component<PurchaseRequestProps, Purchase
         let last0days = new Date(now.setDate(now.getDate() - 1));
         // let filterQuery = `(Status eq 'Purchasing Team Updated' or Status eq 'Approved') and (Modified ge datetime'${last0days.toISOString()}' and Modified le datetime'${addonemoreday.toISOString()}')`;
         let filterQuery = `(Status eq 'Purchasing Team Updated' or Status eq 'Approved') and (Modified ge datetime'${last0days.toISOString()}')`;
-        let selRequisitions: any = await sp.web.lists.getByTitle(this.TrListname).items.filter(filterQuery).select('Requisitioner/Id', 'Requisitioner/Title', 'Requisitioner/UserName', '*').expand('Requisitioner').getAll();
+        let selRequisitions: any = await sp.web.lists.getByTitle(this.TrListname).items.filter(filterQuery).select('Requisitioner/Id', 'Requisitioner/Title', 'Requisitioner/UserName', '*').expand('Requisitioner').get();
         // let newfileContent = "Master Req#\t Company\t Plant\t Plant Code\t Database\t Department\t Buyer\t Project Code\t Commodity Category\t Description\t Total Amount \t Purchase Req# \t Quantity\t Quantity for Unit\t Unit Price\tPrice for Unit\tVPT# \tDate required \tVendor \tProgram \tDescription/Reason \tRequsitioner Code \tCMS Req# \n ";
         let newfileContent = "Master Req# , Company , Plant , Plant Code , Database , Department , Requsitioner Code , Buyer , Project Code , Commodity Category , Reason , Total Amount , Purchase Req# , Quantity , Quantity for Unit ,  Unit Price , Price for Unit , VPT# , Date required , Vendor , Program , Description , CMS Req# \n ";
         selRequisitions.map((selItem, index) => {
@@ -2026,23 +2033,34 @@ class PurchaseRequestForm extends React.Component<PurchaseRequestProps, Purchase
                 if (selRequisitions.Comments != null) {
                     trFormdata.Commentsdata = JSON.parse(selRequisitions.Comments);
                 }
-                let Departments: any = await this.rootweb.lists.getByTitle('Department').items.filter("Plant/Title eq '" + formData.Plant + "'").select("*").orderBy("Title").get();
-                var ApprovalsMatrix: any = await sp.web.lists.getByTitle('ApprovalsMatrix').items.filter("IsActive eq 1 and Company eq '" + formData.Company + "' and Plant eq '" + formData.Plant + "'  and Department eq '" + formData.Department + "'").select('*').get();
+                // commented on 08/Dec/2023
+                // let Departments: any = await this.rootweb.lists.getByTitle('Department').items.filter("Plant/Title eq '" + formData.Plant + "'").select("*").orderBy("Title").get();
+                // var ApprovalsMatrix: any = await sp.web.lists.getByTitle('ApprovalsMatrix').items.filter("IsActive eq 1 and Company eq '" + formData.Company + "' and Plant eq '" + formData.Plant + "'  and Department eq '" + formData.Department + "'").select('*').get();
                 
+                let [Departments,ApprovalsMatrix,RequsitionerCodes,Buyers] =await Promise.all([
+                    this.rootweb.lists.getByTitle('Department').items.filter("Plant/Title eq '" + formData.Plant + "'").select("*").orderBy("Title").get(),
+                    sp.web.lists.getByTitle('ApprovalsMatrix').items.filter("IsActive eq 1 and Company eq '" + formData.Company + "' and Plant eq '" + formData.Plant + "'  and Department eq '" + formData.Department + "'").select('*').get(),
+                    sp.web.lists.getByTitle('RequsitionerCodes').items.filter(`IsActive eq 1 and Database eq '${formData.Database}' `).select("*").orderBy('Requsitioner_x0020_Code').get(),
+                    sp.web.lists.getByTitle('Buyers').items.filter(`Database eq '${formData.Database}' and IsActive eq 1`).select("*").orderBy('Title').get()
+                ])
+
+
+
              //   let Vendors = await sp.web.lists.getByTitle('Vendor').items.filter(`Database eq '${formData.Database}' and IsActive eq 1`).select("*").orderBy('Title').getAll();
                 //commented on 7/12/2023
                 // let Vendors = await sp.web.lists.getByTitle('Vendor').items.select("*").orderBy('Title').top(5000).getAll();
                 // let tools:any=await sp.web.lists.getByTitle("Tools").items.select("*").orderBy("Tool_x0020_Number").top(5000).getAll();
                 // let Categories:any=await sp.web.lists.getByTitle("ProjectCategory").items.select("*").orderBy("Title").getAll();
 
+                console.log("Assiging vendors from state by commenting calls");
                 Vendors=this.state.Vendors.filter(x=>(x.Database==formData.Database && x.IsActive==true));
                 tools=this.state.Tools.filter(x=>(x.Database==formData.Database && x.IsActive==true));
                 Categories=this.state.Categories.filter(x=>(x.IsActive==true));
-
+                console.log("Assiging vendors Completed");
                 // let projCategories=[];
                 // if(deptNew){
                 //     projCategories=Categories.filter(cat=> (cat.Department).toLowerCase()==(formData.Department).toLowerCase());
-                // }
+                // } 
                 
                 let Clength=trFormdata.Commentsdata.length-1;
                 if(selRequisitions.Status=='Rejected'){
@@ -2102,9 +2120,11 @@ class PurchaseRequestForm extends React.Component<PurchaseRequestProps, Purchase
                     Approvals['Escalation'].push(escUsers);
                     console.log(Approvals);
                 }
+                //commented on 08/Dec/2023
+                // var RequsitionerCodes: any = await sp.web.lists.getByTitle('RequsitionerCodes').items.filter(`IsActive eq 1 and Database eq '${formData.Database}' `).select("*").orderBy('Requsitioner_x0020_Code').get();
+                // var Buyers: any = await sp.web.lists.getByTitle('Buyers').items.filter(`Database eq '${formData.Database}' and IsActive eq 1`).select("*").orderBy('Title').get();
 
-                var RequsitionerCodes: any = await sp.web.lists.getByTitle('RequsitionerCodes').items.filter(`IsActive eq 1 and Database eq '${formData.Database}' `).select("*").orderBy('Requsitioner_x0020_Code').getAll();
-                var Buyers: any = await sp.web.lists.getByTitle('Buyers').items.filter(`Database eq '${formData.Database}' and IsActive eq 1`).select("*").orderBy('Title').getAll();
+              
                 // as database = CMSDAT removing it from  rest calls by Riyaz on 1/12/21
                 //var Buyers: any = await sp.web.lists.getByTitle('Buyers').items.filter(`IsActive eq 1`).select("*").orderBy('Title').getAll();
                
