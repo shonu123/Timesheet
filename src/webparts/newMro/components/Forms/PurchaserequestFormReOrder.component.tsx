@@ -1271,7 +1271,10 @@ class PurchaseRequestForm extends React.Component<PurchaseRequestProps, Purchase
             //  console.log(users);
         }
     }
-
+    private onMenuItemClick(event) {
+        let item = document.getElementById('sideMenuNav');
+        item.classList.toggle('menu-hide');
+    }
     public render() {
         if (this.state.Homeredirect) {
             let url = `/`;
@@ -1283,6 +1286,16 @@ class PurchaseRequestForm extends React.Component<PurchaseRequestProps, Purchase
                     {highlightCurrentNav("lipurchaseLink")}
                     <ModalPopUp title={this.state.modalTitle} modalText={this.state.modalText} isVisible={this.state.showHideModal} onClose={this.handlefullClose} isSuccess={this.state.isSuccess}></ModalPopUp>
                     <div id="content" className="content p-2 pt-2">
+                        <div id="clickMenu" className="menu-icon-outer" onClick={(event) => this.onMenuItemClick(event)}>
+                            <div className="menu-icon">
+                                <span>
+                                </span>
+                                <span>
+                                </span>
+                                <span>
+                                </span>
+                            </div>
+                        </div>
                         <div className='container-fluid'>
                             <div className='FormContent'>
                                 <div className="title">Requisition
@@ -1566,6 +1579,16 @@ class PurchaseRequestForm extends React.Component<PurchaseRequestProps, Purchase
                     {highlightCurrentNav("lipurchaseLink")}
                     <ModalPopUp title={this.state.modalTitle} modalText={this.state.modalText} isVisible={this.state.showHideModal} onClose={this.handleClose} isSuccess={this.state.isSuccess}></ModalPopUp>
                     <div id="content" className="content p-2 pt-2">
+                        <div id="clickMenu" className="menu-icon-outer">
+                            <div className="menu-icon">
+                                <span>
+                                </span>
+                                <span>
+                                </span>
+                                <span>
+                                </span>
+                            </div>
+                        </div>
                         <div className="container-fluid">
                             <div className="FormContent">
                                 <div className="title">Requisition

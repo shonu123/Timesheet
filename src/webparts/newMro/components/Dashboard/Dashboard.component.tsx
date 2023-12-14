@@ -113,7 +113,10 @@ class Dashboard extends React.Component<DashboardProps, DashboardState> {
             //  });
         }
     }
-
+    private onMenuItemClick(event) {
+        let item = document.getElementById('sideMenuNav');
+        item.classList.toggle('menu-hide');
+    }
     private onHandleClick = (url) => {
         //remove active class for all hyperlinks
         const activeLinkClass="nav-link active";
@@ -180,6 +183,16 @@ class Dashboard extends React.Component<DashboardProps, DashboardState> {
     public render() {
         return (
             <div id="content" className="content p-2 pt-2">
+                <div id="clickMenu" className="menu-icon-outer" onClick={(event) => this.onMenuItemClick(event)}>
+                    <div className="menu-icon">
+                        <span>
+                        </span>
+                        <span>
+                        </span>
+                        <span>
+                        </span>
+                    </div>
+                </div>
                 {highlightCurrentNav("liDashboardLink")}
                 <div className="container-fluid">
                     <div className='FormContent'>

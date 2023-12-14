@@ -329,7 +329,10 @@ class ApprovalMasterfrom extends React.Component<ApprovalMasterformProps, Approv
     private handleClose = () => {
         this.setState({ showHideModal: false, redirect: "/approvalmaster" });
     }
-
+    private onMenuItemClick(event) {
+        let item = document.getElementById('sideMenuNav');
+        item.classList.toggle('menu-hide');
+    }
     public render() {
         if (this.state) {
             if (this.state.redirect) {
@@ -338,294 +341,304 @@ class ApprovalMasterfrom extends React.Component<ApprovalMasterformProps, Approv
             }
             else {
                 return (
-
                     <React.Fragment>
                         {this.state.loading && <Loader />}
                         <ModalPopUp title={this.state.modalTitle} modalText={this.state.modalText} isVisible={this.state.showHideModal} onClose={this.handleClose} isSuccess={this.state.isSuccess}></ModalPopUp>
-
-                        <div className='container-fluid'>
-                            <div className='FormContent'>
-                                <div className="title">Add/Edit Approval
-                                    <div className='mandatory-note'>
-                                        <span className='mandatoryhastrick'>*</span> indicates a required field
-                                    </div>
+                        <div id="content" className="content p-2 pt-2">
+                            <div id="clickMenu" className="menu-icon-outer" onClick={(event) => this.onMenuItemClick(event)}>
+                                <div className="menu-icon">
+                                    <span>
+                                    </span>
+                                    <span>
+                                    </span>
+                                    <span>
+                                    </span>
                                 </div>
-                                <div className="after-title"></div>
-
-                                <div className="media-m-2 media-p-1">
-                                    <div className="my-2">
-                                        <div className="row pt-2 px-2">
-                                            <div className="col-md-4">
-                                                <div className="light-text">
-                                                    <label>Company <span className="mandatoryhastrick">*</span></label>
-                                                    <select className="form-control" required={true} name="Company" title="Company" value={this.state.formData.Company}  ref={this.inputCompany} disabled>
-                                                        <option value=''>None</option>
-                                                        {this.state.Companys.map((option) => (
-                                                            <option value={option} selected={this.state.formData.Company != ''}>{option}</option>
-                                                        ))}
-                                                    </select>
-
-
-                                                </div>
-                                            </div>
-                                            <div className="col-md-4">
-                                                <div className="light-text">
-                                                    <label>Plant <span className="mandatoryhastrick">*</span></label>
-                                                    <select className="form-control" required={true} name="Plant" title="Plant" value={this.state.formData.Plant} onChange={this.changeplant} ref={this.inputPlant}>
-                                                        <option value=''>None</option>
-                                                        {this.state.Plants.map((option) => (
-                                                            <option value={option.Title}  data-database ={option.Database} selected={this.state.formData.Plant != ''}>{option.Title}</option>
-                                                        ))}
-                                                    </select>
-
-
-                                                </div>
-                                            </div>
-                                            <div className="col-md-4">
-                                                <div className="light-text">
-                                                    <label>Department <span className="mandatoryhastrick">*</span></label>
-                                                    <select className="form-control" required={true} name="Department" title="Department" value={this.state.formData.Department} onChange={this.handileDeparmentchange} ref={this.inputDepartment}>
-                                                        <option value=''>None</option>
-                                                        {this.state.Departments.map((option) => (
-                                                            <option value={option.Title} selected={this.state.formData.Department != ''}>{option.Title}</option>
-                                                        ))}
-                                                    </select>
-
-
-
-                                                </div>
-                                            </div>
-
+                            </div>
+                            <div className='container-fluid'>
+                                <div className='FormContent'>
+                                    <div className="title">Add/Edit Approval
+                                        <div className='mandatory-note'>
+                                            <span className='mandatoryhastrick'>*</span> indicates a required field
                                         </div>
-                                        
-                                        <div className="row pt-2 px-2">
+                                    </div>
+                                    <div className="after-title"></div>
 
-                                            {/* <InputText
-                                                type='text'
-                                                label={"From Budget"}
-                                                name={"FromBudget"}
-                                                value={this.state.formData.FromBudget || ''}
-                                                isRequired={true}
-                                                onChange={this.changeInputDeatils}
-                                                refElement={this.inputFromBudget}
-                                                maxlength={10}
-                                                onBlur={this.changeInputDeatils}
-                                            /> */}
-
-                                            <div className="col-md-4">
-                                                <div className="light-text">
-                                                    <label>From Budget </label>
-                                                    <input maxLength={10} className="form-control" required={true} placeholder="" type="text" name="FromBudget" title="FromBudget" value={this.state.formData.FromBudget } onChange={this.changeInputDeatils} ref={this.inputFromBudget}  />
-                                                </div>
-                                            </div>
+                                    <div className="media-m-2 media-p-1">
+                                        <div className="my-2">
+                                            <div className="row pt-2 px-2">
+                                                <div className="col-md-4">
+                                                    <div className="light-text">
+                                                        <label>Company <span className="mandatoryhastrick">*</span></label>
+                                                        <select className="form-control" required={true} name="Company" title="Company" value={this.state.formData.Company}  ref={this.inputCompany} disabled>
+                                                            <option value=''>None</option>
+                                                            {this.state.Companys.map((option) => (
+                                                                <option value={option} selected={this.state.formData.Company != ''}>{option}</option>
+                                                            ))}
+                                                        </select>
 
 
-
-                                            <InputText
-                                                type='text'
-                                                label={"To Budget"}
-                                                name={"ToBudget"}
-                                                value={this.state.formData.ToBudget || ''}
-                                                isRequired={true}
-                                                onChange={this.changeInputDeatils}
-                                                refElement={this.inputToBudget}
-                                                maxlength={10}
-                                                onBlur={this.changeInputDeatils}
-                                            />
-
-                                            <div className="col-md-4">
-                                                <div className="light-text height-calc">
-                                                    <label>Approver 1 <span className="mandatoryhastrick">*</span></label>
-                                                    <div className="custom-peoplepicker" id="divApproval1">
-                                                        <PeoplePicker
-                                                            context={this.props.context}
-                                                            titleText=""
-                                                            personSelectionLimit={1}
-                                                            showtooltip={false}
-                                                            //disabled={false}
-                                                            onChange={(e) => this._getPeoplePickerItems(e, 'Approval1Id')}
-                                                            showHiddenInUI={false}
-                                                            ensureUser={true}
-                                                            required={true}
-                                                            defaultSelectedUsers={[this.state.Approval1Email]}
-                                                            principalTypes={[PrincipalType.User,PrincipalType.SharePointGroup]}
-                                                            resolveDelay={1000} peoplePickerCntrlclassName={"input-peoplePicker-custom"} />
                                                     </div>
                                                 </div>
-                                            </div>
-                                        </div>
+                                                <div className="col-md-4">
+                                                    <div className="light-text">
+                                                        <label>Plant <span className="mandatoryhastrick">*</span></label>
+                                                        <select className="form-control" required={true} name="Plant" title="Plant" value={this.state.formData.Plant} onChange={this.changeplant} ref={this.inputPlant}>
+                                                            <option value=''>None</option>
+                                                            {this.state.Plants.map((option) => (
+                                                                <option value={option.Title}  data-database ={option.Database} selected={this.state.formData.Plant != ''}>{option.Title}</option>
+                                                            ))}
+                                                        </select>
 
-                                        <div className="row pt-2 px-2">
 
-                                            <div className="col-md-4">
-                                                <div className='light-text height-calc'>
-                                                    <label>Approver 2 </label>
-                                                    <div className="custom-peoplepicker" id="divApproval2">
-                                                        <PeoplePicker
-                                                            context={this.props.context}
-                                                            titleText=""
-                                                            personSelectionLimit={1}
-                                                            showtooltip={false}
-                                                            // disabled={false}
-                                                            onChange={(e) => this._getPeoplePickerItems(e, 'Approval2Id')}
-                                                            showHiddenInUI={false}
-                                                            ensureUser={true}
-                                                            required={true}
-                                                            defaultSelectedUsers={[this.state.Approval2Email]}
-                                                            principalTypes={[PrincipalType.User,PrincipalType.SharePointGroup]}
-                                                            resolveDelay={1000} />
                                                     </div>
                                                 </div>
-                                            </div>
-                                            <div className="col-md-4">
-                                                <div className="light-text height-calc">
-                                                    <label>Approver 3 </label>
-                                                    <div className="custom-peoplepicker" id="divApproval3">
-                                                        <PeoplePicker
-                                                            context={this.props.context}
-                                                            titleText=""
-                                                            personSelectionLimit={1}
-                                                            showtooltip={false}
-                                                            //disabled={false}
-                                                            onChange={(e) => this._getPeoplePickerItems(e, 'Approval3Id')}
-                                                            showHiddenInUI={false}
-                                                            ensureUser={true}
-                                                            required={true}
-                                                            defaultSelectedUsers={[this.state.Approval3Email]}
-                                                            principalTypes={[PrincipalType.User,PrincipalType.SharePointGroup]}
-                                                            resolveDelay={1000} />
+                                                <div className="col-md-4">
+                                                    <div className="light-text">
+                                                        <label>Department <span className="mandatoryhastrick">*</span></label>
+                                                        <select className="form-control" required={true} name="Department" title="Department" value={this.state.formData.Department} onChange={this.handileDeparmentchange} ref={this.inputDepartment}>
+                                                            <option value=''>None</option>
+                                                            {this.state.Departments.map((option) => (
+                                                                <option value={option.Title} selected={this.state.formData.Department != ''}>{option.Title}</option>
+                                                            ))}
+                                                        </select>
+
+
+
                                                     </div>
                                                 </div>
-                                            </div>
-                                            <div className="col-md-4">
-                                                <div className="light-text height-calc">
-                                                    <label>Approver 4 </label>
-                                                    <div className="custom-peoplepicker" id="divApproval4">
-                                                        <PeoplePicker
-                                                            context={this.props.context}
-                                                            titleText=""
-                                                            personSelectionLimit={1}
-                                                            showtooltip={false}
-                                                            //disabled={false}
-                                                            onChange={(e) => this._getPeoplePickerItems(e, 'Approval4Id')}
-                                                            showHiddenInUI={false}
-                                                            ensureUser={true}
-                                                            required={true}
-                                                            defaultSelectedUsers={[this.state.Approval4Email]}
-                                                            principalTypes={[PrincipalType.User,PrincipalType.SharePointGroup]}
-                                                            resolveDelay={1000} />
-                                                    </div>
-                                                </div>
+
                                             </div>
                                             
-                                            
-                                        </div>
-                                    <div className="row pt-2 px-2">
+                                            <div className="row pt-2 px-2">
 
-                                    <div className="col-md-4">
-                                                <div className="light-text height-calc">
-                                                    <label>Escalation </label>
-                                                    <div className="custom-peoplepicker" id="divEscalation">
-                                                        <PeoplePicker
-                                                            context={this.props.context}
-                                                            titleText=""
-                                                            personSelectionLimit={1}
-                                                            showtooltip={false}
-                                                            //disabled={false}
-                                                            onChange={(e) => this._getPeoplePickerItems(e, 'EscalationId')}
-                                                            showHiddenInUI={false}
-                                                            ensureUser={true}
-                                                            required={true}
-                                                            defaultSelectedUsers={[this.state.EscalationEmail]}
-                                                            principalTypes={[PrincipalType.User,PrincipalType.SharePointGroup]}
-                                                            resolveDelay={1000} />
+                                                {/* <InputText
+                                                    type='text'
+                                                    label={"From Budget"}
+                                                    name={"FromBudget"}
+                                                    value={this.state.formData.FromBudget || ''}
+                                                    isRequired={true}
+                                                    onChange={this.changeInputDeatils}
+                                                    refElement={this.inputFromBudget}
+                                                    maxlength={10}
+                                                    onBlur={this.changeInputDeatils}
+                                                /> */}
+
+                                                <div className="col-md-4">
+                                                    <div className="light-text">
+                                                        <label>From Budget </label>
+                                                        <input maxLength={10} className="form-control" required={true} placeholder="" type="text" name="FromBudget" title="FromBudget" value={this.state.formData.FromBudget } onChange={this.changeInputDeatils} ref={this.inputFromBudget}  />
+                                                    </div>
+                                                </div>
+
+
+
+                                                <InputText
+                                                    type='text'
+                                                    label={"To Budget"}
+                                                    name={"ToBudget"}
+                                                    value={this.state.formData.ToBudget || ''}
+                                                    isRequired={true}
+                                                    onChange={this.changeInputDeatils}
+                                                    refElement={this.inputToBudget}
+                                                    maxlength={10}
+                                                    onBlur={this.changeInputDeatils}
+                                                />
+
+                                                <div className="col-md-4">
+                                                    <div className="light-text height-calc">
+                                                        <label>Approver 1 <span className="mandatoryhastrick">*</span></label>
+                                                        <div className="custom-peoplepicker" id="divApproval1">
+                                                            <PeoplePicker
+                                                                context={this.props.context}
+                                                                titleText=""
+                                                                personSelectionLimit={1}
+                                                                showtooltip={false}
+                                                                //disabled={false}
+                                                                onChange={(e) => this._getPeoplePickerItems(e, 'Approval1Id')}
+                                                                showHiddenInUI={false}
+                                                                ensureUser={true}
+                                                                required={true}
+                                                                defaultSelectedUsers={[this.state.Approval1Email]}
+                                                                principalTypes={[PrincipalType.User,PrincipalType.SharePointGroup]}
+                                                                resolveDelay={1000} peoplePickerCntrlclassName={"input-peoplePicker-custom"} />
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>
-                                            <div className="col-md-4">
-                                                <div className='light-text height-calc'>
-                                                    <label>Purchasing Manager
-                                                        <span className="mandatoryhastrick"> *</span>
-                                                    </label>
-                                                    <div className="custom-peoplepicker" id="divReviewer">
-                                                        <PeoplePicker
-                                                            context={this.props.context}
-                                                            titleText=""
-                                                            personSelectionLimit={1}
-                                                            showtooltip={false}
-                                                            //disabled={false}
-                                                            onChange={(e) => this._getPeoplePickerItems(e, 'ReviewerId')}
-                                                            showHiddenInUI={false}
-                                                            ensureUser={true}
-                                                            required={true}
-                                                            defaultSelectedUsers={[this.state.ReviewerEmail]}
-                                                            principalTypes={[PrincipalType.User,PrincipalType.SharePointGroup]}
-                                                            resolveDelay={1000} />
+
+                                            <div className="row pt-2 px-2">
+
+                                                <div className="col-md-4">
+                                                    <div className='light-text height-calc'>
+                                                        <label>Approver 2 </label>
+                                                        <div className="custom-peoplepicker" id="divApproval2">
+                                                            <PeoplePicker
+                                                                context={this.props.context}
+                                                                titleText=""
+                                                                personSelectionLimit={1}
+                                                                showtooltip={false}
+                                                                // disabled={false}
+                                                                onChange={(e) => this._getPeoplePickerItems(e, 'Approval2Id')}
+                                                                showHiddenInUI={false}
+                                                                ensureUser={true}
+                                                                required={true}
+                                                                defaultSelectedUsers={[this.state.Approval2Email]}
+                                                                principalTypes={[PrincipalType.User,PrincipalType.SharePointGroup]}
+                                                                resolveDelay={1000} />
+                                                        </div>
                                                     </div>
                                                 </div>
-                                            </div>
-                                            <div className="col-md-4">
-                                                <div className="light-text height-calc">
-                                                    <label>Purchasing Team <span className="mandatoryhastrick">*</span> </label>
-                                                    <div className="custom-peoplepicker" id="divPurchasingTeam">
-                                                        <PeoplePicker
-                                                            context={this.props.context}
-                                                            titleText=""
-                                                            personSelectionLimit={1}
-                                                            showtooltip={false}
-                                                            //disabled={false}
-                                                            onChange={(e) => this._getPeoplePickerItems(e, 'PurchasingTeamId')}
-                                                            showHiddenInUI={false}
-                                                            ensureUser={true}
-                                                            required={true}
-                                                            defaultSelectedUsers={[this.state.PurchasingTeamEmail]}
-                                                            principalTypes={[PrincipalType.User,PrincipalType.SharePointGroup]}
-                                                            resolveDelay={1000} />
+                                                <div className="col-md-4">
+                                                    <div className="light-text height-calc">
+                                                        <label>Approver 3 </label>
+                                                        <div className="custom-peoplepicker" id="divApproval3">
+                                                            <PeoplePicker
+                                                                context={this.props.context}
+                                                                titleText=""
+                                                                personSelectionLimit={1}
+                                                                showtooltip={false}
+                                                                //disabled={false}
+                                                                onChange={(e) => this._getPeoplePickerItems(e, 'Approval3Id')}
+                                                                showHiddenInUI={false}
+                                                                ensureUser={true}
+                                                                required={true}
+                                                                defaultSelectedUsers={[this.state.Approval3Email]}
+                                                                principalTypes={[PrincipalType.User,PrincipalType.SharePointGroup]}
+                                                                resolveDelay={1000} />
+                                                        </div>
                                                     </div>
                                                 </div>
-                                            </div>
-                                            <div className="col-md-4">
-                                                <div className="light-text height-calc">
-                                                    <label>Inform To  </label>
-                                                    <div className="custom-peoplepicker" id="divInformTo">
-                                                        <PeoplePicker
-                                                            context={this.props.context}
-                                                            titleText=""
-                                                            personSelectionLimit={1}
-                                                            showtooltip={false}
-                                                            //disabled={false}
-                                                            onChange={(e) => this._getPeoplePickerItems(e, 'InformToId')}
-                                                            showHiddenInUI={false}
-                                                            ensureUser={true}
-                                                            required={true}
-                                                            defaultSelectedUsers={[this.state.InformToEmail]}
-                                                            principalTypes={[PrincipalType.User,PrincipalType.SharePointGroup]}
-                                                            resolveDelay={1000} />
+                                                <div className="col-md-4">
+                                                    <div className="light-text height-calc">
+                                                        <label>Approver 4 </label>
+                                                        <div className="custom-peoplepicker" id="divApproval4">
+                                                            <PeoplePicker
+                                                                context={this.props.context}
+                                                                titleText=""
+                                                                personSelectionLimit={1}
+                                                                showtooltip={false}
+                                                                //disabled={false}
+                                                                onChange={(e) => this._getPeoplePickerItems(e, 'Approval4Id')}
+                                                                showHiddenInUI={false}
+                                                                ensureUser={true}
+                                                                required={true}
+                                                                defaultSelectedUsers={[this.state.Approval4Email]}
+                                                                principalTypes={[PrincipalType.User,PrincipalType.SharePointGroup]}
+                                                                resolveDelay={1000} />
+                                                        </div>
                                                     </div>
                                                 </div>
+                                                
+                                                
                                             </div>
-                                        </div>
                                         <div className="row pt-2 px-2">
+
                                         <div className="col-md-4">
-                                            <div className="media-px-4">
-                                                <div className='row mt-3'>
-                                                    <label className="col-sm-3 col-form-label p-0">Is Active</label>
-                                                    <div className="col-sm-7">
-                                                        <input type="checkbox" checked={this.state.formData.IsActive} onChange={this.changeInputDeatils} name="IsActive"></input>
+                                                    <div className="light-text height-calc">
+                                                        <label>Escalation </label>
+                                                        <div className="custom-peoplepicker" id="divEscalation">
+                                                            <PeoplePicker
+                                                                context={this.props.context}
+                                                                titleText=""
+                                                                personSelectionLimit={1}
+                                                                showtooltip={false}
+                                                                //disabled={false}
+                                                                onChange={(e) => this._getPeoplePickerItems(e, 'EscalationId')}
+                                                                showHiddenInUI={false}
+                                                                ensureUser={true}
+                                                                required={true}
+                                                                defaultSelectedUsers={[this.state.EscalationEmail]}
+                                                                principalTypes={[PrincipalType.User,PrincipalType.SharePointGroup]}
+                                                                resolveDelay={1000} />
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div className="col-md-4">
+                                                    <div className='light-text height-calc'>
+                                                        <label>Purchasing Manager
+                                                            <span className="mandatoryhastrick"> *</span>
+                                                        </label>
+                                                        <div className="custom-peoplepicker" id="divReviewer">
+                                                            <PeoplePicker
+                                                                context={this.props.context}
+                                                                titleText=""
+                                                                personSelectionLimit={1}
+                                                                showtooltip={false}
+                                                                //disabled={false}
+                                                                onChange={(e) => this._getPeoplePickerItems(e, 'ReviewerId')}
+                                                                showHiddenInUI={false}
+                                                                ensureUser={true}
+                                                                required={true}
+                                                                defaultSelectedUsers={[this.state.ReviewerEmail]}
+                                                                principalTypes={[PrincipalType.User,PrincipalType.SharePointGroup]}
+                                                                resolveDelay={1000} />
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div className="col-md-4">
+                                                    <div className="light-text height-calc">
+                                                        <label>Purchasing Team <span className="mandatoryhastrick">*</span> </label>
+                                                        <div className="custom-peoplepicker" id="divPurchasingTeam">
+                                                            <PeoplePicker
+                                                                context={this.props.context}
+                                                                titleText=""
+                                                                personSelectionLimit={1}
+                                                                showtooltip={false}
+                                                                //disabled={false}
+                                                                onChange={(e) => this._getPeoplePickerItems(e, 'PurchasingTeamId')}
+                                                                showHiddenInUI={false}
+                                                                ensureUser={true}
+                                                                required={true}
+                                                                defaultSelectedUsers={[this.state.PurchasingTeamEmail]}
+                                                                principalTypes={[PrincipalType.User,PrincipalType.SharePointGroup]}
+                                                                resolveDelay={1000} />
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div className="col-md-4">
+                                                    <div className="light-text height-calc">
+                                                        <label>Inform To  </label>
+                                                        <div className="custom-peoplepicker" id="divInformTo">
+                                                            <PeoplePicker
+                                                                context={this.props.context}
+                                                                titleText=""
+                                                                personSelectionLimit={1}
+                                                                showtooltip={false}
+                                                                //disabled={false}
+                                                                onChange={(e) => this._getPeoplePickerItems(e, 'InformToId')}
+                                                                showHiddenInUI={false}
+                                                                ensureUser={true}
+                                                                required={true}
+                                                                defaultSelectedUsers={[this.state.InformToEmail]}
+                                                                principalTypes={[PrincipalType.User,PrincipalType.SharePointGroup]}
+                                                                resolveDelay={1000} />
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div className="row pt-2 px-2">
+                                            <div className="col-md-4">
+                                                <div className="media-px-4">
+                                                    <div className='row mt-3'>
+                                                        <label className="col-sm-3 col-form-label p-0">Is Active</label>
+                                                        <div className="col-sm-7">
+                                                            <input type="checkbox" checked={this.state.formData.IsActive} onChange={this.changeInputDeatils} name="IsActive"></input>
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>
                                         </div>
+                                        </div>
                                     </div>
-                                    </div>
-                                </div>
 
 
-                                <span className="text-validator" id="spanErrorMessage">{this.state.error}</span>
-                                <div className="row mx-1" id="">
-                                    <div className="col-sm-12 text-center mt-2" id="">
-                                        <button type="button" id="btnSubmit" autoFocus={false} className="SubmitButtons btn" onClick={this.SunmitData}>Submit</button>
-                                        <button type="button" id="btnCancel" className="CancelButtons btn" onClick={this.handleClose}>Cancel</button>
+                                    <span className="text-validator" id="spanErrorMessage">{this.state.error}</span>
+                                    <div className="row mx-1" id="">
+                                        <div className="col-sm-12 text-center mt-2" id="">
+                                            <button type="button" id="btnSubmit" autoFocus={false} className="SubmitButtons btn" onClick={this.SunmitData}>Submit</button>
+                                            <button type="button" id="btnCancel" className="CancelButtons btn" onClick={this.handleClose}>Cancel</button>
+                                        </div>
                                     </div>
                                 </div>
                             </div>

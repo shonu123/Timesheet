@@ -82,7 +82,10 @@ class PurchaseReports extends React.Component<ReportsProps, ReportsState>{
         returnObj["ToDate"]=new Date();
         this.setState(returnObj);
     }
-
+    private onMenuItemClick(event) {
+        let item = document.getElementById('sideMenuNav');
+        item.classList.toggle('menu-hide');
+    }
     private _getPeoplePickerItems = (People, fildname) => {
         let returnObj = {};
         if (People.length > 0)
@@ -641,156 +644,168 @@ class PurchaseReports extends React.Component<ReportsProps, ReportsState>{
                     {this.state.loading && <Loader />}
 
                     <ModalPopUp title={this.state.modalTitle} modalText={this.state.modalText} isVisible={this.state.showHideModal} onClose={this.handleClose} isSuccess={this.state.isSuccess}></ModalPopUp>
-                    <div className='container-fluid'>
-                        <div className='FormContent min-52'>
-                            <div className='title'>Requisition
-                                <div className='mandatory-note'>
-                                    <span className='mandatoryhastrick'>*</span> indicates a required field
-                                </div>
+                    <div id="content" className="content p-2 pt-2">
+                        <div id="clickMenu" className="menu-icon-outer" onClick={(event) => this.onMenuItemClick(event)}>
+                            <div className="menu-icon">
+                                <span>
+                                </span>
+                                <span>
+                                </span>
+                                <span>
+                                </span>
                             </div>
+                        </div>
+                        <div className='container-fluid'>
+                            <div className='FormContent min-52'>
+                                <div className='title'>Requisition
+                                    <div className='mandatory-note'>
+                                        <span className='mandatoryhastrick'>*</span> indicates a required field
+                                    </div>
+                                </div>
 
-                            <div className="after-title"></div>
+                                <div className="after-title"></div>
 
-                            <div className="light-box border-box-shadow mx-2">
-                                <div className="my-2">
-                                    <div className="row pt-2 px-2">
-                                        <div className="col-md-4">
-                                            <div className="light-text">
-                                                <label>Company</label>
-                                                <select className="form-control" required={true} name="Company" title="Company" value={this.state.Company} disabled={true}>
-                                                    <option value=''>None</option>
-                                                    {this.state.Companys.drp.map((option) => (
-                                                        <option value={option.Title} selected={this.state.Company != ''}>{option.Title}</option>
-                                                    ))}
-                                                </select>
+                                <div className="light-box border-box-shadow mx-2">
+                                    <div className="my-2">
+                                        <div className="row pt-2 px-2">
+                                            <div className="col-md-4">
+                                                <div className="light-text">
+                                                    <label>Company</label>
+                                                    <select className="form-control" required={true} name="Company" title="Company" value={this.state.Company} disabled={true}>
+                                                        <option value=''>None</option>
+                                                        {this.state.Companys.drp.map((option) => (
+                                                            <option value={option.Title} selected={this.state.Company != ''}>{option.Title}</option>
+                                                        ))}
+                                                    </select>
+                                                </div>
                                             </div>
-                                        </div>
-                                        <div className="col-md-4">
-                                            <div className="light-text">
-                                                <label>Plant </label>
-                                                <select className="form-control" required={true} name="Plant" title="Plant" value={this.state.Plant} onChange={this.handlePlanChange} ref={this.ddlPlant}>
-                                                    <option value=''>None</option>
-                                                    {this.state.Plants.map((option) => (
-                                                        <option value={option.Title} selected={this.state.Plant != ''}>{option.Title}</option>
-                                                    ))}
-                                                </select>
+                                            <div className="col-md-4">
+                                                <div className="light-text">
+                                                    <label>Plant </label>
+                                                    <select className="form-control" required={true} name="Plant" title="Plant" value={this.state.Plant} onChange={this.handlePlanChange} ref={this.ddlPlant}>
+                                                        <option value=''>None</option>
+                                                        {this.state.Plants.map((option) => (
+                                                            <option value={option.Title} selected={this.state.Plant != ''}>{option.Title}</option>
+                                                        ))}
+                                                    </select>
 
 
+                                                </div>
                                             </div>
-                                        </div>
-                                        <div className="col-md-4">
-                                            <div className="light-text">
-                                                <label>Department </label>
-                                                <select className="form-control" required={true} id="ddlDepartment" name="Department" onChange={this.handleChange} ref={this.ddlDepartment}>
+                                            <div className="col-md-4">
+                                                <div className="light-text">
+                                                    <label>Department </label>
+                                                    <select className="form-control" required={true} id="ddlDepartment" name="Department" onChange={this.handleChange} ref={this.ddlDepartment}>
+                                                        <option>None</option>
+                                                        {this.state.Departments.map((item, index) => <option key={index} value={item.Title} selected={item.Title == this.state.Department}>{item.Title}</option>)}
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            <div className="col-md-4">
+                                                <div className='light-text'>
+                                                    <label>Report For <span className="mandatoryhastrick">*</span></label>
+                                                    <select name="ReportFor" className="form-select form-control" onChange={this.handleChangeReport}>
+                                                        {this.state.ReportType.map((Name, index) => <option key={index} value={Name} selected={Name == this.state.ReportFor}>{Name}</option>)}
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            {this.state.ReportFor=="Approver"?
+                                            <div className="col-md-4">
+                                                <div className='light-text'>
+                                                    <label>Approver  Type <span className="mandatoryhastrick">*</span></label>
+                                                    <select name="ApproverFor" className="form-select form-control" onChange={this.handleChangeApprover}>
+                                                        {this.state.ApproverType.map((Name, index) => <option key={index} value={Name} selected={Name == this.state.ApproverFor}>{Name}</option>)}
+                                                    </select>
+                                                </div>
+                                            </div>:""
+                                            }
+                                            {this.state.filterLable != 'All' && this.dynamicFields()}
+
+                                            {/* <div className="col-md-4" hidden={this.state.filterLable =='All' || this.state.filterLable=='Requisitioner' ||this.state.filterLable=='Approver'}>
+                                            <div className='light-text'>
+                                                <label>{this.state.filterLable} <span className="mandatoryhastrick">*</span></label>
+                                                <select name="filterText" className="form-select form-control" onChange={this.handleChange} ref={this.inputDepartment}>
                                                     <option>None</option>
-                                                    {this.state.Departments.map((item, index) => <option key={index} value={item.Title} selected={item.Title == this.state.Department}>{item.Title}</option>)}
+                                                    {this.state.filterData.map((Item, index) => <option key={index} value={Item.Title} selected={Item.Title == this.state.filterText}>{Item.Title}</option>)}
                                                 </select>
                                             </div>
-                                        </div>
-                                        <div className="col-md-4">
-                                            <div className='light-text'>
-                                                <label>Report For <span className="mandatoryhastrick">*</span></label>
-                                                <select name="ReportFor" className="form-select form-control" onChange={this.handleChangeReport}>
-                                                    {this.state.ReportType.map((Name, index) => <option key={index} value={Name} selected={Name == this.state.ReportFor}>{Name}</option>)}
-                                                </select>
-                                            </div>
-                                        </div>
-                                        {this.state.ReportFor=="Approver"?
-                                         <div className="col-md-4">
-                                            <div className='light-text'>
-                                                <label>Approver  Type <span className="mandatoryhastrick">*</span></label>
-                                                <select name="ApproverFor" className="form-select form-control" onChange={this.handleChangeApprover}>
-                                                    {this.state.ApproverType.map((Name, index) => <option key={index} value={Name} selected={Name == this.state.ApproverFor}>{Name}</option>)}
-                                                </select>
-                                            </div>
-                                        </div>:""
-                                        }
-                                        {this.state.filterLable != 'All' && this.dynamicFields()}
+                                        </div> */}
+                                            {/* <div className="col-md-4" hidden={this.state.filterLable!='Approver'}>
+                                                    <div className="light-text">
+                                                        <label>{this.state.filterLable} <span className="mandatoryhastrick">*</span></label>
+                                                        <div className="custom-peoplepicker" id="divRequisitioner">
+                                                            <PeoplePicker
+                                                                context={this.props.context}
+                                                                titleText=""
+                                                                personSelectionLimit={1}
+                                                                showtooltip={true}
+                                                                disabled={false}
+                                                                onChange={(e) => this._getPeoplePickerItems(e, 'filterText')}
+                                                                showHiddenInUI={false}
+                                                                ensureUser={true}
+                                                                required={true}
+                                                                defaultSelectedUsers={[this.state.defaultUsers]}
+                                                                principalTypes={[PrincipalType.User]} 
+                                                                resolveDelay={1000} peoplePickerCntrlclassName={"input-peoplePicker-custom"} />
+                                                        </div>
+                                                    </div>
+                                                </div> */}
+                                            {/* <div className="col-md-4" hidden={this.state.filterLable!='Requisitioner'}>
+                                                    <div className="light-text">
+                                                        <label>{this.state.filterLable} <span className="mandatoryhastrick">*</span></label>
+                                                        <div className="custom-peoplepicker" id="divRequisitioner">
+                                                            <PeoplePicker
+                                                                context={this.props.context}
+                                                                titleText=""
+                                                                personSelectionLimit={1}
+                                                                showtooltip={true}
+                                                                disabled={false}
+                                                                onChange={(e) => this._getPeoplePickerItems(e, 'filterText')}
+                                                                showHiddenInUI={false}
+                                                                ensureUser={true}
+                                                                required={true}
+                                                                defaultSelectedUsers={[this.state.defaultUsers]}
+                                                                principalTypes={[PrincipalType.User]} 
+                                                                resolveDelay={1000} peoplePickerCntrlclassName={"input-peoplePicker-custom"} />
+                                                        </div>
+                                                    </div>
+                                                </div> */}
 
-                                        {/* <div className="col-md-4" hidden={this.state.filterLable =='All' || this.state.filterLable=='Requisitioner' ||this.state.filterLable=='Approver'}>
-                                        <div className='light-text'>
-                                            <label>{this.state.filterLable} <span className="mandatoryhastrick">*</span></label>
-                                            <select name="filterText" className="form-select form-control" onChange={this.handleChange} ref={this.inputDepartment}>
-                                                <option>None</option>
-                                                {this.state.filterData.map((Item, index) => <option key={index} value={Item.Title} selected={Item.Title == this.state.filterText}>{Item.Title}</option>)}
-                                            </select>
-                                        </div>
-                                    </div> */}
-                                        {/* <div className="col-md-4" hidden={this.state.filterLable!='Approver'}>
-                                                <div className="light-text">
-                                                    <label>{this.state.filterLable} <span className="mandatoryhastrick">*</span></label>
-                                                    <div className="custom-peoplepicker" id="divRequisitioner">
-                                                        <PeoplePicker
-                                                            context={this.props.context}
-                                                            titleText=""
-                                                            personSelectionLimit={1}
-                                                            showtooltip={true}
-                                                            disabled={false}
-                                                            onChange={(e) => this._getPeoplePickerItems(e, 'filterText')}
-                                                            showHiddenInUI={false}
-                                                            ensureUser={true}
-                                                            required={true}
-                                                            defaultSelectedUsers={[this.state.defaultUsers]}
-                                                            principalTypes={[PrincipalType.User]} 
-                                                            resolveDelay={1000} peoplePickerCntrlclassName={"input-peoplePicker-custom"} />
+                                            <div className="col-md-4">
+                                                <div className="light-text div-readonly">
+                                                    <label className="z-in-9">From Date <span className="mandatoryhastrick">*</span></label>
+                                                    <div className="custom-datepicker" id="divFDate">
+                                                        <DatePicker onDatechange={this.UpdateDate} selectedDate={this.state.FromDate || null} id="FromDate" />
                                                     </div>
                                                 </div>
-                                            </div> */}
-                                        {/* <div className="col-md-4" hidden={this.state.filterLable!='Requisitioner'}>
-                                                <div className="light-text">
-                                                    <label>{this.state.filterLable} <span className="mandatoryhastrick">*</span></label>
-                                                    <div className="custom-peoplepicker" id="divRequisitioner">
-                                                        <PeoplePicker
-                                                            context={this.props.context}
-                                                            titleText=""
-                                                            personSelectionLimit={1}
-                                                            showtooltip={true}
-                                                            disabled={false}
-                                                            onChange={(e) => this._getPeoplePickerItems(e, 'filterText')}
-                                                            showHiddenInUI={false}
-                                                            ensureUser={true}
-                                                            required={true}
-                                                            defaultSelectedUsers={[this.state.defaultUsers]}
-                                                            principalTypes={[PrincipalType.User]} 
-                                                            resolveDelay={1000} peoplePickerCntrlclassName={"input-peoplePicker-custom"} />
+                                            </div>
+                                            <div className="col-md-4">
+                                                <div className="light-text div-readonly">
+                                                    <label className="z-in-9">To Date <span className="mandatoryhastrick">*</span></label>
+                                                    <div className="custom-datepicker" id="divTDate">
+
+                                                        <DatePicker onDatechange={this.UpdateDate} selectedDate={this.state.ToDate || null} id="ToDate" />
                                                     </div>
                                                 </div>
-                                            </div> */}
-
-                                        <div className="col-md-4">
-                                            <div className="light-text div-readonly">
-                                                <label className="z-in-9">From Date <span className="mandatoryhastrick">*</span></label>
-                                                <div className="custom-datepicker" id="divFDate">
-                                                    <DatePicker onDatechange={this.UpdateDate} selectedDate={this.state.FromDate || null} id="FromDate" />
-                                                </div>
                                             </div>
+
+
+
                                         </div>
-                                        <div className="col-md-4">
-                                            <div className="light-text div-readonly">
-                                                <label className="z-in-9">To Date <span className="mandatoryhastrick">*</span></label>
-                                                <div className="custom-datepicker" id="divTDate">
-
-                                                    <DatePicker onDatechange={this.UpdateDate} selectedDate={this.state.ToDate || null} id="ToDate" />
-                                                </div>
-                                            </div>
+                                    </div>
+                                    <span className="text-validator" id="spanErrorMessage">{this.state.errorMessage}</span>
+                                    <div className="row mx-1" id="">
+                                        <div className="col-sm-12 text-center my-2" id="">
+                                            <button type="button" id="btnSubmit" className="SubmitButtons btn" onClick={this.SubmitData}>Submit</button>
+                                            <button type="button" id="btnCancel" className="CancelButtons btn" onClick={this.handleClose}>Cancel</button>
                                         </div>
-
-
-
                                     </div>
                                 </div>
-                                <span className="text-validator" id="spanErrorMessage">{this.state.errorMessage}</span>
-                                <div className="row mx-1" id="">
-                                    <div className="col-sm-12 text-center my-2" id="">
-                                        <button type="button" id="btnSubmit" className="SubmitButtons btn" onClick={this.SubmitData}>Submit</button>
-                                        <button type="button" id="btnCancel" className="CancelButtons btn" onClick={this.handleClose}>Cancel</button>
-                                    </div>
-                                </div>
-                            </div>
-                            <div className={this.state.displayListView ? '' : 'activediv'}>
-                                <div className="light-box border-box-shadow m-2">
-                                    <div className="c-v-table table-head-1st-td">
-                                        <TableGenerator columns={columns} data={this.state.data} fileName={'Reports'} showExportExcel={true} ExportExcelCustomisedColumns={ExportExcelreportColumns} ExportExcelCustomisedData={this.state.ExportExcelReportsData} prvPageNumber={0}></TableGenerator>
+                                <div className={this.state.displayListView ? '' : 'activediv'}>
+                                    <div className="light-box border-box-shadow m-2">
+                                        <div className="c-v-table table-head-1st-td">
+                                            <TableGenerator columns={columns} data={this.state.data} fileName={'Reports'} showExportExcel={true} ExportExcelCustomisedColumns={ExportExcelreportColumns} ExportExcelCustomisedData={this.state.ExportExcelReportsData} prvPageNumber={0}></TableGenerator>
+                                        </div>
                                     </div>
                                 </div>
                             </div>

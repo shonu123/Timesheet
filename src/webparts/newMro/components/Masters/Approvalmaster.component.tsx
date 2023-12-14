@@ -102,7 +102,10 @@ class ApprovalMaster extends React.Component<ApprovalMasterProps, ApprovalMaster
   private handleClose = () => {
     this.setState({ redirect: false });
   }
-
+  private onMenuItemClick(event) {
+    let item = document.getElementById('sideMenuNav');
+    item.classList.toggle('menu-hide');
+}
   public render() {
     let ExportExcelreportColumns = [
      
@@ -284,26 +287,38 @@ class ApprovalMaster extends React.Component<ApprovalMasterProps, ApprovalMaster
         <React.Fragment>
           {this.state.loading && <Loader />}
           <ModalPopUp title={this.state.modalTitle} modalText={this.state.modalText} isVisible={this.state.showHideModal} onClose={this.handleClose} isSuccess={this.state.isSuccess}></ModalPopUp>
-          <div className='container-fluid'>
-            <div className='FormContent'>
-              <div className="title">Approvals
-                {/* <div className='mandatory-note'>
-                  <span className='mandatoryhastrick'>*</span> indicates a required field
-                </div> */}
-              </div>
-              <div className="after-title"></div>
-
-
-              <div className="">
-                <div className="mx-2" id="">
-                  <div className="text-right pt-2" id="">
-                    <button type="button" id="btnSubmit" className="SubmitButtons btn" onClick={this.addNew}>Add</button>
-                  </div>
+          <div id="content" className="content p-2 pt-2">
+            <div id="clickMenu" className="menu-icon-outer" onClick={(event) => this.onMenuItemClick(event)}>
+                <div className="menu-icon">
+                    <span>
+                    </span>
+                    <span>
+                    </span>
+                    <span>
+                    </span>
                 </div>
+            </div>
+            <div className='container-fluid'>
+              <div className='FormContent'>
+                <div className="title">Approvals
+                  {/* <div className='mandatory-note'>
+                    <span className='mandatoryhastrick'>*</span> indicates a required field
+                  </div> */}
+                </div>
+                <div className="after-title"></div>
 
-                <div className="c-v-table table-head-1st-td">
-                <TableGenerator columns={columns} data={this.state.AprovalData} fileName={'Approvals'} showExportExcel={true} ExportExcelCustomisedColumns={ExportExcelreportColumns}></TableGenerator>
-</div>
+
+                <div className="">
+                  <div className="mx-2" id="">
+                    <div className="text-right pt-2" id="">
+                      <button type="button" id="btnSubmit" className="SubmitButtons btn" onClick={this.addNew}>Add</button>
+                    </div>
+                  </div>
+
+                  <div className="c-v-table table-head-1st-td">
+                  <TableGenerator columns={columns} data={this.state.AprovalData} fileName={'Approvals'} showExportExcel={true} ExportExcelCustomisedColumns={ExportExcelreportColumns}></TableGenerator>
+  </div>
+                </div>
               </div>
             </div>
           </div>

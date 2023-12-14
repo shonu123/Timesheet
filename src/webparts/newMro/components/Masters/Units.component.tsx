@@ -386,7 +386,10 @@ class Units extends React.Component<UnitsProps, UnitsState>{
     // var fileEle = document.getElementById("inputFile");
     (document.getElementById("inputFile") as HTMLInputElement).value = '';
   }
-
+  private onMenuItemClick(event) {
+    let item = document.getElementById('sideMenuNav');
+    item.classList.toggle('menu-hide');
+  }
   public ErrorFileSelect = () => {
     this.resetImportField();
     this.setState({
@@ -467,75 +470,87 @@ class Units extends React.Component<UnitsProps, UnitsState>{
         {this.state.loading && <Loader />}
 
         <ModalPopUp title={this.state.modalTitle} modalText={this.state.modalText} isVisible={this.state.showHideModal} onClose={this.handleClose} isSuccess={this.state.isSuccess}/>
-        <div className='container-fluid'>
-          <div className='FormContent'>
-            <div className='title'> Quantity for Units
-              {this.state.addNewUnit &&
-                <div className='mandatory-note'>
-                  <span className='mandatoryhastrick'>*</span> indicates a required field
+        <div id="content" className="content p-2 pt-2">
+            <div id="clickMenu" className="menu-icon-outer" onClick={(event) => this.onMenuItemClick(event)}>
+                <div className="menu-icon">
+                    <span>
+                    </span>
+                    <span>
+                    </span>
+                    <span>
+                    </span>
                 </div>
-              }
             </div>
-
-            <div className="after-title"></div>
-            <div className="row justify-content-md-left">
-              <div className="col-12 col-md-12 col-lg-7">
-
-                <div className={this.state.addNewUnit ? 'mx-2 activediv' : 'mx-2'}>
-                  <div className="text-right pt-2" id="">
-                    <ImportExcel ErrorFileSelect={this.ErrorFileSelect} columns={["Unit","Description", "Status"]} filename="Quantity for Units" onDataFetch={this.fetchImportedExcelData} submitData={this.submitImportedExcelData}></ImportExcel>
-                    <button type="button" id="btnSubmit" className="SubmitButtons btn" onClick={this.addNew}>Add</button>
-                  </div>
+            <div className='container-fluid'>
+              <div className='FormContent'>
+                <div className='title'> Quantity for Units
+                  {this.state.addNewUnit &&
+                    <div className='mandatory-note'>
+                      <span className='mandatoryhastrick'>*</span> indicates a required field
+                    </div>
+                  }
                 </div>
-                <div className="light-box border-box-shadow mx-2">
-                  <div className={this.state.addNewUnit ? '' : 'activediv'}>
-                    <div className="my-2">
-                      <div className="row">
-                        <InputText
-                          type='text'
-                          label={"Unit"}
-                          name={"Unit"}
-                          value={this.state.Unit || ''}
-                          isRequired={true}
-                          onChange={this.handleChange}
-                          refElement={this.inputUnit}
-                          onBlur={this.handleonBlur}
-                        />
-                        <div className="col-md-4">
-                            <div className="light-text">
-                                <label>Description</label>
-                                <textarea rows={2} className="form-control" ref={this.UnitDescription} maxLength={1000} placeholder="" name="Description" title="Description" value={this.state.Description || ''} autoComplete="false" onChange={this.handleChange}></textarea>
+
+                <div className="after-title"></div>
+                <div className="row justify-content-md-left">
+                  <div className="col-12 col-md-12 col-lg-7">
+
+                    <div className={this.state.addNewUnit ? 'mx-2 activediv' : 'mx-2'}>
+                      <div className="text-right pt-2" id="">
+                        <ImportExcel ErrorFileSelect={this.ErrorFileSelect} columns={["Unit","Description", "Status"]} filename="Quantity for Units" onDataFetch={this.fetchImportedExcelData} submitData={this.submitImportedExcelData}></ImportExcel>
+                        <button type="button" id="btnSubmit" className="SubmitButtons btn" onClick={this.addNew}>Add</button>
+                      </div>
+                    </div>
+                    <div className="light-box border-box-shadow mx-2">
+                      <div className={this.state.addNewUnit ? '' : 'activediv'}>
+                        <div className="my-2">
+                          <div className="row">
+                            <InputText
+                              type='text'
+                              label={"Unit"}
+                              name={"Unit"}
+                              value={this.state.Unit || ''}
+                              isRequired={true}
+                              onChange={this.handleChange}
+                              refElement={this.inputUnit}
+                              onBlur={this.handleonBlur}
+                            />
+                            <div className="col-md-4">
+                                <div className="light-text">
+                                    <label>Description</label>
+                                    <textarea rows={2} className="form-control" ref={this.UnitDescription} maxLength={1000} placeholder="" name="Description" title="Description" value={this.state.Description || ''} autoComplete="false" onChange={this.handleChange}></textarea>
+                                </div>
                             </div>
-                        </div>
-                        <InputCheckBox
-                          label={"Is Active"}
-                          name={"IsActive"}
-                          checked={this.state.IsActive}
-                          onChange={this.handleChange}
-                          isforMasters={true}
-                          isdisable={false}
-                        />
+                            <InputCheckBox
+                              label={"Is Active"}
+                              name={"IsActive"}
+                              checked={this.state.IsActive}
+                              onChange={this.handleChange}
+                              isforMasters={true}
+                              isdisable={false}
+                            />
 
+                          </div>
+                        </div>
+
+                        <span className="text-validator" id="spanErrorMessage">{this.state.errorMessage}</span>
+
+                        <div className="row mx-1" id="">
+                          <div className="col-sm-12 text-center mt-2" id="">
+                            <button type="button" id="btnSubmit" className="SubmitButtons btn" onClick={this.SunmitData}>{this.state.SaveUpdateText}</button>
+                            <button type="button" id="btnCancel" className="CancelButtons btn" onClick={this.cancelHandler}>Cancel</button>
+                          </div>
+                        </div>
                       </div>
                     </div>
 
-                    <span className="text-validator" id="spanErrorMessage">{this.state.errorMessage}</span>
-
-                    <div className="row mx-1" id="">
-                      <div className="col-sm-12 text-center mt-2" id="">
-                        <button type="button" id="btnSubmit" className="SubmitButtons btn" onClick={this.SunmitData}>{this.state.SaveUpdateText}</button>
-                        <button type="button" id="btnCancel" className="CancelButtons btn" onClick={this.cancelHandler}>Cancel</button>
-                      </div>
+                    <div className="light-box border-box-shadow mx-2 table-head-1st-td">
+                      <TableGenerator columns={columns} data={this.state.data} fileName={'Quantity for Units'} showExportExcel={true} ExportExcelCustomisedColumns={ExportExcelreportColumns} prvPageNumber={0}></TableGenerator>
                     </div>
                   </div>
-                </div>
-
-                <div className="light-box border-box-shadow mx-2 table-head-1st-td">
-                  <TableGenerator columns={columns} data={this.state.data} fileName={'Quantity for Units'} showExportExcel={true} ExportExcelCustomisedColumns={ExportExcelreportColumns} prvPageNumber={0}></TableGenerator>
                 </div>
               </div>
             </div>
-          </div>
         </div>
       </React.Fragment>
     );

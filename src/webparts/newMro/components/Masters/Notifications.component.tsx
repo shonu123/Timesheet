@@ -242,7 +242,10 @@ class Notifications extends Component<NotificationsProps, NotificationsState> {
 
 
 
-    
+    private onMenuItemClick(event) {
+        let item = document.getElementById('sideMenuNav');
+        item.classList.toggle('menu-hide');
+    }
 
  
 
@@ -324,6 +327,16 @@ class Notifications extends Component<NotificationsProps, NotificationsState> {
             <React.Fragment>
                 <ModalPopUp title={this.state.modalTitle} modalText={this.state.modalText} isVisible={this.state.showHideModal} onClose={this.handleClose} isSuccess={this.state.isSuccess}></ModalPopUp>
                 <div id="content" className="content p-2 pt-2">
+                    <div id="clickMenu" className="menu-icon-outer" onClick={(event) => this.onMenuItemClick(event)}>
+                        <div className="menu-icon">
+                            <span>
+                            </span>
+                            <span>
+                            </span>
+                            <span>
+                            </span>
+                        </div>
+                    </div>
                     <div className='container-fluid'>
                         <div className='FormContent'>
                             <div className='title'>Notifications

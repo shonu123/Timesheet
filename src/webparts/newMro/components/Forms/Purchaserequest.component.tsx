@@ -759,7 +759,10 @@ class PurchaseRequest extends React.Component<PurchaseRequestProps, PurchaseRequ
             });
         }
     }
-
+    private onMenuItemClick(event) {
+        let item = document.getElementById('sideMenuNav');
+        item.classList.toggle('menu-hide');
+    }
     public render() {
         if (this.props.match.params.id == undefined && this.state.ItemID != 0 && !this.state.isnewFormLoaded) {
             this.GetMasterListData();
@@ -773,6 +776,16 @@ class PurchaseRequest extends React.Component<PurchaseRequestProps, PurchaseRequ
                     {highlightCurrentNav("lipurchaseLink")}
                     <ModalPopUp title={this.state.modalTitle} modalText={this.state.modalText} isVisible={this.state.showHideModal} onClose={this.handleClose} isSuccess={this.state.isSuccess}></ModalPopUp>
                     <div id="content" className="content p-2 pt-2">
+                        <div id="clickMenu" className="menu-icon-outer" onClick={(event) => this.onMenuItemClick(event)}>
+                            <div className="menu-icon">
+                                <span>
+                                </span>
+                                <span>
+                                </span>
+                                <span>
+                                </span>
+                            </div>
+                        </div>
                         <div className='container-fluid'>
                             <div className='FormContent'>
                                 <div className="title">Purchase Request
