@@ -726,7 +726,7 @@ class PurchaseRequestForm extends React.Component<PurchaseRequestProps, Purchase
         if(trFormdata.ItemsData[rowcount]["CMSReq"] == undefined)
         {
             trFormdata.ItemsData[rowcount]["CMSReq"]='';
-        }
+        } 
         if(name == 'QuantityUnit'){
             trFormdata.ItemsData[rowcount]['Unit'] = value != 'None' ? value : null;
         }
@@ -1148,7 +1148,7 @@ class PurchaseRequestForm extends React.Component<PurchaseRequestProps, Purchase
         let emaildetails ={toemail:[],ccemail:[],subject:sub,bodyString:"Purchase Request has been submitted successfully.",body:'' };
         let tableContent ={Company:this.state.formData.Company,Plant:this.state.formData.Plant,Department:this.state.formData.Department,Vendor:this.state.formData.VendorName!=null?this.state.formData.VendorName:'',Buyer:this.state.formData.Buyer,Currency:this.state.formData.Currency,CurrencyAmount:this.state.trFormdata.CurrencyAmount,'TotalAmount(USD)':this.state.trFormdata.TotalAmount,Reason:this.state.formData.Description};
         emaildetails.body = this.emailBodyPreparation(this.siteURL+'/SitePages/Home.aspx#/purchaserequest/'+this.state.ItemID,tableContent,emaildetails.bodyString,this.userContext.userDisplayName);
-        const data = { ...this.state.trFormdata,...this.state.formData, RequisitionerId: this.state.RequisitionerUserId, isEscalate: false,PurchasingTeamId:null};
+        const data = { ...this.state.trFormdata,...this.state.formData, RequisitionerId: this.state.RequisitionerUserId, isEscalate: false,PurchasingTeamId:null,ApprovalSteps:''};
         data.Status = ApprovalStatus.InProgress;
         //var validationdata = {};
         if(data.Vendor!="" && data.Vendor!=null){
@@ -1562,7 +1562,7 @@ class PurchaseRequestForm extends React.Component<PurchaseRequestProps, Purchase
                 prvComments.push(curcomments);
             }
             let prvcommentsdata = JSON.stringify(prvComments);
-            const submitdata = { AssignToId: null, Status: ApprovalStatus.Rejected, ApprovalLevel: "", Pendingwith: PendingStatus.Empty, NextApprovalId: null, Comments: prvcommentsdata , CapitalInvestment:this.state.formData.CapitalInvestment};
+            const submitdata = { AssignToId: null, Status: ApprovalStatus.Rejected, ApprovalLevel: "", Pendingwith: PendingStatus.Empty, NextApprovalId: null, Comments: prvcommentsdata , CapitalInvestment:this.state.formData.CapitalInvestment}; 
             this.setState({ loading: true });
             //this.InsertorUpdatedata(submitdata,ActionStatus.Rejected);
             emaildetails.body = this.emailBodyPreparation(this.siteURL+'/SitePages/Home.aspx#/purchaserequest/'+this.state.ItemID,tableContent,emaildetails.bodyString,this.userContext.userDisplayName);
