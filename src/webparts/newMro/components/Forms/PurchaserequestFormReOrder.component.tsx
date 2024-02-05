@@ -1500,7 +1500,8 @@ class PurchaseRequestForm extends React.Component<PurchaseRequestProps, Purchase
                                                 checked={this.state.formData.ToolRequired}
                                                 onChange={this.handleChange}
                                                 isforMasters={false}
-                                                isdisable={!this.state.isInitiatorEdit}
+                                                // isdisable={!this.state.isInitiatorEdit}
+                                                isdisable= {false}
                                             />
 
                                             <InputCheckBox

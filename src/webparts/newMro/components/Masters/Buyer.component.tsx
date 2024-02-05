@@ -35,7 +35,8 @@ export interface BuyerState {
         IsActive: boolean,
         Buyer_x0020_Number: number,
         Database: string,
-        PlantCode: string
+        PlantCode: string,
+        BuyerEmail: string
     };
     SaveUpdateText: string;
     buyers: any;
@@ -55,6 +56,7 @@ class Buyer extends Component<BuyerProps, BuyerState> {
     private siteURL: string;
     private buyerName;
     private buyerNumber;
+    private buyerEmail;
     private database;
     private inputPlant;
     private oweb;
@@ -65,6 +67,7 @@ class Buyer extends Component<BuyerProps, BuyerState> {
         });
         this.buyerName = React.createRef();
         this.buyerNumber = React.createRef();
+        this.buyerEmail = React.createRef();
         this.database = React.createRef();
         this.inputPlant = React.createRef();
         this.siteURL = this.props.spContext.webAbsoluteUrl;
@@ -75,7 +78,8 @@ class Buyer extends Component<BuyerProps, BuyerState> {
                 IsActive: true,
                 Buyer_x0020_Number: null,
                 Database: '',
-                PlantCode: ''
+                PlantCode: '',
+                BuyerEmail: ''
             },
             SaveUpdateText: 'Submit',
             buyers: [],
@@ -108,7 +112,7 @@ class Buyer extends Component<BuyerProps, BuyerState> {
             this.setState({
                 formData: {
                     Title: '', Plant: '', PlantCode: '',
-                    Database: '',
+                    Database: '',BuyerEmail:'',
                     IsActive: true, Buyer_x0020_Number: null
                 }, SaveUpdateText: 'Submit', addNewBuyer: false
             });
@@ -156,6 +160,7 @@ class Buyer extends Component<BuyerProps, BuyerState> {
         let data = {
             Plant: { val: this.state.formData.Plant, required: false, Name: 'Plant', Type: ControlType.string, Focusid: this.inputPlant },
             Database: { val: this.state.formData.Database, required: false, Name: 'Database', Type: ControlType.string, Focusid: this.database },
+            buyerEmail: {val: this.state.formData.BuyerEmail, required: false, Name: 'Buyer Email', Type: ControlType.string, Focusid: this.buyerEmail},
             venderName: { val: this.state.formData.Title, required: true, Name: 'Buyer Name', Type: ControlType.string, Focusid: this.buyerName },
             venderNumber: { val: this.state.formData.Buyer_x0020_Number, required: true, Name: 'Buyer Code', Type: ControlType.string, Focusid: this.buyerNumber }
         };
@@ -258,7 +263,7 @@ class Buyer extends Component<BuyerProps, BuyerState> {
         sp.web.lists.getByTitle('Buyers').items.select("Title,*").orderBy("Id", false).getAll()
             .then((response) => {
                 this.setState({
-                    buyers: response.map(o => ({ Id: o.Id, Plant: o.Plant, PlantCode: o.PlantCode, Database: o.Database, Title: o.Title, IsActive: o.IsActive == true ? 'Active' : 'In-Active', Buyer_x0020_Number: o.Buyer_x0020_Number })),
+                    buyers: response.map(o => ({ Id: o.Id, Plant: o.Plant, PlantCode: o.PlantCode, Database: o.Database, Title: o.Title, IsActive: o.IsActive == true ? 'Active' : 'In-Active', Buyer_x0020_Number: o.Buyer_x0020_Number,BuyerEmail: o.BuyerEmail })),
                     SaveUpdateText: 'Submit',
                     showLabel: false,
                     loading: false,
@@ -283,7 +288,7 @@ class Buyer extends Component<BuyerProps, BuyerState> {
                     this.setState({
                         formData: {
                             Title: response.Title, Plant: response.Plant, PlantCode: response.PlantCode,
-                            Database: response.Database,
+                            Database: response.Database,BuyerEmail:response.BuyerEmail,
                             IsActive: response.IsActive, Buyer_x0020_Number: response.Buyer_x0020_Number.trim()
                         },
                         SaveUpdateText: 'Update',
@@ -303,7 +308,7 @@ class Buyer extends Component<BuyerProps, BuyerState> {
         this.setState({
             formData: {
                 Title: '', Plant: '', PlantCode: '',
-                Database: '',
+                Database: '',BuyerEmail:'',
                 IsActive: true, Buyer_x0020_Number: null
             }, SaveUpdateText: 'Submit', addNewBuyer: false, showLabel: false
         });
@@ -329,7 +334,7 @@ class Buyer extends Component<BuyerProps, BuyerState> {
         }
     }
 
-    public submitImportedExcelData = () => {
+    public submitImportedExcelData = () => {//
         var nonDuplicateRec = [];
         var statusChangedRec = [];
         const formdata = { ...this.state };
@@ -344,7 +349,7 @@ class Buyer extends Component<BuyerProps, BuyerState> {
         for (var i = excelData.length - 1; i >= 0; i--) {
             for (var j = 0; j < BuyersData.length; j++) {
                 BuyersData[j].Database=BuyersData[j].Database!=null?BuyersData[j].Database:"";
-                if (excelData[i] && (excelData[i]["Buyer Code"].toLowerCase().trim() == BuyersData[j].Buyer_x0020_Number.toLowerCase().trim()) && (excelData[i]["Buyer Name"].toLowerCase().trim() == BuyersData[j].Title.toLowerCase().trim())&& (excelData[i]["Database"].toLowerCase().trim() == BuyersData[j].Database.toLowerCase().trim())) {
+                if (excelData[i] && (excelData[i]["Buyer Code"].toLowerCase().trim() == BuyersData[j].Buyer_x0020_Number.toLowerCase().trim()) && (excelData[i]["Buyer Name"].toLowerCase().trim() == BuyersData[j].Title.toLowerCase().trim())&& (excelData[i]["Database"].toLowerCase().trim() == BuyersData[j].Database.toLowerCase().trim())&& (excelData[i]["BuyerEmail"].toLowerCase().trim() == BuyersData[j].BuyerEmail.toLowerCase().trim())) {
                     if (BuyersData[j].IsActive == excelData[i].Status) {
                         excelData.splice(i, 1);
                     } else if (BuyersData[j].IsActive != excelData[i].Status) {
@@ -364,7 +369,7 @@ class Buyer extends Component<BuyerProps, BuyerState> {
                 obj["Buyer_x0020_Number"] = item["Buyer Code"].trim();
                 obj["Database"] = item["Database"].trim();
                 obj["IsActive"] = item.Status == "Active" ? true : false;
-
+                obj["BuyerEmail"] = item["BuyerEmail"].trim();
                 nonDuplicateRec.push(obj);
             });
         } else if (!excelData.length && !statusChangedRec.length) {
@@ -516,7 +521,11 @@ class Buyer extends Component<BuyerProps, BuyerState> {
             {
                 name: "Status",
                 selector: "IsActive",
-            }
+            },
+            {
+                name: "Email",
+                selector: "BuyerEmail",
+            },
         ];
 
         const columns = [
@@ -585,7 +594,14 @@ class Buyer extends Component<BuyerProps, BuyerState> {
                 sortable: true,
                 header: 'IsActive',
                 dataKey: 'IsActive'
-            }
+            },
+            {
+                name: "Email",
+                selector: (row, i) => row.BuyerEmail,
+                sortable: true,
+                header: 'Email',
+                dataKey: 'BuyerEmail'
+            },
         ];
 
         return (
@@ -620,7 +636,7 @@ class Buyer extends Component<BuyerProps, BuyerState> {
 
                                     <div className={this.state.addNewBuyer ? 'mx-2 activediv' : 'mx-2'}>
                                         <div className="text-right pt-2" id="">
-                                            <ImportExcel ErrorFileSelect={this.ErrorFileSelect} columns={["Buyer Name", "Buyer Code","Database","Status"]} filename="Buyers" onDataFetch={this.fetchImportedExcelData} submitData={this.submitImportedExcelData}></ImportExcel>
+                                            <ImportExcel ErrorFileSelect={this.ErrorFileSelect} columns={["Buyer Name", "Buyer Code","Database","Status","Email"]} filename="Buyers" onDataFetch={this.fetchImportedExcelData} submitData={this.submitImportedExcelData}></ImportExcel>
 
                                             <button type="button" id="btnSubmit" className="SubmitButtons btn" onClick={this.addNewBuyerMaster}>Add</button>
                                         </div>
@@ -679,6 +695,19 @@ class Buyer extends Component<BuyerProps, BuyerState> {
                                                             maxlength={50}
                                                             onBlur={this.handleonBlur}
                                                         />
+
+                                                        <InputText
+                                                            type='text'
+                                                            label={"Email"}
+                                                            name={"BuyerEmail"}
+                                                            value={this.state.formData.BuyerEmail || ''}
+                                                            isRequired={false}
+                                                            onChange={this.handleChange}
+                                                            refElement={this.buyerEmail}
+                                                            maxlength={60}
+                                                            onBlur={this.handleonBlur}
+                                                        />
+
 
                                                         <div className="col-md-4">
                                                             <div className="light-text">
