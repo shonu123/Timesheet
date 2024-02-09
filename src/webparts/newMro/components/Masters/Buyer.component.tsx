@@ -349,7 +349,7 @@ class Buyer extends Component<BuyerProps, BuyerState> {
         for (var i = excelData.length - 1; i >= 0; i--) {
             for (var j = 0; j < BuyersData.length; j++) {
                 BuyersData[j].Database=BuyersData[j].Database!=null?BuyersData[j].Database:"";
-                if (excelData[i] && (excelData[i]["Buyer Code"].toLowerCase().trim() == BuyersData[j].Buyer_x0020_Number.toLowerCase().trim()) && (excelData[i]["Buyer Name"].toLowerCase().trim() == BuyersData[j].Title.toLowerCase().trim())&& (excelData[i]["Database"].toLowerCase().trim() == BuyersData[j].Database.toLowerCase().trim())&& (excelData[i]["BuyerEmail"].toLowerCase().trim() == BuyersData[j].BuyerEmail.toLowerCase().trim())) {
+                if (excelData[i] && (excelData[i]["Buyer Code"].toLowerCase().trim() == BuyersData[j].Buyer_x0020_Number.toLowerCase().trim()) && (excelData[i]["Buyer Name"].toLowerCase().trim() == BuyersData[j].Title.toLowerCase().trim())&& (excelData[i]["Database"].toLowerCase().trim() == BuyersData[j].Database.toLowerCase().trim())) {
                     if (BuyersData[j].IsActive == excelData[i].Status) {
                         excelData.splice(i, 1);
                     } else if (BuyersData[j].IsActive != excelData[i].Status) {
