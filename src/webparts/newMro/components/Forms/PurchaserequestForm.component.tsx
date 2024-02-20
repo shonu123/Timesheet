@@ -1311,10 +1311,11 @@ class PurchaseRequestForm extends React.Component<PurchaseRequestProps, Purchase
         // }
         let prvcommentsdata = JSON.stringify(prvComments);
         var InformToId =0;
+        var PurchasingTeam =0;
         const submitdata = { AssignToId: null, Status: ApprovalStatus.InProgress, ApprovalLevel: "", NextApprovalId: null, Pendingwith: '', Approver1Id: null, Approver2Id: null, Approver3Id: null,Approver4Id: null, ReviewerId: null,PurchasingTeamId:null, Comments: prvcommentsdata,isEscalate:false,DateApproved:null, CapitalInvestment:this.state.formData.CapitalInvestment, IsUrgent:this.state.formData.IsUrgent };
         for (var i = 0; i < this.state.ApprovalsMatrix.length; i++) {
             if (this.state.ApprovalsMatrix[i].FromBudget <= data.TotalAmount && this.state.ApprovalsMatrix[i].ToBudget >= data.TotalAmount) {
-            var PurchasingTeam =this.state.ApprovalsMatrix[i].PurchasingTeamId;
+             PurchasingTeam =this.state.ApprovalsMatrix[i].PurchasingTeamId;
              InformToId = this.state.ApprovalsMatrix[i].InformToId!= null?this.state.ApprovalsMatrix[i].InformToId:0;
 
                 if (data.ApprovalLevel == "2,3,4"){

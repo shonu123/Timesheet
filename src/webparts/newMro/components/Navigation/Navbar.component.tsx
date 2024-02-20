@@ -55,44 +55,7 @@ class NavBar extends React.Component<NavBarProps, NavBarState> {
                                     <li className="" id="vendor" onClick={(event) => this.onNavItemClick(event)}>
                                         <NavLink className="" to="/vendor"><span className=""><span className="">Vendors</span></span></NavLink>
                                     </li>
-                                    <li className="" id="Buyers" onClick={(event) => this.onNavItemClick(event)}>
-                                        <NavLink className="" to="/Buyers"><span className=""><span className="">Buyers</span></span></NavLink>
-                                    </li>
-                                    <li className="" id="Notifications" onClick={(event) => this.onNavItemClick(event)}>
-                                        <NavLink className="" to="/Notifications"><span className=""><span className="">Notifications</span></span></NavLink>
-                                    </li>
                                     
-                                    <li className="" id="Plants" onClick={(event) => this.onNavItemClick(event)}>
-                                        <NavLink className="" to="/Plants"><span className=""><span className="">Plants</span></span></NavLink>
-                                    </li>
-                                    
-                                    <li className="" id="holiday" onClick={(event) => this.onNavItemClick(event)}>
-                                        <NavLink className="" to="/holiday"><span className=""><span className="">Holidays</span></span></NavLink>
-                                    </li>
-                                    <li className="" id="Programs" onClick={(event) => this.onNavItemClick(event)}>
-                                        <NavLink className="" to="/Programs"><span className=""><span className="">Programs</span></span></NavLink>
-                                    </li>
-                                    <li className="" id="projectcode" onClick={(event) => this.onNavItemClick(event)}>
-                                        <NavLink className="" to="/projectcode"><span className=""><span className="">Project Code</span></span></NavLink>
-                                    </li>
-                                    <li className="" id="ProjectCategory" onClick={(event) => this.onNavItemClick(event)}>
-                                        <NavLink className="" to="/ProjectCategory"><span className=""><span className="">Project Category</span></span></NavLink>
-                                    </li>
-                                    <li className="" id="RequsitionerCodes" onClick={(event) => this.onNavItemClick(event)}>
-                                        <NavLink className="" to="/RequsitionerCodes"><span className=""><span className="">Requisitioner Codes</span></span></NavLink>
-                                    </li>
-                                    <li className="" id="commoditycategory" onClick={(event) => this.onNavItemClick(event)}>
-                                        <NavLink className="" to="/commoditycategory"><span className=""><span className="">Commodity Category</span></span></NavLink>
-                                    </li>
-                                    <li className="" id="units" onClick={(event) => this.onNavItemClick(event)}>
-                                        <NavLink className="" to="/units"><span className=""><span className="">Quantity for  Units</span></span></NavLink>
-                                    </li>
-                                    <li className="" id="priceunit" onClick={(event) => this.onNavItemClick(event)}>
-                                        <NavLink className="" to="/priceunit"><span className=""><span className="">Price for Units</span></span></NavLink>
-                                    </li>
-                                    <li className="" id="tools" onClick={(event) => this.onNavItemClick(event)}>
-                                        <NavLink className="" to="/tools"><span className=""><span className="">Tools</span></span></NavLink>
-                                    </li>
                                 </ul>
                             </li> :''}
                             <li className=""><span className=""><span className=""><span className="">Forms</span></span></span>
@@ -110,15 +73,8 @@ class NavBar extends React.Component<NavBarProps, NavBarState> {
                                     <li className="" id="lipurchaserequestlistLink" onClick={(event) => this.onNavItemClick(event)}>
                                         <NavLink className="" to="/purchaserequestlist"><span className=""><span className="">Requisition</span></span></NavLink>
                                     </li>
-                                    
-                                    {/* <li className="">
-                                        <NavLink className="" to="/requisitionreport"><span className=""><span className="">Reports</span></span></NavLink>
-                                    </li> */}
                                 </ul>
                             </li>:''}
-                            <li className="" id="lisearchbypolistlink" onClick={(event) => this.onNavItemClick(event)}>
-                                <NavLink className="" to="/searchbypolist"><span className=""><span className="">Search by PO</span></span></NavLink>
-                            </li>
                             <li id="liDashboardLink" className="" onClick={(event) => this.onNavItemClick(event)}>
                                 <NavLink className="" to="/dashboard"><span className=""><span className="">Dashboard</span></span></NavLink>
                             </li>

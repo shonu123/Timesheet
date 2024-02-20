@@ -1,4 +1,4 @@
-declare interface INewMroWebPartStrings {
+declare interface ITimesheetStrings {
   PropertyPaneDescription: string;
   BasicGroupName: string;
   DescriptionFieldLabel: string;
@@ -12,7 +12,7 @@ declare interface INewMroWebPartStrings {
   AppOutlookEnvironment: string;
 }
 
-declare module 'NewMroWebPartStrings' {
-  const strings: INewMroWebPartStrings;
+declare module 'TimesheetStrings' {
+  const strings: ITimesheetStrings;
   export = strings;
 }

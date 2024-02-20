@@ -4,7 +4,7 @@ import { Version } from '@microsoft/sp-core-library';
 import {  IPropertyPaneConfiguration,  PropertyPaneTextField} from '@microsoft/sp-property-pane';
 import { BaseClientSideWebPart } from '@microsoft/sp-webpart-base';
 import { IReadonlyTheme } from '@microsoft/sp-component-base';
-import * as strings from 'NewMroWebPartStrings';
+import * as strings from 'TimesheetStrings';
 import NewMro from './components/NewMro';
 import { INewMroProps } from './components/INewMroProps';
 //import * as $ from 'jquery';
@@ -13,11 +13,11 @@ import { INewMroProps } from './components/INewMroProps';
 import './CSS/style.css';
 import './CSS/left-nav.css';
 
-export interface INewMroWebPartProps {
+export interface ITimesheetProps {
   description: string;
 }
 
-export default class NewMroWebPart extends BaseClientSideWebPart<INewMroWebPartProps> {
+export default class Timesheet extends BaseClientSideWebPart<ITimesheetProps> {
 
   private _isDarkTheme: boolean = false;
   private _environmentMessage: string = '';
