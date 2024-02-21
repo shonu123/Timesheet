@@ -16,7 +16,8 @@ import Vendor from '../Masters/Vendor.component';
 import RequisitionReport from '../Reports/Requistionreport.component';
 import Myapprovals from '../Dashboard/Myapprovals.component';
 import Myrequests from '../Dashboard/Myrequests.component';
-
+import EmployeeMasterForm from '../Forms/EmployeeMasterForm.component';
+import WeeklyTimesheet from '../Forms/WeeklyTimesheet.component'; 
 
 import { SPHttpClient, SPHttpClientResponse, SPHttpClientConfiguration } from '@microsoft/sp-http';
 import sitePermissions from './Routing.module';
@@ -65,12 +66,21 @@ class Routesitems extends Component<RoutesProps, RoutesState> {
             let params =useParams();
             return <ApprovalMaster {...this.context}{...this.props}  {...{...props, match: {params}} } />
           }
+          const WrapperEmployeeMasterForm = (props) => {
+            let params =useParams();
+            return <EmployeeMasterForm {...this.context}{...this.props}  {...{...props, match: {params}} } />
+          }
+          const WrapperWeeklyTimesheet = (props) => {
+            let params =useParams();
+            return <WeeklyTimesheet {...this.context}{...this.props}  {...{...props, match: {params}} } />
+          }
         return (
             <Suspense fallback={<div></div>}>
                 <Routes>
                     <Route path='/' element={<Dashboard {...this.context}{...this.props} />} />
                     <Route path='/approvalmaster' element={<WrapperApprovalMaster/>} />
-                   
+                   <Route path='/WeeklyTimesheet/:id?' element ={<WrapperWeeklyTimesheet/>} />
+                   <Route path='/EmployeeMasterForm/:id?' element ={<WrapperEmployeeMasterForm/>} />
                     <Route path='/purchaserequest/:id?' element={<Wrapper />} />
                     <Route path='/requisitionreport' element={(matchprops) => <RequisitionReport {...matchprops}{...this.props} />} />
                     <Route path='/dashboard' element={<Dashboard {...this.context} {...this.props} />} />

@@ -44,37 +44,32 @@ class NavBar extends React.Component<NavBarProps, NavBarState> {
                 <nav id="" className="sidebar">
                     <div className="">
                         <ul className="list-unstyled ul-leftnav components mb-5">
-                        {(this.props.currentUserGroups.includes('MRO Purchasing Team') || this.props.currentUserGroups.includes('SharePoint – MRO Administrator'))?
+                        {(this.props.currentUserGroups.includes('TImesheet Administrators'))?
                             <li className="">
                                 {this.state.currentUserLinks.includes('/') ? <NavLink className="" to="/"><span className=""><span className="">Masters</span></span>
                                 </NavLink> : null}
                                 <ul className="ul-leftnav">
-                                    <li className="" id="approvalmaster" onClick={(event) => this.onNavItemClick(event)}>
-                                        {this.state.currentUserLinks.includes('/approvalmaster') ? <NavLink className="" to="/approvalmaster"><span className=""><span className="">Approvals</span></span></NavLink> : null}
+                                    <li className="" id="employeemaster" onClick={(event) => this.onNavItemClick(event)}>
+                                        {this.state.currentUserLinks.includes('/employeemasterform') ? <NavLink className="" to="/employeemaster"><span className=""><span className="">Approvals</span></span></NavLink> : null}
                                     </li>
-                                    <li className="" id="vendor" onClick={(event) => this.onNavItemClick(event)}>
-                                        <NavLink className="" to="/vendor"><span className=""><span className="">Vendors</span></span></NavLink>
-                                    </li>
-                                    
                                 </ul>
                             </li> :''}
-                            <li className=""><span className=""><span className=""><span className="">Forms</span></span></span>
+                            {(this.props.currentUserGroups.includes('TImesheet Initiators'))?
+                            <li className="">
+                                {this.state.currentUserLinks.includes('/') ? <NavLink className="" to="/"><span className=""><span className="">Masters</span></span>
+                                </NavLink> : null}
                                 <ul className="ul-leftnav">
-                                {/* <li className="" onClick={(event) => this.onNavItemClick(event)}>
-                                        <NavLink className="" to="/masterrequisition"><span className=""><span className="">Master Requisition</span></span></NavLink>
-                                    </li> */}
-                                    <li id="lipurchaseLink" className="ul-leftnav selected" onClick={(event) => this.onNavItemClick(event)}>
-                                        <NavLink className="" to="/purchaserequest"><span className=""><span className="">Requisition</span></span></NavLink></li>
-                                </ul>
-                            </li>
-                            {(this.props.currentUserGroups.includes('MRO Reporting') || this.props.currentUserGroups.includes('SharePoint – MRO Administrator'))?
-                            <li  className=""><span className=""><span className=""><span className="">Reports</span></span></span>
-                                <ul className="ul-leftnav">
-                                    <li className="" id="lipurchaserequestlistLink" onClick={(event) => this.onNavItemClick(event)}>
-                                        <NavLink className="" to="/purchaserequestlist"><span className=""><span className="">Requisition</span></span></NavLink>
+                                    <li className="" id="weeklytimesheet" onClick={(event) => this.onNavItemClick(event)}>
+                                        {this.state.currentUserLinks.includes('/weeklytimesheet') ? <NavLink className="" to="/weeklytimesheet"><span className=""><span className="">Approvals</span></span></NavLink> : null}
                                     </li>
                                 </ul>
-                            </li>:''}
+                            </li> :''}
+                            <li className="" id="employeemaster" onClick={(event) => this.onNavItemClick(event)}>
+                                <NavLink className="" to="/employeemasterform"><span className=""><span className="">Employee Master Form</span></span></NavLink>
+                            </li>
+                            <li className="" id="weeklytimesheet" onClick={(event) => this.onNavItemClick(event)}>
+                                <NavLink className="" to="/weeklytimesheet"><span className=""><span className="">Weekly Timesheet</span></span></NavLink>
+                            </li>
                             <li id="liDashboardLink" className="" onClick={(event) => this.onNavItemClick(event)}>
                                 <NavLink className="" to="/dashboard"><span className=""><span className="">Dashboard</span></span></NavLink>
                             </li>
@@ -82,44 +77,6 @@ class NavBar extends React.Component<NavBarProps, NavBarState> {
                     </div>
                 </nav>
 
-                {/* <aside id='sidenavApp' className='ms-dialogHidden ms-forceWrap ms-noList'>
-                <div className='ms-dialogHidden ms-forceWrap ms-noList'>
-                    <div id='DeltaPlaceHolderLeftNavBar' className='ms-core-navigation'>
-                        <div className='noindex ms-core-listMenu-verticalBox'>
-
-                            <ul id="zz13_RootAspMenu" className="root ms-core-listMenu-root static">
-                                <li className="static">
-                                    {this.state.currentUserLinks.includes('/') ? <NavLink className="static menu-item ms-core-listMenu-item ms-displayInline ms-navedit-linkNode" to="/"><span className="additional-background ms-navedit-flyoutArrow"><span className="menu-item-text">Home</span></span>
-                                    </NavLink> : null}
-                                    <ul className="static">
-                                        <li className="static">
-                                            {this.state.currentUserLinks.includes('/approvalmaster')?<NavLink className="static menu-item ms-core-listMenu-item ms-displayInline ms-navedit-linkNode" to="/approvalmaster"><span className="additional-background ms-navedit-flyoutArrow"><span className="menu-item-text">Approval Master</span></span></NavLink> : null}
-                                        </li>
-                                        <li className="static">
-                                            <NavLink className="static menu-item ms-core-listMenu-item ms-displayInline ms-navedit-linkNode" to="/vendor"><span className="additional-background ms-navedit-flyoutArrow"><span className="menu-item-text">Vendor Master</span></span></NavLink>
-                                        </li>
-                                        <li className="static">
-                                            <NavLink className="static menu-item ms-core-listMenu-item ms-displayInline ms-navedit-linkNode" to="/masterrequisition"><span className="additional-background ms-navedit-flyoutArrow"><span className="menu-item-text">Master Requisition</span></span></NavLink>
-                                        </li>
-                                    </ul></li>
-                                <li className="static"><span className="static menu-item ms-core-listMenu-item ms-displayInline ms-navedit-linkNode"><span className="additional-background ms-navedit-flyoutArrow"><span className="menu-item-text">Forms</span></span></span><ul className="static">
-                                    <li className="static selected">
-                                        <NavLink className="static selected menu-item ms-core-listMenu-item ms-displayInline ms-core-listMenu-selected ms-navedit-linkNode" to="/purchaserequest"><span className="additional-background ms-navedit-flyoutArrow"><span className="menu-item-text">Purchase Request</span><span className="ms-hidden">Currently selected</span></span></NavLink></li>
-                                </ul></li>
-                                <li className="static"><span className="static menu-item ms-core-listMenu-item ms-displayInline ms-navedit-linkNode"><span className="additional-background ms-navedit-flyoutArrow"><span className="menu-item-text">Reports</span></span></span><ul className="static">
-                                    <li className="static">
-                                        <NavLink className="static menu-item ms-core-listMenu-item ms-displayInline ms-navedit-linkNode" to="/requisitionreport"><span className="additional-background ms-navedit-flyoutArrow"><span className="menu-item-text">Reports</span></span></NavLink>
-                                    </li>
-                                </ul></li>
-                                <li className="static">
-                                    <NavLink className="static menu-item ms-core-listMenu-item ms-displayInline ms-navedit-linkNode" to="/dashboard"><span className="additional-background ms-navedit-flyoutArrow"><span className="menu-item-text">Dashboard</span></span></NavLink>
-                                </li>
-                            </ul>
-
-                        </div>
-                    </div>
-                </div>
-            </aside> */}
             </div>
         );
     }

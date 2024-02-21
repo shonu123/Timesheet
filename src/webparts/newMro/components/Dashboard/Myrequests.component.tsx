@@ -49,7 +49,8 @@ class Myrequests extends React.Component<MyrequestsProps, MyrequestsState> {
        //.getItem('Myrequests');
     }
     public componentDidMount() {
-        this.loadListData();
+        this.setState({loading:false});
+        // this.loadListData();
     }
     private loadListData = () => {
         const userId = this.props.spContext.userId;
@@ -78,103 +79,104 @@ class Myrequests extends React.Component<MyrequestsProps, MyrequestsState> {
         localStorage.setItem('PrvData', JSON.stringify(lsMyrequests));
     }
     public render() {
-        const columns = [
-            {
-                name: "Edit",
-                //selector: "Id",
-                selector: (row, i) => row.Id,
-                export: false,
-                cell: record => {
-                    return (
-                        <React.Fragment>
-                            <div style={{ paddingLeft: '10px' }}>
-                                <NavLink onClick={this.storData} title="Edit" className="csrLink ms-draggable" to={`/purchaserequest/${record.Id}`}>
-                                    <FontAwesomeIcon icon={faEdit}></FontAwesomeIcon>
-                                </NavLink>
-                            </div>
-                        </React.Fragment>
-                    );
-                }
-            },
-            {
-                name: "Plant",
-                //selector: "Plant",
-                selector: (row, i) => row.Plant,
-                width: '100px',
-                sortable: true
-            },
-            {
-                name: "Department",
-                //selector: "Department",
-                selector: (row, i) => row.Department,
-                width: '110px',
-                sortable: true
-            },
-            {
-                name: "Vendor",
-                //selector: 'VendorName',
-                selector: (row, i) => row.VendorName,
-                width: '150px',
-                sortable: true
+        // const columns = [
+        //     {
+        //         name: "Edit",
+        //         //selector: "Id",
+        //         selector: (row, i) => row.Id,
+        //         export: false,
+        //         cell: record => {
+        //             return (
+        //                 <React.Fragment>
+        //                     <div style={{ paddingLeft: '10px' }}>
+        //                         <NavLink onClick={this.storData} title="Edit" className="csrLink ms-draggable" to={`/purchaserequest/${record.Id}`}>
+        //                             <FontAwesomeIcon icon={faEdit}></FontAwesomeIcon>
+        //                         </NavLink>
+        //                     </div>
+        //                 </React.Fragment>
+        //             );
+        //         }
+        //     },
+        //     {
+        //         name: "Plant",
+        //         //selector: "Plant",
+        //         selector: (row, i) => row.Plant,
+        //         width: '100px',
+        //         sortable: true
+        //     },
+        //     {
+        //         name: "Department",
+        //         //selector: "Department",
+        //         selector: (row, i) => row.Department,
+        //         width: '110px',
+        //         sortable: true
+        //     },
+        //     {
+        //         name: "Vendor",
+        //         //selector: 'VendorName',
+        //         selector: (row, i) => row.VendorName,
+        //         width: '150px',
+        //         sortable: true
 
-            },
-            {
-                name: "Requisitioner",
-                //selector: "Requisitioner",
-                selector: (row, i) => row.Requisitioner,
-                sortable: true,
-                cell: record => {
-                    return (
-                        record.Requisitioner.Title
-                    );
-                },
-                width: '150px'
-            },
-            {
-                name: "Created",
-                //selector: 'Created',
-                selector: (row, i) => row.Created,
-                width: '110px',
-                sortable: true,
-                cell: record => {
-                    return (
-                        new Date(record.Created).toLocaleDateString()
-                    );
-                },
-            },
-            {
-                name: "Total Amount",
-                //selector: "TotalAmount",
-                selector: (row, i) => row.TotalAmount,
-                width: '135px',
-                sortable: true
-            },
-            {
-                name: "Status",
-                //selector: "Status",
-                selector: (row, i) => row.Status,
-                width: '135px',
-                sortable: true
-            },
-            {
-                name:"PO Number",
-                selector:(row,i)=> row.PONumber,
-                width: '135px',
-                sortable: true
-            },
-            {
-                name: "Description",
-                //selector: 'Description',
-                selector: (row, i) => row.Description,
-                //width: '135px',
-                sortable: true
-            }
-        ];
+        //     },
+        //     {
+        //         name: "Requisitioner",
+        //         //selector: "Requisitioner",
+        //         selector: (row, i) => row.Requisitioner,
+        //         sortable: true,
+        //         cell: record => {
+        //             return (
+        //                 record.Requisitioner.Title
+        //             );
+        //         },
+        //         width: '150px'
+        //     },
+        //     {
+        //         name: "Created",
+        //         //selector: 'Created',
+        //         selector: (row, i) => row.Created,
+        //         width: '110px',
+        //         sortable: true,
+        //         cell: record => {
+        //             return (
+        //                 new Date(record.Created).toLocaleDateString()
+        //             );
+        //         },
+        //     },
+        //     {
+        //         name: "Total Amount",
+        //         //selector: "TotalAmount",
+        //         selector: (row, i) => row.TotalAmount,
+        //         width: '135px',
+        //         sortable: true
+        //     },
+        //     {
+        //         name: "Status",
+        //         //selector: "Status",
+        //         selector: (row, i) => row.Status,
+        //         width: '135px',
+        //         sortable: true
+        //     },
+        //     {
+        //         name:"PO Number",
+        //         selector:(row,i)=> row.PONumber,
+        //         width: '135px',
+        //         sortable: true
+        //     },
+        //     {
+        //         name: "Description",
+        //         //selector: 'Description',
+        //         selector: (row, i) => row.Description,
+        //         //width: '135px',
+        //         sortable: true
+        //     }
+        // ];
         return (
             <React.Fragment>
           {this.state.loading && <Loader />}
             <div className='table-head-1st-td'>
-                <TableGenerator columns={columns} data={this.state.requests} fileName={'My Approval'} showExportExcel={false} onChange={this.onPageChange} onSortChange={this.sortOrder} prvPageNumber={this.state.pageNumber} prvDirection={this.state.sortOrder} prvSort={this.state.sortBy}></TableGenerator>
+                <p>Dashboard</p>
+                {/* <TableGenerator columns={columns} data={this.state.requests} fileName={'My Approval'} showExportExcel={false} onChange={this.onPageChange} onSortChange={this.sortOrder} prvPageNumber={this.state.pageNumber} prvDirection={this.state.sortOrder} prvSort={this.state.sortBy}></TableGenerator> */}
             </div>
             </React.Fragment>
         );

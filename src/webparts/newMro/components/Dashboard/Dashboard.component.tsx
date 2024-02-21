@@ -54,15 +54,8 @@ class Dashboard extends React.Component<DashboardProps, DashboardState> {
             activeElementClass:"nav-link"
         };
     }
-
-    // public state={
-    //     showApproveComp: true,
-    //     showRequestComp: false,
-    //     CurrentuserId: this.props.context.pageContext.legacyPageContext["userId"],
-    //     PurchasingManager:false,
-    // }
     public componentDidMount() {
-        this.getUserGroups();
+        // this.getUserGroups();
     }
 
     private updatethetabs=()=> {
@@ -104,14 +97,7 @@ class Dashboard extends React.Component<DashboardProps, DashboardState> {
         let groups = await sp.web.currentUser.groups();
 
         const groupInfo = groups.filter((item) => item.Title == "MRO Purchasing Team");
-        
-        if (groupInfo.length) {
-           // const users = await sp.web.siteGroups.getById(groupInfo[0].Id).users();
-            //  this.setState({
-            //      isUserExistInPurchasingGroup : true,
-            //      DynamicDisabled : false
-            //  });
-        }
+      
     }
     private onMenuItemClick(event) {
         let item = document.getElementById('sideMenuNav');
@@ -155,24 +141,7 @@ class Dashboard extends React.Component<DashboardProps, DashboardState> {
             document.getElementById('PM').classList.add('active');
             document.getElementById('PM').classList.add('show');
         }
-        else if (url === 'Approved'){
-            showApproved = true;
-            document.getElementById('Approved-tab').classList.add('active');
-            document.getElementById('Approved').classList.add('active');
-            document.getElementById('Approved').classList.add('show');
-        }
-        else if (url === 'Pending'){
-            showPending = true;
-            document.getElementById('Pending-tab').classList.add('active');
-            document.getElementById('Pending').classList.add('active');
-            document.getElementById('Pending').classList.add('show');
-        }
-        else{
-            showExported = true;
-            document.getElementById('Exported-tab').classList.add('active');
-            document.getElementById('Exported').classList.add('active');
-            document.getElementById('Exported').classList.add('show');
-        }
+        
         this.setState({ showApproveComp: showApproveComp, showRequestComp: showRequestComp, showPurchasing: showPurchasing, showApproved: showApproved, showExported: showExported, showPending: showPending });
         let lsMyrequests = {'PageNumber':1,"sortOrder":true,"sortBy":1,'tab':'','SearchKey':null};
         if(url!= undefined) {setTimeout(() => {
@@ -213,15 +182,7 @@ class Dashboard extends React.Component<DashboardProps, DashboardState> {
                                     <li className="nav-item" role="presentation" onClick={() => this.onHandleClick('myapprovals')}>
                                         <a className="nav-link" id="MyRequests-tab" data-toggle="tab" href="#/MyRequests" role="tab" aria-controls="profile" aria-selected="false">My Approvals</a>
                                     </li>
-                                    <li className="nav-item" role="presentation" onClick={() => this.onHandleClick('PM')} hidden={!this.state.PurchasingManager}>
-                                        <a className="nav-link" id="PM-tab" data-toggle="tab" href="#/PM" role="tab" aria-controls="profile" aria-selected="false">Purchasing Manager</a>
-                                    </li>
-                                    <li className="nav-item" role="presentation" onClick={() => this.onHandleClick('Approved')} hidden={!this.state.PurchasingManager  && !this.state.purchasingDeptMember}>
-                                        <a className="nav-link" id="Approved-tab" data-toggle="tab" href="#/Approved" role="tab" aria-controls="profile" aria-selected="false">Approved</a>
-                                    </li>
-                                    <li className="nav-item" role="presentation" onClick={() => this.onHandleClick('Exported')} hidden={!this.state.PurchasingManager}>
-                                        <a className="nav-link" id="Exported-tab" data-toggle="tab" href="#/Exported" role="tab" aria-controls="profile" aria-selected="false">Exported</a>
-                                    </li>
+                                    
                                 </ul>
 
                                 <div className="tab-content" id="myTabContent">
@@ -240,19 +201,7 @@ class Dashboard extends React.Component<DashboardProps, DashboardState> {
                                             {this.state.showPending && <Pending {...this.props} />}
                                         </div>
                                     </div>
-                                    <div className="tab-pane fade csPM" id="PM" role="tabpanel" aria-labelledby="PM-tab">
-                                        <div className="v-table">
-                                            {this.state.showPurchasing && <PurchasingManager {...this.props} />}
-                                        </div>
-                                    </div>
-                                    <div className="tab-pane fade csApproved" id="Approved" role="tabpanel" aria-labelledby="Approved-tab">
-                                        <div className="v-table">
-                                            {this.state.showApproved && <Approved {...this.props} />}
-                                        </div>
-                                    </div>
-                                    <div className="tab-pane fade csExported" id="Exported" role="tabpanel" aria-labelledby="Exported-tab">
-                                        {this.state.showExported && <Exported {...this.props} />}
-                                    </div>
+                                    
                                 </div>
                             </div>
                         </div>
