@@ -1,3 +1,17 @@
+
+export enum StatusType {
+  number='Number',
+  string='String',
+  mobileNumber='MobileNumber',
+  email='Email',
+  people='PeoplePicker',
+  date='DatePicker',
+  compareDates='CompareDates',
+}
+
+
+
+
 export enum ControlType {
     number='Number',
     string='String',

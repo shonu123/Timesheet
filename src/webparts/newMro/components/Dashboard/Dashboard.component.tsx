@@ -32,6 +32,7 @@ export interface DashboardState {
     isMROAdmin:boolean;
     showPending:boolean;
     activeElementClass:string;
+    userRole: string;
 }
 
 class Dashboard extends React.Component<DashboardProps, DashboardState> {
@@ -51,12 +52,34 @@ class Dashboard extends React.Component<DashboardProps, DashboardState> {
             purchasingDeptMember : false,
             isMROAdmin:false,
             showPending:false,
-            activeElementClass:"nav-link"
+            activeElementClass:"nav-link",
+            userRole:''
         };
     }
     public componentDidMount() {
         // this.getUserGroups();
+        this.getUserGroups();
     }
+
+    private getUserGroups = async () => {
+        let qryReviewedTO = '';
+        let qeyPurTeam ='';
+        let groups = await sp.web.currentUser.groups();
+        console.log("current user deatils")
+        console.log(this.props.context.pageContext)
+
+        let userGroup = groups[0].Title
+        let user = userGroup=='Timesheet Initiators' ?'Initiator': userGroup=='Timesheet Approvers'?'Approvers':userGroup=='Timesheet Reviewers'?'Reviewers':'Administrator'
+
+        console.log('You are :'+user)
+        this.setState({userRole : user})
+    }
+
+
+
+
+
+
 
     private updatethetabs=()=> {
         let prvData = localStorage.getItem('PrvData');
@@ -66,20 +89,20 @@ class Dashboard extends React.Component<DashboardProps, DashboardState> {
     }
     
 
-    private getUserGroups = async () => {
-        let qryReviewedTO = '';
-        let qeyPurTeam ='';
-        let groups = await sp.web.currentUser.groups();
-        let mroGroups=groups.filter(c=>c.Title.includes('MRO'));
-        mroGroups.forEach(grp=>{
-            qryReviewedTO += ' or ReviewerId eq ' + grp.Id;
-        });
-        mroGroups.forEach(grp=>{
-            qeyPurTeam += ' or PurchasingTeamId eq ' + grp.Id;
-        });
-        this.GetMasterListData(qryReviewedTO,groups,qeyPurTeam);
-        this.updatethetabs();
-    }
+    // private getUserGroups = async () => {
+    //     let qryReviewedTO = '';
+    //     let qeyPurTeam ='';
+    //     let groups = await sp.web.currentUser.groups();
+    //     let mroGroups=groups.filter(c=>c.Title.includes('MRO'));
+    //     mroGroups.forEach(grp=>{
+    //         qryReviewedTO += ' or ReviewerId eq ' + grp.Id;
+    //     });
+    //     mroGroups.forEach(grp=>{
+    //         qeyPurTeam += ' or PurchasingTeamId eq ' + grp.Id;
+    //     });
+    //     this.GetMasterListData(qryReviewedTO,groups,qeyPurTeam);
+    //     this.updatethetabs();
+    // }
     private async GetMasterListData(qryReviewedTO,groups,qeyPurTeam) {
         let ApprovalsMatrix: any = await sp.web.lists.getByTitle('ApprovalsMatrix').items.filter("IsActive eq 1 and (ReviewerId eq " + this.state.CurrentuserId + qryReviewedTO +")").select('*').get();
         let PurTeammember: any = await sp.web.lists.getByTitle('ApprovalsMatrix').items.filter("IsActive eq 1 and (PurchasingTeamId eq " + this.state.CurrentuserId + qeyPurTeam +")").select('*').get();
@@ -169,8 +192,9 @@ class Dashboard extends React.Component<DashboardProps, DashboardState> {
                         </div>
 
                         <div className="after-title"></div>
+                        <h1>Welcome {this.state.userRole}</h1>
 
-                        <div className="p-1">
+                        {/* <div className="p-1">
                             <div className="border-box-shadow light-box m-2">
                                 <ul className="nav nav-tabs nav-fill" id="myTab" role="tablist">
                                     <li className="nav-item" role="presentation" onClick={() => this.onHandleClick('myrequests')}>
@@ -204,7 +228,7 @@ class Dashboard extends React.Component<DashboardProps, DashboardState> {
                                     
                                 </div>
                             </div>
-                        </div>
+                        </div> */}
                     </div>
                 </div>
             </div>

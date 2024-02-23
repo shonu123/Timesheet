@@ -742,11 +742,6 @@ input.c-input-readonly {
 .icon-147{
   line-height: 1.9;
 }
-.custom-peoplepicker .ms-BasePicker-itemsWrapper {
-  position: absolute;
-  /* top: 18px; */
-  top: 12px;
-}
 .p-rel {
   position: relative;
 }
@@ -1114,7 +1109,7 @@ input.ms-BasePicker-input::after{
   border-top: none!important;
 }
 .ms-BasePicker-text{
-    display: block;
+    /* display: block; */
     min-width: inherit;
     min-height: inherit;
     border: none;
@@ -1390,6 +1385,17 @@ div[id^="_TopSpan_NotificationSpan"]{
   /*====================data Table======================*/
   .data-filter-none::after, .data-filter-none::before {
       visibility: hidden;
+  }
+  .row{
+    display: flex;
+  }
+  .col-md-3{
+    width: 25%;
+    padding: 0 5px;
+  }
+  .col-sm-12{
+    width: 100%;
+    padding: 0 5px;
   }
   .dataTables_wrapper .row:first-child {
       margin-top: 20px;
@@ -1873,16 +1879,9 @@ top: 43.5%;
 /* .Calendar {
   font-size: 8px!important;
 } */
-.custom-peoplepicker{
-  position: relative;
-  }
-  .custom-peoplepicker .ms-BasePicker-text input{
-    position: absolute;
-    top: 0px;
-    width: 100%;
-    display: block;
-    height: calc(1.5em + .75rem + 2px)!important;
-    padding: .375rem .75rem;
+
+.custom-peoplepicker input{
+  padding: .375rem .75rem;
     font-size: 1rem;
     font-weight: 400;
     line-height: 1.5;
@@ -1891,8 +1890,7 @@ top: 43.5%;
     background-clip: padding-box;
     border: 1px solid #ced4da;
     border-radius: .25rem;
-    transition: border-color .15s ease-in-out,box-shadow .15s ease-in-out;
-  }
+}
 .custom-datepicker{
 position: relative;
 }
@@ -1918,26 +1916,6 @@ padding: .375rem .75rem;
 }
 .z-in-9{
   z-index: 999!important;
-}
-.custom-peoplepicker .removeButton-142 {
-  position: relative;
-}
-.custom-peoplepicker .removeButton-142:hover {
-  color: rgb(32, 31, 30);
-  background: transparent;
-}
-.custom-peoplepicker i.icon-147:after{
-  content: 'X';
-  display: inline-block;
-  font-style: normal;
-  font-weight: bold;
-  width: 19px;
-  height: 19px;
-  border-radius: 50%;
-  padding: 2px;
-  position: absolute;
-  right: 3px;
-  top: -2px;
 }
 .nav-click{
   background-color: #bbb!important;
