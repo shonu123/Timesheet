@@ -50,7 +50,6 @@ class Myapprovals extends React.Component<MyapprovalsProps, MyapprovalsState> {
 
     }
 
-
     private getUserGroups = async () => {
         let qryAssignedTO = '';
         let groups = await sp.web.currentUser.groups();

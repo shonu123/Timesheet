@@ -1,9 +1,10 @@
 import * as React from 'react';
 import Myapprovals from './Myapprovals.component';
 import Myrequests from './Myrequests.component';
+import ReviewerApprovals from './Reviewers.component'
 import Pending from './Pending.component';
 import PurchasingManager from './PurchasingManager.component';
-import Approved from './Approved.component';
+import Approved from './Approvers.component';
 import Exported from './Exported.component';
 import { SPHttpClient} from '@microsoft/sp-http';
 import { WebPartContext } from '@microsoft/sp-webpart-base';
@@ -11,6 +12,7 @@ import { sp } from '@pnp/sp';
 import {highlightCurrentNav} from '../../Utilities/HighlightCurrentComponent';
 import "../Shared/Menuhandler";
 import "@pnp/sp/site-users/web";
+import ApproversApprovals from './Approvers.component';
 
 export interface DashboardProps {
     match: any;
@@ -21,7 +23,7 @@ export interface DashboardProps {
 }
 
 export interface DashboardState {
-    showApproveComp: boolean;
+    showReviewerComp: boolean;
     showRequestComp: boolean;
     showPurchasing: boolean;
     showApproved: boolean;
@@ -33,6 +35,8 @@ export interface DashboardState {
     showPending:boolean;
     activeElementClass:string;
     userRole: string;
+    tempUserRole: string;
+    showApproveComp : boolean;
 }
 
 class Dashboard extends React.Component<DashboardProps, DashboardState> {
@@ -42,7 +46,8 @@ class Dashboard extends React.Component<DashboardProps, DashboardState> {
             spfxContext: this.props.context
         });
         this.state = {
-            showApproveComp: false,
+            showApproveComp : false,
+            showReviewerComp: false,
             showRequestComp: true,
             CurrentuserId: this.props.context.pageContext.legacyPageContext["userId"],
             PurchasingManager: false,
@@ -53,7 +58,8 @@ class Dashboard extends React.Component<DashboardProps, DashboardState> {
             isMROAdmin:false,
             showPending:false,
             activeElementClass:"nav-link",
-            userRole:''
+            userRole:'',
+            tempUserRole : 'Approver'
         };
     }
     public componentDidMount() {
@@ -144,20 +150,23 @@ class Dashboard extends React.Component<DashboardProps, DashboardState> {
         item.classList.remove('show');
         });
 
-        let showApproveComp = false; let showRequestComp = false; let showPurchasing = false; let showApproved = false; let showExported = false; let showPending = false;
-        if (url === 'myapprovals')
+        let showReviewerComp = false; let showApproveComp = false; let showPurchasing = false; let showApproved = false; let showExported = false; let showPending = false;
+        if (url === 'Reviewers')
         {
-            document.getElementById('MyRequests-tab').classList.add('active');
+            document.getElementById('ReviewersApprovals-tab').classList.add('active');
             document.getElementById('MyRequests').classList.add('active');
             document.getElementById('MyRequests').classList.add('show');
-            showApproveComp = true;
+            showApproveComp = false;
+            showReviewerComp = true;
         }
-        else if (url === 'myrequests')
+        else if (url === 'Approvers')
          { 
-            document.getElementById('home-tab').classList.add('active');
+            document.getElementById('Approvers-tab').classList.add('active');
             document.getElementById('home').classList.add('active');
             document.getElementById('home').classList.add('show');
-           showRequestComp = true;}
+            showApproveComp = true;
+            showReviewerComp = false;
+        }
         else if (url === 'PM'){
             showPurchasing = true;
             document.getElementById('PM-tab').classList.add('active');
@@ -165,7 +174,7 @@ class Dashboard extends React.Component<DashboardProps, DashboardState> {
             document.getElementById('PM').classList.add('show');
         }
         
-        this.setState({ showApproveComp: showApproveComp, showRequestComp: showRequestComp, showPurchasing: showPurchasing, showApproved: showApproved, showExported: showExported, showPending: showPending });
+        this.setState({ showReviewerComp: showReviewerComp, showApproveComp: showApproveComp, showPurchasing: showPurchasing, showApproved: showApproved, showExported: showExported, showPending: showPending });
         let lsMyrequests = {'PageNumber':1,"sortOrder":true,"sortBy":1,'tab':'','SearchKey':null};
         if(url!= undefined) {setTimeout(() => {
             localStorage.setItem('PrvData', JSON.stringify(lsMyrequests));
@@ -194,41 +203,42 @@ class Dashboard extends React.Component<DashboardProps, DashboardState> {
                         <div className="after-title"></div>
                         <h1>Welcome {this.state.userRole}</h1>
 
-                        {/* <div className="p-1">
+                        <div className="p-1">
                             <div className="border-box-shadow light-box m-2">
                                 <ul className="nav nav-tabs nav-fill" id="myTab" role="tablist">
-                                    <li className="nav-item" role="presentation" onClick={() => this.onHandleClick('myrequests')}>
-                                        <a className="nav-link active" id="home-tab" data-toggle="tab" href="#/home" role="tab" aria-controls="home" aria-selected="true">My Requests</a>
+                                     <li className="nav-item" role="presentation" onClick={() => this.onHandleClick('Approvers')}>
+                                        <a className="nav-link active" id="Approvers-tab" data-toggle="tab" href="#/Approvers" role="tab" aria-controls="home" aria-selected="true">Approvers Requests</a>
                                     </li>
-                                    <li className="nav-item" role="presentation" onClick={() => this.onHandleClick('Pending')} hidden={!this.state.isMROAdmin}>
+                                    {/* <li className="nav-item" role="presentation" onClick={() => this.onHandleClick('Pending')} hidden={!this.state.isMROAdmin}>
                                         <a className="nav-link" id="Pending-tab" data-toggle="tab" href="#/Pending" role="tab" aria-controls="profile" aria-selected="false">All Pending</a>
-                                    </li>
-                                    <li className="nav-item" role="presentation" onClick={() => this.onHandleClick('myapprovals')}>
-                                        <a className="nav-link" id="MyRequests-tab" data-toggle="tab" href="#/MyRequests" role="tab" aria-controls="profile" aria-selected="false">My Approvals</a>
+                                    </li>  */}
+                                    <li className="nav-item" role="presentation" onClick={() => this.onHandleClick('Reviewers')}>
+                                        <a className="nav-link" id="ReviewersApprovals-tab" data-toggle="tab" href="#/Reviewers" role="tab" aria-controls="profile" aria-selected="false">Reviewer Approvals</a>
                                     </li>
                                     
                                 </ul>
+                                
 
-                                <div className="tab-content" id="myTabContent">
+                               <div className="tab-content" id="myTabContent">
                                     <div className="tab-pane fade csmyrequests show active" id="home" role="tabpanel" aria-labelledby="home-tab">
                                         <div className="v-table">
-                                            {this.state.showRequestComp && <Myrequests {...this.props} />}
+                                            {this.state.showApproveComp && <ApproversApprovals {...this.props} />}
                                         </div>
                                     </div>
-                                    <div className="tab-pane fade csmyapprovals" id="MyRequests" role="tabpanel" aria-labelledby="MyRequests-tab">
+                                    <div className="tab-pane fade csmyapprovals" id="MyRequests" role="tabpanel" aria-labelledby="ReviewersApprovals-tab">
                                         <div className="v-table">
-                                            {this.state.showApproveComp && <Myapprovals {...this.props} />}
+                                            {this.state.showReviewerComp && <ReviewerApprovals {...this.props} />}
                                         </div>
                                     </div>
-                                    <div className="tab-pane fade csPending" id="Pending" role="tabpanel" aria-labelledby="Pending-tab">
+                                    {/* <div className="tab-pane fade csPending" id="Pending" role="tabpanel" aria-labelledby="Pending-tab">
                                         <div className="v-table">
                                             {this.state.showPending && <Pending {...this.props} />}
                                         </div>
-                                    </div>
+                                    </div> */}
                                     
                                 </div>
                             </div>
-                        </div> */}
+                        </div> 
                     </div>
                 </div>
             </div>

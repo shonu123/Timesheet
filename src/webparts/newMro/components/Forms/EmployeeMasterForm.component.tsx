@@ -91,6 +91,8 @@ class EmployeeMasterForm extends React.Component<EmployeeMasterFormProps, Employ
         // sp.web.currentUser.groups()
         this.setState({ClientsObject : clients})
         console.log(clients);
+        this.setState({ loading: false });
+
         if(this.props.match.params.id != undefined){
             console.log(this.props.match.params.id)
             this.setState({ItemID : this.props.match.params.id})
@@ -191,9 +193,8 @@ private async validateDuplicateRecord () {
 }
 
     private handleSubmit = async (e)=>{
-
         let data ={
-        Employee : { val: this.state.EmployeeId, required: true, Name: 'Employee', Type: ControlType.people,Focusid:'divEmployye' },
+        Employee : { val: this.state.EmployeeId, required: true, Name: 'Employee', Type: ControlType.people,Focusid:'divEmployee' },
         ReportingManager: { val: this.state.ReportingManagerId, required: true, Name: 'Reporting Manager', Type: ControlType.people,Focusid:'divReportingManager' },
         Client:{ val: this.state.ClientName, required: true, Name: 'Client', Type: ControlType.string,Focusid:this.client },
         Approver : { val: this.state.ApproverId, required: true, Name: 'Approver', Type: ControlType.people,Focusid:'divApprover' },
@@ -232,8 +233,11 @@ private async validateDuplicateRecord () {
     }
 
     private InsertorUpdatedata(formdata, actionStatus) {
-        if (this.state.ItemID > 0) {                //update existing record
+        if (this.state.ItemID > 0) {   
+            this.setState({ loading: true });
+            //update existing record
             sp.web.lists.getByTitle(this.listName).items.getById(this.state.ItemID).update(formdata).then((res) => {
+                this.setState({ loading: false });
                 alert('Data updated sucessfully')
             }, (error) => {
                 console.log(error);
@@ -242,7 +246,8 @@ private async validateDuplicateRecord () {
             try {
                 this.setState({ loading: true });
                 sp.web.lists.getByTitle(this.listName).items.add(formdata).then((res) => {
-                    console.log(res)
+                    console.log(res);
+                    this.setState({ loading: false });
                     alert('Data inserted sucessfully')
                 }, (error) => {
                     console.log(error);
@@ -451,6 +456,7 @@ private async validateDuplicateRecord () {
                             </div>
                         </div>
                     </div>
+                    {this.state.loading && <Loader />}
                 </React.Fragment >
             );
 }

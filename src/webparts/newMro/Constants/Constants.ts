@@ -1,12 +1,10 @@
 
 export enum StatusType {
-  number='Number',
-  string='String',
-  mobileNumber='MobileNumber',
-  email='Email',
-  people='PeoplePicker',
-  date='DatePicker',
-  compareDates='CompareDates',
+  Save = 'Draft',
+  Submit = 'Submited',
+  InProgress = 'In-Progress',
+  Approved = "Approved",
+  Reject = "Reject"
 }
 
 
