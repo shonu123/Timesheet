@@ -2085,3 +2085,13 @@ li {
 .text-134::after{
   display: none;
 }
+
+#divAddNewWeeklyTimeSheet{
+  position: relative;
+}
+#newWeeklyTimeSheet{
+  position: absolute;
+  right: 10px;
+  top: -70px;
+  z-index: 10;
+}

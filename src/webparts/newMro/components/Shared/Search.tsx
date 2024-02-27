@@ -16,6 +16,7 @@ const Search = ({ onSearch }) => {
                 style={{ width: "240px" }}
                 placeholder="Search"
                 value={search}
+                id='txtTableSearch'
                 onChange={e => onInputChange(e.target.value)}
             />
         </div>

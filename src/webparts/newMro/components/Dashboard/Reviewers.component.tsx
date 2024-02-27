@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { NavLink } from 'react-router-dom';
+import { NavLink, Navigate } from 'react-router-dom';
 import TableGenerator from '../Shared/TableGenerator';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faXmark, faEdit, faCheck } from '@fortawesome/free-solid-svg-icons';
@@ -31,7 +31,9 @@ export interface ReviewerApprovalsState {
     comments :  string;
     Action : string;
     errorMessage: string;
-    ItemID : Number
+    ItemID : Number;
+    siteURL : string;
+    redirect:boolean;
     // pageNumber:number;
     // sortBy:number;
     // sortOrder:boolean;
@@ -43,7 +45,7 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
         sp.setup({
             spfxContext: this.props.context
         });
-        this.state = {Reviewers: [], loading:false,message:'',title:'',showHideModal:false,isSuccess:true,comments:'',Action:'',errorMessage:'',ItemID:0};
+        this.state = {Reviewers: [], loading:false,message:'',title:'',showHideModal:false,isSuccess:true,comments:'',Action:'',errorMessage:'',ItemID:0,siteURL : this.props.spContext.webAbsoluteUrl,redirect:false};
     }
 
     public componentDidMount() {
@@ -54,7 +56,7 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
     private ReviewerApproval = async () => {
         this.setState({ loading: true });
         const userId = this.props.spContext.userId;
-        var filterString = "Reviewers/Id eq '"+userId+"' and PendingWith eq 'Reviewer' and Status eq 'In-Progress'"
+        var filterString = "Reviewers/Id eq '"+userId+"' and PendingWith eq 'Reviewer' and Status eq '"+StatusType.InProgress+"'"
 
         sp.web.lists.getByTitle('WeeklyTimeSheet').items.top(2000).filter(filterString).expand("Reviewers").select('Reviewers/Title','*').orderBy('Modified', false).get()
             .then((response) => {
@@ -64,7 +66,7 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
                     let date = new Date(d.DateSubmitted)
                     Data.push({
                         Id : d.Id,
-                        Date : `${date.getDate()}-${date.getMonth() + 1}-${date.getFullYear()}`,
+                        Date : `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`,
                         EmployeName: d.Name,
                         Status : d.Status,
                         BillableTotalHrs: d.BillableTotalHrs,
@@ -82,7 +84,46 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
             });
     }
 
-    private  updateStatus = async (recordId,Status,Comments) =>{
+    private sendemail(emaildetails){
+        sp.utility.sendEmail({
+            //Body of Email  
+            Body: emaildetails.body,  
+            //Subject of Email  
+            Subject: emaildetails.subject,  
+            //Array of string for To of Email  
+            To: emaildetails.toemail,  
+            CC: emaildetails.ccemail
+          }).then((i) => {  
+            alert("Record Updated Sucessfully");
+            this.setState({showHideModal : false,ItemID:0,message:'',title:'',Action:'',loading: false});
+            // <Navigate to={'/'} />
+          }).catch((i) => {
+            alert("Error while updating the record");
+            this.setState({showHideModal : false,ItemID:0,message:'',title:'',Action:'',loading: false});
+            console.log(i)
+          });  
+    }
+    
+    private emailBodyPreparation(redirectURL, tableContent, bodyString, userName) {
+        var emailLink = "Please <a href=" + redirectURL + ">click here</a> to review the details.";
+        var emailBody = '<table id="email-container" border="0" cellpadding="0" cellspacing="0" style="margin: 0; padding: 0; text-align: left;" width="100%">' +
+            '<tr valign="top"><td colspan="2"><div id="email-to">Dear Sir/Madam,</br></div></td></tr>';
+        emailBody += '<tr valign="top"><td colspan="2" style="padding-top: 10px;">' + bodyString + '</td></tr>';
+        var i = 0;
+        for (var key in tableContent) {        
+            if (i === 0)
+                emailBody += "<tr><td></br></td></tr>";
+            var tdValue = tableContent[key];
+            emailBody += '<tr valign="top"> <td>' + key + '</td><td>: ' + tdValue + '</td></tr>';
+            i++;
+        }
+        emailBody += '<tr valign="top"> <td colspan="2" style="padding-top: 10px;"></br>' + emailLink + '</td></tr>';
+        emailBody += '<tr valign="top"><td colspan="2"></br><p style="margin-bottom: 0;">Regards,</p><div style="margin-top: 5px;" id="email-from">' + userName + '</div>';
+        emailBody += '</td></tr></table>';
+        return emailBody;
+    }
+
+    private  updateStatus = async (recordId,Status,Comments,To,CC,tableContent) =>{
 
         let postObject = {
             Status : Status,
@@ -91,8 +132,20 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
         console.log(postObject);
         this.setState({comments  :''})
         sp.web.lists.getByTitle('WeeklyTimeSheet').items.getById(recordId).update(postObject).then((res) => {
-            alert("Record Updated Sucessfully");
-            this.setState({showHideModal : false,ItemID:0,message:'',title:'',Action:'',loading: false})
+            // alert("Record Updated Sucessfully");
+            // this.setState({showHideModal : false,ItemID:0,message:'',title:'',Action:'',loading: false});
+            let sub=''
+            if(Status==StatusType.Approved)
+            sub = "Weekly Time Sheet has been "+Status+"."
+            else
+            sub = "Weekly Time Sheet has been "+StatusType.Reject+".Please re-submit with necessary details."
+
+            let emaildetails ={toemail:To,ccemail:CC,subject:sub,bodyString:sub,body:'' };
+             let table = tableContent;
+             emaildetails.body = this.emailBodyPreparation(this.state.siteURL+'/SitePages/TimeSheet.aspx#/WeeklyTimesheet/'+this.state.ItemID,table,emaildetails.bodyString,this.props.spContext.userDisplayName);
+             this.sendemail(emaildetails);
+            // <Navigate to={'/'} />
+            // this.setState({redirect:true})
         });
     }
 
@@ -106,7 +159,7 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
         let recordId = this.state.ItemID;
         var filterString = "Id eq '"+recordId+"'"
 
-        let data =  await sp.web.lists.getByTitle('WeeklyTimeSheet').items.filter(filterString).select('CommentsHistory').get()
+        let data =  await sp.web.lists.getByTitle('WeeklyTimeSheet').items.filter(filterString).select('Initiator/ID,Initiator/Title,*').expand('Initiator').get()
         console.log(data)
         let commentsObj = JSON.parse(data[0].CommentsHistory)
         commentsObj.push({
@@ -117,8 +170,33 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
             Date : new Date().toISOString()
         })
         commentsObj = JSON.stringify(commentsObj);
+        var filterString = "Employee/ID eq '"+data[0].Initiator.ID+"' and ClientName eq '"+data[0].ClientName+"'"
+        var selectString = 'Employee/EMail,Reviewers/EMail,Approvers/EMail,Notifiers/EMail,*'
+        let emailData = await sp.web.lists.getByTitle('EmployeeMaster').items.filter(filterString).select(selectString).expand('Employee,Reviewers,Approvers,Notifiers').get();
+        console.log(emailData)
+        let toEmail = [];
+        let ccEmail = [];
+        toEmail.push(emailData[0].Employee.EMail);
+        let approvers = emailData[0].Approvers
+        for (const user of approvers) {
+            if(!ccEmail.includes(user.EMail))
+            ccEmail.push(user.EMail);
+        }
+        let notifires = emailData[0].Notifiers
+        for (const user of notifires) {
+            if(!toEmail.includes(user.EMail))
+            toEmail.push(user.EMail);
+        }
+        let reviewers = emailData[0].Reviewers
+        for (const user of reviewers) {
+            if(!toEmail.includes(user.EMail))
+            toEmail.push(user.EMail);
+        }
         // this.setState({comments : comments })
-        this.updateStatus(recordId,'Approved',commentsObj)
+        let date = new Date(data[0].DateSubmitted)
+        let tableContent = {'Name':data[0].Name,'Company':data[0].ClientName,'Submitede Date':`${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`,'Billable Total Hours':data[0].BillableTotalHrs,'OT Total Hours':data[0].OTTotalHrs,'Total Hours':data[0].WeeklyTotalHrs}
+        console.log(tableContent)
+        this.updateStatus(recordId,StatusType.Approved,commentsObj,toEmail,ccEmail,tableContent)
     }
 
     private handleReject= async (e) =>{
@@ -131,9 +209,9 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
             this.setState({ loading: true });
             var filterString = "Id eq '"+recordId+"'"
     
-            let data =  await sp.web.lists.getByTitle('WeeklyTimeSheet').items.filter(filterString).select('Comments').get()
+            let data =  await sp.web.lists.getByTitle('WeeklyTimeSheet').items.filter(filterString).select('Initiator/ID,Initiator/Title,*').expand('Initiator').get()
             console.log(data)
-            let commentsObj = JSON.parse(data[0].Comments)
+            let commentsObj = JSON.parse(data[0].CommentsHistory)
             commentsObj.push({
                 Action : 'Reject',
                 Role : 'Reviewer',
@@ -142,7 +220,34 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
                 Date : new Date().toISOString()
             })
             commentsObj = JSON.stringify(commentsObj);
-            this.updateStatus(recordId,'Rejected',commentsObj)
+            var filterString = "Employee/ID eq '"+data[0].Initiator.ID+"' and ClientName eq '"+data[0].ClientName+"'"
+            var selectString = 'Employee/EMail,Reviewers/EMail,Approvers/EMail,Notifiers/EMail,*'
+            let emailData = await sp.web.lists.getByTitle('EmployeeMaster').items.filter(filterString).select(selectString).expand('Employee,Reviewers,Approvers,Notifiers').get();
+            console.log(emailData)
+            let toEmail = [];
+            let ccEmail = [];
+            toEmail.push(emailData[0].Employee.EMail);
+            let approvers = emailData[0].Approvers
+            for (const user of approvers) {
+                if(!ccEmail.includes(user.EMail))
+                ccEmail.push(user.EMail);
+            }
+            let notifires = emailData[0].Notifiers
+            for (const user of notifires) {
+                if(!toEmail.includes(user.EMail))
+                toEmail.push(user.EMail);
+            }
+            let reviewers = emailData[0].Reviewers
+            for (const user of reviewers) {
+                if(!toEmail.includes(user.EMail))
+                toEmail.push(user.EMail);
+            }
+            // this.setState({comments : comments })
+            let date = new Date(data[0].DateSubmitted)
+            let tableContent = {'Name':data[0].Name,'Company':data[0].ClientName,'Submitede Date':`${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`,'Billable Total Hours':data[0].BillableTotalHrs,'OT Total Hours':data[0].OTTotalHrs,'Total Hours':data[0].WeeklyTotalHrs}
+            console.log(tableContent)
+    
+            this.updateStatus(recordId,StatusType.Reject,commentsObj,toEmail,ccEmail,tableContent)
         }
     }
     private handlefullClose = () => {
@@ -175,118 +280,124 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
     }
 
     public render() {
-        const columns = [
-            {
-                name: "Edit",
-                //selector: "Id",
-                selector: (row, i) => row.Id,
-                export: false,
-                cell: record => {
-                    return (
-                        <React.Fragment>
-                            <div style={{ paddingLeft: '10px' }}>
-                                <NavLink title="Edit"  className="csrLink ms-draggable" to={`/WeeklyTimesheet/${record.Id}`}>
-                                    <FontAwesomeIcon icon={faEdit}></FontAwesomeIcon>
-                                </NavLink>
+        if (this.state.redirect) {
+            let url = `/Dashboard`;
+            return (<Navigate to={url} />);
+        } 
+        else {
+            const columns = [
+                {
+                    name: "Edit",
+                    //selector: "Id",
+                    selector: (row, i) => row.Id,
+                    export: false,
+                    cell: record => {
+                        return (
+                            <React.Fragment>
+                                <div style={{ paddingLeft: '10px' }}>
+                                    <NavLink title="Edit"  className="csrLink ms-draggable" to={`/WeeklyTimesheet/${record.Id}`}>
+                                        <FontAwesomeIcon icon={faEdit}></FontAwesomeIcon>
+                                    </NavLink>
+                                </div>
+                            </React.Fragment>
+                        );
+                    },
+                    width: '100px'
+                },
+                {
+                    name: "Date",
+                    //selector: "Plant",
+                    selector: (row, i) => row.Date,
+                    width: '100px',
+                    sortable: true
+                },
+                {
+                    name: "Employe Name",
+                    //selector: "Department",
+                    selector: (row, i) => row.EmployeName,
+                    sortable: true
+                },
+                {
+                    name: "Status",
+                    //selector: 'VendorName',
+                    selector: (row, i) => row.Status,
+                    sortable: true
+
+                },
+                {
+                    name: "Billable Hours",
+                    //selector: "Requisitioner",
+                    selector: (row, i) => row.BillableTotalHrs,
+                    sortable: true,
+                    width: '135px'
+                },
+                {
+                    name: "OT Hours",
+                    //selector: 'Created',
+                    selector: (row, i) => row.OTTotalHrs,
+                    width: '110px',
+                    sortable: true,
+                },
+                {
+                    name: "NonBillable Hours",
+                    //selector: "TotalAmount",
+                    selector: (row, i) => row.NonBillableTotalHrs,
+                    sortable: true,
+                    width: '200px'
+                },
+                {
+                    name: "Total",
+                    //selector: "Status",
+                    selector: (row, i) => row.WeeklyTotalHrs,
+                    sortable: true
+                },
+                {
+                    name: "",
+                    //selector: "Id",
+                    selector: (row, i) => row.Id,
+                    export: false,
+                    cell: record => {
+                        return (
+                            <React.Fragment>
+                            <div style={{ paddingLeft: '10px' }} >
+                                    <FontAwesomeIcon icon={faCheck} id={record.Id} data-name={'Approve'} color='green' size="lg" onClick={this.showPopUp} title='Approve'></FontAwesomeIcon>
                             </div>
                         </React.Fragment>
-                    );
+                        );
+                    },
+                    width: '100px'
                 },
-                width: '100px'
-            },
-            {
-                name: "Date",
-                //selector: "Plant",
-                selector: (row, i) => row.Date,
-                width: '100px',
-                sortable: true
-            },
-            {
-                name: "Employe Name",
-                //selector: "Department",
-                selector: (row, i) => row.EmployeName,
-                sortable: true
-            },
-            {
-                name: "Status",
-                //selector: 'VendorName',
-                selector: (row, i) => row.Status,
-                sortable: true
-
-            },
-            {
-                name: "Billable Hours",
-                //selector: "Requisitioner",
-                selector: (row, i) => row.BillableTotalHrs,
-                sortable: true,
-                width: '135px'
-            },
-            {
-                name: "OT Hours",
-                //selector: 'Created',
-                selector: (row, i) => row.OTTotalHrs,
-                width: '110px',
-                sortable: true,
-            },
-            {
-                name: "NonBillable Hours",
-                //selector: "TotalAmount",
-                selector: (row, i) => row.NonBillableTotalHrs,
-                sortable: true,
-                width: '200px'
-            },
-            {
-                name: "Total",
-                //selector: "Status",
-                selector: (row, i) => row.WeeklyTotalHrs,
-                sortable: true
-            },
-            {
-                name: "",
-                //selector: "Id",
-                selector: (row, i) => row.Id,
-                export: false,
-                cell: record => {
-                    return (
+                {
+                    name: "",
+                    //selector: "Id",
+                    selector: (row, i) => row.Id,
+                    export: false,
+                    cell: record => {
+                        return (
                         <React.Fragment>
-                        <div style={{ paddingLeft: '10px' }} >
-                                <FontAwesomeIcon icon={faCheck} id={record.Id} data-name={'Approve'} color='green' size="lg" onClick={this.showPopUp} title='Approve'></FontAwesomeIcon>
-                        </div>
-                    </React.Fragment>
-                    );
-                },
-                width: '100px'
-            },
-            {
-                name: "",
-                //selector: "Id",
-                selector: (row, i) => row.Id,
-                export: false,
-                cell: record => {
-                    return (
-                    <React.Fragment>
-                        <div style={{ paddingLeft: '10px' }}>
-                                <FontAwesomeIcon icon={faXmark} id={record.Id} data-name='Reject' color='red' size="lg" onClick={this.showPopUp} title='Reject'></FontAwesomeIcon>
-                        </div>
-                    </React.Fragment>
-                    );
-                },
-                width: '100px'
-            }
-        ];
-        return (
-            <React.Fragment>
-            <h1>Reviewer Screen</h1>
-            {/* <ModalPopUp title={this.state.modalTitle} modalText={this.state.modalText} isVisible={this.state.showHideModal} onClose={this.handlefullClose} isSuccess={this.state.isSuccess}></ModalPopUp> */}
-            <ModalApprovePopUp message={this.state.message} title={this.state.title} isVisible={this.state.showHideModal} isSuccess={false} onConfirm={this.handleAction} onCancel={this.handlefullClose} comments={this.handleComments} errorMessage={this.state.errorMessage} commentsValue={this.state.comments} ></ModalApprovePopUp>
-            <div>
-                <div className='table-head-1st-td'>
-                    <TableGenerator columns={columns} data={this.state.Reviewers} fileName={'Reviewes Approvals'} showExportExcel={false}></TableGenerator>
+                            <div style={{ paddingLeft: '10px' }}>
+                                    <FontAwesomeIcon icon={faXmark} id={record.Id} data-name='Reject' color='red' size="lg" onClick={this.showPopUp} title='Reject'></FontAwesomeIcon>
+                            </div>
+                        </React.Fragment>
+                        );
+                    },
+                    width: '100px'
+                }
+            ];
+            return (
+                <React.Fragment>
+                <h1>Reviewer Screen</h1>
+                {/* <ModalPopUp title={this.state.modalTitle} modalText={this.state.modalText} isVisible={this.state.showHideModal} onClose={this.handlefullClose} isSuccess={this.state.isSuccess}></ModalPopUp> */}
+                <ModalApprovePopUp message={this.state.message} title={this.state.title} isVisible={this.state.showHideModal} isSuccess={false} onConfirm={this.handleAction} onCancel={this.handlefullClose} comments={this.handleComments} errorMessage={this.state.errorMessage} commentsValue={this.state.comments} ></ModalApprovePopUp>
+                <div>
+                    <div className='table-head-1st-td'>
+                        <TableGenerator columns={columns} data={this.state.Reviewers} fileName={'Reviewes Approvals'} showExportExcel={false}></TableGenerator>
+                    </div>
                 </div>
-            </div>
-            {this.state.loading && <Loader />}
-            </React.Fragment> 
-        );
+                {this.state.loading && <Loader />}
+                </React.Fragment> 
+            );
+        }
     }
 }
 
