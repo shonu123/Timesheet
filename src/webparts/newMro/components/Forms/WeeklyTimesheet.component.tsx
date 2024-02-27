@@ -1,4 +1,3 @@
-import  jquery from 'jquery';
 import * as React from 'react';
 import { Component } from 'react';
 import Loader from '../Shared/Loader';
@@ -23,14 +22,14 @@ import { highlightCurrentNav } from '../../Utilities/HighlightCurrentComponent';
 import "../Shared/Menuhandler";
 import DatePicker from "../Shared/DatePickerField";
 
-interface WeeklyTimesheetProps {
+export interface WeeklyTimesheetProps {
     match: any;
     spContext: any;
     spHttpClient: SPHttpClient;
     context: any;
     history: any;
 }
-interface WeeklyTimesheetState {
+export interface WeeklyTimesheetState {
     formData: {
         ClientName: string,
         Name: string,
@@ -83,6 +82,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
     private oweb;
     private currentUser :string;
     private currentUserId:number;
+    private listName = 'WeeklyTimeSheet';
     constructor(props: WeeklyTimesheetProps) {
         super(props);
         sp.setup({
@@ -142,26 +142,102 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
         this.oweb = Web(this.props.spContext.siteAbsoluteUrl);
          // for first row of weekly and OT hrs
          const trFormdata = { ...this.state.trFormdata };
-         let newobj = {
-             Description:'',
-             ProjectCode:'',
-             Mon: '00:00',
-             Tue: '00:00',
-             Wed:'00:00',
-             Thu: '00:00',
-             Fri: '00:00',
-             Sat: '00:00',
-             Sun: '00:00',
-             Total: '00:00',
-         };
-         trFormdata.WeeklyItemsData.push(newobj);
-         trFormdata.OTItemsData.push(newobj);
-         trFormdata.BillableSubTotal.push(newobj);
-         trFormdata.SynergyOfficeHrs.push(newobj);
-         trFormdata.SynergyHolidayHrs.push(newobj);
-         trFormdata.PTOHrs.push(newobj);
-         trFormdata.NonBillableSubTotal.push(newobj);
-         trFormdata.Total.push(newobj);
+         trFormdata.WeeklyItemsData.push({
+            Description:'',
+            ProjectCode:'',
+            Mon: '00:00',
+            Tue: '00:00',
+            Wed:'00:00',
+            Thu: '00:00',
+            Fri: '00:00',
+            Sat: '00:00',
+            Sun: '00:00',
+            Total: '00:00',
+        });
+         trFormdata.OTItemsData.push({
+            Description:'',
+            ProjectCode:'',
+            Mon: '00:00',
+            Tue: '00:00',
+            Wed:'00:00',
+            Thu: '00:00',
+            Fri: '00:00',
+            Sat: '00:00',
+            Sun: '00:00',
+            Total: '00:00',
+        });
+         trFormdata.BillableSubTotal.push({
+            Description:'',
+            ProjectCode:'',
+            Mon: '00:00',
+            Tue: '00:00',
+            Wed:'00:00',
+            Thu: '00:00',
+            Fri: '00:00',
+            Sat: '00:00',
+            Sun: '00:00',
+            Total: '00:00',
+        });
+         trFormdata.SynergyOfficeHrs.push({
+            Description:'',
+            ProjectCode:'',
+            Mon: '00:00',
+            Tue: '00:00',
+            Wed:'00:00',
+            Thu: '00:00',
+            Fri: '00:00',
+            Sat: '00:00',
+            Sun: '00:00',
+            Total: '00:00',
+        });
+         trFormdata.SynergyHolidayHrs.push({
+            Description:'',
+            ProjectCode:'',
+            Mon: '00:00',
+            Tue: '00:00',
+            Wed:'00:00',
+            Thu: '00:00',
+            Fri: '00:00',
+            Sat: '00:00',
+            Sun: '00:00',
+            Total: '00:00',
+        });
+         trFormdata.PTOHrs.push({
+            Description:'',
+            ProjectCode:'',
+            Mon: '00:00',
+            Tue: '00:00',
+            Wed:'00:00',
+            Thu: '00:00',
+            Fri: '00:00',
+            Sat: '00:00',
+            Sun: '00:00',
+            Total: '00:00',
+        });
+         trFormdata.NonBillableSubTotal.push({
+            Description:'',
+            ProjectCode:'',
+            Mon: '00:00',
+            Tue: '00:00',
+            Wed:'00:00',
+            Thu: '00:00',
+            Fri: '00:00',
+            Sat: '00:00',
+            Sun: '00:00',
+            Total: '00:00',
+        });
+         trFormdata.Total.push({
+            Description:'',
+            ProjectCode:'',
+            Mon: '00:00',
+            Tue: '00:00',
+            Wed:'00:00',
+            Thu: '00:00',
+            Fri: '00:00',
+            Sat: '00:00',
+            Sun: '00:00',
+            Total: '00:00',
+        });
          this.setState({ trFormdata});
     }
     public componentDidMount() {
@@ -170,436 +246,9 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
          this.loadWeeklyTimeSheetData();
     
     }
-    // public componentWillReceiveProps(newProps) {
-    //     if (newProps.match.params.id == undefined)
-    //         this.setState({
-    //             formData: {
-    //                 Title: '', Company: '', Plant: '',
-    //                 Database: '',
-    //                 PlantCode: '', IsActive: true, Vendor_x0020_Number: null,
-    //                 Currency:'',
-    //             }, SaveUpdateText: 'Submit', addNewvendor: false
-    //         });
-    // }
-    // private handleChange = (event) => {
-    //     const formData = { ...this.state.formData };
-    //     const { name } = event.target;
-    //     let inputvalue = event.target.value;
-    //     const value = event.target.type == 'checkbox' ? event.target.checked : inputvalue;
-    //     formData[name] = value;
-    //     this.setState({ formData });
-    // }
-
-    // private handleonBlur = (event) => {
-    //     const formData = { ...this.state.formData };
-    //     const { name } = event.target;
-    //     let inputvalue = event.target.value.trim();
-    //     const value = event.target.type == 'checkbox' ? event.target.checked : inputvalue;
-    //     formData[name] = value;
-    //     this.setState({ formData });
-    // }
-    // private changeplant = (event) => {
-    //     const formData = { ...this.state.formData };
-    //     let name = event.target.name;
-    //     formData[name] = event.target.value != 'None' ? event.target.value : null;
-    //     // let customAttrDatabase = event.currentTarget.options[event.currentTarget.selectedIndex] && event.currentTarget.options[event.currentTarget.selectedIndex].getAttribute('data-database');
-    //     let customAttrPlantCode = event.currentTarget.options[event.currentTarget.selectedIndex] && event.currentTarget.options[event.currentTarget.selectedIndex].getAttribute('data-plantcode');
-    //     var selectedIndex = event.nativeEvent.target.selectedIndex;
-    //     // formData[name] = event.nativeEvent.target[selectedIndex].text;
-    //     // formData['Database'] = customAttrDatabase != 'None' ? customAttrDatabase : null;
-    //     formData['PlantCode'] = customAttrPlantCode != 'None' ? customAttrPlantCode : null;
-    //     this.setState({ formData });
-    // }
-    // private handleChangeNumber = (event) => {
-    //     const formData = { ...this.state.formData };
-    //     const { name } = event.target;
-    //     var numbervalue = event.target.value.trim();
-    //     let Numberlength = numbervalue.length;
-    //     if (isNaN(numbervalue[Numberlength - 1]))
-    //         numbervalue = numbervalue.slice(0, -1);
-    //     formData[name] = numbervalue;
-    //     this.setState({ formData });
-    // }
-    // private handleSubmit = (event) => {
-    //     event.preventDefault();
-    //     // this.setState({ loading: true });
-    //     let data = {
-    //         Plant: { val: this.state.formData.Plant, required: false, Name: 'Plant', Type: ControlType.string, Focusid: this.inputPlant },
-    //         venderName: { val: this.state.formData.Title, required: true, Name: 'Vendor Name', Type: ControlType.string, Focusid: this.vendorName },
-    //         Database: { val: this.state.formData.Database, required: false, Name: 'Database', Type: ControlType.string, Focusid: this.database },
-    //         venderNumber: { val: this.state.formData.Vendor_x0020_Number, required: true, Name: 'Vendor Number', Type: ControlType.string, Focusid: this.vendorNumber },
-    //         Currency: { val: this.state.formData.Currency.toLocaleUpperCase(), required: true, Name: 'Currency', Type: ControlType.string, Focusid: this.inputCurrency },
-    //     };
-
-    //     const formdata = { ...this.state.formData };
-    //     const id = this.props.match.params.id ? this.props.match.params.id : 0;
-
-    //     let isValid = Formvalidator.checkValidations(data);
-    //     if (isValid.status) {
-    //         this.checkDuplicates(formdata, id);
-    //     } else {
-    //         this.setState({ showLabel: true, errorMessage: isValid.message });
-    //     }
-    // }
-
-    // private checkDuplicates = (formData, id) => {
-    //     let VendorList = 'Vendor';
-    //     var filterString;
-
-    //     try {
-    //         if (id == 0)
-    //             filterString = `(Vendor_x0020_Number eq '${formData.Vendor_x0020_Number}') and Company eq '${formData.Company}' and IsActive eq '${formData.IsActive ? 1 : 0}'`;
-    //         else
-    //             filterString = `(Vendor_x0020_Number eq '${formData.Vendor_x0020_Number}') and Company eq '${formData.Company}' and IsActive ne '${formData.IsActive}' and Id ne ` + id;
-    //         sp.web.lists.getByTitle(VendorList).items.filter(filterString).get().
-    //             then((response: any[]) => {
-    //                 if (response.length > 0) {
-    //                     this.setState({ showLabel: true, errorMessage: 'Duplicate record not accept' });
-    //                 }
-    //                 else {
-    //                     // this.insertorupdateListitem(formData, HolidaysList);
-
-    //                     this.setState({ loading: true });
-    //                     if (id > 0) {                       //update existing record
-    //                         //console.log(this.props);
-    //                         sp.web.lists.getByTitle('Vendor').items.getById(id).update(formData).then((res) => {
-    //                             // this.loadListData();
-    //                             // this.resetVendorForm();
-    //                             this.setState({
-    //                                 modalTitle: 'Success',
-    //                                 modalText: 'Vendor updated successfully',
-    //                                 showHideModal: true,
-    //                                 isSuccess: true
-    //                             });
-    //                             //console.log(res);
-    //                         });
-    //                     }
-    //                     else {                             //Add New record
-    //                         try {
-    //                             this.setState({ loading: true });
-    //                             sp.web.lists.getByTitle('vendor').items.add({ ...this.state.formData })
-    //                                 .then((res) => {
-    //                                     this.loadListData();
-    //                                     this.resetVendorForm();
-    //                                     this.setState({
-    //                                         modalTitle: 'Success',
-    //                                         modalText: 'Vendor submitted successfully',
-    //                                         showHideModal: true,
-    //                                         isSuccess: true
-    //                                     });
-    //                                 })
-    //                                 .catch((err) => {
-    //                                     console.log('Failed to add');
-    //                                     this.setState({
-    //                                         loading: false,
-    //                                         modalTitle: 'Error',
-    //                                         modalText: 'Sorry! something went wrong',
-    //                                         showHideModal: true,
-    //                                         isSuccess: false
-    //                                     });
-    //                                 });
-    //                         }
-    //                         catch (e) {
-    //                             console.log(e);
-    //                             this.setState({
-    //                                 loading: false,
-    //                                 modalTitle: 'Error',
-    //                                 modalText: 'Sorry! something went wrong',
-    //                                 showHideModal: true,
-    //                                 isSuccess: false
-    //                             });
-    //                         }
-    //                     }
-    //                 }
-    //             });
-    //     }
-    //     catch (e) {
-    //         this.onError();
-    //         console.log(e);
-    //     }
-    //     // return findduplicates
-    // }
-
-    // private onError = () => {
-    //     this.setState({
-    //         loading: false, modalTitle: 'Error', modalText: 'Sorry! something went wrong', showHideModal: true, isSuccess: false, errorMessage: ''
-    //     });
-    // }
-
-    // private async loadListData() {
-    //     // var Plants: any = await this.oweb.lists.getByTitle('Plant').items.select("*").orderBy("Title").get();
-    //     var Plants: any = await this.oweb.lists.getByTitle('Plant').items.select("*").orderBy("Title").get();
-    //     var uniquePlantsList = []; let flags = {};
-    //     Plants.filter(item => {
-    //         if (item.Database != null) {
-    //             if (flags[item.Database] == true) return false;
-    //             else { flags[item.Database] = true; uniquePlantsList.push(item); return true; }
-    //         }
-    //     });
-    //     // var formdata = {...this.state.formData};
-    //     // formdata.Company = this.Company;
-    //     sp.web.lists.getByTitle('Vendor').items.select('Title,*').orderBy("Id", false).getAll()
-    //         .then((response) => {
-    //             response.sort((a, b) => b.Id - a.Id);
-    //             this.setState({
-    //                 vendors: response.map(o => ({
-    //                     Id: o.Id, Company: o.Company, PlantCode: o.PlantCode, Plant: o.Plant,
-    //                     Database: o.Database, Currency:o.Currency,
-    //                     Title: o.Title, IsActive: o.IsActive == true ? 'Active' : 'In-Active', Vendor_x0020_Number: o.Vendor_x0020_Number
-    //                 })),
-    //                 SaveUpdateText: 'Submit',
-    //                 showLabel: false,
-    //                 loading: false,
-    //                 Plants: uniquePlantsList
-    //             });
-    //         }).catch(err => {
-    //             console.log('Failed to fetch data.');
-    //             this.setState({
-    //                 loading: false,
-    //                 modalTitle: 'Error',
-    //                 modalText: 'Sorry! something went wrong',
-    //                 showHideModal: true,
-    //                 isSuccess: false
-    //             });
-    //         });
-    // }
-    // private async onEditClickHandler(id) {
-    //     console.log('edit clicked', id);
-
-    //     try {
-    //         var response = await sp.web.lists.getByTitle('vendor').items.getById(id).get();
-
-    //         this.setState({
-    //             formData: {
-    //                 Title: response.Title, Company: response.Company, Plant: response.Plant, PlantCode: response.PlantCode,
-    //                 Database: response.Database,
-    //                 IsActive: response.IsActive, Vendor_x0020_Number: response.Vendor_x0020_Number.trim(),
-    //                 Currency:response.Currency
-    //             },
-    //             SaveUpdateText: 'Update',
-    //             showLabel: false,
-    //             addNewvendor: true
-    //         });
-    //         // .then((response) => {
-    //         //     })
-    //         //     .catch(e => {
-    //         //         console.log('Failed to fetch :' + e);
-    //         //     });
-    //     }
-    //     catch (e) {
-    //         console.log('failed to fetch data for record :' + id);
-    //     }
-    // }
-    // private resetVendorForm = () => {
-    //     this.setState({
-    //         formData: {
-    //             Title: '', Plant: '', Company: '',
-    //             Database: '',
-    //             PlantCode: '', IsActive: true, Vendor_x0020_Number: null,
-    //             Currency:''
-    //         }, SaveUpdateText: 'Submit', addNewvendor: false
-    //     });
-    //     //this.props.history.push('/vendor');
-    //     () => this.props.history.push('/vendor');
-    // }
-    // private cancelHandler = () => {
-    //     this.resetVendorForm();
-    // }
-    // public handleClose = () => {
-    //     this.setState({ showHideModal: false });
-    //     this.loadListData();
-    //     this.resetVendorForm();
-    // }
-    // private addNewVendorMaster = () => {
-    //     var formdata = { ...this.state.formData };
-    //     formdata.Company = this.Company;
-    //     this.setState({ addNewvendor: true, showLabel: false, formData: formdata });
-    // }
-
-    // public fetchImportedExcelData = (data) => {
-    //     console.log(data);
-    //     if (data.length > 0) {
-    //         this.setState({ ImportedExcelData: data });
-    //     }
-    // }
-
-    // public submitImportedExcelData = () => {
-    //     var nonDuplicateRec = [];
-    //     var statusChangedRec = [];
-    //     const formdata = { ...this.state };
-    //     var VendorsData = formdata.vendors;
-    //     var excelData = formdata.ImportedExcelData;
-
-    //     if (excelData.length) {   //To remove duplicate records from Excel data
-    //         let jsonObject = excelData.map(JSON.stringify);
-    //         let uniqueSet: any = new Set(jsonObject);
-    //         excelData = Array.from(uniqueSet).map((el: string) => JSON.parse(el));
-    //     }
-    //     try {
-    //         for (var i = excelData.length - 1; i >= 0; i--) {
-    //             for (var j = 0; j < VendorsData.length; j++) {
-    //                // VendorsData[j].Title= VendorsData[j].Title!=null?VendorsData[j].Title:"";
-    //                 VendorsData[j].Database=VendorsData[j].Database!=null?VendorsData[j].Database:"";
-    //                 if (excelData[i] && (excelData[i]["Vendor Number"].toLowerCase().trim() == VendorsData[j].Vendor_x0020_Number.toLowerCase().trim()) &&(excelData[i]["Vendor Name"].toLowerCase().trim() == VendorsData[j].Title.toLowerCase().trim()) && (excelData[i]["Database"].toLowerCase().trim() == VendorsData[j].Database.toLowerCase().trim())) {
-    //                     if (excelData[i].Status == VendorsData[j].IsActive ) {
-    //                         excelData.splice(i, 1);
-    //                     } else if (VendorsData[j].IsActive  != excelData[i].Status) {
-    //                         VendorsData[j].IsActive = excelData[i].Status == "Active" ? true : false;
-    //                         VendorsData[j].Database = VendorsData[j].Database.trim();
-    //                         VendorsData[j].Title = VendorsData[j].Title.trim();
-    //                         VendorsData[j].Vendor_x0020_Number = VendorsData[j].Vendor_x0020_Number.trim();
-    //                         VendorsData[j].Currency = VendorsData[j].Currency != undefined ? VendorsData[j].Currency.trim():'US';
-    //                         statusChangedRec.push(VendorsData[j]);
-    //                         excelData.splice(i, 1);
-    //                     }
-    //                 }
-    //             }
-    //         }
-    //         if (excelData.length) {
-    //             excelData.forEach(item => {
-    //                 var obj = {};
-    //                 obj["Title"] = item["Vendor Name"].trim();
-    //                 obj["Vendor_x0020_Number"] = item["Vendor Number"].trim();
-    //                 obj["Plant"] = item.Plant;
-    //                 obj["PlantCode"] = item["Plant Code"];
-    //                 obj["Database"] = item.Database.trim();
-    //                 obj["Company"] = item.Company;
-    //                 obj["Currency"] = item.Currency;
-    //                 obj["IsActive"] = item.Status == "Active" ? true : false;
-
-    //                 nonDuplicateRec.push(obj);
-    //             });
-    //         } else if (!excelData.length && !statusChangedRec.length) {
-    //             this.resetImportField();
-    //             this.setState({
-    //                 loading: false,
-    //                 modalTitle: 'Alert',
-    //                 modalText: 'No new records found',
-    //                 showHideModal: true,
-    //                 isSuccess: false
-    //             });
-    //         }
-    //         if (statusChangedRec.length) {
-    //             this.updateImportExceldata(nonDuplicateRec, statusChangedRec);
-    //         }
-    //         if (nonDuplicateRec.length) {
-    //             this.insertImportedExcelData(nonDuplicateRec);
-    //         }
-    //     }
-    //     catch (e) {
-    //         console.log(e);
-    //         this.setState({
-    //             loading: false,
-    //             modalTitle: 'Error',
-    //             modalText: 'Sorry! something went wrong',
-    //             showHideModal: true,
-    //             isSuccess: false
-    //         });
-    //     }
-    // }
-
-    // public updateImportExceldata = async (nonDuplicateRec, statusChangedData) => {
-    //     statusChangedData.forEach(element => {
-    //         sp.web.lists.getByTitle('vendor').items.getById(element.Id).update(element).then((res) => {
-
-    //         }).then((res) => {
-    //             if (!nonDuplicateRec.length) {
-    //                 //this.loadListData();  //
-    //                 this.setState({
-    //                     modalTitle: 'Success',
-    //                     modalText: 'Vendors updated successfully',
-    //                     showHideModal: true,
-    //                     isSuccess: true
-    //                 });
-    //                 this.resetImportField();
-    //                 console.log(res);
-    //             }
-    //         }).catch((err) => {
-    //             console.log('Failed to add', err);
-    //         });
-    //     });
-    //     this.loadListData(); //
-    // }
-
-    // public insertImportedExcelData = async (data) => {
-    //     let failedrecords: any = [];
-    //     try {
-    //         this.setState({ loading: true });
-    //         let list = await sp.web.lists.getByTitle("Vendor");
-    //         const entityTypeFullName = await list.getListItemEntityTypeFullName();
-
-    //         if (data && data != undefined) {
-    //             let splitSize = data.length <= 1000 ? 1 : Math.floor(data.length / 1000) + 1;
-    //             const chunk = (arr, size) => arr.reduce((acc, e, i) => (i % size ? acc[acc.length - 1].push(e) : acc.push([e]), acc), []);
-    //             var chunkData = chunk(data, 1000);
-    //             //var chunkData = data.splice(0,data.length && data.length <= 1000);
-              
-    //                 chunkData.forEach((element, index) => { //1000
-    //                     let batch = sp.web.createBatch();
-
-    //                     element.forEach(item => {
-    //                         list.items.inBatch(batch).add({ ...item }, entityTypeFullName);
-    //                     });
-    //                     batch.execute()
-    //                         .then(response => {
-    //                             if (response != undefined) {
-    //                                 console.log('Failed to add');
-    //                             }
-    //                             if (index == splitSize - 1) {
-    //                                 this.loadListData();
-    //                                 this.setState({
-    //                                     modalTitle: 'Success',
-    //                                     modalText: 'Vendors uploaded successfully',
-    //                                     showHideModal: true,
-    //                                     isSuccess: true,
-    //                                 });
-    //                                 this.resetImportField();
-    //                             }
-    //                         })
-    //                         .catch((err) => {
-    //                             console.log('Failed to add');
-    //                             console.log(err);
-    //                             failedrecords.push(err);
-    //                         });
-    //                 });
-               
-
-    //         }
-    //     }
-    //     catch (e) {
-    //         console.log(e);
-    //         this.setState({
-    //             loading: false,
-    //             modalTitle: 'Alert',
-    //             modalText: 'Error occured',
-    //             showHideModal: true,
-    //             isSuccess: false
-    //         });
-    //     }
-    // }
-
-    // public resetImportField = () => {
-    //     // var fileEle = document.getElementById("inputFile");
-    //     (document.getElementById("inputFile") as HTMLInputElement).value = '';
-    // }
-    // private onMenuItemClick(event) {
-    //     let item = document.getElementById('sideMenuNav');
-    //     item.classList.toggle('menu-hide');
-    // }
-    // public ErrorFileSelect = () => {
-    //     this.resetImportField();
-    //     this.setState({
-    //         loading: false,
-    //         modalTitle: 'Alert',
-    //         modalText: 'Invalid Vendors file selected',
-    //         showHideModal: true,
-    //         isSuccess: false
-    //     });
-    // }
-
      private async loadWeeklyTimeSheetData() {
-        // var Plants: any = await this.oweb.lists.getByTitle('Plant').items.select("*").orderBy("Title").get();
-        var ClientNames: any = await this.oweb.lists.getByTitle('EmployeeMaster').items.select("ClientName , Employee/Title, Employee/Id,Approvers/Title,*").orderBy("Employee/Title").expand("Employee,Approvers").get();
+       
+        var ClientNames: any = await this.oweb.lists.getByTitle('EmployeeMaster').items.select("ClientName , Employee/Title, Employee/Id,Approvers/Title,*").orderBy("Employee/Title").expand("Employee,Approvers").getAll();
         console.log(ClientNames);
         ClientNames.filter(item => {
             if (item.Employee.Id == this.currentUserId) {
@@ -638,10 +287,8 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
         let RowMins=0;
             if(rowType=="weekrow")
             {
-                const rowData = { ...this.state.trFormdata.WeeklyItemsData };
-                rowData[index][prop]=value;
-                trFormdata.WeeklyItemsData=rowData;
-                this.setState({ trFormdata});
+                trFormdata.WeeklyItemsData[index][prop]=value;
+                this.setState({trFormdata});
               Object.keys(trFormdata.WeeklyItemsData[index]).forEach(key =>{
                 let val=trFormdata.WeeklyItemsData[index][key];
                 if(!["Description","ProjectCode","Total"].includes(key))
@@ -717,38 +364,184 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
               Rowhrs=Math.floor(TotalRowMins/60);
               RowMins=Math.floor(TotalRowMins%60);
               trFormdata.PTOHrs[index]["Total"]=(Rowhrs.toString().length==1?"0"+Rowhrs:Rowhrs)+":"+(RowMins.toString().length==1?"0"+RowMins:RowMins);
-          }
+           }
+           this.setState({ trFormdata});
            //FOR COLUMN WISE CALCULATION
-           let [MonTotal,TueTotal,WedTotal,ThuTotal,FriTotal,SatTotal,SunTotal]=[0,0,0,0,0,0,0];
-           let [MonColHrs,TueColHrs,WedColHrs,ThuColHrs,FriColHrs,SatColHrs,SunColHrs]=[0,0,0,0,0,0,0];
-           let [MonColMins,TueColMins,WedColMins,ThuColMins,FriColMins,SatColMins,SunColMins]=[0,0,0,0,0,0,0];
-           if(prop=="Mon")
-           {
-            //BILLABLE COLUMN WISE
+           let WeeklyTotal=0;
+           let WeeklyColHrs=0;
+           let WeeklyColMins=0;
+           let [Total,TotalColHrs,TotalColMins]=[0,0,0];
+            //BILLABLE SUB TOTAL COLUMN WISE
             // to iterate Weekly hrs
             for(var item of trFormdata.WeeklyItemsData)
             {
+                //For weekly calculation
                 let val=item[prop]; 
-                MonTotal=MonTotal+( parseInt(val.split(":")[0])*60 ) + (parseInt(val.split(":")[1])); 
+                WeeklyTotal=WeeklyTotal+( parseInt(val.split(":")[0])*60 ) + (parseInt(val.split(":")[1]));
+                 //For total calculation
+                let TotalVal=item.Total;
+                Total= Total+( parseInt(TotalVal.split(":")[0])*60 ) + (parseInt(TotalVal.split(":")[1]));
             }
               // to iterate OT hrs
             for(var item of trFormdata.OTItemsData)
             {
+                 //For weekly calculation
                 let val=item[prop];
-                MonTotal=MonTotal+( parseInt(val.split(":")[0])*60 ) + (parseInt(val.split(":")[1])); 
+                WeeklyTotal=WeeklyTotal+( parseInt(val.split(":")[0])*60 ) + (parseInt(val.split(":")[1])); 
+                 //For total calculation
+                 let TotalVal=item.Total;
+                 Total= Total+( parseInt(TotalVal.split(":")[0])*60 ) + (parseInt(TotalVal.split(":")[1]));
             }
-            MonColHrs=Math.floor(MonTotal/60);
-            MonColMins=Math.floor(MonTotal%60);
-            trFormdata.BillableSubTotal[index][prop]=(MonColHrs.toString().length==1?"0"+MonColHrs:MonColHrs)+":"+(MonColMins.toString().length==1?"0"+MonColMins:MonColMins);
+            WeeklyColHrs=Math.floor(WeeklyTotal/60);
+            WeeklyColMins=Math.floor(WeeklyTotal%60);
+            TotalColHrs=Math.floor(Total/60);
+            TotalColMins=Math.floor(Total%60);
+          
+            trFormdata.BillableSubTotal[0][prop]=(WeeklyColHrs.toString().length==1?"0"+WeeklyColHrs:WeeklyColHrs)+":"+(WeeklyColMins.toString().length==1?"0"+WeeklyColMins:WeeklyColMins);
+            trFormdata.BillableSubTotal[0]["Total"]=(TotalColHrs.toString().length==1?"0"+TotalColHrs:TotalColHrs)+":"+(TotalColMins.toString().length==1?"0"+TotalColMins:TotalColMins);
 
-             // NON BILLABLE COLUMN WISE
-             MonTotal=0;
-             MonColHrs=0;
-             MonColMins=0;
-           }
-        
-           
+             // NON BILLABLE SUBTOTAL COLUMN WISE
+             WeeklyTotal=0;
+             WeeklyColHrs=0;
+             WeeklyColMins=0;
+            [Total,TotalColHrs,TotalColMins]=[0,0,0];
+             let NonBillableColValue=trFormdata.SynergyOfficeHrs[0][prop];
+             let TotalVal=trFormdata.SynergyOfficeHrs[0]["Total"];
+             WeeklyTotal=WeeklyTotal+( parseInt(NonBillableColValue.split(":")[0])*60 ) + (parseInt(NonBillableColValue.split(":")[1])); 
+             Total=Total+( parseInt(TotalVal.split(":")[0])*60 ) + (parseInt(TotalVal.split(":")[1])); 
+
+             NonBillableColValue=trFormdata.SynergyHolidayHrs[0][prop];
+             TotalVal=trFormdata.SynergyHolidayHrs[0]["Total"];
+             WeeklyTotal=WeeklyTotal+( parseInt(NonBillableColValue.split(":")[0])*60 ) + (parseInt(NonBillableColValue.split(":")[1]));
+             Total=Total+( parseInt(TotalVal.split(":")[0])*60 ) + (parseInt(TotalVal.split(":")[1]));  
+
+             NonBillableColValue=trFormdata.PTOHrs[0][prop];
+             TotalVal=trFormdata.PTOHrs[0]["Total"];
+             WeeklyTotal=WeeklyTotal+( parseInt(NonBillableColValue.split(":")[0])*60 ) + (parseInt(NonBillableColValue.split(":")[1])); 
+             Total=Total+( parseInt(TotalVal.split(":")[0])*60 ) + (parseInt(TotalVal.split(":")[1])); 
+
+             WeeklyColHrs=Math.floor(WeeklyTotal/60);
+             WeeklyColMins=Math.floor(WeeklyTotal%60);
+             TotalColHrs=Math.floor(Total/60);
+             TotalColMins=Math.floor(Total%60);
+             trFormdata.NonBillableSubTotal[0][prop]=(WeeklyColHrs.toString().length==1?"0"+WeeklyColHrs:WeeklyColHrs)+":"+(WeeklyColMins.toString().length==1?"0"+WeeklyColMins:WeeklyColMins);
+             trFormdata.NonBillableSubTotal[0]["Total"]=(TotalColHrs.toString().length==1?"0"+TotalColHrs:TotalColHrs)+":"+(TotalColMins.toString().length==1?"0"+TotalColMins:TotalColMins);
+
+             //GRAND TOTAL COLUMN WISE
+             WeeklyTotal=0;
+             WeeklyColHrs=0;
+             WeeklyColMins=0;
+             [Total,TotalColHrs,TotalColMins]=[0,0,0];
+             let TotalColVal=trFormdata.BillableSubTotal[0][prop];
+            let BillableTotalVal=trFormdata.BillableSubTotal[0]["Total"];
+             WeeklyTotal=WeeklyTotal+( parseInt(TotalColVal.split(":")[0])*60 ) + (parseInt(TotalColVal.split(":")[1])); 
+             Total=Total+( parseInt(BillableTotalVal.split(":")[0])*60 ) + (parseInt(BillableTotalVal.split(":")[1])); 
+
+             TotalColVal=trFormdata.NonBillableSubTotal[0][prop];  
+             BillableTotalVal=trFormdata.NonBillableSubTotal[0]["Total"];
+             WeeklyTotal=WeeklyTotal+( parseInt(TotalColVal.split(":")[0])*60 ) + (parseInt(TotalColVal.split(":")[1]));
+             Total=Total+( parseInt(BillableTotalVal.split(":")[0])*60 ) + (parseInt(BillableTotalVal.split(":")[1])); 
+             
+             WeeklyColHrs=Math.floor(WeeklyTotal/60);
+             WeeklyColMins=Math.floor(WeeklyTotal%60);
+             TotalColHrs=Math.floor(Total/60);
+             TotalColMins=Math.floor(Total%60);
+             trFormdata.Total[0][prop]=(WeeklyColHrs.toString().length==1?"0"+WeeklyColHrs:WeeklyColHrs)+":"+(WeeklyColMins.toString().length==1?"0"+WeeklyColMins:WeeklyColMins);
+             trFormdata.Total[0]["Total"]=(TotalColHrs.toString().length==1?"0"+TotalColHrs:TotalColHrs)+":"+(TotalColMins.toString().length==1?"0"+TotalColMins:TotalColMins);
+          
         this.setState({ trFormdata});
+    }
+    private calculateTimeWhenRemoveRow=()=>{
+        const trFormdata = { ...this.state.trFormdata };
+        let TableColumns=["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
+        for(var prop of TableColumns)
+        {
+                        //FOR COLUMN WISE CALCULATION
+                        let WeeklyTotal=0;
+                        let WeeklyColHrs=0;
+                        let WeeklyColMins=0;
+                        let [Total,TotalColHrs,TotalColMins]=[0,0,0];
+                        //BILLABLE SUB TOTAL COLUMN WISE
+                        // to iterate Weekly hrs
+                        for(var item of trFormdata.WeeklyItemsData)
+                        {
+                            //For weekly calculation
+                            let val=item[prop]; 
+                            WeeklyTotal=WeeklyTotal+( parseInt(val.split(":")[0])*60 ) + (parseInt(val.split(":")[1]));
+                            //For total calculation
+                            let TotalVal=item.Total;
+                            Total= Total+( parseInt(TotalVal.split(":")[0])*60 ) + (parseInt(TotalVal.split(":")[1]));
+                        }
+                            // to iterate OT hrs
+                        for(var item of trFormdata.OTItemsData)
+                        {
+                            //For weekly calculation
+                            let val=item[prop];
+                            WeeklyTotal=WeeklyTotal+( parseInt(val.split(":")[0])*60 ) + (parseInt(val.split(":")[1])); 
+                            //For total calculation
+                            let TotalVal=item.Total;
+                            Total= Total+( parseInt(TotalVal.split(":")[0])*60 ) + (parseInt(TotalVal.split(":")[1]));
+                        }
+                        WeeklyColHrs=Math.floor(WeeklyTotal/60);
+                        WeeklyColMins=Math.floor(WeeklyTotal%60);
+                        TotalColHrs=Math.floor(Total/60);
+                        TotalColMins=Math.floor(Total%60);
+
+                        trFormdata.BillableSubTotal[0][prop]=(WeeklyColHrs.toString().length==1?"0"+WeeklyColHrs:WeeklyColHrs)+":"+(WeeklyColMins.toString().length==1?"0"+WeeklyColMins:WeeklyColMins);
+                        trFormdata.BillableSubTotal[0]["Total"]=(TotalColHrs.toString().length==1?"0"+TotalColHrs:TotalColHrs)+":"+(TotalColMins.toString().length==1?"0"+TotalColMins:TotalColMins);
+
+                        // NON BILLABLE SUBTOTAL COLUMN WISE
+                        // WeeklyTotal=0;
+                        // WeeklyColHrs=0;
+                        // WeeklyColMins=0;
+                        // [Total,TotalColHrs,TotalColMins]=[0,0,0];
+                        // let NonBillableColValue=trFormdata.SynergyOfficeHrs[0][prop];
+                        // let TotalVal=trFormdata.SynergyOfficeHrs[0]["Total"];
+                        // WeeklyTotal=WeeklyTotal+( parseInt(NonBillableColValue.split(":")[0])*60 ) + (parseInt(NonBillableColValue.split(":")[1])); 
+                        // Total=Total+( parseInt(TotalVal.split(":")[0])*60 ) + (parseInt(TotalVal.split(":")[1])); 
+
+                        // NonBillableColValue=trFormdata.SynergyHolidayHrs[0][prop];
+                        // TotalVal=trFormdata.SynergyHolidayHrs[0]["Total"];
+                        // WeeklyTotal=WeeklyTotal+( parseInt(NonBillableColValue.split(":")[0])*60 ) + (parseInt(NonBillableColValue.split(":")[1]));
+                        // Total=Total+( parseInt(TotalVal.split(":")[0])*60 ) + (parseInt(TotalVal.split(":")[1]));  
+
+                        // NonBillableColValue=trFormdata.PTOHrs[0][prop];
+                        // TotalVal=trFormdata.PTOHrs[0]["Total"];
+                        // WeeklyTotal=WeeklyTotal+( parseInt(NonBillableColValue.split(":")[0])*60 ) + (parseInt(NonBillableColValue.split(":")[1])); 
+                        // Total=Total+( parseInt(TotalVal.split(":")[0])*60 ) + (parseInt(TotalVal.split(":")[1])); 
+
+                        // WeeklyColHrs=Math.floor(WeeklyTotal/60);
+                        // WeeklyColMins=Math.floor(WeeklyTotal%60);
+                        // TotalColHrs=Math.floor(Total/60);
+                        // TotalColMins=Math.floor(Total%60);
+                        // trFormdata.NonBillableSubTotal[0][prop]=(WeeklyColHrs.toString().length==1?"0"+WeeklyColHrs:WeeklyColHrs)+":"+(WeeklyColMins.toString().length==1?"0"+WeeklyColMins:WeeklyColMins);
+                        // trFormdata.NonBillableSubTotal[0]["Total"]=(TotalColHrs.toString().length==1?"0"+TotalColHrs:TotalColHrs)+":"+(TotalColMins.toString().length==1?"0"+TotalColMins:TotalColMins);
+
+                        //GRAND TOTAL COLUMN WISE
+                        WeeklyTotal=0;
+                        WeeklyColHrs=0;
+                        WeeklyColMins=0;
+                        [Total,TotalColHrs,TotalColMins]=[0,0,0];
+                        let TotalColVal=trFormdata.BillableSubTotal[0][prop];
+                        let BillableTotalVal=trFormdata.BillableSubTotal[0]["Total"];
+                        WeeklyTotal=WeeklyTotal+( parseInt(TotalColVal.split(":")[0])*60 ) + (parseInt(TotalColVal.split(":")[1])); 
+                        Total=Total+( parseInt(BillableTotalVal.split(":")[0])*60 ) + (parseInt(BillableTotalVal.split(":")[1])); 
+
+                        TotalColVal=trFormdata.NonBillableSubTotal[0][prop];  
+                        BillableTotalVal=trFormdata.NonBillableSubTotal[0]["Total"];
+                        WeeklyTotal=WeeklyTotal+( parseInt(TotalColVal.split(":")[0])*60 ) + (parseInt(TotalColVal.split(":")[1]));
+                        Total=Total+( parseInt(BillableTotalVal.split(":")[0])*60 ) + (parseInt(BillableTotalVal.split(":")[1])); 
+                        
+                        WeeklyColHrs=Math.floor(WeeklyTotal/60);
+                        WeeklyColMins=Math.floor(WeeklyTotal%60);
+                        TotalColHrs=Math.floor(Total/60);
+                        TotalColMins=Math.floor(Total%60);
+                        trFormdata.Total[0][prop]=(WeeklyColHrs.toString().length==1?"0"+WeeklyColHrs:WeeklyColHrs)+":"+(WeeklyColMins.toString().length==1?"0"+WeeklyColMins:WeeklyColMins);
+                        trFormdata.Total[0]["Total"]=(TotalColHrs.toString().length==1?"0"+TotalColHrs:TotalColHrs)+":"+(TotalColMins.toString().length==1?"0"+TotalColMins:TotalColMins);
+
+                        this.setState({ trFormdata});  
+        }
+       
     }
     private dynamicFieldsRow= (rowType) => {
         let NoOfRows;
@@ -804,7 +597,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                     
                 </td>
                 <td>
-                    <input className="form-control time Total" value={Obj[i].Total} id={i+"_Total_"+rowType} type="time"></input>
+                    <input className="form-control time Total" value={Obj[i].Total} id={i+"_Total_"+rowType} onChange={this.changeTime} type="time" disabled></input>
                 </td>
                 <td onClick={this.RemoveCurrentRow} id={i+"_"+rowType}>
                 -<span className="c-close" onClick={this.RemoveCurrentRow} id={i+"_"+rowType} >&times;</span>
@@ -844,44 +637,43 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
            }
             this.setState({ trFormdata, currentOTRowsCount: count});
         }
+        this.calculateTimeWhenRemoveRow();
 
     }
     private CreateWeeklyHrsRow= () => {
         const trFormdata = { ...this.state.trFormdata };
         let WeeklyRowsCount = this.state.currentWeeklyRowsCount;
         let count = WeeklyRowsCount + 1;
-        let newobj = {
+        trFormdata.WeeklyItemsData.push({
             Description:'',
             ProjectCode:'',
             Mon: '00:00',
             Tue: '00:00',
             Wed:'00:00',
-            Thu:'00:00',
+            Thu: '00:00',
             Fri: '00:00',
             Sat: '00:00',
             Sun: '00:00',
-            Total:'00:00',
-        };
-        trFormdata.WeeklyItemsData.push(newobj);
+            Total: '00:00',
+        });
         this.setState({ trFormdata, currentWeeklyRowsCount: count });
     }
     private CreateOTHrsRow= () => {
         const trFormdata = { ...this.state.trFormdata };
         let OTRowsCount = this.state.currentOTRowsCount;
         let count = OTRowsCount + 1;
-        let newobj = {
+        trFormdata.OTItemsData.push({
             Description:'',
             ProjectCode:'',
             Mon: '00:00',
-            Tue:'00:00',
+            Tue: '00:00',
             Wed:'00:00',
-            Thu:'00:00',
+            Thu: '00:00',
             Fri: '00:00',
-            Sat:'00:00',
+            Sat: '00:00',
             Sun: '00:00',
-            Total:'00:00',
-        };
-        trFormdata.OTItemsData.push(newobj);
+            Total: '00:00',
+        });
         this.setState({ trFormdata, currentOTRowsCount: count });
     }
     private getSupervisers=()=> {
@@ -1003,7 +795,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
 								
 							</td>
 							<td>
-								<input className="form-control time Total"  value={this.state.trFormdata.WeeklyItemsData[0].Total} id="0_Total_weekrow" type="time"></input>
+								<input className="form-control time Total"  value={this.state.trFormdata.WeeklyItemsData[0].Total} id="0_Total_weekrow" onChange={this.changeTime} type="text" disabled></input>
 							</td>
 							<td >
                             <span  onClick={this.CreateWeeklyHrsRow} className="add-button" hidden={this.state.formData.Status != 'Save'} ><FontAwesomeIcon icon={faPlus}></FontAwesomeIcon></span>
@@ -1047,7 +839,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
 								<span className="c-badge">OT</span>
 							</td>
 							<td>
-								<input className="form-control time" value={this.state.trFormdata.OTItemsData[0].Total} id="0_Total_otrow" type="time"></input>
+								<input className="form-control time" value={this.state.trFormdata.OTItemsData[0].Total} id="0_Total_otrow" onChange={this.changeTime} type="text" disabled></input>
 							</td>
 							<td >
                             <span  onClick={this.CreateOTHrsRow}  className="add-button" hidden={this.state.formData.Status != 'Save'} ><FontAwesomeIcon icon={faPlus}></FontAwesomeIcon></span>
@@ -1067,31 +859,31 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                                 
                             </td>
 							<td>
-								<input className="form-control time" id="BillableTotalMon" value={this.state.trFormdata.BillableSubTotal[0].Mon} type="time" disabled></input>
+								<input className="form-control time" id="BillableTotalMon" value={this.state.trFormdata.BillableSubTotal[0].Mon} type="text" disabled></input>
 							</td>
 							<td>
-								<input className="form-control time" id="BillableTotalTue" value={this.state.trFormdata.BillableSubTotal[0].Tue} type="time" disabled></input>
+								<input className="form-control time" id="BillableTotalTue" value={this.state.trFormdata.BillableSubTotal[0].Tue} type="text" disabled></input>
 							</td>
 							<td>
-								<input className="form-control time" id="BillableTotalWed" value={this.state.trFormdata.BillableSubTotal[0].Wed} type="time" disabled></input>
+								<input className="form-control time" id="BillableTotalWed" value={this.state.trFormdata.BillableSubTotal[0].Wed} type="text" disabled></input>
 							</td>
 							<td>
-								<input className="form-control time" id="BillableTotalThu" value={this.state.trFormdata.BillableSubTotal[0].Thu} type="time" disabled></input>
+								<input className="form-control time" id="BillableTotalThu" value={this.state.trFormdata.BillableSubTotal[0].Thu} type="text" disabled></input>
 							</td>
 							<td>
-								<input className="form-control time" id="BillableTotalFri" value={this.state.trFormdata.BillableSubTotal[0].Fri} type="time" disabled></input>
+								<input className="form-control time" id="BillableTotalFri" value={this.state.trFormdata.BillableSubTotal[0].Fri} type="text" disabled></input>
 							</td>
 							<td>
-								<input className="form-control time" id="BillableTotalSat" value={this.state.trFormdata.BillableSubTotal[0].Sat} type="time" disabled></input>
+								<input className="form-control time" id="BillableTotalSat" value={this.state.trFormdata.BillableSubTotal[0].Sat} type="text" disabled></input>
 							</td>
 							<td>
-								<input className="form-control time" id="BillableTotalSat" value={this.state.trFormdata.BillableSubTotal[0].Sun} type="time" disabled></input>
+								<input className="form-control time" id="BillableTotalSat" value={this.state.trFormdata.BillableSubTotal[0].Sun} type="text" disabled></input>
 							</td>
 							<td>
 								<span className="c-badge">BS</span>
 							</td>
 							<td>
-								<input className="form-control time" id="BillableTotal" value={this.state.trFormdata.BillableSubTotal[0].Total}  type="time" disabled></input>
+								<input className="form-control time" id="BillableTotal" value={this.state.trFormdata.BillableSubTotal[0].Total}  type="text" disabled></input>
 							</td>
 							<td>
 								
@@ -1113,7 +905,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
 							<td><input className="form-control time" value={this.state.trFormdata.SynergyOfficeHrs[0].Sat} onChange={this.changeTime} id="0_Sat_SynOffcHrs" type="time"></input></td>
 							<td><input className="form-control time" value={this.state.trFormdata.SynergyOfficeHrs[0].Sun} onChange={this.changeTime} id="0_Sun_SynOffcHrs" type="time"></input></td>
 							<td><span className="c-badge">O</span></td>
-							<td><input className="form-control time" value={this.state.trFormdata.SynergyOfficeHrs[0].Total} id="0_Total_SynOffcHrs" type="time" disabled></input></td>
+							<td><input className="form-control time" value={this.state.trFormdata.SynergyOfficeHrs[0].Total} onChange={this.changeTime} id="0_Total_SynOffcHrs" type="text" disabled></input></td>
 							<td></td>
 						</tr>
 						<tr>
@@ -1128,7 +920,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
 							<td><input className="form-control time" value={this.state.trFormdata.SynergyHolidayHrs[0].Sat} onChange={this.changeTime} id="0_Sat_SynHldHrs" type="time"></input></td>
 							<td><input className="form-control time" value={this.state.trFormdata.SynergyHolidayHrs[0].Sun} onChange={this.changeTime} id="0_Sun_SynHldHrs" type="time"></input></td>
 							<td><span className="c-badge">H</span></td>
-							<td><input className="form-control time" value={this.state.trFormdata.SynergyHolidayHrs[0].Total} id="0_Total_SynHldHrs" type="time" disabled></input></td>
+							<td><input className="form-control time" value={this.state.trFormdata.SynergyHolidayHrs[0].Total} onChange={this.changeTime} id="0_Total_SynHldHrs" type="text" disabled></input></td>
 							<td></td>
 						</tr>
 						<tr>
@@ -1143,7 +935,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
 							<td><input className="form-control time" value={this.state.trFormdata.PTOHrs[0].Sat} onChange={this.changeTime} id="0_Sat_PTOHrs" type="time"></input></td>
 							<td><input className="form-control time" value={this.state.trFormdata.PTOHrs[0].Sun} onChange={this.changeTime} id="0_Sun_PTOHrs" type="time"></input></td>
 							<td><span className="c-badge">PTO</span></td>
-							<td><input className="form-control time" value={this.state.trFormdata.PTOHrs[0].Total} id="0_Total_PTOHrs" type="time" disabled></input></td>
+							<td><input className="form-control time" value={this.state.trFormdata.PTOHrs[0].Total} onChange={this.changeTime} id="0_Total_PTOHrs" type="text" disabled></input></td>
 							<td></td>
 						</tr>
 
@@ -1156,29 +948,29 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
 							<td></td>
 							<td></td>
 							<td>
-								<input className="form-control time" value={this.state.trFormdata.NonBillableSubTotal[0].Mon} type="time" disabled></input>
+								<input className="form-control time" value={this.state.trFormdata.NonBillableSubTotal[0].Mon} type="text" disabled></input>
 							</td>
 							<td>
-								<input className="form-control time" value={this.state.trFormdata.NonBillableSubTotal[0].Tue} type="time" disabled></input>
+								<input className="form-control time" value={this.state.trFormdata.NonBillableSubTotal[0].Tue} type="text" disabled></input>
 							</td>
 							<td>
-								<input className="form-control time" value={this.state.trFormdata.NonBillableSubTotal[0].Wed} type="time" disabled></input>
+								<input className="form-control time" value={this.state.trFormdata.NonBillableSubTotal[0].Wed} type="text" disabled></input>
 							</td>
 							<td>
-								<input className="form-control time" value={this.state.trFormdata.NonBillableSubTotal[0].Thu} type="time" disabled></input>
+								<input className="form-control time" value={this.state.trFormdata.NonBillableSubTotal[0].Thu} type="text" disabled></input>
 							</td>
 							<td>
-								<input className="form-control time" value={this.state.trFormdata.NonBillableSubTotal[0].Fri} type="time" disabled></input>
+								<input className="form-control time" value={this.state.trFormdata.NonBillableSubTotal[0].Fri} type="text" disabled></input>
 							</td>
 							<td>
-								<input className="form-control time" value={this.state.trFormdata.NonBillableSubTotal[0].Sat} type="time" disabled></input>
+								<input className="form-control time" value={this.state.trFormdata.NonBillableSubTotal[0].Sat} type="text" disabled></input>
 							</td>
 							<td>
-								<input className="form-control time" value={this.state.trFormdata.NonBillableSubTotal[0].Sun} type="time" disabled></input>
+								<input className="form-control time" value={this.state.trFormdata.NonBillableSubTotal[0].Sun} type="text" disabled></input>
 							</td>
 							<td><span className="c-badge">NS</span></td>
 							<td>
-								<input className="form-control time" value={this.state.trFormdata.NonBillableSubTotal[0].Total} type="time" disabled></input>
+								<input className="form-control time" value={this.state.trFormdata.NonBillableSubTotal[0].Total} type="text" disabled></input>
 							</td>
 							<td>
 								
@@ -1193,29 +985,29 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
 							<td></td>
 							<td></td>
 							<td>
-								<input className="form-control time" value={this.state.trFormdata.Total[0].Mon} type="time" disabled></input>
+								<input className="form-control time" value={this.state.trFormdata.Total[0].Mon} type="text" disabled></input>
 							</td>
 							<td>
-								<input className="form-control time" value={this.state.trFormdata.Total[0].Tue} type="time" disabled></input>
+								<input className="form-control time" value={this.state.trFormdata.Total[0].Tue} type="text" disabled></input>
 							</td>
 							<td>
-								<input className="form-control time" value={this.state.trFormdata.Total[0].Wed} type="time" disabled></input>
+								<input className="form-control time" value={this.state.trFormdata.Total[0].Wed} type="text" disabled></input>
 							</td>
 							<td>
-								<input className="form-control time" value={this.state.trFormdata.Total[0].Thu} type="time" disabled></input>
+								<input className="form-control time" value={this.state.trFormdata.Total[0].Thu} type="text" disabled></input>
 							</td>
 							<td>
-								<input className="form-control time" value={this.state.trFormdata.Total[0].Fri} type="time" disabled></input>
+								<input className="form-control time" value={this.state.trFormdata.Total[0].Fri} type="text" disabled></input>
 							</td>
 							<td>
-								<input className="form-control time" value={this.state.trFormdata.Total[0].Sat} type="time" disabled></input>
+								<input className="form-control time" value={this.state.trFormdata.Total[0].Sat} type="text" disabled></input>
 							</td>
 							<td>
-								<input className="form-control time" value={this.state.trFormdata.Total[0].Sun} type="time" disabled></input>
+								<input className="form-control time" value={this.state.trFormdata.Total[0].Sun} type="text" disabled></input>
 							</td>
 							<td><span className="c-badge">T</span></td>
 							<td>
-								<input className="form-control time" value={this.state.trFormdata.Total[0].Total} type="time" disabled></input>
+								<input className="form-control time" value={this.state.trFormdata.Total[0].Total} type="text" disabled></input>
 							</td>
 							<td>
 								
