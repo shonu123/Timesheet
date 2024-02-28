@@ -26,7 +26,7 @@ import formValidation from '../../Utilities/Formvalidator';
 import { Navigate } from 'react-router-dom';
 import { confirm } from 'react-confirm-box';
 import InputCheckBox from '../Shared/InputCheckBox';
-import '../../CSS/EmployeeMaster.css';
+// import '../../CSS/EmployeeMaster.css';
 
 export interface EmployeeMasterFormProps {
     match: any;
