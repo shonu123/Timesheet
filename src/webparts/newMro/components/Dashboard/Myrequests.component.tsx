@@ -2,17 +2,18 @@ import * as React from 'react';
 import { NavLink } from 'react-router-dom';
 import TableGenerator from '../Shared/TableGenerator';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faEdit } from '@fortawesome/free-solid-svg-icons';
-import { SPHttpClient } from '@microsoft/sp-http';
+import { faXmark, faEdit, faCheck, faPlus } from '@fortawesome/free-solid-svg-icons';
+import { SPHttpClient} from '@microsoft/sp-http';
+import ModalApprovePopUp from '../Shared/ModalApprovePopUp';
 import { WebPartContext } from '@microsoft/sp-webpart-base';
-import Loader from '../Shared/Loader';
 import { sp } from '@pnp/sp';
 import "@pnp/sp/webs";
 import "@pnp/sp/lists";
 import "@pnp/sp/items";
-import {ApprovalStatus} from '../../Constants/Constants';
+import Loader from '../Shared/Loader';
+import { StatusType } from '../../Constants/Constants';
 
-export interface MyrequestsProps {
+export interface MyRequestsProps {
     match: any;
     spContext: any;
     spHttpClient: SPHttpClient;
@@ -20,167 +21,130 @@ export interface MyrequestsProps {
     history: any;
 }
 
-export interface MyrequestsState {
-    requests: Array<Object>;
+export interface MyRequestsState {
+    Requests: Array<Object>;
     loading:boolean;
-    pageNumber:number;
-    sortBy:number;
-    sortOrder:boolean;
-    searchText:string;
-
+    message : string;
+    title : string;
+    showHideModal : boolean;
+    isSuccess : boolean;
+    comments :  string;
+    Action : string;
+    errorMessage: string;
+    ItemID : Number;
+    // pageNumber:number;
+    // sortBy:number;
+    // sortOrder:boolean;
 }
 
-class Myrequests extends React.Component<MyrequestsProps, MyrequestsState> {
-    constructor(props: MyrequestsProps) {
+class MyRequests extends React.Component<MyRequestsProps, MyRequestsState> {
+    constructor(props: MyRequestsProps) {
         super(props);
         sp.setup({
             spfxContext: this.props.context
         });
-        var lsMyrequests = localStorage.getItem('PrvData');
-         let MyrequestsJson =  lsMyrequests != 'null' && lsMyrequests != undefined && lsMyrequests != null ? JSON.parse(lsMyrequests):null;
-        this.state = {
-            requests: [],
-            loading:true,
-            pageNumber:MyrequestsJson != null && (MyrequestsJson.tab =='myrequests'||MyrequestsJson.tab =='home'||MyrequestsJson.tab =='dashboard')? MyrequestsJson.PageNumber:1,
-            sortBy:MyrequestsJson != null && (MyrequestsJson.tab =='myrequests'||MyrequestsJson.tab =='home'||MyrequestsJson.tab =='dashboard')? MyrequestsJson.sortBy:1,
-            sortOrder:MyrequestsJson != null && (MyrequestsJson.tab =='myrequests'||MyrequestsJson.tab =='home'||MyrequestsJson.tab =='dashboard') && MyrequestsJson.sortOrder=='asc' ? true:false,
-            searchText:MyrequestsJson != null && (MyrequestsJson.tab =='myrequests'||MyrequestsJson.tab =='home'||MyrequestsJson.tab =='dashboard')? MyrequestsJson.searchText:'',
-        };
-       //.getItem('Myrequests');
+        this.state = {Requests: [], loading:false,message:'',title:'',showHideModal:false,isSuccess:true,comments:'',Action:'',errorMessage:'',ItemID:0};
     }
+
     public componentDidMount() {
-        this.setState({loading:false});
-        // this.loadListData();
+        //console.log(this.props);
+        this.ReviewerApproval();
     }
-    private loadListData = () => {
+
+    private ReviewerApproval = async () => {
+        this.setState({ loading: true });
         const userId = this.props.spContext.userId;
-        var filterString = `RequisitionerId eq ${userId} and IsActive ne 0 and Status ne '${ApprovalStatus.Withdraw}'`;
-        sp.web.lists.getByTitle('PurchaseRequest').items.top(2000).filter(filterString).expand("Author", "Requisitioner").select('Author/Title', 'Requisitioner/Title', '*').orderBy('Modified', false).get()
+        var filterString = "Initiator/Id eq '"+userId+"'"
+
+        sp.web.lists.getByTitle('WeeklyTimeSheet').items.top(2000).filter(filterString).expand("Initiator").select('Initiator/Title','*').orderBy('Modified', false).get()
             .then((response) => {
-                this.setState({requests: response,loading:false});
-                //console.log(this.state.requests);
+                console.log(response)
+                let Data = [];
+                for (const d of response) {
+                    let date;
+                    if(!["",undefined,null].includes(d.DateSubmitted)){
+                        date = new Date(d.DateSubmitted)
+                        date = `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`
+                    }
+
+                    Data.push({
+                        Id : d.Id,
+                        Date : date,
+                        Company: d.ClientName,
+                        PendingWith: d.PendingWith,
+                        Status : d.Status,
+                    })
+                }
+                console.log(Data);
+                this.setState({ Requests: Data,loading:false });
+                document.getElementById('txtTableSearch').style.display = 'none';
+                this.setState({ loading: false });
             }).catch(err => {
                 console.log('Failed to fetch data.', err);
             });
     }
-    private onPageChange =(pageIndex)=>{
-        this.setState({pageNumber: pageIndex});  
-    }
-    private sortOrder =(event,sortDirection)=>{
-        this.setState({sortBy: event.id,sortOrder:sortDirection});     
-    }
 
-    private storData=(event)=>{
-        var lsMyrequests = JSON.parse(localStorage.getItem('PrvData'));
-        lsMyrequests.PageNumber =this.state.pageNumber!=null?this.state.pageNumber:1;
-        lsMyrequests.sortOrder =this.state.sortOrder;
-        lsMyrequests.sortBy =this.state.sortBy;
-        lsMyrequests.tab ='myrequests';
-        localStorage.setItem('PrvData', JSON.stringify(lsMyrequests));
-    }
+
     public render() {
-        // const columns = [
-        //     {
-        //         name: "Edit",
-        //         //selector: "Id",
-        //         selector: (row, i) => row.Id,
-        //         export: false,
-        //         cell: record => {
-        //             return (
-        //                 <React.Fragment>
-        //                     <div style={{ paddingLeft: '10px' }}>
-        //                         <NavLink onClick={this.storData} title="Edit" className="csrLink ms-draggable" to={`/purchaserequest/${record.Id}`}>
-        //                             <FontAwesomeIcon icon={faEdit}></FontAwesomeIcon>
-        //                         </NavLink>
-        //                     </div>
-        //                 </React.Fragment>
-        //             );
-        //         }
-        //     },
-        //     {
-        //         name: "Plant",
-        //         //selector: "Plant",
-        //         selector: (row, i) => row.Plant,
-        //         width: '100px',
-        //         sortable: true
-        //     },
-        //     {
-        //         name: "Department",
-        //         //selector: "Department",
-        //         selector: (row, i) => row.Department,
-        //         width: '110px',
-        //         sortable: true
-        //     },
-        //     {
-        //         name: "Vendor",
-        //         //selector: 'VendorName',
-        //         selector: (row, i) => row.VendorName,
-        //         width: '150px',
-        //         sortable: true
+        const columns = [
+            {
+                name: "Edit",
+                selector: (row, i) => row.Id,
+                export: false,
+                cell: record => {
+                    return (
+                        <React.Fragment>
+                            <div style={{ paddingLeft: '10px' }}>
+                                <NavLink title="Edit"  className="csrLink ms-draggable" to={`/WeeklyTimesheet/${record.Id}`}>
+                                    <FontAwesomeIcon icon={faEdit}></FontAwesomeIcon>
+                                </NavLink>
+                            </div>
+                        </React.Fragment>
+                    );
+                },
+                width: '100px'
+            },
+            {
+                name: "Date",
+                selector: (row, i) => row.Date,
+                width: '100px',
+                sortable: true
+            },
+            {
+                name: "Company",
+                selector: (row, i) => row.Company,
+                sortable: true
+            },
+            {
+                name: "Pending With",
+                selector: (row, i) => row.PendingWith,
+                sortable: true,
+                width: '135px'
+            },
+            {
+                name: "Status",
+                selector: (row, i) => row.Status,
+                sortable: true
 
-        //     },
-        //     {
-        //         name: "Requisitioner",
-        //         //selector: "Requisitioner",
-        //         selector: (row, i) => row.Requisitioner,
-        //         sortable: true,
-        //         cell: record => {
-        //             return (
-        //                 record.Requisitioner.Title
-        //             );
-        //         },
-        //         width: '150px'
-        //     },
-        //     {
-        //         name: "Created",
-        //         //selector: 'Created',
-        //         selector: (row, i) => row.Created,
-        //         width: '110px',
-        //         sortable: true,
-        //         cell: record => {
-        //             return (
-        //                 new Date(record.Created).toLocaleDateString()
-        //             );
-        //         },
-        //     },
-        //     {
-        //         name: "Total Amount",
-        //         //selector: "TotalAmount",
-        //         selector: (row, i) => row.TotalAmount,
-        //         width: '135px',
-        //         sortable: true
-        //     },
-        //     {
-        //         name: "Status",
-        //         //selector: "Status",
-        //         selector: (row, i) => row.Status,
-        //         width: '135px',
-        //         sortable: true
-        //     },
-        //     {
-        //         name:"PO Number",
-        //         selector:(row,i)=> row.PONumber,
-        //         width: '135px',
-        //         sortable: true
-        //     },
-        //     {
-        //         name: "Description",
-        //         //selector: 'Description',
-        //         selector: (row, i) => row.Description,
-        //         //width: '135px',
-        //         sortable: true
-        //     }
-        // ];
+            }
+        ];
         return (
             <React.Fragment>
-          {this.state.loading && <Loader />}
-            <div className='table-head-1st-td'>
-                <p>Dashboard</p>
-                {/* <TableGenerator columns={columns} data={this.state.requests} fileName={'My Approval'} showExportExcel={false} onChange={this.onPageChange} onSortChange={this.sortOrder} prvPageNumber={this.state.pageNumber} prvDirection={this.state.sortOrder} prvSort={this.state.sortBy}></TableGenerator> */}
+            <h1>Initiator Screen</h1>
+
+                <div style={{ paddingLeft: '10px' }} className="px-1 text-right" id='divAddNewWeeklyTimeSheet'>
+                    <NavLink title="Edit"  className="csrLink ms-draggable" to={`/WeeklyTimesheet`}>
+                        <span className='add-button' id='newWeeklyTimeSheet'><FontAwesomeIcon icon={faPlus}></FontAwesomeIcon> New</span>
+                    </NavLink>
+                </div>
+            <div>
+                <div className='table-head-1st-td'>
+                    <TableGenerator columns={columns} data={this.state.Requests} fileName={'My Requests'} showExportExcel={false}></TableGenerator>
+                </div>
             </div>
-            </React.Fragment>
+            </React.Fragment> 
         );
     }
 }
 
-export default Myrequests;
+export default MyRequests

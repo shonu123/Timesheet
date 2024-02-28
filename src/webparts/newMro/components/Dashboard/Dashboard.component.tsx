@@ -13,6 +13,9 @@ import {highlightCurrentNav} from '../../Utilities/HighlightCurrentComponent';
 import "../Shared/Menuhandler";
 import "@pnp/sp/site-users/web";
 import ApproversApprovals from './Approvers.component';
+import MyRequests from './Myrequests.component';
+import EmployeeMasterForm from '../Forms/EmployeeMasterForm.component';
+
 
 export interface DashboardProps {
     match: any;
@@ -24,19 +27,24 @@ export interface DashboardProps {
 
 export interface DashboardState {
     showReviewerComp: boolean;
-    showRequestComp: boolean;
-    showPurchasing: boolean;
-    showApproved: boolean;
+    // showRequestComp: boolean;
+    // showPurchasing: boolean;
+    // showApproved: boolean;
     showExported: boolean;
     CurrentuserId: number;
-    PurchasingManager: boolean;
-    purchasingDeptMember : boolean;
-    isMROAdmin:boolean;
-    showPending:boolean;
+    // PurchasingManager: boolean;
+    // purchasingDeptMember : boolean;
+    // isMROAdmin:boolean;
+    // showPending:boolean;
     activeElementClass:string;
     userRole: string;
-    tempUserRole: string;
+    // tempUserRole: string;
     showApproveComp : boolean;
+    showMyRequestsComp : boolean;
+    isInitiator:boolean;
+    isApprover: boolean;
+    isReviewer: boolean;
+    isAdmin : boolean;
 }
 
 class Dashboard extends React.Component<DashboardProps, DashboardState> {
@@ -48,18 +56,23 @@ class Dashboard extends React.Component<DashboardProps, DashboardState> {
         this.state = {
             showApproveComp : false,
             showReviewerComp: false,
-            showRequestComp: true,
+            // showRequestComp: true,
             CurrentuserId: this.props.context.pageContext.legacyPageContext["userId"],
-            PurchasingManager: false,
-            showPurchasing: false,
-            showApproved: false,
+            // PurchasingManager: false,
+            // showPurchasing: false,
+            // showApproved: false,
             showExported: false,
-            purchasingDeptMember : false,
-            isMROAdmin:false,
-            showPending:false,
+            // purchasingDeptMember : false,
+            // isMROAdmin:false,
+            // showPending:false,
             activeElementClass:"nav-link",
             userRole:'',
-            tempUserRole : 'Approver'
+            // tempUserRole : 'Approver',
+            showMyRequestsComp : false,
+            isInitiator:false,
+            isApprover: false,
+            isReviewer: false,
+            isAdmin : false
         };
     }
     public componentDidMount() {
@@ -75,10 +88,24 @@ class Dashboard extends React.Component<DashboardProps, DashboardState> {
         console.log(this.props.context.pageContext)
 
         let userGroup = groups[0].Title
-        let user = userGroup=='Timesheet Initiators' ?'Initiator': userGroup=='Timesheet Approvers'?'Approvers':userGroup=='Timesheet Reviewers'?'Reviewers':'Administrator'
-
+        let user = userGroup=='Timesheet Initiators' ?'Initiator': userGroup=='Timesheet Approvers'?'Approver':userGroup=='Timesheet Reviewers'?'Reviewer':'Administrator'
         console.log('You are :'+user)
         this.setState({userRole : user})
+        if(user=="Initiator"){
+            this.setState({isInitiator : true});
+            this.onHandleClick('MyRequests')
+        }
+        else if(user=='Approver'){
+            this.setState({isApprover : true});
+            this.onHandleClick('Approvers')
+        }
+        else if(user=='Reviewer'){
+            this.setState({isReviewer : true});
+            this.onHandleClick('Reviewers')
+        }
+        else if(user=='Administrator'){
+            this.setState({isAdmin : true}) 
+        }
     }
 
 
@@ -109,19 +136,19 @@ class Dashboard extends React.Component<DashboardProps, DashboardState> {
     //     this.GetMasterListData(qryReviewedTO,groups,qeyPurTeam);
     //     this.updatethetabs();
     // }
-    private async GetMasterListData(qryReviewedTO,groups,qeyPurTeam) {
-        let ApprovalsMatrix: any = await sp.web.lists.getByTitle('ApprovalsMatrix').items.filter("IsActive eq 1 and (ReviewerId eq " + this.state.CurrentuserId + qryReviewedTO +")").select('*').get();
-        let PurTeammember: any = await sp.web.lists.getByTitle('ApprovalsMatrix').items.filter("IsActive eq 1 and (PurchasingTeamId eq " + this.state.CurrentuserId + qeyPurTeam +")").select('*').get();
-        //let groupsInfo = groups.filter((item) => item.Title == "MRO Purchasing Team");
-        const adminGrp = groups.filter((item) => item.Title == "MRO Admin");
-        if (ApprovalsMatrix.length > 0) {
-            this.setState({ PurchasingManager: true });
-        } if (PurTeammember.length > 0) {
-            this.setState({ purchasingDeptMember: true });        }  
-        if (adminGrp.length > 0) {
-            this.setState({ isMROAdmin: true });
-        }
-    }
+    // private async GetMasterListData(qryReviewedTO,groups,qeyPurTeam) {
+    //     let ApprovalsMatrix: any = await sp.web.lists.getByTitle('ApprovalsMatrix').items.filter("IsActive eq 1 and (ReviewerId eq " + this.state.CurrentuserId + qryReviewedTO +")").select('*').get();
+    //     let PurTeammember: any = await sp.web.lists.getByTitle('ApprovalsMatrix').items.filter("IsActive eq 1 and (PurchasingTeamId eq " + this.state.CurrentuserId + qeyPurTeam +")").select('*').get();
+    //     //let groupsInfo = groups.filter((item) => item.Title == "MRO Purchasing Team");
+    //     const adminGrp = groups.filter((item) => item.Title == "MRO Admin");
+    //     if (ApprovalsMatrix.length > 0) {
+    //         this.setState({ PurchasingManager: true });
+    //     } if (PurTeammember.length > 0) {
+    //         this.setState({ purchasingDeptMember: true });        }  
+    //     if (adminGrp.length > 0) {
+    //         this.setState({ isMROAdmin: true });
+    //     }
+    // }
     public checkUserInPurchasingGroup = async () => {
         let groups = await sp.web.currentUser.groups();
 
@@ -150,12 +177,12 @@ class Dashboard extends React.Component<DashboardProps, DashboardState> {
         item.classList.remove('show');
         });
 
-        let showReviewerComp = false; let showApproveComp = false; let showPurchasing = false; let showApproved = false; let showExported = false; let showPending = false;
+        let showReviewerComp = false; let showApproveComp = false; let showMyRequestsComp = false; let showApproved = false; let showExported = false; let showPending = false;
         if (url === 'Reviewers')
         {
             document.getElementById('ReviewersApprovals-tab').classList.add('active');
-            document.getElementById('MyRequests').classList.add('active');
-            document.getElementById('MyRequests').classList.add('show');
+            document.getElementById('ReviewersApprovals').classList.add('active');
+            document.getElementById('ReviewersApprovals').classList.add('show');
             showApproveComp = false;
             showReviewerComp = true;
         }
@@ -167,14 +194,16 @@ class Dashboard extends React.Component<DashboardProps, DashboardState> {
             showApproveComp = true;
             showReviewerComp = false;
         }
-        else if (url === 'PM'){
-            showPurchasing = true;
-            document.getElementById('PM-tab').classList.add('active');
-            document.getElementById('PM').classList.add('active');
-            document.getElementById('PM').classList.add('show');
+        else if (url === 'MyRequests'){
+            document.getElementById('MyRequests-tab').classList.add('active');
+            document.getElementById('MyRequests').classList.add('active');
+            document.getElementById('MyRequests').classList.add('show');
+            showApproveComp = false;
+            showReviewerComp = false;
+            showMyRequestsComp = true;
         }
         
-        this.setState({ showReviewerComp: showReviewerComp, showApproveComp: showApproveComp, showPurchasing: showPurchasing, showApproved: showApproved, showExported: showExported, showPending: showPending });
+        this.setState({ showReviewerComp: showReviewerComp, showApproveComp: showApproveComp, showMyRequestsComp: showMyRequestsComp, showExported: showExported});
         let lsMyrequests = {'PageNumber':1,"sortOrder":true,"sortBy":1,'tab':'','SearchKey':null};
         if(url!= undefined) {setTimeout(() => {
             localStorage.setItem('PrvData', JSON.stringify(lsMyrequests));
@@ -206,35 +235,38 @@ class Dashboard extends React.Component<DashboardProps, DashboardState> {
                         <div className="p-1">
                             <div className="border-box-shadow light-box m-2">
                                 <ul className="nav nav-tabs nav-fill" id="myTab" role="tablist">
-                                     <li className="nav-item" role="presentation" onClick={() => this.onHandleClick('Approvers')}>
-                                        <a className="nav-link active" id="Approvers-tab" data-toggle="tab" href="#/Approvers" role="tab" aria-controls="home" aria-selected="true">Approvers Requests</a>
+                                     <li className="nav-item" role="presentation" onClick={() => this.onHandleClick('Approvers')} hidden={!this.state.isApprover}>
+                                        <a className="nav-link active" id="Approvers-tab" data-toggle="tab" href="#/Approvers" role="tab" aria-controls="home" aria-selected="true">Approvers Approvals</a>
                                     </li>
-                                    {/* <li className="nav-item" role="presentation" onClick={() => this.onHandleClick('Pending')} hidden={!this.state.isMROAdmin}>
-                                        <a className="nav-link" id="Pending-tab" data-toggle="tab" href="#/Pending" role="tab" aria-controls="profile" aria-selected="false">All Pending</a>
-                                    </li>  */}
-                                    <li className="nav-item" role="presentation" onClick={() => this.onHandleClick('Reviewers')}>
+                                    <li className="nav-item" role="presentation" onClick={() => this.onHandleClick('MyRequests')} hidden={!this.state.isInitiator}>
+                                        <a className="nav-link" id="MyRequests-tab" data-toggle="tab" href="#/MyRequests" role="tab" aria-controls="profile" aria-selected="false">My Requests</a>
+                                    </li> 
+                                    <li className="nav-item" role="presentation" onClick={() => this.onHandleClick('Reviewers')} hidden={!this.state.isReviewer}>
                                         <a className="nav-link" id="ReviewersApprovals-tab" data-toggle="tab" href="#/Reviewers" role="tab" aria-controls="profile" aria-selected="false">Reviewer Approvals</a>
                                     </li>
-                                    
                                 </ul>
                                 
-
                                <div className="tab-content" id="myTabContent">
-                                    <div className="tab-pane fade csmyrequests show active" id="home" role="tabpanel" aria-labelledby="home-tab">
+                                    <div className="tab-pane fade csApproversApprovals show active" id="home" role="tabpanel" aria-labelledby="home-tab">
                                         <div className="v-table">
                                             {this.state.showApproveComp && <ApproversApprovals {...this.props} />}
                                         </div>
                                     </div>
-                                    <div className="tab-pane fade csmyapprovals" id="MyRequests" role="tabpanel" aria-labelledby="ReviewersApprovals-tab">
+                                    <div className="tab-pane fade csReviewersApprovals" id="ReviewersApprovals" role="tabpanel" aria-labelledby="ReviewersApprovals-tab">
                                         <div className="v-table">
                                             {this.state.showReviewerComp && <ReviewerApprovals {...this.props} />}
                                         </div>
                                     </div>
-                                    {/* <div className="tab-pane fade csPending" id="Pending" role="tabpanel" aria-labelledby="Pending-tab">
+                                    <div className="tab-pane fade csMyRequests" id="MyRequests" role="tabpanel" aria-labelledby="MyRequests-tab">
                                         <div className="v-table">
-                                            {this.state.showPending && <Pending {...this.props} />}
+                                            {this.state.showMyRequestsComp && <MyRequests {...this.props} />}
                                         </div>
-                                    </div> */}
+                                    </div>
+                                    <div className="tab-pane fade csMyRequests" id="MyRequests" role="tabpanel" aria-labelledby="MyRequests-tab">
+                                        <div className="v-table">
+                                            {this.state.isAdmin && <EmployeeMasterForm {...this.props} />}
+                                        </div>
+                                    </div>
                                     
                                 </div>
                             </div>
