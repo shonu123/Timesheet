@@ -12,6 +12,7 @@ import { INewMroProps } from './components/INewMroProps';
 //import 'bootstrap/dist/css/bootstrap.min.css';
 import './CSS/style.css';
 import './CSS/left-nav.css';
+import './CSS/WeeklyTimesheet.css'
 
 export interface ITimesheetProps {
   description: string;
