@@ -59,6 +59,7 @@ export interface WeeklyTimesheetState {
     currentWeeklyRowsCount:any,
     currentOTRowsCount:any,
     ItemID:any,
+    DynamicWeekHeadings:any,
 
     SaveUpdateText: string;
     showLabel: boolean;
@@ -92,7 +93,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
             trFormdata: {
                 ClientName: '',
                 Name: this.currentUser,
-                WeekStartDate: new Date(),
+                WeekStartDate:this.GetCurrentWeekMonday(new Date()),
                 WeeklyItemsData: [],
                 OTItemsData:[],
                 BillableSubTotal:[],
@@ -116,6 +117,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
             currentWeeklyRowsCount:1,
             currentOTRowsCount:1,
             ItemID:0,
+            DynamicWeekHeadings:[],
 
             SaveUpdateText:StatusType.Save,
             showLabel: false,
@@ -130,96 +132,14 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
         this.oweb = Web(this.props.spContext.siteAbsoluteUrl);
          // for first row of weekly and OT hrs
          const trFormdata = { ...this.state.trFormdata };
-         trFormdata.WeeklyItemsData.push({
-            Description:'',
-            ProjectCode:'',
-            Mon: '00:00',
-            Tue: '00:00',
-            Wed:'00:00',
-            Thu: '00:00',
-            Fri: '00:00',
-            Sat: '00:00',
-            Sun: '00:00',
-            Total: '00:00',
-        });
-         trFormdata.OTItemsData.push({
-            Description:'',
-            ProjectCode:'',
-            Mon: '00:00',
-            Tue: '00:00',
-            Wed:'00:00',
-            Thu: '00:00',
-            Fri: '00:00',
-            Sat: '00:00',
-            Sun: '00:00',
-            Total: '00:00',
-        });
-         trFormdata.BillableSubTotal.push({
-            Mon: '00:00',
-            Tue: '00:00',
-            Wed:'00:00',
-            Thu: '00:00',
-            Fri: '00:00',
-            Sat: '00:00',
-            Sun: '00:00',
-            Total: '00:00',
-        });
-         trFormdata.SynergyOfficeHrs.push({
-            Description:'',
-            ProjectCode:'',
-            Mon: '00:00',
-            Tue: '00:00',
-            Wed:'00:00',
-            Thu: '00:00',
-            Fri: '00:00',
-            Sat: '00:00',
-            Sun: '00:00',
-            Total: '00:00',
-        });
-         trFormdata.SynergyHolidayHrs.push({
-            Description:'',
-            ProjectCode:'',
-            Mon: '00:00',
-            Tue: '00:00',
-            Wed:'00:00',
-            Thu: '00:00',
-            Fri: '00:00',
-            Sat: '00:00',
-            Sun: '00:00',
-            Total: '00:00',
-        });
-         trFormdata.PTOHrs.push({
-            Description:'',
-            ProjectCode:'',
-            Mon: '00:00',
-            Tue: '00:00',
-            Wed:'00:00',
-            Thu: '00:00',
-            Fri: '00:00',
-            Sat: '00:00',
-            Sun: '00:00',
-            Total: '00:00',
-        });
-         trFormdata.NonBillableSubTotal.push({
-            Mon: '00:00',
-            Tue: '00:00',
-            Wed:'00:00',
-            Thu: '00:00',
-            Fri: '00:00',
-            Sat: '00:00',
-            Sun: '00:00',
-            Total: '00:00',
-        });
-         trFormdata.Total.push({
-            Mon: '00:00',
-            Tue: '00:00',
-            Wed:'00:00',
-            Thu: '00:00',
-            Fri: '00:00',
-            Sat: '00:00',
-            Sun: '00:00',
-            Total: '00:00',
-        });
+         trFormdata.WeeklyItemsData.push({Description:'',ProjectCode:'',Mon: '00:00',Tue: '00:00',Wed:'00:00',Thu: '00:00',Fri: '00:00',Sat: '00:00',Sun: '00:00',Total: '00:00',});
+         trFormdata.OTItemsData.push({Description:'',ProjectCode:'',Mon: '00:00',Tue: '00:00',Wed:'00:00',Thu: '00:00',Fri: '00:00',Sat: '00:00',Sun: '00:00',Total: '00:00',});
+         trFormdata.BillableSubTotal.push({Mon: '00:00',Tue: '00:00',Wed:'00:00',Thu: '00:00',Fri: '00:00',Sat: '00:00',Sun: '00:00',Total: '00:00',});
+         trFormdata.SynergyOfficeHrs.push({Description:'',ProjectCode:'',Mon: '00:00',Tue: '00:00',Wed:'00:00',Thu: '00:00',Fri: '00:00',Sat: '00:00',Sun: '00:00',Total: '00:00',});
+         trFormdata.SynergyHolidayHrs.push({Description:'',ProjectCode:'',Mon: '00:00',Tue: '00:00',Wed:'00:00',Thu: '00:00',Fri: '00:00',Sat: '00:00',Sun: '00:00',Total: '00:00',});
+         trFormdata.PTOHrs.push({Description:'',ProjectCode:'',Mon: '00:00',Tue: '00:00',Wed:'00:00',Thu: '00:00',Fri: '00:00',Sat: '00:00',Sun: '00:00',Total: '00:00',});
+         trFormdata.NonBillableSubTotal.push({Mon: '00:00',Tue: '00:00',Wed:'00:00',Thu: '00:00',Fri: '00:00',Sat: '00:00',Sun: '00:00',Total: '00:00',});
+         trFormdata.Total.push({Mon: '00:00',Tue: '00:00',Wed:'00:00',Thu: '00:00',Fri: '00:00',Sat: '00:00',Sun: '00:00',Total: '00:00',});
          this.setState({ trFormdata});
     }
     public componentDidMount() {
@@ -231,15 +151,14 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
     //functions related to  initial loading
      private async loadWeeklyTimeSheetData() {
        
-        var ClientNames: any = await this.oweb.lists.getByTitle('EmployeeMaster').items.select("ClientName , Employee/Title, Employee/Id,Approvers/Title,*").orderBy("Employee/Title").expand("Employee,Approvers").getAll();
+        var ClientNames: any = await this.oweb.lists.getByTitle('EmployeeMaster').items.filter(" Employee/Id eq "+this.currentUserId).select("ClientName , Employee/Title, Employee/Id,Approvers/Title,*").orderBy("Employee/Title").expand("Employee,Approvers").getAll();
         console.log(ClientNames);
         ClientNames.filter(item => {
-            if (item.Employee.Id == this.currentUserId) {
               this.state.ClientNames.push(item.ClientName);
               if(item.hasOwnProperty("Approvers"))
               item.Approvers.map(i=>(this.state.SuperviserNames.push({"ClientName":item.ClientName,"Approver":i.Title})));
-            }
         }); 
+        this.setState({ClientNames: this.state.ClientNames})
         if(this.props.match.params.id != undefined){
             console.log(this.props.match.params.id)
             this.setState({ItemID : this.props.match.params.id})
@@ -265,8 +184,9 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
         trFormdata.NonBillableSubTotal=JSON.parse(data[0].NonBillableSubTotalHrs);
         trFormdata.Total=JSON.parse(data[0].TotalHrs);
         trFormdata.Status=data[0].Status;
-
+       
         this.setState({ trFormdata:trFormdata});
+         this.setState({currentWeeklyRowsCount:trFormdata.WeeklyItemsData.length,currentOTRowsCount: trFormdata.OTItemsData.length})
     }
 
     //functions related to calculation
@@ -276,10 +196,11 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
             Formdata.WeekStartDate=date;
         this.setState({trFormdata:Formdata});
         console.log(this.state);
+        //this.bindDynamicWeekHeadings(date);
     }
     public section = [];
      private handleClientChange=(event)=>{
-        let clientVal=event.target.Value;
+        let clientVal=event.target.value;
         const Formdata = { ...this.state.trFormdata };
             Formdata.ClientName=clientVal;
             Formdata.SuperviserNames=[];
@@ -490,20 +411,26 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
           
         this.setState({ trFormdata});
     }
-    private calculateTimeWhenRemoveRow=()=>{
-        const trFormdata = { ...this.state.trFormdata };
+    private calculateTimeWhenRemoveRow=(Data,DataAfterRemovedObject,RowType)=>{
+        const trFormdata =Data;
         let TableColumns=["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
+          //FOR COLUMN WISE CALCULATION
+          let WeeklyTotal=0;
+          let WeeklyColHrs=0;
+          let WeeklyColMins=0;
+       
+          let [WeekTotal,OTTotal]=[0,0];
+          let [H,M]=[0,0];
+       
         for(var prop of TableColumns)
         {
-                        //FOR COLUMN WISE CALCULATION
-                        let WeeklyTotal=0;
-                        let WeeklyColHrs=0;
-                        let WeeklyColMins=0;
-                        let [Total,TotalColHrs,TotalColMins]=[0,0,0];
-                        let [WeekTotal,OTTotal]=[0,0];
+            let [Total,TotalColHrs,TotalColMins]=[0,0,0];
+            if(RowType.toLowerCase()=="weekrow")  //When Weekly items removed 
+            {
+
                         //BILLABLE SUB TOTAL COLUMN WISE
                         // to iterate Weekly hrs
-                        for(var item of trFormdata.WeeklyItemsData)
+                        for(var item of DataAfterRemovedObject)
                         {
                             //For weekly calculation
                             let val=item[prop]; 
@@ -513,8 +440,8 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                             Total= Total+( parseInt(TotalVal.split(":")[0])*60 ) + (parseInt(TotalVal.split(":")[1]));
                             WeekTotal= WeekTotal+( parseInt(TotalVal.split(":")[0])*60 ) + (parseInt(TotalVal.split(":")[1]));
                         }
-                        let H=Math.floor(WeekTotal/60);
-                        let M=Math.floor(WeekTotal%60);
+                         H=Math.floor(WeekTotal/60);
+                         M=Math.floor(WeekTotal%60);
                         trFormdata.WeeklyItemsTotalTime=(H.toString().length==1?"0"+H:H)+":"+(M.toString().length==1?"0"+M:M);
                             // to iterate OT hrs
                             H=0;
@@ -529,6 +456,40 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                             Total= Total+( parseInt(TotalVal.split(":")[0])*60 ) + (parseInt(TotalVal.split(":")[1]));
                             OTTotal= OTTotal+( parseInt(TotalVal.split(":")[0])*60 ) + (parseInt(TotalVal.split(":")[1]));
                         }
+            }
+            else{      //When OT items removed 
+                
+                        //BILLABLE SUB TOTAL COLUMN WISE
+                        // to iterate Weekly hrs
+                        for(var item of trFormdata.WeeklyItemsData)
+                        {
+                            //For weekly calculation
+                            let val=item[prop]; 
+                            WeeklyTotal=WeeklyTotal+( parseInt(val.split(":")[0])*60 ) + (parseInt(val.split(":")[1]));
+                            //For total calculation
+                            let TotalVal=item.Total;
+                            Total= Total+( parseInt(TotalVal.split(":")[0])*60 ) + (parseInt(TotalVal.split(":")[1]));
+                            WeekTotal= WeekTotal+( parseInt(TotalVal.split(":")[0])*60 ) + (parseInt(TotalVal.split(":")[1]));
+                        }
+                         H=Math.floor(WeekTotal/60);
+                         M=Math.floor(WeekTotal%60);
+                        trFormdata.WeeklyItemsTotalTime=(H.toString().length==1?"0"+H:H)+":"+(M.toString().length==1?"0"+M:M);
+                            // to iterate OT hrs
+                            H=0;
+                            M=0;
+                        for(var item of DataAfterRemovedObject)
+                        {
+                            //For weekly calculation
+                            let val=item[prop];
+                            WeeklyTotal=WeeklyTotal+( parseInt(val.split(":")[0])*60 ) + (parseInt(val.split(":")[1])); 
+                            //For total calculation
+                            let TotalVal=item.Total;
+                            Total= Total+( parseInt(TotalVal.split(":")[0])*60 ) + (parseInt(TotalVal.split(":")[1]));
+                            OTTotal= OTTotal+( parseInt(TotalVal.split(":")[0])*60 ) + (parseInt(TotalVal.split(":")[1]));
+                        }
+
+            }
+                      
                         H=Math.floor(OTTotal/60);
                         M=Math.floor(OTTotal%60);
                        trFormdata.OTItemsTotalTime=(H.toString().length==1?"0"+H:H)+":"+(M.toString().length==1?"0"+M:M);
@@ -539,33 +500,6 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
 
                         trFormdata.BillableSubTotal[0][prop]=(WeeklyColHrs.toString().length==1?"0"+WeeklyColHrs:WeeklyColHrs)+":"+(WeeklyColMins.toString().length==1?"0"+WeeklyColMins:WeeklyColMins);
                         trFormdata.BillableSubTotal[0]["Total"]=(TotalColHrs.toString().length==1?"0"+TotalColHrs:TotalColHrs)+":"+(TotalColMins.toString().length==1?"0"+TotalColMins:TotalColMins);
-
-                        // NON BILLABLE SUBTOTAL COLUMN WISE
-                        // WeeklyTotal=0;
-                        // WeeklyColHrs=0;
-                        // WeeklyColMins=0;
-                        // [Total,TotalColHrs,TotalColMins]=[0,0,0];
-                        // let NonBillableColValue=trFormdata.SynergyOfficeHrs[0][prop];
-                        // let TotalVal=trFormdata.SynergyOfficeHrs[0]["Total"];
-                        // WeeklyTotal=WeeklyTotal+( parseInt(NonBillableColValue.split(":")[0])*60 ) + (parseInt(NonBillableColValue.split(":")[1])); 
-                        // Total=Total+( parseInt(TotalVal.split(":")[0])*60 ) + (parseInt(TotalVal.split(":")[1])); 
-
-                        // NonBillableColValue=trFormdata.SynergyHolidayHrs[0][prop];
-                        // TotalVal=trFormdata.SynergyHolidayHrs[0]["Total"];
-                        // WeeklyTotal=WeeklyTotal+( parseInt(NonBillableColValue.split(":")[0])*60 ) + (parseInt(NonBillableColValue.split(":")[1]));
-                        // Total=Total+( parseInt(TotalVal.split(":")[0])*60 ) + (parseInt(TotalVal.split(":")[1]));  
-
-                        // NonBillableColValue=trFormdata.PTOHrs[0][prop];
-                        // TotalVal=trFormdata.PTOHrs[0]["Total"];
-                        // WeeklyTotal=WeeklyTotal+( parseInt(NonBillableColValue.split(":")[0])*60 ) + (parseInt(NonBillableColValue.split(":")[1])); 
-                        // Total=Total+( parseInt(TotalVal.split(":")[0])*60 ) + (parseInt(TotalVal.split(":")[1])); 
-
-                        // WeeklyColHrs=Math.floor(WeeklyTotal/60);
-                        // WeeklyColMins=Math.floor(WeeklyTotal%60);
-                        // TotalColHrs=Math.floor(Total/60);
-                        // TotalColMins=Math.floor(Total%60);
-                        // trFormdata.NonBillableSubTotal[0][prop]=(WeeklyColHrs.toString().length==1?"0"+WeeklyColHrs:WeeklyColHrs)+":"+(WeeklyColMins.toString().length==1?"0"+WeeklyColMins:WeeklyColMins);
-                        // trFormdata.NonBillableSubTotal[0]["Total"]=(TotalColHrs.toString().length==1?"0"+TotalColHrs:TotalColHrs)+":"+(TotalColMins.toString().length==1?"0"+TotalColMins:TotalColMins);
 
                         //GRAND TOTAL COLUMN WISE
                         WeeklyTotal=0;
@@ -589,7 +523,8 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                         trFormdata.Total[0][prop]=(WeeklyColHrs.toString().length==1?"0"+WeeklyColHrs:WeeklyColHrs)+":"+(WeeklyColMins.toString().length==1?"0"+WeeklyColMins:WeeklyColMins);
                         trFormdata.Total[0]["Total"]=(TotalColHrs.toString().length==1?"0"+TotalColHrs:TotalColHrs)+":"+(TotalColMins.toString().length==1?"0"+TotalColMins:TotalColMins);
 
-                        this.setState({ trFormdata});  
+                       // this.setState({ trFormdata});  
+                        return trFormdata;
         }
        
     }
@@ -647,7 +582,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                     
                 </td>
                 <td>
-                    <input className="form-control time Total" value={Obj[i].Total} id={i+"_Total_"+rowType} onChange={this.changeTime} type="time" disabled></input>
+                    <input className="form-control time Total" value={Obj[i].Total} id={i+"_Total_"+rowType} onChange={this.changeTime} type="text" disabled></input>
                 </td>
                 <td>
                 <span className="span-fa-close" onClick={this.RemoveCurrentRow} id={i+"_"+rowType}><i className='fas fa-plus'></i></span>
@@ -659,71 +594,58 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
     private RemoveCurrentRow=(event)=>{
         let RowType=event.target.id.split("_")[1];
         let rowCount=event.target.id.split("_")[0]
+        let count;
+        // let ItemsAfterRemove=[];
         if(RowType.toLowerCase()=="weekrow")
         {
-            const trFormdata = { ...this.state.trFormdata };
+            let trFormdata = { ...this.state.trFormdata };
             let tempItemsData=   trFormdata.WeeklyItemsData;
             trFormdata.WeeklyItemsData=[];
             let WeeklyRowsCount = this.state.currentWeeklyRowsCount;
-            let count = WeeklyRowsCount - 1;
+            count = WeeklyRowsCount - 1;
            for( var i=0;i<tempItemsData.length;i++)
            {
             if(i!=rowCount)
-            trFormdata.WeeklyItemsData.push(tempItemsData[i]);
+            // ItemsAfterRemove.push(tempItemsData[i]);
+            trFormdata.WeeklyItemsData
            }
-            this.setState({ trFormdata, currentWeeklyRowsCount: count});
+           //trFormdata.WeeklyItemsData=ItemsAfterRemove;
+            trFormdata=this.calculateTimeWhenRemoveRow(trFormdata,trFormdata.WeeklyItemsData,RowType);
+            this.setState({trFormdata, currentWeeklyRowsCount: count});
 
         }
         else{
-            const trFormdata = { ...this.state.trFormdata };
+            let trFormdata = { ...this.state.trFormdata };
             let tempItemsData=   trFormdata.OTItemsData;
             trFormdata.OTItemsData=[];
             let OTRowsCount = this.state.currentOTRowsCount;
-            let count = OTRowsCount - 1;
+            count = OTRowsCount - 1;
            for( var i=0;i<tempItemsData.length;i++)
            {
             if(i!=rowCount)
+            // ItemsAfterRemove.push(tempItemsData[i]);
             trFormdata.OTItemsData.push(tempItemsData[i]);
            }
+        //trFormdata.OTItemsData=ItemsAfterRemove;
+        trFormdata=this.calculateTimeWhenRemoveRow(trFormdata,trFormdata.OTItemsData,RowType);
             this.setState({ trFormdata, currentOTRowsCount: count});
         }
-        this.calculateTimeWhenRemoveRow();
-
     }
     private CreateWeeklyHrsRow= () => {
         const trFormdata = { ...this.state.trFormdata };
         let WeeklyRowsCount = this.state.currentWeeklyRowsCount;
         let count = WeeklyRowsCount + 1;
-        trFormdata.WeeklyItemsData.push({
-            Description:'',
-            ProjectCode:'',
-            Mon: '00:00',
-            Tue: '00:00',
-            Wed:'00:00',
-            Thu: '00:00',
-            Fri: '00:00',
-            Sat: '00:00',
-            Sun: '00:00',
-            Total: '00:00',
-        });
+        let newObj={Description:'',ProjectCode:'',Mon: '00:00',Tue: '00:00',Wed:'00:00',Thu: '00:00',Fri: '00:00',Sat: '00:00',Sun: '00:00',Total: '00:00'};
+        trFormdata.WeeklyItemsData.push(newObj);
         this.setState({ trFormdata, currentWeeklyRowsCount: count });
     }
     private CreateOTHrsRow= () => {
         const trFormdata = { ...this.state.trFormdata };
         let OTRowsCount = this.state.currentOTRowsCount;
         let count = OTRowsCount + 1;
-        trFormdata.OTItemsData.push({
-            Description:'',
-            ProjectCode:'',
-            Mon: '00:00',
-            Tue: '00:00',
-            Wed:'00:00',
-            Thu: '00:00',
-            Fri: '00:00',
-            Sat: '00:00',
-            Sun: '00:00',
-            Total: '00:00',
-        });
+        let newObj={Description:'',ProjectCode:'',Mon: '00:00',Tue: '00:00',Wed:'00:00',Thu: '00:00',Fri: '00:00',Sat: '00:00',Sun: '00:00',Total: '00:00'};
+
+        trFormdata.OTItemsData.push(newObj);
         this.setState({ trFormdata, currentOTRowsCount: count });
     }
      
@@ -839,30 +761,90 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
 
         this.setState({ showHideModal: false,ItemID: 0 });
     }
+
+    //functions related to Weekly start date enable only past two weeks monda dates 
+    private isDisabled = (date: Date) => !this.isWithinPastTwoWeeksMonday(date);
+
+    private isWithinPastTwoWeeksMonday = (date: Date) => {
+        const today = new Date();
+        const twoWeeksAgo = new Date(today);
+        twoWeeksAgo.setDate(twoWeeksAgo.getDate() - 14);
+     
+        return date >= twoWeeksAgo && date <= today && this.isMonday(date);
+      };
+    private isMonday = (date: Date) => date.getDay() === 1
+
+    private GetCurrentWeekMonday=(date: Date)=>
+    {
+        let tempCurrDate=new Date(date);
+        let currWeekMonday=new Date();
+        while(tempCurrDate)
+        {
+            if(tempCurrDate.getDay()==1)
+            {
+                currWeekMonday=tempCurrDate;
+                break;
+            }
+            tempCurrDate.setDate(tempCurrDate.getDate()-1)
+        }
+
+        return currWeekMonday;
+    }
+    private bindDynamicWeekHeadings=(date)=>{
+        const Formdata = { ...this.state};
+        Formdata.DynamicWeekHeadings=[];
+        let WeekStartdate=date;
+        Formdata.DynamicWeekHeadings.push(
+            <tr>		
+            <th className="" ><div className="have-h"></div></th>					
+                <th className="">Description</th>
+                <th className="">Project Code</th>
+                <th>Mon <span className="day">{(WeekStartdate.getDate().toString().length==1?"0"+WeekStartdate.getDate():WeekStartdate.getDate())}</span></th>
+                <th>Tue <span className="day">{((WeekStartdate.getDate()+1).toString().length==1?"0"+WeekStartdate.getDate():WeekStartdate.getDate())}</span></th>
+                <th>Wed <span className="day">{((WeekStartdate.getDate()+2).toString().length==1?"0"+WeekStartdate.getDate():WeekStartdate.getDate())}</span></th>
+                <th>Thu <span className="day">{((WeekStartdate.getDate()+3).toString().length==1?"0"+WeekStartdate.getDate():WeekStartdate.getDate())}</span></th>
+                <th>Fri <span className="day">{((WeekStartdate.getDate()+4).toString().length==1?"0"+WeekStartdate.getDate():WeekStartdate.getDate())}</span></th>
+                <th className="color-FF9800">Sat <span className="day color-FF9800">{((WeekStartdate.getDate()+5).toString().length==1?"0"+WeekStartdate.getDate():WeekStartdate.getDate())}</span></th>
+                <th className="color-FF9800">Sun <span className="day color-FF9800">{((WeekStartdate.getDate()+6).toString().length==1?"0"+WeekStartdate.getDate():WeekStartdate.getDate())}</span></th>
+                <th><div className="px-2"></div></th>
+                <th className="bc-e1f2ff">Total</th>
+                <th className=""><div className="px-3"></div></th>
+            </tr>
+        )
+      this.setState({DynamicWeekHeadings:Formdata.DynamicWeekHeadings})
+    }
+
     public render() {
+     let WeekStartDate=new Date(this.state.trFormdata.WeekStartDate);
         return (
 
             <React.Fragment>
                   <ModalPopUp title={this.state.modalTitle} modalText={this.state.modalText} isVisible={this.state.showHideModal} onClose={this.handlefullClose} isSuccess={this.state.isSuccess}></ModalPopUp>
 <div className="container-fluid">
 		<div className="my-3 media-p-1 Billable Hours">
+            <div className="col-md-4 SynergyAddress">
+            <label>Synergy Computer Solutions, Inc.</label><br></br>
+            <label>30700 Telegraph Rd.  Suite 2615</label><br></br>
+            <label>Bingham Farms, MI  48025</label><br></br>
+            <label>248.723.5100</label><br></br>
+            </div>
 		<div className="col-md-4">
 			<div className="light-text">
 				<label>Client Name <span className="mandatoryhastrick">*</span></label>
-				<select className="form-control" required={true} name="ClientName" title="ClientName" onChange={this.handleChange}  ref={this.Client}>
+				<select className="form-control" required={true} name="ClientName" title="ClientName" onChange={this.handleClientChange}  ref={this.Client}>
 					<option value='None'>None</option>
 					{this.state.ClientNames.map((option) => (
 						<option value={option} selected={this.state.trFormdata.ClientName != ''}>{option}</option>
 					))}
 				</select>
 			</div>
-            <div className="col-md-1">
+            <div className="col-md-4">
                 <div className="light-text">
                     <label>Name</label>
                     <input className="form-control" required={true} placeholder="" name="Name" title="Name" value={this.currentUser} disabled={true} />
                 </div>
             </div>
-            <div className="col-md-3">
+            <div className="col-md-4">
                         <div className="light-text div-readonly">
                             <label className="z-in-9">Weekly Start Date</label>
                             <div className="custom-datepicker" id="divWeekStartDate">
@@ -871,6 +853,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                                 selectedDate={this.state.trFormdata.WeekStartDate} 
                                 name="WeeklyStartDate" 
                                 id="txtWeekStartDate"
+                                filterData={this.isDisabled}
                                  
                                 />
                                 
@@ -881,23 +864,23 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
 			<div className="border-box-shadow light-box table-responsive dataTables_wrapper-overflow p-2">
 				<h4>Billable Hours</h4>
 				<table className="table table-bordered m-0 timetable text-center">
-					<thead style={{borderTop: "8px solid #9E9D9E"}}>
-						<tr>		
-						<th className="" ><div className="have-h"></div></th>					
-							<th className="">Description</th>
-							<th className="">Project Code</th>
-							<th>Mon <span className="day">01</span></th>
-							<th>Tue <span className="day">02</span></th>
-							<th>Wed <span className="day">03</span></th>
-							<th>Thu <span className="day">04</span></th>
-							<th>Fri <span className="day">05</span></th>
-							<th className="color-FF9800">Sat <span className="day color-FF9800">06</span></th>
-							<th className="color-FF9800">Sun <span className="day color-FF9800">07</span></th>
-							<th><div className="px-2"></div></th>
-							<th className="bc-e1f2ff">Total</th>
-							<th className=""><div className="px-3"></div></th>
-						</tr>
-					</thead>
+                                <thead style={{ borderTop: "8px solid #9E9D9E" }}>
+                                    <tr>
+                                        <th className="" ><div className="have-h"></div></th>
+                                        <th className="">Description</th>
+                                        <th className="">Project Code</th>
+                                        <th>Mon <span className="day">{(WeekStartDate.getDate().toString().length == 1 ? "0" +WeekStartDate.getDate() :WeekStartDate.getDate())}</span></th>
+                                        <th>Tue <span className="day">{(new Date(WeekStartDate.setDate(WeekStartDate.getDate()+1)).getDate().toString().length == 1 ? "0" +WeekStartDate.getDate() :WeekStartDate.getDate())}</span></th>
+                                        <th>Wed <span className="day">{(new Date(WeekStartDate.setDate(WeekStartDate.getDate()+1)).getDate().toString().length == 1 ? "0" +WeekStartDate.getDate() :WeekStartDate.getDate())}</span></th>
+                                        <th>Thu <span className="day">{(new Date(WeekStartDate.setDate(WeekStartDate.getDate()+1)).getDate().toString().length == 1 ? "0" +WeekStartDate.getDate():WeekStartDate.getDate())}</span></th>
+                                        <th>Fri <span className="day">{(new Date(WeekStartDate.setDate(WeekStartDate.getDate()+1)).getDate().toString().length == 1 ? "0" +WeekStartDate.getDate() :WeekStartDate.getDate())}</span></th>
+                                        <th className="color-FF9800">Sat <span className="day color-FF9800">{(new Date(WeekStartDate.setDate(WeekStartDate.getDate()+1)).getDate().toString().length == 1 ? "0" +WeekStartDate.getDate() :WeekStartDate.getDate())}</span></th>
+                                        <th className="color-FF9800">Sun <span className="day color-FF9800">{(new Date(WeekStartDate.setDate(WeekStartDate.getDate()+1)).getDate().toString().length == 1 ? "0" +WeekStartDate.getDate():WeekStartDate.getDate())}</span></th>
+                                        <th><div className="px-2"></div></th>
+                                        <th className="bc-e1f2ff">Total</th>
+                                        <th className=""><div className="px-3"></div></th>
+                                    </tr>
+                                </thead>
 					<tbody>
 						
 						<tr id="rowPRJ1">
@@ -935,7 +918,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
 							<td>
 								<input className="form-control time Total"  value={this.state.trFormdata.WeeklyItemsData[0].Total} id="0_Total_weekrow" onChange={this.changeTime} type="text" disabled></input>
 							</td>
-							<td >
+							<td>
                             {/* <span  onClick={this.CreateWeeklyHrsRow} className="add-button" hidden={false} ><FontAwesomeIcon icon={faPlus}></FontAwesomeIcon></span> */}
                             <span className="span-fa-plus" onClick={this.CreateWeeklyHrsRow} ><i className='fas fa-plus'></i></span>
 							</td>
@@ -980,7 +963,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
 							<td>
 								<input className="form-control time" value={this.state.trFormdata.OTItemsData[0].Total} id="0_Total_otrow" onChange={this.changeTime} type="text" disabled></input>
 							</td>
-							<td >
+							<td>
                             {/* <span  onClick={this.CreateOTHrsRow}  className="add-button" hidden={false} ><FontAwesomeIcon icon={faPlus}></FontAwesomeIcon></span> */}
                             <span className="span-fa-plus" onClick={this.CreateOTHrsRow} ><i className='fas fa-plus'></i></span>
 							</td>

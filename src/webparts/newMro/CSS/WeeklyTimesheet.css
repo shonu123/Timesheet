@@ -177,3 +177,6 @@
     .have-h {
         min-width: 200px;
     }
+    table td input[type=text]{
+     text-align: left;
+    }
