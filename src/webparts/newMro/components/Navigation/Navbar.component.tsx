@@ -36,7 +36,7 @@ class NavBar extends React.Component<NavBarProps, NavBarState> {
             <div className=''>
                 <div className='nav-main container-fluid'>
                     <div>
-                        <img src='/sites/Synergy/billing.Timesheet/SiteAssets/SynergyLogo-SM.jpg' className='synergyLogo'/>
+                        <img src='/sites/billing.Timesheet/SiteAssets/SynergyLogo-SM.jpg' className='synergyLogo'/>
                     </div>
                     <div className="main-title">Timesheet</div>
                     </div>
