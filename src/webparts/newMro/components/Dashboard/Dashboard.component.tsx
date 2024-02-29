@@ -2,7 +2,7 @@ import * as React from 'react';
 import Myapprovals from './Myapprovals.component';
 import Myrequests from './Myrequests.component';
 import ReviewerApprovals from './Reviewers.component'
-import Pending from './Pending.component';
+import Pending from './EmployeeMasterView.component';
 import PurchasingManager from './PurchasingManager.component';
 import Approved from './Approvers.component';
 import Exported from './Exported.component';
@@ -15,7 +15,7 @@ import "@pnp/sp/site-users/web";
 import ApproversApprovals from './Approvers.component';
 import MyRequests from './Myrequests.component';
 import EmployeeMasterForm from '../Forms/EmployeeMasterForm.component';
-
+import EmployeeMasterView from './EmployeeMasterView.component';
 
 export interface DashboardProps {
     match: any;
@@ -90,6 +90,7 @@ class Dashboard extends React.Component<DashboardProps, DashboardState> {
         let userGroup = groups[0].Title
         let user = userGroup=='Timesheet Initiators' ?'Initiator': userGroup=='Timesheet Approvers'?'Approver':userGroup=='Timesheet Reviewers'?'Reviewer':'Administrator'
         console.log('You are :'+user)
+        sessionStorage['CurrentUserRole'] = user;
         this.setState({userRole : user})
         if(user=="Initiator"){
             this.setState({isInitiator : true});
@@ -264,7 +265,8 @@ class Dashboard extends React.Component<DashboardProps, DashboardState> {
                                     </div>
                                     <div className="tab-pane fade csMyRequests" id="MyRequests" role="tabpanel" aria-labelledby="MyRequests-tab">
                                         <div className="v-table">
-                                            {this.state.isAdmin && <EmployeeMasterForm {...this.props} />}
+                                            {/* {this.state.isAdmin && <EmployeeMasterForm {...this.props} />} */}
+                                            {this.state.isAdmin && <EmployeeMasterView {...this.props} />}
                                         </div>
                                     </div>
                                     

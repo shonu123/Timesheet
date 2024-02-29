@@ -94,6 +94,7 @@ class EmployeeMasterForm extends React.Component<EmployeeMasterFormProps, Employ
         this.setState({ loading: false });
 
         if(this.props.match.params.id != undefined){
+            this.setState({ loading: true });
             console.log(this.props.match.params.id)
             this.setState({ItemID : this.props.match.params.id})
             this.getData()
@@ -106,8 +107,8 @@ class EmployeeMasterForm extends React.Component<EmployeeMasterFormProps, Employ
         let selectQuery = "Employee/ID,Employee/EMail,ReportingManager/ID,ReportingManager/EMail,Approvers/ID,Approvers/EMail,Reviewers/ID,Reviewers/EMail,Notifiers/ID,Notifiers/EMail,*"
         let data = await sp.web.lists.getByTitle(this.listName).items.filter(filterQuery).select(selectQuery).expand('Employee,ReportingManager,Approvers,Reviewers,Notifiers').get()
         console.log(data)
-        this.setState({EmployeeEmail : data[0].Employee.EMail})
-        this.setState({ReportingManagerEmail : data[0].ReportingManager.EMail})
+        this.setState({EmployeeEmail : data[0].Employee.EMail,EmployeeId : data[0].Employee.ID})
+        this.setState({ReportingManagerEmail : data[0].ReportingManager.EMail,ReportingManagerId:data[0].ReportingManager.ID})
         this.setState({ClientName : data[0].ClientName})
         this.setState({IsActive : data[0].IsActive})
         let date = new Date(data[0].DateOfJoining)
@@ -115,31 +116,40 @@ class EmployeeMasterForm extends React.Component<EmployeeMasterFormProps, Employ
         this.setState({SelectedEmployee : data[0].Employee.ID})
         this.setState({SelectedClient : data[0].ClientName })
         let ApproversEMail = []
+        let ApproverIds = {results:[]}
+        let ReviewerIds = {results:[]}
+        let NotifierIds = {results:[]}
+
         if(data[0].Approvers.length>0){
+            let array = []
             for (const user of data[0].Approvers) {
                 ApproversEMail.push(user.EMail)
+                ApproverIds.results.push(user.ID)
             }
         }
         let ReviewersEMail = []
         if(data[0].Reviewers.length>0){
             for (const user of data[0].Reviewers) {
                 ReviewersEMail.push(user.EMail)
+                ReviewerIds.results.push(user.ID)
             }
         }
         let NotifiersEMail = []
         if(data[0].Notifiers.length>0){
             for (const user of data[0].Notifiers) {
                 NotifiersEMail.push(user.EMail)
+                NotifierIds.results.push(user.ID)
             }
         }
-        this.setState({ ApproverEmail: ApproversEMail})
-        this.setState({ReviewerEmail : ReviewersEMail})
-        this.setState({NotifierEmail : NotifiersEMail})
+        this.setState({ ApproverEmail: ApproversEMail,ApproverId : ApproverIds})
+        this.setState({ReviewerEmail : ReviewersEMail,ReviewerId : ReviewerIds})
+        this.setState({NotifierEmail : NotifiersEMail,NotifierId: NotifierIds})
+        this.setState({ loading: false });
     }
     private _getPeoplePickerItems(items, name) { 
         
          let value = null;
-         let values = null;
+         let values = {results:[]};
         if (items.length > 0) {
             if(['EmployeeId','ReportingManagerId'].includes(name))
             value = items[0].id;
@@ -196,13 +206,19 @@ private async validateDuplicateRecord () {
         let data ={
         Employee : { val: this.state.EmployeeId, required: true, Name: 'Employee', Type: ControlType.people,Focusid:'divEmployee' },
         ReportingManager: { val: this.state.ReportingManagerId, required: true, Name: 'Reporting Manager', Type: ControlType.people,Focusid:'divReportingManager' },
-        Client:{ val: this.state.ClientName, required: true, Name: 'Client', Type: ControlType.string,Focusid:this.client },
         Approver : { val: this.state.ApproverId, required: true, Name: 'Approver', Type: ControlType.people,Focusid:'divApprover' },
         Reviewer: { val: this.state.ReviewerId, required: true, Name: 'Reviewer', Type: ControlType.people,Focusid:'divReviewer' },
         Notifier : { val: this.state.NotifierId, required: true, Name: 'Notifier', Type: ControlType.people,Focusid:'divNotifier' },
+        Client:{ val: this.state.ClientName, required: true, Name: 'Client', Type: ControlType.string,Focusid:this.client },
         DateOfJoining: { val: this.state.DateOfJoining, required: true, Name: 'Date Of Joining', Type: ControlType.date }
         }
         let isValid = Formvalidator.checkValidations(data)
+         let pdata = {
+            Approver : { val: this.state.ApproverId, required: true, Name: 'Approver', Type: ControlType.people,Focusid:'divApprover' },
+            Reviewer: { val: this.state.ReviewerId, required: true, Name: 'Reviewer', Type: ControlType.people,Focusid:'divReviewer' },
+            Notifier : { val: this.state.NotifierId, required: true, Name: 'Notifier', Type: ControlType.people,Focusid:'divNotifier' },
+        }
+        isValid = isValid.status?Formvalidator.multiplePeoplePickerValidation(pdata):isValid
         console.log(isValid)
         if(!isValid.status){
             this.setState({errorMessage : isValid.message})
@@ -410,7 +426,17 @@ private async validateDuplicateRecord () {
                                                 </div>
                                             </div>
 
-                                            <div className="col-md-3">
+                                    <div className="col-md-3">
+                                        <div className="light-text div-readonly">
+                                            <label className="z-in-9">Date of Joining <span className="mandatoryhastrick">*</span></label>
+                                            <div className="custom-datepicker" id="divDateofJoining">
+                                                
+                                                <DatePicker onDatechange={this.UpdateDate} selectedDate={this.state.DateOfJoining}/>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                        <div className="col-md-3">
                                                 <div className="light-text">
                                                     <InputCheckBox
                                                     label={"Is Active"}
@@ -421,19 +447,7 @@ private async validateDuplicateRecord () {
                                                     isdisable={false}
                                                     />
                                                 </div>
-                                            </div>
-
-                                     <div className="col-md-3">
-                                        <div className="light-text div-readonly">
-                                            <label className="z-in-9">Date of Joining <span className="mandatoryhastrick">*</span></label>
-                                            <div className="custom-datepicker" id="divDateofJoining">
-                                                
-                                                <DatePicker onDatechange={this.UpdateDate} selectedDate={this.state.DateOfJoining}/>
-                                            </div>
                                         </div>
-                                    </div>
-
-
                                         </div>
                                     </div>
 

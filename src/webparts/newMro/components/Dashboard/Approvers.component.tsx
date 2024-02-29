@@ -70,7 +70,7 @@ class ApproversApprovals extends React.Component<ApproversProps, ApproversState>
                         BillableTotalHrs: d.BillableTotalHrs,
                         OTTotalHrs : d.OTTotalHrs,
                         NonBillableTotalHrs: d.NonBillableTotalHrs,
-                        WeeklyTotalHrs: d.WeeklyTotalHrs
+                        WeeklyTotalHrs: d.GrandTotal
                     })
                 }
                 console.log(Data);

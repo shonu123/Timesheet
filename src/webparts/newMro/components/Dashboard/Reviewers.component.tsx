@@ -72,7 +72,7 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
                         BillableTotalHrs: d.BillableTotalHrs,
                         OTTotalHrs : d.OTTotalHrs,
                         NonBillableTotalHrs: d.NonBillableTotalHrs,
-                        WeeklyTotalHrs: d.WeeklyTotalHrs
+                        WeeklyTotalHrs: d.GrandTotal
                     })
                 }
                 console.log(Data);

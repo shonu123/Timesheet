@@ -2086,10 +2086,10 @@ li {
   display: none;
 }
 
-#divAddNewWeeklyTimeSheet{
+#divAddNewWeeklyTimeSheet,#divAddNewEmployeeMaster{
   position: relative;
 }
-#newWeeklyTimeSheet{
+#newWeeklyTimeSheet,#newEmployeeMasterForm{
   position: absolute;
   right: 10px;
   top: -70px;

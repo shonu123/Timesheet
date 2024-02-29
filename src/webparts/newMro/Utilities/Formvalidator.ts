@@ -99,11 +99,40 @@ function validate(data){
     return retunobject;
 }
 
+function peoplePickerValidation(data){
+    let status = true;
+    let message ="";
+    let propertieTypes={Number:ControlType.number,String:ControlType.string,MobileNumber:ControlType.mobileNumber,Email:ControlType.email,People:ControlType.people,Date:ControlType.date,compareDates:ControlType.compareDates};
+    for (let key in data) {
+        let value = data[key].val.results.length
+        value = value>0?value:null
+        let type =data[key].Type;
+        let isrequired =data[key].required;
+
+     if((propertieTypes.People==type && isrequired) && [undefined,null,''].includes(value))
+    {
+        message =data[key].Name+" cannot be blank.";
+        let prpIsreq =data[key].Focusid;
+        document.getElementById(prpIsreq).getElementsByTagName('input')[0].focus();
+        document.getElementById(prpIsreq).getElementsByTagName('input')[0].classList.add('mandatory-FormContent-focus');
+        status = false;
+        break;
+    }
+}
+let retunobject ={message,status};
+return retunobject;
+}
+
 class formValidation {
    public static checkValidations=(formData)=>{
        let status= validate(formData); 
        return status;
      }
+
+    public static multiplePeoplePickerValidation=(formData)=>{
+        let status= peoplePickerValidation(formData); 
+        return status;
+      }
  }
  export default formValidation;
 
