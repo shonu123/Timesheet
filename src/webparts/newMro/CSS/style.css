@@ -601,7 +601,7 @@ a{
 .light-text label{
   position: absolute;
   /* top: -2px; */
-  top: -11px;
+  /* top: -11px; */
   left: 6px;
   padding: 0 5px;
   background-color: white;
@@ -1113,6 +1113,8 @@ input.ms-BasePicker-input::after{
     min-width: inherit;
     min-height: inherit;
     border: none;
+    overflow-y: auto;
+    max-height: 199px;
 }
 .link-btn:hover{
   cursor: pointer;
@@ -1390,8 +1392,9 @@ div[id^="_TopSpan_NotificationSpan"]{
     display: flex;
   }
   .col-md-3{
-    width: 25%;
+    width: 19%;
     padding: 0 5px;
+    display: inline-block;
   }
   .col-sm-12{
     width: 100%;
@@ -2094,4 +2097,23 @@ li {
   right: 10px;
   top: -70px;
   z-index: 10;
+}
+.ms-PickerPersona-container{
+  padding: .125rem .1rem;
+  border-radius: 24px !important;
+}
+.ms-PickerPersona-container .ms-Button-icon:after{
+  content: '';
+}
+.ms-PickerItem-removeButton i {
+  font-weight: bold;
+}
+.text-150::after{
+  border: none!important;
+}
+.ms-BasePicker-text{
+  padding-top: 11px;
+}
+.ms-BasePicker-itemsWrapper{
+  width: 100%;
 }

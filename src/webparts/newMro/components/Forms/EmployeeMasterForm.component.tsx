@@ -315,7 +315,7 @@ private async validateDuplicateRecord () {
                                 <div className="after-title"></div>
                                 <div className="media-m-2 media-p-1">
                                     <div className="my-2">
-                                        <div className="row pt-2 px-2">
+                                        <div className="pt-2 px-2">
                                             <div className="col-md-3">
                                                 <div className="light-text">
                                                     <label>Employee <span className="mandatoryhastrick">*</span></label>
