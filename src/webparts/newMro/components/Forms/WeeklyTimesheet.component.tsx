@@ -21,6 +21,7 @@ import InputCheckBox from '../Shared/InputCheckBox';
 import { highlightCurrentNav } from '../../Utilities/HighlightCurrentComponent';
 import "../Shared/Menuhandler";
 import DatePicker from "../Shared/DatePickerField";
+import { addDays } from 'office-ui-fabric-react';
 
 
 
@@ -860,9 +861,17 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
     }
     private async validateDuplicateRecord(date,ClientName) {
 
-            let filterQuery = "WeekStartDate eq '"+(date.getMonth()+1)+"/"+date.getDate()+"/"+date.getFullYear()+"' and ClientName eq '"+ClientName+"' and Initiator/ID eq '"+this.currentUserId+"'"
-            let selectQuery = "WeekStartDate,ClientName,Initiator/ID,*"
-            let ExistRecordData= await sp.web.lists.getByTitle(this.listName).items.filter(filterQuery).select(selectQuery).expand("Initiator").orderBy('WeekStartDate').get();
+        let prevDate = addDays(new Date(date),-1);
+        let nextDate = addDays(new Date(date),1);
+        let prev = `${prevDate.getMonth() + 1}/${prevDate.getDate()}/${prevDate.getFullYear()}`
+        let next = `${nextDate.getMonth() + 1}/${nextDate.getDate()}/${nextDate.getFullYear()}`
+
+                 let filterQuery = "WeekStartDate gt '"+prev+"' and WeekStartDate lt '"+next+"'"
+
+                let selectQuery = "Initiator/ID,*"
+            let filterQuery2 = " and ClientName eq '"+ClientName+"'and Initiator/ID eq '"+this.props.spContext.userId+"'"
+            filterQuery += filterQuery2;
+            let ExistRecordData = await sp.web.lists.getByTitle('WeeklyTimeSheet').items.filter(filterQuery).select(selectQuery).expand('Initiator').get();
             console.log(ExistRecordData);
             if(ExistRecordData.length>=1)
             {
