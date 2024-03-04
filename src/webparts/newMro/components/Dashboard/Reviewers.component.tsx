@@ -69,8 +69,9 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
                         Date : `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`,
                         EmployeName: d.Name,
                         Status : d.Status,
-                        BillableTotalHrs: d.BillableTotalHrs,
+                        BillableHrs: d.WeeklyTotalHrs,
                         OTTotalHrs : d.OTTotalHrs,
+                        TotalBillableHours: d.BillableTotalHrs,
                         NonBillableTotalHrs: d.NonBillableTotalHrs,
                         WeeklyTotalHrs: d.GrandTotal
                     })
@@ -196,7 +197,7 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
         }
         // this.setState({comments : comments })
         let date = new Date(data[0].DateSubmitted)
-        let tableContent = {'Name':data[0].Name,'Company':data[0].ClientName,'Submitted Date':`${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`,'Billable Total Hours':data[0].BillableTotalHrs,'OT Total Hours':data[0].OTTotalHrs,'Total Hours':data[0].GrandTotal}
+        let tableContent = {'Name':data[0].Name,'Company':data[0].ClientName,'Submitted Date':`${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`,'Billable Hours':data[0].WeeklyTotalHrs,'OT Hours':data[0].OTTotalHrs,'Total Billable Hours':data[0].BillableTotalHrs,'Non-Billable  Hours':data[0].WeeklyTotalHrs,'Total Hours':data[0].WeeklyTotalHrs}
         console.log(tableContent)
         this.updateStatus(recordId,StatusType.Approved,commentsObj,toEmail,ccEmail,tableContent)
     }
@@ -246,7 +247,7 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
             }
             // this.setState({comments : comments })
             let date = new Date(data[0].DateSubmitted)
-            let tableContent = {'Name':data[0].Name,'Company':data[0].ClientName,'Submitted Date':`${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`,'Billable Total Hours':data[0].BillableTotalHrs,'OT Total Hours':data[0].OTTotalHrs,'Total Hours':data[0].WeeklyTotalHrs}
+            let tableContent = {'Name':data[0].Name,'Company':data[0].ClientName,'Submitted Date':`${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`,'Billable Hours':data[0].WeeklyTotalHrs,'OT Hours':data[0].OTTotalHrs,'Total Billable Hours':data[0].BillableTotalHrs,'Non-Billable  Hours':data[0].WeeklyTotalHrs,'Total Hours':data[0].WeeklyTotalHrs}
             console.log(tableContent)
     
             this.updateStatus(recordId,StatusType.Reject,commentsObj,toEmail,ccEmail,tableContent)
@@ -333,7 +334,7 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
                 {
                     name: "Billable Hours",
                     //selector: "Requisitioner",
-                    selector: (row, i) => row.BillableTotalHrs,
+                    selector: (row, i) => row.BillableHrs,
                     sortable: true,
                     width: '135px'
                 },
@@ -345,6 +346,13 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
                     sortable: true,
                 },
                 {
+                    name: "Total Billable Hours",
+                    //selector: "Requisitioner",
+                    selector: (row, i) => row.BillableTotalHrs,
+                    sortable: true,
+                    width: '175px'
+                },
+                {
                     name: "NonBillable Hours",
                     //selector: "TotalAmount",
                     selector: (row, i) => row.NonBillableTotalHrs,
@@ -354,7 +362,7 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
                 {
                     name: "Total",
                     //selector: "Status",
-                    selector: (row, i) => row.WeeklyTotalHrs,
+                    selector: (row, i) => row.GrandTotal,
                     sortable: true
                 },
                 {
