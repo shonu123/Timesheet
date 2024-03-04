@@ -16,7 +16,7 @@ import ApproversApprovals from './Approvers.component';
 import MyRequests from './Myrequests.component';
 import EmployeeMasterForm from '../Forms/EmployeeMasterForm.component';
 import EmployeeMasterView from './EmployeeMasterView.component';
-
+import App from '../Forms/CustomeDatePicker.component';
 export interface DashboardProps {
     match: any;
     spContext: any;
@@ -72,7 +72,7 @@ class Dashboard extends React.Component<DashboardProps, DashboardState> {
             isInitiator:false,
             isApprover: false,
             isReviewer: false,
-            isAdmin : false
+            isAdmin : false,
         };
     }
     public componentDidMount() {
@@ -90,7 +90,6 @@ class Dashboard extends React.Component<DashboardProps, DashboardState> {
         let userGroup = groups[0].Title
         let user = userGroup=='Timesheet Initiators' ?'Initiator': userGroup=='Timesheet Approvers'?'Approver':userGroup=='Timesheet Reviewers'?'Reviewer':'Administrator'
         console.log('You are :'+user)
-        sessionStorage['CurrentUserRole'] = user;
         this.setState({userRole : user})
         if(user=="Initiator"){
             this.setState({isInitiator : true});
@@ -232,7 +231,7 @@ class Dashboard extends React.Component<DashboardProps, DashboardState> {
 
                         <div className="after-title"></div>
                         <h1>Welcome {this.state.userRole}</h1>
-
+                        <App {...this.props}></App>
                         <div className="p-1">
                             <div className="border-box-shadow light-box m-2">
                                 <ul className="nav nav-tabs nav-fill" id="myTab" role="tablist">

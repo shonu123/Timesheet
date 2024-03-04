@@ -185,7 +185,10 @@ class EmployeeMasterForm extends React.Component<EmployeeMasterFormProps, Employ
  
        let date = new Date(dateprops[0])
         this.setState({ DateOfJoining : date });
+
     }
+
+
 
 private async validateDuplicateRecord () {
 
