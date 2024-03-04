@@ -128,7 +128,8 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
 
         let postObject = {
             Status : Status,
-            CommentsHistory : Comments
+            CommentsHistory : Comments,
+            PendingWith : 'NA'
         }
         console.log(postObject);
         this.setState({comments  :''})
