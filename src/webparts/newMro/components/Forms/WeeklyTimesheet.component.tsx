@@ -65,6 +65,7 @@ export interface WeeklyTimesheetState {
     currentWeeklyRowsCount:any,
     currentOTRowsCount:any,
     ItemID:any,
+    userRole:string,
    
   
 
@@ -133,6 +134,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
             currentWeeklyRowsCount:1,
             currentOTRowsCount:1,
             ItemID:0,
+            userRole:"",
           
            
            
@@ -191,7 +193,14 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
               item.ReportingManager.map(i=>(this.state.Notifiers.push({"ClientName":item.ClientName,"NotifierId":i.Id})));
 
         }); 
-        this.setState({ClientNames: this.state.ClientNames})
+        let groups = await sp.web.currentUser.groups();
+        console.log("current user deatils")
+        console.log(this.props.context.pageContext)
+
+        let userGroup = groups[0].Title
+        let user = userGroup=='Timesheet Initiators' ?'Initiator': userGroup=='Timesheet Approvers'?'Approver':userGroup=='Timesheet Reviewers'?'Reviewer':'Administrator'
+        console.log('You are :'+user)
+        this.setState({ClientNames: this.state.ClientNames,userRole : user})
         if(this.props.match.params.id != undefined){
             console.log(this.props.match.params.id)
             this.setState({ItemID : this.props.match.params.id})
@@ -481,16 +490,11 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
         const trFormdata =Data;
         let TableColumns=["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
           //FOR COLUMN WISE CALCULATION
-          let WeeklyTotal=0;
-          let WeeklyColHrs=0;
-          let WeeklyColMins=0;
-       
-          //let [WeekTotal,OTTotal]=[0,0];
-          //let [H,M]=[0,0];
        
         for(var prop of TableColumns)
         {
             let [Total,TotalColHrs,TotalColMins]=[0,0,0];
+            let [WeeklyTotal,WeeklyColHrs,WeeklyColMins]=[0,0,0];
             if(RowType.toLowerCase()=="weekrow")  //When Weekly items removed 
             {
 
@@ -504,14 +508,8 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                             //For total calculation
                             let TotalVal=item.Total;
                             Total= Total+( parseInt(TotalVal.split(":")[0])*60 ) + (parseInt(TotalVal.split(":")[1]));
-                            //WeekTotal= WeekTotal+( parseInt(TotalVal.split(":")[0])*60 ) + (parseInt(TotalVal.split(":")[1]));
+                           
                         }
-                        //  H=Math.floor(WeekTotal/60);
-                        //  M=Math.floor(WeekTotal%60);
-                        // trFormdata.WeeklyItemsTotalTime=(H.toString().length==1?"0"+H:H)+":"+(M.toString().length==1?"0"+M:M);
-                            // to iterate OT hrs
-                            //H=0;
-                           // M=0;
                         for(var item of trFormdata.OTItemsData)
                         {
                             //For weekly calculation
@@ -520,7 +518,6 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                             //For total calculation
                             let TotalVal=item.Total;
                             Total= Total+( parseInt(TotalVal.split(":")[0])*60 ) + (parseInt(TotalVal.split(":")[1]));
-                            //OTTotal= OTTotal+( parseInt(TotalVal.split(":")[0])*60 ) + (parseInt(TotalVal.split(":")[1]));
                         }
             }
             else{      //When OT items removed 
@@ -535,14 +532,9 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                             //For total calculation
                             let TotalVal=item.Total;
                             Total= Total+( parseInt(TotalVal.split(":")[0])*60 ) + (parseInt(TotalVal.split(":")[1]));
-                            //WeekTotal= WeekTotal+( parseInt(TotalVal.split(":")[0])*60 ) + (parseInt(TotalVal.split(":")[1]));
+                           
                         }
-                        //  H=Math.floor(WeekTotal/60);
-                        //  M=Math.floor(WeekTotal%60);
-                        // trFormdata.WeeklyItemsTotalTime=(H.toString().length==1?"0"+H:H)+":"+(M.toString().length==1?"0"+M:M);
-                            // to iterate OT hrs
-                            //H=0;
-                            //M=0;
+                      
                         for(var item of DataAfterRemovedObject)
                         {
                             //For weekly calculation
@@ -551,14 +543,10 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                             //For total calculation
                             let TotalVal=item.Total;
                             Total= Total+( parseInt(TotalVal.split(":")[0])*60 ) + (parseInt(TotalVal.split(":")[1]));
-                            //OTTotal= OTTotal+( parseInt(TotalVal.split(":")[0])*60 ) + (parseInt(TotalVal.split(":")[1]));
+                           
                         }
 
             }
-                      
-                        //H=Math.floor(OTTotal/60);
-                        //M=Math.floor(OTTotal%60);
-                       //trFormdata.OTItemsTotalTime=(H.toString().length==1?"0"+H:H)+":"+(M.toString().length==1?"0"+M:M);
                         WeeklyColHrs=Math.floor(WeeklyTotal/60);
                         WeeklyColMins=Math.floor(WeeklyTotal%60);
                         TotalColHrs=Math.floor(Total/60);
@@ -808,24 +796,24 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
             switch(btnId.toLowerCase())
             {
                 case "btnsave":
-                    formdata.CommentsHistoryData.push({"Action":StatusType.Save,"Role":"","User":this.currentUser,"Comments":this.state.trFormdata.Comments,"Date":new Date()})
+                    formdata.CommentsHistoryData.push({"Action":StatusType.Save,"Role":this.state.userRole,"User":this.currentUser,"Comments":this.state.trFormdata.Comments,"Date":new Date()})
                     postObject['Status']=StatusType.Save;
                     postObject['PendingWith']="";
                    
                     break;
                 case "btnsubmit":
-                    formdata.CommentsHistoryData.push({"Action":StatusType.Submit,"Role":"","User":this.currentUser,"Comments":this.state.trFormdata.Comments,"Date":new Date()})
+                    formdata.CommentsHistoryData.push({"Action":StatusType.Submit,"Role":this.state.userRole,"User":this.currentUser,"Comments":this.state.trFormdata.Comments,"Date":new Date()})
                     postObject['Status']=StatusType.Submit;
                     postObject['PendingWith']="Approver";
                     postObject['DateSubmitted']=new Date();
                     break;
                 case "btnapprove":
-                    formdata.CommentsHistoryData.push({"Action":StatusType.InProgress,"Role":"","User":this.currentUser,"Comments":this.state.trFormdata.Comments,"Date":new Date()})
+                    formdata.CommentsHistoryData.push({"Action":StatusType.InProgress,"Role":this.state.userRole,"User":this.currentUser,"Comments":this.state.trFormdata.Comments,"Date":new Date()})
                     postObject['Status']=StatusType.InProgress;
                     postObject['PendingWith']="Reviewer";
                     break;
                 case "btnreject":
-                    formdata.CommentsHistoryData.push({"Action":StatusType.Reject,"Role":"","User":this.currentUser,"Comments":this.state.trFormdata.Comments,"Date":new Date()})
+                    formdata.CommentsHistoryData.push({"Action":StatusType.Reject,"Role":this.state.userRole,"User":this.currentUser,"Comments":this.state.trFormdata.Comments,"Date":new Date()})
                     postObject['Status']=StatusType.Reject;
                     postObject['PendingWith']="";
                     break;
