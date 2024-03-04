@@ -162,6 +162,8 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
         let data =  await sp.web.lists.getByTitle('WeeklyTimeSheet').items.filter(filterString).select('Initiator/ID,Initiator/Title,*').expand('Initiator').get()
         console.log(data)
         let commentsObj = JSON.parse(data[0].CommentsHistory)
+        if(commentsObj == null)
+        commentsObj = [];
         commentsObj.push({
             Action : 'Approve',
             Role : 'Reviewer',
