@@ -167,7 +167,7 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
         commentsObj.push({
             Action : 'Approve',
             Role : 'Reviewer',
-            user : this.props.spContext.userDisplayName,
+            User : this.props.spContext.userDisplayName,
             Comments : this.state.comments,
             Date : new Date().toISOString()
         })
@@ -196,7 +196,7 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
         }
         // this.setState({comments : comments })
         let date = new Date(data[0].DateSubmitted)
-        let tableContent = {'Name':data[0].Name,'Company':data[0].ClientName,'Submitede Date':`${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`,'Billable Total Hours':data[0].BillableTotalHrs,'OT Total Hours':data[0].OTTotalHrs,'Total Hours':data[0].WeeklyTotalHrs}
+        let tableContent = {'Name':data[0].Name,'Company':data[0].ClientName,'Submitted Date':`${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`,'Billable Total Hours':data[0].BillableTotalHrs,'OT Total Hours':data[0].OTTotalHrs,'Total Hours':data[0].GrandTotal}
         console.log(tableContent)
         this.updateStatus(recordId,StatusType.Approved,commentsObj,toEmail,ccEmail,tableContent)
     }
@@ -246,7 +246,7 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
             }
             // this.setState({comments : comments })
             let date = new Date(data[0].DateSubmitted)
-            let tableContent = {'Name':data[0].Name,'Company':data[0].ClientName,'Submitede Date':`${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`,'Billable Total Hours':data[0].BillableTotalHrs,'OT Total Hours':data[0].OTTotalHrs,'Total Hours':data[0].WeeklyTotalHrs}
+            let tableContent = {'Name':data[0].Name,'Company':data[0].ClientName,'Submitted Date':`${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`,'Billable Total Hours':data[0].BillableTotalHrs,'OT Total Hours':data[0].OTTotalHrs,'Total Hours':data[0].WeeklyTotalHrs}
             console.log(tableContent)
     
             this.updateStatus(recordId,StatusType.Reject,commentsObj,toEmail,ccEmail,tableContent)
@@ -265,13 +265,17 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
         let name = e.target.dataset.name
         if(name == 'Approve')
         {
-            this.setState({message : 'Action : Approve',title : 'Approve', Action : 'Approve'})
+            this.setState({message : 'Action : Approve',title : 'Approve', Action : 'Approve'});
+            this.setState({showHideModal : true})
         }
-        else
+        else if(name == 'Reject')
         {
-            this.setState({message : 'Action : Reject',title : 'Reject', Action : 'Reject'})
+            this.setState({message : 'Action : Reject',title : 'Reject', Action : 'Reject'});
+            this.setState({showHideModal : true})
         }
-        this.setState({showHideModal : true})
+        else{
+            this.setState({showHideModal : false})
+        }
     }
 
     private handleAction = (e) =>{
