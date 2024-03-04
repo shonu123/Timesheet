@@ -61,13 +61,13 @@ class EmployeeMasterView extends React.Component<EmployeeMasterViewProps, Employ
                 console.log(response)
                 let Data = [];
                 for (const d of response) {
-                    let ApproversString = '',ReviewersString = '',NotifiersString ='';
-                    if(d.Approvers.length>0){
-                        for(let user of d.Approvers){
-                            ApproversString+= user.Title+","
+                    let ReportingManagerString = '',ReviewersString = '',NotifiersString ='';
+                    if(d.ReportingManager.length>0){
+                        for(let user of d.ReportingManager){
+                            ReportingManagerString+= user.Title+","
                         }
                     }
-                    ApproversString = ApproversString.substring(0, ApproversString.lastIndexOf(","));
+                    ReportingManagerString = ReportingManagerString.substring(0, ReportingManagerString.lastIndexOf(","));
                     if(d.Reviewers.length>0){
                         for(let user of d.Reviewers){
                             ReviewersString+= user.Title+","
@@ -84,9 +84,9 @@ class EmployeeMasterView extends React.Component<EmployeeMasterViewProps, Employ
                     Data.push({
                         Id : d.Id,
                         Employee : d.Employee.Title,
-                        ReportingManager:d.ReportingManager.Title,
+                        // ReportingManager:d.ReportingManager.Title,
                         Company : d.ClientName,
-                        Approvers: ApproversString,
+                        ReportingManager: ReportingManagerString,
                         Reviewers:ReviewersString,
                         Notifiers:NotifiersString,
                         Doj : `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`,
@@ -139,12 +139,12 @@ class EmployeeMasterView extends React.Component<EmployeeMasterViewProps, Employ
                 selector: (row, i) => row.Company,
                 sortable: true
             },
-            {
-                name: "Approvers",
-                selector: (row, i) => row.Approvers,
-                sortable: true,
-                width: '200px'
-            },
+            // {
+            //     name: "Approvers",
+            //     selector: (row, i) => row.Approvers,
+            //     sortable: true,
+            //     width: '200px'
+            // },
             {
                 name: "Reviewers",
                 selector: (row, i) => row.Reviewers,
@@ -164,8 +164,8 @@ class EmployeeMasterView extends React.Component<EmployeeMasterViewProps, Employ
                 width: '200px'
             },
             {
-                name: "IsActive",
-                selector: (row, i) => row.IsActive,
+                name: "Status",
+                selector: (row, i) => row.IsActive?"Active":"In-Active",
                 sortable: true,
                 width: '100px',
             }

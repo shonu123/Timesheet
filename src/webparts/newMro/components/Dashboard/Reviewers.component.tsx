@@ -171,13 +171,13 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
         })
         commentsObj = JSON.stringify(commentsObj);
         var filterString = "Employee/ID eq '"+data[0].Initiator.ID+"' and ClientName eq '"+data[0].ClientName+"'"
-        var selectString = 'Employee/EMail,Reviewers/EMail,Approvers/EMail,Notifiers/EMail,*'
-        let emailData = await sp.web.lists.getByTitle('EmployeeMaster').items.filter(filterString).select(selectString).expand('Employee,Reviewers,Approvers,Notifiers').get();
+        var selectString = 'Employee/EMail,Reviewers/EMail,ReportingManager/EMail,Notifiers/EMail,*'
+        let emailData = await sp.web.lists.getByTitle('EmployeeMaster').items.filter(filterString).select(selectString).expand('Employee,Reviewers,ReportingManager,Notifiers').get();
         console.log(emailData)
         let toEmail = [];
         let ccEmail = [];
         toEmail.push(emailData[0].Employee.EMail);
-        let approvers = emailData[0].Approvers
+        let approvers = emailData[0].ReportingManager
         for (const user of approvers) {
             if(!ccEmail.includes(user.EMail))
             ccEmail.push(user.EMail);
@@ -221,13 +221,13 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
             })
             commentsObj = JSON.stringify(commentsObj);
             var filterString = "Employee/ID eq '"+data[0].Initiator.ID+"' and ClientName eq '"+data[0].ClientName+"'"
-            var selectString = 'Employee/EMail,Reviewers/EMail,Approvers/EMail,Notifiers/EMail,*'
-            let emailData = await sp.web.lists.getByTitle('EmployeeMaster').items.filter(filterString).select(selectString).expand('Employee,Reviewers,Approvers,Notifiers').get();
+            var selectString = 'Employee/EMail,Reviewers/EMail,ReportingManager/EMail,Notifiers/EMail,*'
+            let emailData = await sp.web.lists.getByTitle('EmployeeMaster').items.filter(filterString).select(selectString).expand('Employee,Reviewers,ReportingManager,Notifiers').get();
             console.log(emailData)
             let toEmail = [];
             let ccEmail = [];
             toEmail.push(emailData[0].Employee.EMail);
-            let approvers = emailData[0].Approvers
+            let approvers = emailData[0].ReportingManager
             for (const user of approvers) {
                 if(!ccEmail.includes(user.EMail))
                 ccEmail.push(user.EMail);

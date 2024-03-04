@@ -59,7 +59,7 @@ class EmployeeMasterForm extends React.Component<EmployeeMasterFormProps, Employ
     public state = {
         ItemID : 0,
         EmployeeId : null,
-        ReportingManagerId : null,
+        // ReportingManagerId : null,
         ClientName : '',
         ApproverId : {results:[]},
         ReviewerId: {results:[]},
@@ -70,7 +70,8 @@ class EmployeeMasterForm extends React.Component<EmployeeMasterFormProps, Employ
         loading : false,
         errorMessage : '',
         EmployeeEmail:'',
-        ReportingManagerEmail:'',
+        ReportingManagerId : {results:[]},
+        ReportingManagerEmail:[],
         ApproverEmail : [],
         ReviewerEmail: [],
         NotifierEmail: [],
@@ -108,23 +109,25 @@ class EmployeeMasterForm extends React.Component<EmployeeMasterFormProps, Employ
         let data = await sp.web.lists.getByTitle(this.listName).items.filter(filterQuery).select(selectQuery).expand('Employee,ReportingManager,Approvers,Reviewers,Notifiers').get()
         console.log(data)
         this.setState({EmployeeEmail : data[0].Employee.EMail,EmployeeId : data[0].Employee.ID})
-        this.setState({ReportingManagerEmail : data[0].ReportingManager.EMail,ReportingManagerId:data[0].ReportingManager.ID})
+        // this.setState({ReportingManagerEmail : data[0].ReportingManager.EMail,ReportingManagerId:data[0].ReportingManager.ID})
         this.setState({ClientName : data[0].ClientName})
         this.setState({IsActive : data[0].IsActive})
         let date = new Date(data[0].DateOfJoining)
         this.setState({ DateOfJoining : date })
         this.setState({SelectedEmployee : data[0].Employee.ID})
         this.setState({SelectedClient : data[0].ClientName })
-        let ApproversEMail = []
-        let ApproverIds = {results:[]}
+        // let ApproversEMail = []
+        let ReportingManagersEmail = []
+        // let ApproverIds = {results:[]}
+        let ReportingManagerIds = {results:[]}
         let ReviewerIds = {results:[]}
         let NotifierIds = {results:[]}
 
-        if(data[0].Approvers.length>0){
+        if(data[0].ReportingManager.length>0){
             let array = []
-            for (const user of data[0].Approvers) {
-                ApproversEMail.push(user.EMail)
-                ApproverIds.results.push(user.ID)
+            for (const user of data[0].ReportingManager) {
+                ReportingManagersEmail.push(user.EMail)
+                ReportingManagerIds.results.push(user.ID)
             }
         }
         let ReviewersEMail = []
@@ -141,7 +144,8 @@ class EmployeeMasterForm extends React.Component<EmployeeMasterFormProps, Employ
                 NotifierIds.results.push(user.ID)
             }
         }
-        this.setState({ ApproverEmail: ApproversEMail,ApproverId : ApproverIds})
+        // this.setState({ ApproverEmail: ApproversEMail,ApproverId : ApproverIds})
+        this.setState({ ReportingManagerEmail: ReportingManagersEmail,ReportingManagerId : ReportingManagerIds})
         this.setState({ReviewerEmail : ReviewersEMail,ReviewerId : ReviewerIds})
         this.setState({NotifierEmail : NotifiersEMail,NotifierId: NotifierIds})
         this.setState({ loading: false });
@@ -151,9 +155,9 @@ class EmployeeMasterForm extends React.Component<EmployeeMasterFormProps, Employ
          let value = null;
          let values = {results:[]};
         if (items.length > 0) {
-            if(['EmployeeId','ReportingManagerId'].includes(name))
+            if(['EmployeeId'].includes(name))
             value = items[0].id;
-        else if(['ApproverId','ReviewerId','NotifierId'].includes(name)){
+        else if(['ReportingManagerId','ReviewerId','NotifierId'].includes(name)){
             let multiple = {results:[]}
                 for (const user of items) {
                     multiple.results.push(user.id)
@@ -164,7 +168,7 @@ class EmployeeMasterForm extends React.Component<EmployeeMasterFormProps, Employ
         else {
             value = null;
         }
-        name == 'EmployeeId'?this.setState({ EmployeeId: value }):name == 'ReportingManagerId'?this.setState({ ReportingManagerId: value }):name == 'ApproverId'?this.setState({ ApproverId: values }):name == 'ReviewerId'?this.setState({ ReviewerId: values }):this.setState({ NotifierId: values })
+        name == 'EmployeeId'?this.setState({ EmployeeId: value }):name == 'ReportingManagerId'?this.setState({ ReportingManagerId: values }):name == 'ApproverId'?this.setState({ ApproverId: values }):name == 'ReviewerId'?this.setState({ ReviewerId: values }):this.setState({ NotifierId: values })
     }
 
     private handleChangeEvents=(event)=>{
@@ -217,7 +221,8 @@ private async validateDuplicateRecord () {
         }
         let isValid = Formvalidator.checkValidations(data)
          let pdata = {
-            Approver : { val: this.state.ApproverId, required: true, Name: 'Approver', Type: ControlType.people,Focusid:'divApprover' },
+            // Approver : { val: this.state.ApproverId, required: true, Name: 'Approver', Type: ControlType.people,Focusid:'divApprover' },
+            ReportingManager: { val: this.state.ReportingManagerId, required: true, Name: 'Reporting Manager', Type: ControlType.people,Focusid:'divReportingManager' },
             Reviewer: { val: this.state.ReviewerId, required: true, Name: 'Reviewer', Type: ControlType.people,Focusid:'divReviewer' },
             Notifier : { val: this.state.NotifierId, required: true, Name: 'Notifier', Type: ControlType.people,Focusid:'divNotifier' },
         }
@@ -345,10 +350,10 @@ private async validateDuplicateRecord () {
                                                             <PeoplePicker
                                                                 context={this.props.context}
                                                                 titleText=""
-                                                                personSelectionLimit={1}
+                                                                personSelectionLimit={10}
                                                                 showtooltip={false}
                                                                 disabled={false}
-                                                                defaultSelectedUsers = {[this.state.ReportingManagerEmail]}
+                                                                defaultSelectedUsers = {this.state.ReportingManagerEmail}
                                                                 onChange={(e) => this._getPeoplePickerItems(e, 'ReportingManagerId')}    
                                                                 ensureUser={true}
                                                                 required={true}        
@@ -371,7 +376,7 @@ private async validateDuplicateRecord () {
                                             </div>
 
 
-                                            <div className="col-md-3">
+                                            {/* <div className="col-md-3">
                                                 <div className="light-text">
                                                     <label>Approver <span className="mandatoryhastrick">*</span></label>
                                                     <div className="custom-peoplepicker" id="divApprover">
@@ -389,7 +394,7 @@ private async validateDuplicateRecord () {
                                                                 resolveDelay={1000} peoplePickerCntrlclassName={"input-peoplePicker-custom"} />
                                                     </div>
                                                 </div>
-                                            </div>
+                                            </div> */}
                                             <div className="col-md-3">
                                                 <div className="light-text">
                                                     <label>Reviewer <span className="mandatoryhastrick">*</span></label>

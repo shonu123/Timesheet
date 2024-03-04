@@ -22,7 +22,8 @@ export interface ApproversProps {
 }
 
 export interface ApproversState {
-    Approvers: Array<Object>;
+    // Approvers: Array<Object>;
+    ReportingManager: Array<Object>;
     loading:boolean;
     message : string;
     title : string;
@@ -43,20 +44,21 @@ class ApproversApprovals extends React.Component<ApproversProps, ApproversState>
         sp.setup({
             spfxContext: this.props.context
         });
-        this.state = {Approvers: [], loading:false,message:'',title:'',showHideModal:false,isSuccess:true,comments:'',Action:'',errorMessage:'',ItemID:0};
+        this.state = {ReportingManager: [], loading:false,message:'',title:'',showHideModal:false,isSuccess:true,comments:'',Action:'',errorMessage:'',ItemID:0};
     }
 
     public componentDidMount() {
         //console.log(this.props);
-        this.ReviewerApproval();
+        this.ReportingManagerApproval();
     }
 
-    private ReviewerApproval = async () => {
+    private ReportingManagerApproval = async () => {
         this.setState({ loading: true });
         const userId = this.props.spContext.userId;
-        var filterString = "Approvers/Id eq '"+userId+"' and PendingWith eq 'Approver' and Status eq '"+StatusType.Submit+"'"
+        // var filterString = "Approvers/Id eq '"+userId+"' and PendingWith eq 'Approver' and Status eq '"+StatusType.Submit+"'"
+        var filterString = "ReportingManager/Id eq '"+userId+"' and PendingWith eq 'Approver' and Status eq '"+StatusType.Submit+"'"
 
-        sp.web.lists.getByTitle('WeeklyTimeSheet').items.top(2000).filter(filterString).expand("Approvers").select('Approvers/Title','*').orderBy('Modified', false).get()
+        sp.web.lists.getByTitle('WeeklyTimeSheet').items.top(2000).filter(filterString).expand("ReportingManager").select('ReportingManager/Title','*').orderBy('Modified', false).get()
             .then((response) => {
                 console.log(response)
                 let Data = [];
@@ -74,7 +76,7 @@ class ApproversApprovals extends React.Component<ApproversProps, ApproversState>
                     })
                 }
                 console.log(Data);
-                this.setState({ Approvers: Data,loading:false });
+                this.setState({ ReportingManager: Data,loading:false });
                 this.setState({ loading: false });
             }).catch(err => {
                 console.log('Failed to fetch data.', err);
@@ -147,7 +149,7 @@ class ApproversApprovals extends React.Component<ApproversProps, ApproversState>
             <h1>Approver Screen</h1>
             <div>
                 <div className='table-head-1st-td'>
-                    <TableGenerator columns={columns} data={this.state.Approvers} fileName={'Approvers Approvals'} showExportExcel={false}></TableGenerator>
+                    <TableGenerator columns={columns} data={this.state.ReportingManager} fileName={'Approvers Approvals'} showExportExcel={false}></TableGenerator>
                 </div>
             </div>
             </React.Fragment> 
