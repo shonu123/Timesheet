@@ -330,7 +330,7 @@ else {
                         </div>
                         <div className='container-fluid'>
                             <div className='FormContent'>
-                                <div className="title">Consultants
+                                <div className="title">Approval Matrix
                                     <div className='mandatory-note'>
                                         <span className='mandatoryhastrick'>*</span> indicates a required field
                                     </div>
@@ -338,8 +338,9 @@ else {
                                 <div className="after-title"></div>
                                 <div className="media-m-2 media-p-1">
                                     <div className="my-2">
-                                        <div className="pt-2 px-2">
+                                        <div className="row pt-2 px-2">
                                             <div className="col-md-3">
+                                                
                                                 <div className="light-text">
                                                     <label>Employee <span className="mandatoryhastrick">*</span></label>
                                                     <div className="custom-peoplepicker" id="divEmployee">
@@ -357,6 +358,7 @@ else {
                                                                 resolveDelay={1000} peoplePickerCntrlclassName={"input-peoplePicker-custom"} />
                                                     </div>
                                                 </div>
+
                                             </div>
 
                                             <div className="col-md-3">
@@ -369,6 +371,16 @@ else {
                                                         ))}
                                                     </select>
                                                 </div>
+                                            </div>
+
+                                            <div className="col-md-3">
+                                        <div className="light-text div-readonly">
+                                            <label className="z-in-9">Date of Joining <span className="mandatoryhastrick">*</span></label>
+                                            <div className="custom-datepicker" id="divDateofJoining">
+                                                
+                                                <DatePicker onDatechange={this.UpdateDate} selectedDate={this.state.DateOfJoining}/>
+                                            </div>
+                                        </div>
                                             </div>
 
                                             <div className="col-md-3">
@@ -390,6 +402,8 @@ else {
                                                     </div>
                                                 </div>
                                             </div>
+                                    </div>
+                                    <div className="row pt-2 px-2">
                                             {/* <div className="col-md-3">
                                                 <div className="light-text">
                                                     <label>Approver <span className="mandatoryhastrick">*</span></label>
@@ -447,19 +461,8 @@ else {
                                                     </div>
                                                 </div>
                                             </div>
-
-                                    <div className="col-md-3">
-                                        <div className="light-text div-readonly">
-                                            <label className="z-in-9">Date of Joining <span className="mandatoryhastrick">*</span></label>
-                                            <div className="custom-datepicker" id="divDateofJoining">
-                                                
-                                                <DatePicker onDatechange={this.UpdateDate} selectedDate={this.state.DateOfJoining}/>
-                                            </div>
-                                        </div>
-                                    </div>
-
                                         <div className="col-md-3">
-                                                <div className="light-text">
+                                                <div className="light-text" id='chkIsActive'>
                                                     <InputCheckBox
                                                     label={"Is Active"}
                                                     name={"IsActive"}

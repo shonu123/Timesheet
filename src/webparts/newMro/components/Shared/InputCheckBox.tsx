@@ -29,9 +29,9 @@ const InputCheckBox = ({ label, name, checked, onChange,isforMasters,isdisable=f
         </div>
     ):(
         <div className="col-md-3">
-            <div className='mt-3'>
+            <div className='mt-3 divIsActive'>
                 <input type='checkbox' checked={checked} required={false} onChange={onChange} name={name} autoComplete="off" disabled={isdisable}/>
-                <label className="col-form-label pl-1">{label}</label>
+                <label className="col-form-label pl-1" id='lblIsActive'>{label}</label>
             </div>
         </div>
     );
