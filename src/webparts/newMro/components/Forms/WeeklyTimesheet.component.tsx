@@ -21,6 +21,7 @@ import InputCheckBox from '../Shared/InputCheckBox';
 import { highlightCurrentNav } from '../../Utilities/HighlightCurrentComponent';
 import "../Shared/Menuhandler";
 import DatePicker from "../Shared/DatePickerField";
+import CustomDatePicker from "../Forms/DatePicker";
 import { addDays } from 'office-ui-fabric-react';
 
 
@@ -228,10 +229,16 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
         trFormdata.Total=JSON.parse(data[0].TotalHrs);
         trFormdata.Status=data[0].Status;
         trFormdata.CommentsHistoryData=JSON.parse(data[0].CommentsHistory);
-
+        trFormdata.SuperviserNames=JSON.parse(data[0].SuperviserName);
+        if( trFormdata.CommentsHistoryData==null)
+        trFormdata.CommentsHistoryData=[];
         if([StatusType.Submit,StatusType.Approved,StatusType.InProgress].includes(data[0].Status))
         {
             this.setState({isSubmitted:true});
+        }
+        else if([StatusType.Reject].includes(data[0].Status))
+        {
+            this.setState({isSubmitted:false});
         }
     
         this.setState({ trFormdata:trFormdata,currentWeeklyRowsCount:trFormdata.WeeklyItemsData.length,currentOTRowsCount: trFormdata.OTItemsData.length});
@@ -239,7 +246,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
 
     //functions related to calculation
     private WeekStartDateChange = (dateprops) => {
-        let date=new Date(dateprops[0]);
+        let date=new Date(dateprops);
         let WeekStartDate=new Date(date);
         const Formdata = { ...this.state.trFormdata };
             Formdata.WeekStartDate=date;
@@ -294,7 +301,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
     private handleChange = (event) => {
         const formData = { ...this.state.trFormdata };
         const { name } = event.target;
-        const value = event.target.type == 'checkbox' ? event.target.checked : event.target.value.trim();
+        const value = event.target.type == 'checkbox' ? event.target.checked : event.target.value;
         formData[name] = value != 'None' ? value : null;
         this.setState({trFormdata:formData});
     }
@@ -640,8 +647,9 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                 <td>
                     <input className="form-control time Total" value={Obj[i].Total} id={i+"_Total_"+rowType} onChange={this.changeTime} type="text" disabled></input>
                 </td>
-                <td onClick={this.RemoveCurrentRow} id={i+"_"+rowType}>
-                <span className="span-fa-close"><i className='fas fa-plus'></i></span>
+                <td>
+                {/* <span className="span-fa-close"><i className='fas fa-plus'></i></span> */}
+                <span className='span-fa-close' onClick={this.RemoveCurrentRow} id={i+"_"+rowType}><FontAwesomeIcon icon={faClose}></FontAwesomeIcon></span>
                 </td>
             </tr>);
         }   
@@ -725,7 +733,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                 <td className="" >{option["Role"]}</td>
                 <td className="" >{option["User"]}</td>
                 <td className="" >{option["Comments"]}</td>
-                <td className="" >{(new Date(option["Date"]).getMonth().toString().length==1?"0"+new Date(option["Date"]).getMonth():new Date(option["Date"]).getMonth())+"-"+(new Date(option["Date"]).getDate().toString().length==1?"0"+new Date(option["Date"]).getDate():new Date(option["Date"]).getDate())+"-"+new Date(option["Date"]).getFullYear()}</td>
+                <td className="" >{(new Date(option["Date"]).getMonth().toString().length==1?"0"+new Date(option["Date"]).getMonth():new Date(option["Date"]).getMonth())+"/"+(new Date(option["Date"]).getDate().toString().length==1?"0"+new Date(option["Date"]).getDate():new Date(option["Date"]).getDate())+"/"+new Date(option["Date"]).getFullYear()}</td>
             </tr>)
            ))
         }
@@ -860,19 +868,19 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
         }
     }
     private async validateDuplicateRecord(date,ClientName) {
-
-        let prevDate = addDays(new Date(date),-1);
-        let nextDate = addDays(new Date(date),1);
+        let prevDate = addDays(new Date(date), -1);
+        let nextDate = addDays(new Date(date), 1);
         let prev = `${prevDate.getMonth() + 1}/${prevDate.getDate()}/${prevDate.getFullYear()}`
         let next = `${nextDate.getMonth() + 1}/${nextDate.getDate()}/${nextDate.getFullYear()}`
 
-                 let filterQuery = "WeekStartDate gt '"+prev+"' and WeekStartDate lt '"+next+"'"
+        let filterQuery = "WeekStartDate gt '" + prev + "' and WeekStartDate lt '" + next + "'"
 
-                let selectQuery = "Initiator/ID,*"
-            let filterQuery2 = " and ClientName eq '"+ClientName+"'and Initiator/ID eq '"+this.props.spContext.userId+"'"
-            filterQuery += filterQuery2;
-            let ExistRecordData = await sp.web.lists.getByTitle('WeeklyTimeSheet').items.filter(filterQuery).select(selectQuery).expand('Initiator').get();
-            console.log(ExistRecordData);
+        let selectQuery = "Initiator/ID,*"
+        let filterQuery2 = " and ClientName eq '" + ClientName + "'and Initiator/ID eq '" + this.props.spContext.userId + "'"
+        filterQuery += filterQuery2;
+        let ExistRecordData = await sp.web.lists.getByTitle('WeeklyTimeSheet').items.filter(filterQuery).select(selectQuery).expand('Initiator').get();
+        console.log(ExistRecordData);
+
             if(ExistRecordData.length>=1)
             {
                 const trFormdata= this.state.trFormdata;
@@ -889,10 +897,18 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                 trFormdata.Total=JSON.parse(ExistRecordData[0].TotalHrs);
                 trFormdata.Status=ExistRecordData[0].Status;
                 trFormdata.CommentsHistoryData=JSON.parse(ExistRecordData[0].CommentsHistory);
+                trFormdata.SuperviserNames=JSON.parse(ExistRecordData[0].SuperviserName);
+                if( trFormdata.CommentsHistoryData==null)
+                trFormdata.CommentsHistoryData=[];
                 if([StatusType.Submit,StatusType.Approved,StatusType.InProgress].includes(ExistRecordData[0].Status))
                 {
                     this.setState({isSubmitted:true});
                 }
+                else if([StatusType.Reject].includes(ExistRecordData[0].Status))
+                {
+                    this.setState({isSubmitted:false});
+                }
+            
                
                 this.setState({ trFormdata:trFormdata,currentWeeklyRowsCount:trFormdata.WeeklyItemsData.length,currentOTRowsCount: trFormdata.OTItemsData.length,ItemID:ExistRecordData[0].ID});
             }
@@ -966,7 +982,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                         <div className="light-text div-readonly">
                             <label className="z-in-9">Weekly Start Date</label>
                             <div className="custom-datepicker" id="divWeekStartDate">
-                                <DatePicker 
+                            {/* <DatePicker 
                                 onDatechange={this.WeekStartDateChange} 
                                 selectedDate={this.state.trFormdata.WeekStartDate} 
                                 name="WeeklyStartDate" 
@@ -974,8 +990,11 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                                 filterData={this.isDisabled}
                                 disabled={this.state.isSubmitted}
                                  
+                                /> */}
+                                <CustomDatePicker 
+                                handleChange={this.WeekStartDateChange}
+                                selectedDate={this.state.trFormdata.WeekStartDate}
                                 />
-                                
                             </div>
                         </div>
             </div>
@@ -1039,7 +1058,8 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
 							</td>
 							<td>
                             {/* <span  onClick={this.CreateWeeklyHrsRow} className="add-button" hidden={false} ><FontAwesomeIcon icon={faPlus}></FontAwesomeIcon></span> */}
-                            <span className="span-fa-plus" onClick={this.CreateWeeklyHrsRow} ><i className='fas fa-plus'></i></span>
+                            {/* <span className="span-fa-plus" onClick={this.CreateWeeklyHrsRow} ><i className='fas fa-plus'></i></span> */}
+                            <span className='span-fa-plus' onClick={this.CreateWeeklyHrsRow} id='addnewRow'><FontAwesomeIcon icon={faPlus}></FontAwesomeIcon></span>
 							</td>
 						</tr>
                         {this.dynamicFieldsRow("weekrow")}
@@ -1084,7 +1104,8 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
 							</td>
 							<td>
                             {/* <span  onClick={this.CreateOTHrsRow}  className="add-button" hidden={false} ><FontAwesomeIcon icon={faPlus}></FontAwesomeIcon></span> */}
-                            <span className="span-fa-plus" onClick={this.CreateOTHrsRow} ><i className='fas fa-plus'></i></span>
+                            {/* <span className="span-fa-plus" onClick={this.CreateOTHrsRow} ><i className='fas fa-plus'></i></span> */}
+                            <span className='span-fa-plus'   onClick={this.CreateOTHrsRow} id=''><FontAwesomeIcon icon={faPlus}></FontAwesomeIcon></span>
 							</td>
 						</tr>
                         {this.dynamicFieldsRow("otrow")}
@@ -1266,20 +1287,18 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                                                 </div>
                                             </div>
                 </div>
-                <div className="col-md-3">
-                        <div className="light-text div-readonly">
+                <div className="col-md-6">
+                        <div className="light-text div-readonly col-md-3">
                             <label className="z-in-9">Date Submitted</label>
-                            <div className="custom-datepicker" id="divDateSubmitted">
-                                <DatePicker onDatechange={this.WeekStartDateChange} selectedDate={this.state.trFormdata.DateSubmitted} name="WeeklyStartDate" id="txtWeekStartDate" hidden={!(this.state.isSubmitted)} disabled/>
-                            </div>
+                                <input className="form-control"  name="Name" title="DateSubmitted" value={(this.state.trFormdata.DateSubmitted.getMonth()+1)+"/"+this.state.trFormdata.DateSubmitted.getDate()+"/"+this.state.trFormdata.DateSubmitted.getFullYear()}  disabled={true} />
                         </div>
-                        <div className="light-text div-readonly">
+                        <div className="light-text div-readonly col-md-3">
                             <label>Superviser Names</label>
                             <div className="light-text div-readonly">
                                 <div className="" id="SuperviserNames">
-                                    {/* {this.state.SuperviserNames.map((option) => (
-                                        <h3>{option}</h3>
-                                    ))} */}
+                                    {this.state.trFormdata.SuperviserNames.map((option) => (
+                                        <label>{option}</label>
+                                    ))}
                                 </div>
                             </div>
 
@@ -1298,7 +1317,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
 				</div>
 			</div>
                         <div className="p-2">
-                         Comments History
+                         <h2>Comments History</h2>
                         </div>
                         <div>
                         <table className="table table-bordered m-0 timetable text-center">
@@ -1319,6 +1338,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                         </div>
 		</div>
 	</div>
+        {this.state.loading && <Loader />}
             </React.Fragment>
         );
 
