@@ -22,7 +22,7 @@ import { highlightCurrentNav } from '../../Utilities/HighlightCurrentComponent';
 import "../Shared/Menuhandler";
 import DatePicker from "../Shared/DatePickerField";
 import CustomDatePicker from "../Forms/DatePicker";
-import { addDays } from 'office-ui-fabric-react';
+import { FontSizes, addDays, sizeToPixels } from 'office-ui-fabric-react';
 
 
 
@@ -956,14 +956,21 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                   <ModalPopUp title={this.state.modalTitle} modalText={this.state.modalText} isVisible={this.state.showHideModal} onClose={this.handlefullClose} isSuccess={this.state.isSuccess}></ModalPopUp>
 <div className="container-fluid">
 		<div className="my-3 media-p-1 Billable Hours">
-            <div className="col-md-4 SynergyAddress">
-            <h1>Synergy Computer Solutions, Inc.</h1>
-            <h2>30700 Telegraph Rd.  Suite 2615</h2>
-            <h2>Bingham Farms, MI  48025</h2>
-            <h2>248.723.5100</h2>
+            <div className="col-md-12 SynergyAddress">
+            <h3>Synergy Computer Solutions, Inc.</h3>
+            <h6>30700 Telegraph Rd.  Suite 2615</h6>
+            <h6>Bingham Farms, MI  48025</h6>
+            <p>248.723.5100</p>
             </div>
-		<div className="col-md-4">
-			<div className="light-text">
+            <div className="row pt-2 px-2">
+            <div className="col-md-4">
+                <div className="light-text">
+                    <label>Name</label>
+                    <input className="form-control" required={true} placeholder="" name="Name" title="Name" value={this.currentUser} disabled={true} />
+                </div>
+            </div>
+            <div className="col-md-4">
+            <div className="light-text">
 				<label>Client Name <span className="mandatoryhastrick">*</span></label>
 				<select className="form-control" required={true} name="ClientName" title="ClientName" onChange={this.handleClientChange}  ref={this.Client} disabled={this.state.isSubmitted}>
 					<option value='None'>None</option>
@@ -971,12 +978,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
 						<option value={option} selected={this.state.trFormdata.ClientName != ''}>{option}</option>
 					))}
 				</select>
-			</div>
-            <div className="col-md-4">
-                <div className="light-text">
-                    <label>Name</label>
-                    <input className="form-control" required={true} placeholder="" name="Name" title="Name" value={this.currentUser} disabled={true} />
-                </div>
+			</div>			
             </div>
             <div className="col-md-4">
                         <div className="light-text div-readonly">
@@ -998,11 +1000,11 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                             </div>
                         </div>
             </div>
-		</div>
+        </div>
 			<div className="border-box-shadow light-box table-responsive dataTables_wrapper-overflow p-2">
-				<h4>Billable Hours</h4>
+				<h6>Billable Hours</h6>
 				<table className="table table-bordered m-0 timetable text-center">
-                                <thead style={{ borderTop: "8px solid #9E9D9E" }}>
+                                <thead style={{ borderBottom: "2px solid rgb(55 55 55)" }}>
                                     <tr>
                                         <th className="" ><div className="have-h"></div></th>
                                         <th className="">Description</th>
@@ -1154,7 +1156,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
 						</tr>
 						
 						<tr>
-							<td colSpan={13} className="text-start"><h4 className="my-2">NonBillable Hours</h4></td>
+							<td colSpan={13} className="text-start"><h6 className="my-2">NonBillable Hours</h6></td>
 						</tr>
 						<tr id="SynergyOfficeHrs">
 							<td className="text-start"><div className="p-2">Synergy Office Hours</div></td>
@@ -1306,22 +1308,22 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                 </div>
            
 			</div>
-			<div className="row">
+			<div className="row mx-1">
 				<div className="col-md-12"><hr></hr></div>
 				<div className="col-md-12 text-center mt-3">
-                    <button type="button" id="btnApprove" onClick={this.handleSubmit} hidden={!(this.state.isSubmitted)} className="SubmitButtons">Approve</button>
-                    <button type="button" id="btnReject" onClick={this.handleSubmit} hidden={!(this.state.isSubmitted)} className="CancelButtons">Reject</button>
-					<button type="button" id="btnSubmit" onClick={this.handleSubmit} hidden={this.state.isSubmitted} className="SubmitButtons">Submit</button>
-					<button type="button" id="btnSave" onClick={this.handleSubmit} hidden={this.state.isSubmitted} className="SaveButtons">Save</button>
+                    <button type="button" id="btnApprove" onClick={this.handleSubmit} hidden={!(this.state.isSubmitted)} className="SubmitButtons btn">Approve</button>
+                    <button type="button" id="btnReject" onClick={this.handleSubmit} hidden={!(this.state.isSubmitted)} className="CancelButtons btn">Reject</button>
+					<button type="button" id="btnSubmit" onClick={this.handleSubmit} hidden={this.state.isSubmitted} className="SubmitButtons btn">Submit</button>
+					<button type="button" id="btnSave" onClick={this.handleSubmit} hidden={this.state.isSubmitted} className="SaveButtons btn">Save</button>
                     <button type="button" id="btnCancel" className="CancelButtons">Cancel</button>
 				</div>
 			</div>
                         <div className="p-2">
-                         <h2>Comments History</h2>
+                         <h6>Comments History</h6>
                         </div>
                         <div>
                         <table className="table table-bordered m-0 timetable text-center">
-                                <thead style={{ borderTop: "8px solid #9E9D9E" }}>
+                                <thead style={{ borderBottom: "2px solid rgb(55 55 55)" }}>
                                     <tr>
                                         <th className="" >Action</th>
                                         <th className="" >Role</th>

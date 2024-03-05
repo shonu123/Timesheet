@@ -144,7 +144,7 @@
 .table th {
   border-top: 0!important;
   background: linear-gradient(rgb(228 228 228), rgb(191 191 191));
-  color: #572ba7;
+  color: #444444;
   font-size: .9rem;
   padding: .95rem .75rem;
 }
@@ -687,7 +687,8 @@ a{
   font-size: 14px;
 }
 label{
-  color: #572ba7;
+  /* color: #572ba7; */
+  color: #444444;
 }
 input.c-input-readonly {
   /* background-color: #f8f8f8; */
