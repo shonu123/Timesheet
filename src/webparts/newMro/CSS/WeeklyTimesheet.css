@@ -180,3 +180,14 @@
     table td input[type=text]{
      text-align: left;
     }
+    .clientName {
+        position: relative;
+        left: 25px;
+        width: 150px;
+    }
+
+    .div-readOnly {
+        position: relative;
+        left: 40px;
+        width: 150px;
+    }

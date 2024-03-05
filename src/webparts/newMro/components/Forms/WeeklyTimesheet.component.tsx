@@ -8,7 +8,7 @@ import TableGenerator from '../Shared/TableGenerator';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faClose, faL, faPlus,faPrint, fas} from "@fortawesome/free-solid-svg-icons";
 import { faEdit } from '@fortawesome/free-solid-svg-icons';
-import { NavLink } from 'react-router-dom';
+import { NavLink, Navigate } from 'react-router-dom';
 import { SPHttpClient } from '@microsoft/sp-http';
 import { WebPartContext } from '@microsoft/sp-webpart-base';
 import { sp } from '@pnp/sp';
@@ -22,7 +22,7 @@ import { highlightCurrentNav } from '../../Utilities/HighlightCurrentComponent';
 import "../Shared/Menuhandler";
 import DatePicker from "../Shared/DatePickerField";
 import CustomDatePicker from "../Forms/DatePicker";
-import { FontSizes, addDays, sizeToPixels } from 'office-ui-fabric-react';
+import { addDays } from 'office-ui-fabric-react';
 
 
 
@@ -68,6 +68,10 @@ export interface WeeklyTimesheetState {
     currentOTRowsCount:any,
     ItemID:any,
     userRole:string,
+    EmployeeEmail:any,
+    ReportingManagersEmail:any,
+    ReviewersEmail:any,
+    NotifiersEmail:any,
    
   
 
@@ -76,6 +80,7 @@ export interface WeeklyTimesheetState {
     errorMessage: string;
     loading: boolean;
     showHideModal: boolean;
+    redirect:boolean,
     modalText: string;
     modalTitle: string;
     isSuccess: boolean;
@@ -137,6 +142,10 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
             currentOTRowsCount:1,
             ItemID:0,
             userRole:"",
+            EmployeeEmail:[],
+            ReportingManagersEmail:[],
+            ReviewersEmail:[],
+            NotifiersEmail:[],
           
            
            
@@ -146,6 +155,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
             errorMessage: '',
             loading: false,
             showHideModal: false,
+            redirect:false,
             modalText: '',
             modalTitle: '',
             isSuccess: true,
@@ -155,7 +165,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
         this.oweb = Web(this.props.spContext.siteAbsoluteUrl);
          // for first row of weekly and OT hrs
          const trFormdata = { ...this.state.trFormdata };
-          let WeekStartDate=trFormdata.WeekStartDate;
+          let WeekStartDate=new Date(trFormdata.WeekStartDate);
          trFormdata.WeeklyItemsData.push({Description:'',ProjectCode:'',Mon: '00:00',Tue: '00:00',Wed:'00:00',Thu: '00:00',Fri: '00:00',Sat: '00:00',Sun: '00:00',Total: '00:00',});
          trFormdata.OTItemsData.push({Description:'',ProjectCode:'',Mon: '00:00',Tue: '00:00',Wed:'00:00',Thu: '00:00',Fri: '00:00',Sat: '00:00',Sun: '00:00',Total: '00:00',});
          trFormdata.BillableSubTotal.push({Mon: '00:00',Tue: '00:00',Wed:'00:00',Thu: '00:00',Fri: '00:00',Sat: '00:00',Sun: '00:00',Total: '00:00',});
@@ -183,16 +193,17 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
     //functions related to  initial loading
      private async loadWeeklyTimeSheetData() {
        
-        var ClientNames: any = await this.oweb.lists.getByTitle('EmployeeMaster').items.filter(" Employee/Id eq "+this.currentUserId).select("ClientName , Employee/Title,Employee/Id,ReportingManager/Id,Reviewers/Id,Notifiers/Id,ReportingManager/Title,Reviewers/Title,Notifiers/Title,*").orderBy("Employee/Title").expand("Employee,ReportingManager,Reviewers,Notifiers").getAll();
+        var ClientNames: any = await this.oweb.lists.getByTitle('EmployeeMaster').items.filter(" Employee/Id eq "+this.currentUserId).select("ClientName , Employee/Title,Employee/Id,Employee/EMail,ReportingManager/Id,Reviewers/Id,Notifiers/Id,ReportingManager/Title,Reviewers/Title,Notifiers/Title,ReportingManager/EMail,Reviewers/EMail,Notifiers/EMail,*").orderBy("Employee/Title").expand("Employee,ReportingManager,Reviewers,Notifiers").getAll();
         console.log(ClientNames);
+        this.state.EmployeeEmail.push(ClientNames[0].Employee.Title);
         ClientNames.filter(item => {
               this.state.ClientNames.push(item.ClientName);
               if(item.hasOwnProperty("ReportingManager"))
-              item.ReportingManager.map(i=>(this.state.SuperviserNames.push({"ClientName":item.ClientName,"ReportingManager":i.Title,"ReportingManagerId":i.Id})));
+              item.ReportingManager.map(i=>(this.state.SuperviserNames.push({"ClientName":item.ClientName,"ReportingManager":i.Title,"ReportingManagerId":i.Id,"ReportingManagerEmail":i.EMail})));
               if(item.hasOwnProperty("Reviewers"))
-              item.ReportingManager.map(i=>(this.state.Reviewers.push({"ClientName":item.ClientName,"ReviewerId":i.Id})));
+              item.Reviewers.map(i=>(this.state.Reviewers.push({"ClientName":item.ClientName,"ReviewerId":i.Id,"ReviewerEmail":i.EMail})));
               if(item.hasOwnProperty("Notifiers"))
-              item.ReportingManager.map(i=>(this.state.Notifiers.push({"ClientName":item.ClientName,"NotifierId":i.Id})));
+              item.Notifiers.map(i=>(this.state.Notifiers.push({"ClientName":item.ClientName,"NotifierId":i.Id,"NotifierEmail":i.EMail})));
 
         }); 
         let groups = await sp.web.currentUser.groups();
@@ -202,7 +213,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
         let userGroup = groups[0].Title
         let user = userGroup=='Timesheet Initiators' ?'Initiator': userGroup=='Timesheet Approvers'?'Approver':userGroup=='Timesheet Reviewers'?'Reviewer':'Administrator'
         console.log('You are :'+user)
-        this.setState({ClientNames: this.state.ClientNames,userRole : user})
+        this.setState({ClientNames: this.state.ClientNames,userRole : user,EmployeeEmail:this.state.EmployeeEmail})
         if(this.props.match.params.id != undefined){
             console.log(this.props.match.params.id)
             this.setState({ItemID : this.props.match.params.id})
@@ -212,8 +223,8 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
     }
     private async getItemData(){
         let filterQuery = "ID eq '"+this.state.ItemID+"'";
-        let selectQuery = "*";
-        let data = await sp.web.lists.getByTitle(this.listName).items.filter(filterQuery).select(selectQuery).get();
+        let selectQuery = "Initiator/EMail,Reviewers/EMail,ReportingManager/EMail,Notifiers/EMail,*";
+        let data = await sp.web.lists.getByTitle(this.listName).items.filter(filterQuery).select(selectQuery).expand("Initiator,Reviewers,ReportingManager,Notifiers").get();
         console.log(data);
         const trFormdata= this.state.trFormdata;
         trFormdata.ClientName=data[0].ClientName;
@@ -230,6 +241,14 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
         trFormdata.Status=data[0].Status;
         trFormdata.CommentsHistoryData=JSON.parse(data[0].CommentsHistory);
         trFormdata.SuperviserNames=JSON.parse(data[0].SuperviserName);
+        let EmpEmail=[];
+        let RMEmail=[];
+        let ReviewEmail=[];
+        let NotifyEmail=[];
+        EmpEmail.push(data[0].Initiator.EMail);   
+        data[0].ReportingManager.map(i=>(RMEmail.push(i.EMail)));      
+        data[0].Reviewers.map(i=>(ReviewEmail.push(i.EMail)));
+        data[0].Notifiers.map(i=>(NotifyEmail.push(i.EMail)));
         if( trFormdata.CommentsHistoryData==null)
         trFormdata.CommentsHistoryData=[];
         if([StatusType.Submit,StatusType.Approved,StatusType.InProgress].includes(data[0].Status))
@@ -241,7 +260,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
             this.setState({isSubmitted:false});
         }
     
-        this.setState({ trFormdata:trFormdata,currentWeeklyRowsCount:trFormdata.WeeklyItemsData.length,currentOTRowsCount: trFormdata.OTItemsData.length});
+        this.setState({ trFormdata:trFormdata,currentWeeklyRowsCount:trFormdata.WeeklyItemsData.length,currentOTRowsCount: trFormdata.OTItemsData.length,EmployeeEmail:EmpEmail,ReportingManagersEmail:RMEmail,ReviewersEmail:ReviewEmail,NotifiersEmail:NotifyEmail});
     }
 
     //functions related to calculation
@@ -272,6 +291,9 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
             Formdata.SuperviserIds=[];
             Formdata.ReviewerIds=[];
             Formdata.NotifierIds=[];
+            let RMEmail=[];
+            let ReviewEmail=[];
+            let NotifyEmail=[];
         console.log(this.state);
         for( var item of this.state.SuperviserNames)
         {
@@ -279,6 +301,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
             {
                 Formdata.SuperviserNames.push(item.ReportingManager);
                 Formdata.SuperviserIds.push(item.ReportingManagerId);
+                RMEmail.push(item.ReportingManagerEmail)
             }
         }
         for( var item of this.state.Reviewers)
@@ -286,6 +309,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
             if(item.ClientName.toLowerCase()==clientVal.toLowerCase())
             {
                 Formdata.ReviewerIds.push(item.ReviewerId);
+                ReviewEmail.push(item.ReviewerEmail)
             }
         }
         for( var item of this.state.Notifiers)
@@ -293,10 +317,11 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
             if(item.ClientName.toLowerCase()==clientVal.toLowerCase())
             {
                 Formdata.NotifierIds.push(item.NotifierId);
+                NotifyEmail.push(item.NotifierEmail);
             }
         }
         this.validateDuplicateRecord(Formdata.WeekStartDate,clientVal);
-        this.setState({trFormdata:Formdata});
+        this.setState({trFormdata:Formdata,ReportingManagersEmail:RMEmail,ReviewersEmail:ReviewEmail,NotifiersEmail:NotifyEmail});
      }
     private handleChange = (event) => {
         const formData = { ...this.state.trFormdata };
@@ -615,31 +640,31 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
             section.push(<tr id={rowId+(i+1)}>
                 <td> </td>
                 <td> 
-                    <input className="form-control" value={Obj[i].Description}  id={i+"_Description_"+rowType}  onChange={this.changeTime} type="text"></input>
+                    <textarea className="form-control" value={Obj[i].Description}  id={i+"_Description_"+rowType}  onChange={this.changeTime}  disabled={this.state.isSubmitted} ></textarea>
                 </td>
                 <td>      
-                    <input className="form-control" value={Obj[i].ProjectCode} id={i+"_ProjectCode_"+rowType} onChange={this.changeTime} type="text"></input>
+                    <input className="form-control" value={Obj[i].ProjectCode} id={i+"_ProjectCode_"+rowType} onChange={this.changeTime}  disabled={this.state.isSubmitted} type="text"></input>
                 </td>
                 <td>
-                    <input className="form-control time changerowPRJ1 Mon" value={Obj[i].Mon} id={i+"_Mon_"+rowType} onChange={this.changeTime} type="time"></input>
+                    <input className="form-control time changerowPRJ1 Mon" value={Obj[i].Mon} id={i+"_Mon_"+rowType} onChange={this.changeTime}  disabled={this.state.isSubmitted} type="time"></input>
                 </td>
                 <td>
-                    <input className="form-control time changerowPRJ1 Tue" value={Obj[i].Tue} id={i+"_Tue_"+rowType} onChange={this.changeTime} type="time"></input>
+                    <input className="form-control time changerowPRJ1 Tue" value={Obj[i].Tue} id={i+"_Tue_"+rowType} onChange={this.changeTime}  disabled={this.state.isSubmitted} type="time"></input>
                 </td>
                 <td>
-                    <input className="form-control time changerowPRJ1 Wed" value={Obj[i].Wed} id={i+"_Wed_"+rowType} onChange={this.changeTime} type="time"></input>
+                    <input className="form-control time changerowPRJ1 Wed" value={Obj[i].Wed} id={i+"_Wed_"+rowType} onChange={this.changeTime}  disabled={this.state.isSubmitted} type="time"></input>
                 </td>
                 <td>
-                    <input className="form-control time changerowPRJ1 Thu" value={Obj[i].Thu} id={i+"_Thu_"+rowType} onChange={this.changeTime} type="time"></input>
+                    <input className="form-control time changerowPRJ1 Thu" value={Obj[i].Thu} id={i+"_Thu_"+rowType} onChange={this.changeTime}  disabled={this.state.isSubmitted} type="time"></input>
                 </td>
                 <td>
-                    <input className="form-control time changerowPRJ1 Fri" value={Obj[i].Fri} id={i+"_Fri_"+rowType} onChange={this.changeTime} type="time"></input>
+                    <input className="form-control time changerowPRJ1 Fri" value={Obj[i].Fri} id={i+"_Fri_"+rowType} onChange={this.changeTime}  disabled={this.state.isSubmitted} type="time"></input>
                 </td>
                 <td>
-                    <input className="form-control time changerowPRJ1 Sat" value={Obj[i].Sat} id={i+"_Sat_"+rowType} onChange={this.changeTime} type="time"></input>
+                    <input className="form-control time changerowPRJ1 Sat" value={Obj[i].Sat} id={i+"_Sat_"+rowType} onChange={this.changeTime}  disabled={this.state.isSubmitted} type="time"></input>
                 </td>
                 <td>
-                    <input className="form-control time changerowPRJ1 Sun" value={Obj[i].Sun} id={i+"_Sun_"+rowType} onChange={this.changeTime} type="time"></input>
+                    <input className="form-control time changerowPRJ1 Sun" value={Obj[i].Sun} id={i+"_Sun_"+rowType} onChange={this.changeTime}  disabled={this.state.isSubmitted} type="time"></input>
                 </td>
                 <td>
                 {this.getOTBadge(rowType)}
@@ -649,7 +674,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                 </td>
                 <td>
                 {/* <span className="span-fa-close"><i className='fas fa-plus'></i></span> */}
-                <span className='span-fa-close' onClick={this.RemoveCurrentRow} id={i+"_"+rowType}><FontAwesomeIcon icon={faClose}></FontAwesomeIcon></span>
+                <span className='span-fa-close' onClick={this.RemoveCurrentRow} id={i+"_"+rowType}  hidden={this.state.isSubmitted}><FontAwesomeIcon icon={faClose}></FontAwesomeIcon></span>
                 </td>
             </tr>);
         }   
@@ -740,7 +765,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
        return body;
     }
     //functions related to CRUD operations
-   private handleSubmit = async (event) => {
+   private handleSubmitorSave = async (event) => {
         event.preventDefault();
         let btnId=event.target.id;
         let data = {
@@ -800,33 +825,21 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                 ReportingManagerId:{"results":formdata.SuperviserIds},
                 ReviewersId:{"results":formdata.ReviewerIds},
                 NotifiersId:{"results":formdata.NotifierIds}
-
             }
             switch(btnId.toLowerCase())
             {
                 case "btnsave":
                     formdata.CommentsHistoryData.push({"Action":StatusType.Save,"Role":this.state.userRole,"User":this.currentUser,"Comments":this.state.trFormdata.Comments,"Date":new Date()})
                     postObject['Status']=StatusType.Save;
-                    postObject['PendingWith']="";
-                   
+                    postObject['PendingWith']="NA";
                     break;
                 case "btnsubmit":
                     formdata.CommentsHistoryData.push({"Action":StatusType.Submit,"Role":this.state.userRole,"User":this.currentUser,"Comments":this.state.trFormdata.Comments,"Date":new Date()})
+                   
                     postObject['Status']=StatusType.Submit;
                     postObject['PendingWith']="Approver";
                     postObject['DateSubmitted']=new Date();
                     break;
-                case "btnapprove":
-                    formdata.CommentsHistoryData.push({"Action":StatusType.InProgress,"Role":this.state.userRole,"User":this.currentUser,"Comments":this.state.trFormdata.Comments,"Date":new Date()})
-                    postObject['Status']=StatusType.InProgress;
-                    postObject['PendingWith']="Reviewer";
-                    break;
-                case "btnreject":
-                    formdata.CommentsHistoryData.push({"Action":StatusType.Reject,"Role":this.state.userRole,"User":this.currentUser,"Comments":this.state.trFormdata.Comments,"Date":new Date()})
-                    postObject['Status']=StatusType.Reject;
-                    postObject['PendingWith']="";
-                    break;
-    
             }
                  postObject["CommentsHistory"]=JSON.stringify(formdata.CommentsHistoryData),
                 this.setState({errorMessage : '',trFormdata:formdata});
@@ -837,11 +850,106 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
             this.setState({ showLabel: true, errorMessage: isValid.message });
         }
     }
+    private handleApprove=async (event)=>
+    {
+        const formdata = { ...this.state.trFormdata };
+        var postObject={};
+        switch(formdata.Status)
+        {
+            case StatusType.Submit:
+                formdata.CommentsHistoryData.push({"Action":StatusType.InProgress,"Role":this.state.userRole,"User":this.currentUser,"Comments":this.state.trFormdata.Comments,"Date":new Date()})
+                postObject['Status']=StatusType.InProgress;
+                postObject['PendingWith']="Reviewer";
+                break;
+            case StatusType.InProgress:
+                formdata.CommentsHistoryData.push({"Action":StatusType.Approved,"Role":this.state.userRole,"User":this.currentUser,"Comments":this.state.trFormdata.Comments,"Date":new Date()})
+               
+                postObject['Status']=StatusType.Approved;
+                postObject['PendingWith']="NA";
+                break;
+        }
+             postObject["CommentsHistory"]=JSON.stringify(formdata.CommentsHistoryData),
+            this.setState({errorMessage : '',trFormdata:formdata});
+            this.InsertorUpdatedata(postObject);
+    }
+    private handleReject=async (event)=>
+    {
+        const formdata = { ...this.state.trFormdata };
+        var postObject={};
+       
+            formdata.CommentsHistoryData.push({"Action":StatusType.Reject,"Role":this.state.userRole,"User":this.currentUser,"Comments":this.state.trFormdata.Comments,"Date":new Date()})
+            postObject['Status']=StatusType.Reject;
+            postObject['PendingWith']="NA";
+            postObject["CommentsHistory"]=JSON.stringify(formdata.CommentsHistoryData),
+            this.setState({errorMessage : '',trFormdata:formdata});
+            this.InsertorUpdatedata(postObject);
+    }
     private InsertorUpdatedata(formdata) {
         this.setState({ loading: true });
+        
+        let tableContent = {'Name':formdata.Name,'Company':formdata.ClientName,'Submitted Date':`${formdata.DateSubmitted.getMonth() + 1}/${formdata.DateSubmitted.getDate()}/${formdata.DateSubmitted.getFullYear()}`,'Billable Hours':formdata.WeeklyItemsTotalTime,'OT Hours':formdata.OTItemsTotalTime,'Total Billable Hours':this.state.trFormdata.BillableSubTotal[0].Total,'Non-Billable  Hours':this.state.trFormdata.NonBillableSubTotal[0].Total,'Total Hours':this.state.trFormdata.Total[0].Total}
+
         if (this.state.ItemID!=0) { //update existing record
             sp.web.lists.getByTitle(this.listName).items.getById(this.state.ItemID).update(formdata).then((res) => {
                 alert("Weekly Time Sheet updated successfully");
+                let sub='';
+                let emaildetails={};
+                let CC=[];
+               if(StatusType.Submit==formdata.Status)
+               {
+                    sub="Weekly Time Sheet has been "+formdata.Status+"."
+                    emaildetails ={toemail:this.state.ReportingManagersEmail,ccemail:this.state.EmployeeEmail,subject:sub,bodyString:sub,body:'' };
+                    emaildetails['body'] = this.emailBodyPreparation(this.siteURL+'/SitePages/TimeSheet.aspx#/WeeklyTimesheet/'+this.state.ItemID,tableContent,emaildetails['bodyString'],this.props.spContext.userDisplayName);
+                    this.sendemail(emaildetails);
+               }
+               else if(StatusType.InProgress==formdata.Status)
+               {
+                    sub="Weekly Time Sheet has been  Approved by Reporting Manager."
+                     CC=this.state.EmployeeEmail;
+                    for(const mail of this.state.ReportingManagersEmail)
+                    {
+                        CC.push(mail);
+                    }
+                    emaildetails ={toemail:this.state.ReviewersEmail,ccemail:CC,subject:sub,bodyString:sub,body:'' };
+                    emaildetails['body'] = this.emailBodyPreparation(this.siteURL+'/SitePages/TimeSheet.aspx#/WeeklyTimesheet/'+this.state.ItemID,tableContent,emaildetails['bodyString'],this.props.spContext.userDisplayName);
+                    this.sendemail(emaildetails);
+               }
+               else if(StatusType.Approved==formdata.Status)
+               {
+                    sub="Weekly Time Sheet has been Approved by Reviewer."
+                    CC=this.state.EmployeeEmail;
+                    for(const mail of this.state.ReportingManagersEmail)
+                    {
+                        CC.push(mail);
+                    }
+                    for(const mail of this.state.ReviewersEmail)
+                    {
+                        CC.push(mail);
+                    }
+                    emaildetails ={toemail:this.state.NotifiersEmail,ccemail:CC,subject:sub,bodyString:sub,body:'' };
+                    emaildetails['body'] = this.emailBodyPreparation(this.siteURL+'/SitePages/TimeSheet.aspx#/WeeklyTimesheet/'+this.state.ItemID,tableContent,emaildetails['bodyString'],this.props.spContext.userDisplayName);
+                    this.sendemail(emaildetails);
+               }
+               else if(StatusType.Reject==formdata.Status)
+               {
+                sub="Weekly Time Sheet has been Rejected By "+this.state.userRole+". Please re-submit with necessary details."
+                        CC=this.state.EmployeeEmail;
+                       for(const mail of this.state.ReportingManagersEmail)
+                       {
+                           CC.push(mail);
+                       }
+                       for(const mail of this.state.ReviewersEmail)
+                       {
+                           CC.push(mail);
+                       }
+                    //    for(const mail of this.state.NotifiersEmail)
+                    //    {
+                    //        CC.push(mail);
+                    //    }
+                       emaildetails ={toemail:this.state.EmployeeEmail,ccemail:CC,subject:sub,bodyString:sub,body:'' };
+                       emaildetails['body'] = this.emailBodyPreparation(this.siteURL+'/SitePages/TimeSheet.aspx#/WeeklyTimesheet/'+this.state.ItemID,tableContent,emaildetails['bodyString'],this.props.spContext.userDisplayName);
+                       this.sendemail(emaildetails);
+               } 
                 this.setState({ loading: false });
             }, (error) => {
                 alert("Something Went Wrong ,While updating");
@@ -866,6 +974,45 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
             }
 
         }
+    }
+    private emailBodyPreparation(redirectURL, tableContent, bodyString, userName) {
+        var emailLink = "Please <a href=" + redirectURL + ">click here</a> to review the details.";
+        var emailBody = '<table id="email-container" border="0" cellpadding="0" cellspacing="0" style="margin: 0; padding: 0; text-align: left;" width="100%">' +
+            '<tr valign="top"><td colspan="2"><div id="email-to">Dear Sir/Madam,</br></div></td></tr>';
+        emailBody += '<tr valign="top"><td colspan="2" style="padding-top: 10px;">' + bodyString + '</td></tr>';
+        var i = 0;
+        for (var key in tableContent) {        
+            if (i === 0)
+                emailBody += "<tr><td></br></td></tr>";
+            var tdValue = tableContent[key];
+            emailBody += '<tr valign="top"> <td>' + key + '</td><td>: ' + tdValue + '</td></tr>';
+            i++;
+        }
+        emailBody += '<tr valign="top"> <td colspan="2" style="padding-top: 10px;"></br>' + emailLink + '</td></tr>';
+        emailBody += '<tr valign="top"><td colspan="2"></br><p style="margin-bottom: 0;">Regards,</p><div style="margin-top: 5px;" id="email-from">' + userName + '</div>';
+        emailBody += '</td></tr></table>';
+        return emailBody;
+    }
+    private sendemail(emaildetails){
+        sp.utility.sendEmail({
+            //Body of Email  
+            Body: emaildetails.body,  
+            //Subject of Email  
+            Subject: emaildetails.subject,  
+            //Array of string for To of Email  
+            To: emaildetails.toemail,  
+            CC: emaildetails.ccemail
+          }).then((i) => {  
+            alert("Record Updated Sucessfully");
+            this.setState({showHideModal : false,ItemID:0,errorMessage:'',loading: false});
+            this.setState({redirect : true});
+           
+          }).catch((i) => {
+            alert("Error while updating the record");
+            this.setState({showHideModal : false,ItemID:0,errorMessage:'',loading: false});
+            this.setState({redirect : true});
+            console.log(i)
+          });  
     }
     private async validateDuplicateRecord(date,ClientName) {
         let prevDate = addDays(new Date(date), -1);
@@ -898,6 +1045,15 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                 trFormdata.Status=ExistRecordData[0].Status;
                 trFormdata.CommentsHistoryData=JSON.parse(ExistRecordData[0].CommentsHistory);
                 trFormdata.SuperviserNames=JSON.parse(ExistRecordData[0].SuperviserName);
+
+                let EmpEmail=[];
+                let RMEmail=[];
+                let ReviewEmail=[];
+                let NotifyEmail=[];
+                EmpEmail.push(ExistRecordData[0].Initiator.EMail);   
+                ExistRecordData[0].ReportingManager.map(i=>(RMEmail.push(i.EMail)));      
+                ExistRecordData[0].Reviewers.map(i=>(ReviewEmail.push(i.EMail)));
+                ExistRecordData[0].Notifiers.map(i=>(NotifyEmail.push(i.EMail)));
                 if( trFormdata.CommentsHistoryData==null)
                 trFormdata.CommentsHistoryData=[];
                 if([StatusType.Submit,StatusType.Approved,StatusType.InProgress].includes(ExistRecordData[0].Status))
@@ -910,7 +1066,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                 }
             
                
-                this.setState({ trFormdata:trFormdata,currentWeeklyRowsCount:trFormdata.WeeklyItemsData.length,currentOTRowsCount: trFormdata.OTItemsData.length,ItemID:ExistRecordData[0].ID});
+                this.setState({ trFormdata:trFormdata,currentWeeklyRowsCount:trFormdata.WeeklyItemsData.length,currentOTRowsCount: trFormdata.OTItemsData.length,ItemID:ExistRecordData[0].ID,EmployeeEmail:EmpEmail,ReportingManagersEmail:RMEmail,ReviewersEmail:ReviewEmail,NotifiersEmail:NotifyEmail});
             }
            
           
@@ -950,400 +1106,402 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
     }
 
     public render() {
-        return (
 
-            <React.Fragment>
-                  <ModalPopUp title={this.state.modalTitle} modalText={this.state.modalText} isVisible={this.state.showHideModal} onClose={this.handlefullClose} isSuccess={this.state.isSuccess}></ModalPopUp>
-<div className="container-fluid">
-		<div className="my-3 media-p-1 Billable Hours">
-            <div className="col-md-12 SynergyAddress">
-            <h3>Synergy Computer Solutions, Inc.</h3>
-            <h6>30700 Telegraph Rd.  Suite 2615</h6>
-            <h6>Bingham Farms, MI  48025</h6>
-            <p>248.723.5100</p>
-            </div>
-            <div className="row pt-2 px-2">
-            <div className="col-md-4">
-                <div className="light-text">
-                    <label>Name</label>
-                    <input className="form-control" required={true} placeholder="" name="Name" title="Name" value={this.currentUser} disabled={true} />
+        if (this.state.redirect) {
+            let url = `/`
+            return (<Navigate to={url} />);
+        }
+        else{
+            return (
+
+                <React.Fragment>
+                      <ModalPopUp title={this.state.modalTitle} modalText={this.state.modalText} isVisible={this.state.showHideModal} onClose={this.handlefullClose} isSuccess={this.state.isSuccess}></ModalPopUp>
+    <div className="container-fluid">
+            <div className="my-3 media-p-1 Billable Hours">
+                <div className="col-md-4 SynergyAddress">
+                <h3>Synergy Computer Solutions, Inc.</h3>
+                <h6>30700 Telegraph Rd.  Suite 2615</h6>
+                <h6>Bingham Farms, MI  48025</h6>
+                <p>248.723.5100  Fax: 248.723.5372</p>
                 </div>
-            </div>
             <div className="col-md-4">
-            <div className="light-text">
-				<label>Client Name <span className="mandatoryhastrick">*</span></label>
-				<select className="form-control" required={true} name="ClientName" title="ClientName" onChange={this.handleClientChange}  ref={this.Client} disabled={this.state.isSubmitted}>
-					<option value='None'>None</option>
-					{this.state.ClientNames.map((option) => (
-						<option value={option} selected={this.state.trFormdata.ClientName != ''}>{option}</option>
-					))}
-				</select>
-			</div>			
-            </div>
-            <div className="col-md-4">
-                        <div className="light-text div-readonly">
-                            <label className="z-in-9">Weekly Start Date</label>
-                            <div className="custom-datepicker" id="divWeekStartDate">
-                            {/* <DatePicker 
-                                onDatechange={this.WeekStartDateChange} 
-                                selectedDate={this.state.trFormdata.WeekStartDate} 
-                                name="WeeklyStartDate" 
-                                id="txtWeekStartDate"
-                                filterData={this.isDisabled}
-                                disabled={this.state.isSubmitted}
-                                 
-                                /> */}
-                                <CustomDatePicker 
-                                handleChange={this.WeekStartDateChange}
-                                selectedDate={this.state.trFormdata.WeekStartDate}
-                                />
-                            </div>
-                        </div>
-            </div>
-        </div>
-			<div className="border-box-shadow light-box table-responsive dataTables_wrapper-overflow p-2">
-				<h6>Billable Hours</h6>
-				<table className="table table-bordered m-0 timetable text-center">
-                                <thead style={{ borderBottom: "2px solid rgb(55 55 55)" }}>
-                                    <tr>
-                                        <th className="" ><div className="have-h"></div></th>
-                                        <th className="">Description</th>
-                                        <th className="">Project Code</th>
-                                        <th>Mon <span className="day">{this.WeekHeadings[0].Mon}</span></th>
-                                        <th>Tue <span className="day">{this.WeekHeadings[0].Tue}</span></th>
-                                        <th>Wed <span className="day">{this.WeekHeadings[0].Wed}</span></th>
-                                        <th>Thu <span className="day">{this.WeekHeadings[0].Thu}</span></th>
-                                        <th>Fri <span className="day">{this.WeekHeadings[0].Fri}</span></th>
-                                        <th className="color-FF9800">Sat <span className="day color-FF9800">{this.WeekHeadings[0].Sat}</span></th>
-                                        <th className="color-FF9800">Sun <span className="day color-FF9800">{this.WeekHeadings[0].Sun}</span></th>
-                                        <th><div className="px-2"></div></th>
-                                        <th className="bc-e1f2ff">Total</th>
-                                        <th className=""><div className="px-3"></div></th>
-                                    </tr>
-                                </thead>
-					<tbody>
-						
-						<tr id="rowPRJ1">
-							<td> </td>
-							<td> 
-								<input className="form-control" value={this.state.trFormdata.WeeklyItemsData[0].Description} id="0_Description_weekrow" onChange={this.changeTime}  disabled={this.state.isSubmitted}  type="text"></input>
-							</td>
-							<td>      
-								<input className="form-control" value={this.state.trFormdata.WeeklyItemsData[0].ProjectCode} id="0_ProjectCode_weekrow" onChange={this.changeTime}  disabled={this.state.isSubmitted} type="text"></input>
-							</td>
-							<td>
-								<input className="form-control time changerowPRJ1 Mon"  value={this.state.trFormdata.WeeklyItemsData[0].Mon} id="0_Mon_weekrow"  onChange={this.changeTime}  disabled={this.state.isSubmitted} type="time"></input>
-							</td>
-							<td>
-								<input className="form-control time changerowPRJ1 Tue" value={this.state.trFormdata.WeeklyItemsData[0].Tue} id="0_Tue_weekrow"  onChange={this.changeTime}  disabled={this.state.isSubmitted} type="time"></input>
-							</td>
-							<td>
-								<input className="form-control time changerowPRJ1 Wed" value={this.state.trFormdata.WeeklyItemsData[0].Wed} id="0_Wed_weekrow"  onChange={this.changeTime}  disabled={this.state.isSubmitted} type="time"></input>
-							</td>
-							<td>
-								<input className="form-control time changerowPRJ1 Thu" value={this.state.trFormdata.WeeklyItemsData[0].Thu} id="0_Thu_weekrow" onChange={this.changeTime}  disabled={this.state.isSubmitted} type="time"></input>
-							</td>
-							<td>
-								<input className="form-control time changerowPRJ1 Fri" value={this.state.trFormdata.WeeklyItemsData[0].Fri} id="0_Fri_weekrow" onChange={this.changeTime}  disabled={this.state.isSubmitted} type="time"></input>
-							</td>
-							<td>
-								<input className="form-control time changerowPRJ1 Sat" value={this.state.trFormdata.WeeklyItemsData[0].Sat} id="0_Sat_weekrow" onChange={this.changeTime}  disabled={this.state.isSubmitted} type="time"></input>
-							</td>
-							<td>
-								<input className="form-control time changerowPRJ1 Sun" value={this.state.trFormdata.WeeklyItemsData[0].Sun} id="0_Sun_weekrow" onChange={this.changeTime}  disabled={this.state.isSubmitted} type="time"></input>
-							</td>
-							<td>
-								
-							</td>
-							<td>
-								<input className="form-control time Total"  value={this.state.trFormdata.WeeklyItemsData[0].Total} id="0_Total_weekrow" onChange={this.changeTime} type="text" disabled></input>
-							</td>
-							<td>
-                            {/* <span  onClick={this.CreateWeeklyHrsRow} className="add-button" hidden={false} ><FontAwesomeIcon icon={faPlus}></FontAwesomeIcon></span> */}
-                            {/* <span className="span-fa-plus" onClick={this.CreateWeeklyHrsRow} ><i className='fas fa-plus'></i></span> */}
-                            <span className='span-fa-plus' onClick={this.CreateWeeklyHrsRow} id='addnewRow'><FontAwesomeIcon icon={faPlus}></FontAwesomeIcon></span>
-							</td>
-						</tr>
-                        {this.dynamicFieldsRow("weekrow")}
-						<tr id="rowOVR1" className="font-td-bold">
-							<td className=" text-start"> 
-								<div className="p-2">
-									<i className="fas fa-user-clock color-gray"></i> Overtime
-								</div>
-							</td>
-							<td>
-                                <input className="form-control time" value={this.state.trFormdata.OTItemsData[0].Description} id="0_Description_otrow" onChange={this.changeTime}  disabled={this.state.isSubmitted} type="text"></input>
-                            </td>
-							<td>
-                                <input className="form-control time" value={this.state.trFormdata.OTItemsData[0].ProjectCode}  id="0_ProjectCode_otrow"  onChange={this.changeTime}  disabled={this.state.isSubmitted} type="text"></input>
-                            </td>
-							<td>
-								<input className="form-control time changerowOVR1 Mon" value={this.state.trFormdata.OTItemsData[0].Mon} id="0_Mon_otrow" onChange={this.changeTime}  disabled={this.state.isSubmitted} type="time"></input>
-							</td>
-							<td>
-								<input className="form-control time changerowOVR1 Tue" value={this.state.trFormdata.OTItemsData[0].Tue} id="0_Tue_otrow" onChange={this.changeTime}  disabled={this.state.isSubmitted} type="time"></input>
-							</td>
-							<td>
-								<input className="form-control time changerowOVR1 Wed" value={this.state.trFormdata.OTItemsData[0].Wed} id="0_Wed_otrow" onChange={this.changeTime}  disabled={this.state.isSubmitted} type="time"></input>
-							</td>
-							<td>
-								<input className="form-control time changerowOVR1 Thu" value={this.state.trFormdata.OTItemsData[0].Thu} id="0_Thu_otrow" onChange={this.changeTime}  disabled={this.state.isSubmitted} type="time"></input>
-							</td>
-							<td>
-								<input className="form-control time changerowOVR1 Fri" value={this.state.trFormdata.OTItemsData[0].Fri} id="0_Fri_otrow" onChange={this.changeTime}  disabled={this.state.isSubmitted} type="time"></input>
-							</td>
-							<td>
-								<input className="form-control time changerowOVR1 Sat" value={this.state.trFormdata.OTItemsData[0].Sat} id="0_Sat_otrow" onChange={this.changeTime}  disabled={this.state.isSubmitted} type="time"></input>
-							</td>
-							<td>
-								<input className="form-control time changerowOVR1 Sun" value={this.state.trFormdata.OTItemsData[0].Sun} id="0_Sun_otrow" onChange={this.changeTime}  disabled={this.state.isSubmitted} type="time"></input>
-							</td>
-							<td>
-								<span className="c-badge">OT</span>
-							</td>
-							<td>
-								<input className="form-control time" value={this.state.trFormdata.OTItemsData[0].Total} id="0_Total_otrow" onChange={this.changeTime} type="text" disabled></input>
-							</td>
-							<td>
-                            {/* <span  onClick={this.CreateOTHrsRow}  className="add-button" hidden={false} ><FontAwesomeIcon icon={faPlus}></FontAwesomeIcon></span> */}
-                            {/* <span className="span-fa-plus" onClick={this.CreateOTHrsRow} ><i className='fas fa-plus'></i></span> */}
-                            <span className='span-fa-plus'   onClick={this.CreateOTHrsRow} id=''><FontAwesomeIcon icon={faPlus}></FontAwesomeIcon></span>
-							</td>
-						</tr>
-                        {this.dynamicFieldsRow("otrow")}
-						<tr className="font-td-bold" id="BillableTotal">
-							<td className="fw-bold text-start"> 
-								<div className="p-2">
-									<i className="fas fa-business-time color-gray"></i> Billable Subtotal
-								</div>
-							</td>
-							<td>
-                               
-                            </td>
-							<td>
-                                
-                            </td>
-							<td>
-								<input className="form-control time" id="BillableTotalMon" value={this.state.trFormdata.BillableSubTotal[0].Mon} type="text" disabled></input>
-							</td>
-							<td>
-								<input className="form-control time" id="BillableTotalTue" value={this.state.trFormdata.BillableSubTotal[0].Tue} type="text" disabled></input>
-							</td>
-							<td>
-								<input className="form-control time" id="BillableTotalWed" value={this.state.trFormdata.BillableSubTotal[0].Wed} type="text" disabled></input>
-							</td>
-							<td>
-								<input className="form-control time" id="BillableTotalThu" value={this.state.trFormdata.BillableSubTotal[0].Thu} type="text" disabled></input>
-							</td>
-							<td>
-								<input className="form-control time" id="BillableTotalFri" value={this.state.trFormdata.BillableSubTotal[0].Fri} type="text" disabled></input>
-							</td>
-							<td>
-								<input className="form-control time" id="BillableTotalSat" value={this.state.trFormdata.BillableSubTotal[0].Sat} type="text" disabled></input>
-							</td>
-							<td>
-								<input className="form-control time" id="BillableTotalSat" value={this.state.trFormdata.BillableSubTotal[0].Sun} type="text" disabled></input>
-							</td>
-							<td>
-								<span className="c-badge">BS</span>
-							</td>
-							<td>
-								<input className="form-control time" id="BillableTotal" value={this.state.trFormdata.BillableSubTotal[0].Total}  type="text" disabled></input>
-							</td>
-							<td>
-								
-							</td>
-						</tr>
-						
-						<tr>
-							<td colSpan={13} className="text-start"><h6 className="my-2">NonBillable Hours</h6></td>
-						</tr>
-						<tr id="SynergyOfficeHrs">
-							<td className="text-start"><div className="p-2">Synergy Office Hours</div></td>
-							<td><input className="form-control time" value={this.state.trFormdata.SynergyOfficeHrs[0].Description} onChange={this.changeTime} id="0_Description_SynOffcHrs"  disabled={this.state.isSubmitted} type="text"></input></td>
-							<td><input className="form-control time" value={this.state.trFormdata.SynergyOfficeHrs[0].ProjectCode} onChange={this.changeTime} id="0_ProjectCode_SynOffcHrs"  disabled={this.state.isSubmitted} type="text"></input></td>
-							<td><input className="form-control time" value={this.state.trFormdata.SynergyOfficeHrs[0].Mon} onChange={this.changeTime} id="0_Mon_SynOffcHrs"  disabled={this.state.isSubmitted} type="time"></input></td>
-							<td><input className="form-control time" value={this.state.trFormdata.SynergyOfficeHrs[0].Tue} onChange={this.changeTime} id="0_Tue_SynOffcHrs"  disabled={this.state.isSubmitted} type="time"></input></td>
-							<td><input className="form-control time" value={this.state.trFormdata.SynergyOfficeHrs[0].Wed} onChange={this.changeTime} id="0_Wed_SynOffcHrs"  disabled={this.state.isSubmitted} type="time"></input></td>
-							<td><input className="form-control time" value={this.state.trFormdata.SynergyOfficeHrs[0].Thu} onChange={this.changeTime} id="0_Thu_SynOffcHrs"  disabled={this.state.isSubmitted} type="time"></input></td>
-							<td><input className="form-control time" value={this.state.trFormdata.SynergyOfficeHrs[0].Fri} onChange={this.changeTime} id="0_Fri_SynOffcHrs"  disabled={this.state.isSubmitted} type="time"></input></td>
-							<td><input className="form-control time" value={this.state.trFormdata.SynergyOfficeHrs[0].Sat} onChange={this.changeTime} id="0_Sat_SynOffcHrs"  disabled={this.state.isSubmitted} type="time"></input></td>
-							<td><input className="form-control time" value={this.state.trFormdata.SynergyOfficeHrs[0].Sun} onChange={this.changeTime} id="0_Sun_SynOffcHrs"  disabled={this.state.isSubmitted} type="time"></input></td>
-							<td><span className="c-badge">O</span></td>
-							<td><input className="form-control time" value={this.state.trFormdata.SynergyOfficeHrs[0].Total} onChange={this.changeTime} id="0_Total_SynOffcHrs" type="text" disabled></input></td>
-							<td></td>
-						</tr>
-						<tr id="SynergyHolidayHrs">
-							<td className="text-start"><div className="p-2">Synergy Holiday</div></td>
-							<td><input className="form-control time" value={this.state.trFormdata.SynergyHolidayHrs[0].Description} onChange={this.changeTime} id="0_Description_SynHldHrs"  disabled={this.state.isSubmitted} type="text"></input></td>
-							<td><input className="form-control time" value={this.state.trFormdata.SynergyHolidayHrs[0].ProjectCode} onChange={this.changeTime} id="0_ProjectCode_SynHldHrs"  disabled={this.state.isSubmitted} type="text"></input></td>
-							<td><input className="form-control time" value={this.state.trFormdata.SynergyHolidayHrs[0].Mon} onChange={this.changeTime} id="0_Mon_SynHldHrs"  disabled={this.state.isSubmitted} type="time"></input></td>
-							<td><input className="form-control time" value={this.state.trFormdata.SynergyHolidayHrs[0].Tue} onChange={this.changeTime} id="0_Tue_SynHldHrs"  disabled={this.state.isSubmitted} type="time"></input></td>
-							<td><input className="form-control time" value={this.state.trFormdata.SynergyHolidayHrs[0].Wed} onChange={this.changeTime} id="0_Wed_SynHldHrs"  disabled={this.state.isSubmitted} type="time"></input></td>
-							<td><input className="form-control time" value={this.state.trFormdata.SynergyHolidayHrs[0].Thu} onChange={this.changeTime} id="0_Thu_SynHldHrs"  disabled={this.state.isSubmitted} type="time"></input></td>
-							<td><input className="form-control time" value={this.state.trFormdata.SynergyHolidayHrs[0].Fri} onChange={this.changeTime} id="0_Fri_SynHldHrs"  disabled={this.state.isSubmitted} type="time"></input></td>
-							<td><input className="form-control time" value={this.state.trFormdata.SynergyHolidayHrs[0].Sat} onChange={this.changeTime} id="0_Sat_SynHldHrs"  disabled={this.state.isSubmitted} type="time"></input></td>
-							<td><input className="form-control time" value={this.state.trFormdata.SynergyHolidayHrs[0].Sun} onChange={this.changeTime} id="0_Sun_SynHldHrs"  disabled={this.state.isSubmitted} type="time"></input></td>
-							<td><span className="c-badge">H</span></td>
-							<td><input className="form-control time" value={this.state.trFormdata.SynergyHolidayHrs[0].Total} onChange={this.changeTime} id="0_Total_SynHldHrs" type="text" disabled></input></td>
-							<td></td>
-						</tr>
-						<tr id="PTOHrs">
-							<td className="text-start"><div className="p-2">PTO (Paid Time Off)</div></td>
-							<td><input className="form-control time" value={this.state.trFormdata.PTOHrs[0].Description} onChange={this.changeTime} id="0_Description_PTOHrs"  disabled={this.state.isSubmitted} type="text"></input></td>
-							<td><input className="form-control time" value={this.state.trFormdata.PTOHrs[0].ProjectCode} onChange={this.changeTime} id="0_ProjectCode_PTOHrs"  disabled={this.state.isSubmitted} type="text"></input></td>
-							<td><input className="form-control time" value={this.state.trFormdata.PTOHrs[0].Mon} onChange={this.changeTime} id="0_Mon_PTOHrs"  disabled={this.state.isSubmitted} type="time"></input></td>
-							<td><input className="form-control time" value={this.state.trFormdata.PTOHrs[0].Tue} onChange={this.changeTime} id="0_Tue_PTOHrs"  disabled={this.state.isSubmitted} type="time"></input></td>
-							<td><input className="form-control time" value={this.state.trFormdata.PTOHrs[0].Wed} onChange={this.changeTime} id="0_Wed_PTOHrs"  disabled={this.state.isSubmitted} type="time"></input></td>
-							<td><input className="form-control time" value={this.state.trFormdata.PTOHrs[0].Thu} onChange={this.changeTime} id="0_Thu_PTOHrs"  disabled={this.state.isSubmitted} type="time"></input></td>
-							<td><input className="form-control time" value={this.state.trFormdata.PTOHrs[0].Fri} onChange={this.changeTime} id="0_Fri_PTOHrs"  disabled={this.state.isSubmitted} type="time"></input></td>
-							<td><input className="form-control time" value={this.state.trFormdata.PTOHrs[0].Sat} onChange={this.changeTime} id="0_Sat_PTOHrs"  disabled={this.state.isSubmitted} type="time"></input></td>
-							<td><input className="form-control time" value={this.state.trFormdata.PTOHrs[0].Sun} onChange={this.changeTime} id="0_Sun_PTOHrs"  disabled={this.state.isSubmitted} type="time"></input></td>
-							<td><span className="c-badge">PTO</span></td>
-							<td><input className="form-control time" value={this.state.trFormdata.PTOHrs[0].Total} onChange={this.changeTime} id="0_Total_PTOHrs" type="text" disabled></input></td>
-							<td></td>
-						</tr>
-
-						<tr className="font-td-bold" id="NonBillableTotal">
-							<td className="fw-bold text-start"> 
-								<div className="p-2">
-									<i className="fas fa-business-time color-gray"></i> NonBillable Subtotal
-								</div>
-							</td>
-							<td></td>
-							<td></td>
-							<td>
-								<input className="form-control time" value={this.state.trFormdata.NonBillableSubTotal[0].Mon} type="text" disabled></input>
-							</td>
-							<td>
-								<input className="form-control time" value={this.state.trFormdata.NonBillableSubTotal[0].Tue} type="text" disabled></input>
-							</td>
-							<td>
-								<input className="form-control time" value={this.state.trFormdata.NonBillableSubTotal[0].Wed} type="text" disabled></input>
-							</td>
-							<td>
-								<input className="form-control time" value={this.state.trFormdata.NonBillableSubTotal[0].Thu} type="text" disabled></input>
-							</td>
-							<td>
-								<input className="form-control time" value={this.state.trFormdata.NonBillableSubTotal[0].Fri} type="text" disabled></input>
-							</td>
-							<td>
-								<input className="form-control time" value={this.state.trFormdata.NonBillableSubTotal[0].Sat} type="text" disabled></input>
-							</td>
-							<td>
-								<input className="form-control time" value={this.state.trFormdata.NonBillableSubTotal[0].Sun} type="text" disabled></input>
-							</td>
-							<td><span className="c-badge">NS</span></td>
-							<td>
-								<input className="form-control time" value={this.state.trFormdata.NonBillableSubTotal[0].Total} type="text" disabled></input>
-							</td>
-							<td>
-								
-							</td>
-						</tr>
-						<tr className="font-td-bold" id="GrandTotal">
-							<td className="fw-bold text-start"> 
-								<div className="p-2">
-									<i className="fas fa-business-time color-gray"></i> Total
-								</div>
-							</td>
-							<td></td>
-							<td></td>
-							<td>
-								<input className="form-control time" value={this.state.trFormdata.Total[0].Mon} type="text" disabled></input>
-							</td>
-							<td>
-								<input className="form-control time" value={this.state.trFormdata.Total[0].Tue} type="text" disabled></input>
-							</td>
-							<td>
-								<input className="form-control time" value={this.state.trFormdata.Total[0].Wed} type="text" disabled></input>
-							</td>
-							<td>
-								<input className="form-control time" value={this.state.trFormdata.Total[0].Thu} type="text" disabled></input>
-							</td>
-							<td>
-								<input className="form-control time" value={this.state.trFormdata.Total[0].Fri} type="text" disabled></input>
-							</td>
-							<td>
-								<input className="form-control time" value={this.state.trFormdata.Total[0].Sat} type="text" disabled></input>
-							</td>
-							<td>
-								<input className="form-control time" value={this.state.trFormdata.Total[0].Sun} type="text" disabled></input>
-							</td>
-							<td><span className="c-badge">T</span></td>
-							<td>
-								<input className="form-control time" value={this.state.trFormdata.Total[0].Total} type="text" disabled></input>
-							</td>
-							<td>
-								
-							</td>
-						</tr>
-					</tbody>
-				</table>
-                <div className="light-box border-box-shadow m-1 p-2 pt-3">
-                                            <div className="media-px-12">
-
-                                                <div className="light-text height-auto">
-                                                    <label className="floatingTextarea2 top-11">Comments </label>
-                                                    <textarea className="position-static form-control requiredinput" onChange={this.handleChange} value={this.state.trFormdata.Comments} placeholder="" maxLength={500} id="txtComments" name="Comments"  disabled={false}></textarea>
-                                                </div>
-                                            </div>
+                <div className="light-text clientName">
+                    <label>Client Name <span className="mandatoryhastrick">*</span></label>
+                    <select className="form-control" required={true} name="ClientName" title="ClientName" onChange={this.handleClientChange}  ref={this.Client} disabled={this.state.isSubmitted}>
+                        <option value='None'>None</option>
+                        {this.state.ClientNames.map((option) => (
+                            <option value={option} selected={this.state.trFormdata.ClientName != ''}>{option}</option>
+                        ))}
+                    </select>
                 </div>
-                <div className="col-md-6">
-                        <div className="light-text div-readonly col-md-3">
-                            <label className="z-in-9">Date Submitted</label>
-                                <input className="form-control"  name="Name" title="DateSubmitted" value={(this.state.trFormdata.DateSubmitted.getMonth()+1)+"/"+this.state.trFormdata.DateSubmitted.getDate()+"/"+this.state.trFormdata.DateSubmitted.getFullYear()}  disabled={true} />
-                        </div>
-                        <div className="light-text div-readonly col-md-3">
-                            <label>Superviser Names</label>
+                <div className="col-md-4">
+                    <div className="light-text">
+                        <label>Name</label>
+                        <input className="form-control" required={true} placeholder="" name="Name" title="Name" value={this.currentUser} disabled={true} />
+                    </div>
+                </div>
+                <div className="col-md-4">
                             <div className="light-text div-readonly">
-                                <div className="" id="SuperviserNames">
-                                    {this.state.trFormdata.SuperviserNames.map((option) => (
-                                        <label>{option}</label>
-                                    ))}
+                                <label className="z-in-9">Weekly Start Date</label>
+                                <div className="custom-datepicker" id="divWeekStartDate">
+                                {/* <DatePicker 
+                                    onDatechange={this.WeekStartDateChange} 
+                                    selectedDate={this.state.trFormdata.WeekStartDate} 
+                                    name="WeeklyStartDate" 
+                                    id="txtWeekStartDate"
+                                    filterData={this.isDisabled}
+                                    disabled={this.state.isSubmitted}
+                                     
+                                    /> */}
+                                    <CustomDatePicker 
+                                    handleChange={this.WeekStartDateChange}
+                                    selectedDate={this.state.trFormdata.WeekStartDate}
+                                    />
                                 </div>
                             </div>
-
-                        </div>
                 </div>
-           
-			</div>
-			<div className="row mx-1">
-				<div className="col-md-12"><hr></hr></div>
-				<div className="col-md-12 text-center mt-3">
-                    <button type="button" id="btnApprove" onClick={this.handleSubmit} hidden={!(this.state.isSubmitted)} className="SubmitButtons btn">Approve</button>
-                    <button type="button" id="btnReject" onClick={this.handleSubmit} hidden={!(this.state.isSubmitted)} className="CancelButtons btn">Reject</button>
-					<button type="button" id="btnSubmit" onClick={this.handleSubmit} hidden={this.state.isSubmitted} className="SubmitButtons btn">Submit</button>
-					<button type="button" id="btnSave" onClick={this.handleSubmit} hidden={this.state.isSubmitted} className="SaveButtons btn">Save</button>
-                    <button type="button" id="btnCancel" className="CancelButtons">Cancel</button>
-				</div>
-			</div>
-                        <div className="p-2">
-                         <h6>Comments History</h6>
-                        </div>
-                        <div>
-                        <table className="table table-bordered m-0 timetable text-center">
-                                <thead style={{ borderBottom: "2px solid rgb(55 55 55)" }}>
-                                    <tr>
-                                        <th className="" >Action</th>
-                                        <th className="" >Role</th>
-                                        <th className="" >User</th>
-                                        <th className="" >Comments</th>
-                                        <th className="" >Date</th>
-                                    </tr>
-                                </thead>
-					<tbody>
-                    {this.bindComments()}
-						
-					</tbody>
-				</table>
-                        </div>
-		</div>
-	</div>
-        {this.state.loading && <Loader />}
-            </React.Fragment>
-        );
-
+            </div>
+                <div className="border-box-shadow light-box table-responsive dataTables_wrapper-overflow p-2">
+                    <h4>Billable Hours</h4>
+                    <table className="table table-bordered m-0 timetable text-center">
+                                    <thead style={{ borderTop: "8px solid #9E9D9E" }}>
+                                        <tr>
+                                            <th className="" ><div className="have-h"></div></th>
+                                            <th className="">Description</th>
+                                            <th className="">Project Code</th>
+                                            <th>Mon <span className="day">{this.WeekHeadings[0].Mon}</span></th>
+                                            <th>Tue <span className="day">{this.WeekHeadings[0].Tue}</span></th>
+                                            <th>Wed <span className="day">{this.WeekHeadings[0].Wed}</span></th>
+                                            <th>Thu <span className="day">{this.WeekHeadings[0].Thu}</span></th>
+                                            <th>Fri <span className="day">{this.WeekHeadings[0].Fri}</span></th>
+                                            <th className="color-FF9800">Sat <span className="day color-FF9800">{this.WeekHeadings[0].Sat}</span></th>
+                                            <th className="color-FF9800">Sun <span className="day color-FF9800">{this.WeekHeadings[0].Sun}</span></th>
+                                            <th><div className="px-2"></div></th>
+                                            <th className="bc-e1f2ff">Total</th>
+                                            <th className=""><div className="px-3"></div></th>
+                                        </tr>
+                                    </thead>
+                        <tbody>
+                            
+                            <tr id="rowPRJ1">
+                                <td> </td>
+                                <td> 
+                                    <textarea className="form-control" value={this.state.trFormdata.WeeklyItemsData[0].Description} id="0_Description_weekrow" onChange={this.changeTime}  disabled={this.state.isSubmitted}  ></textarea>
+                                </td>
+                                <td>      
+                                    <input className="form-control" value={this.state.trFormdata.WeeklyItemsData[0].ProjectCode} id="0_ProjectCode_weekrow" onChange={this.changeTime}  disabled={this.state.isSubmitted} ></input>
+                                </td>
+                                <td>
+                                    <input className="form-control time changerowPRJ1 Mon"  value={this.state.trFormdata.WeeklyItemsData[0].Mon} id="0_Mon_weekrow"  onChange={this.changeTime}  disabled={this.state.isSubmitted} type="time"></input>
+                                </td>
+                                <td>
+                                    <input className="form-control time changerowPRJ1 Tue" value={this.state.trFormdata.WeeklyItemsData[0].Tue} id="0_Tue_weekrow"  onChange={this.changeTime}  disabled={this.state.isSubmitted} type="time"></input>
+                                </td>
+                                <td>
+                                    <input className="form-control time changerowPRJ1 Wed" value={this.state.trFormdata.WeeklyItemsData[0].Wed} id="0_Wed_weekrow"  onChange={this.changeTime}  disabled={this.state.isSubmitted} type="time"></input>
+                                </td>
+                                <td>
+                                    <input className="form-control time changerowPRJ1 Thu" value={this.state.trFormdata.WeeklyItemsData[0].Thu} id="0_Thu_weekrow" onChange={this.changeTime}  disabled={this.state.isSubmitted} type="time"></input>
+                                </td>
+                                <td>
+                                    <input className="form-control time changerowPRJ1 Fri" value={this.state.trFormdata.WeeklyItemsData[0].Fri} id="0_Fri_weekrow" onChange={this.changeTime}  disabled={this.state.isSubmitted} type="time"></input>
+                                </td>
+                                <td>
+                                    <input className="form-control time changerowPRJ1 Sat" value={this.state.trFormdata.WeeklyItemsData[0].Sat} id="0_Sat_weekrow" onChange={this.changeTime}  disabled={this.state.isSubmitted} type="time"></input>
+                                </td>
+                                <td>
+                                    <input className="form-control time changerowPRJ1 Sun" value={this.state.trFormdata.WeeklyItemsData[0].Sun} id="0_Sun_weekrow" onChange={this.changeTime}  disabled={this.state.isSubmitted} type="time"></input>
+                                </td>
+                                <td>
+                                    
+                                </td>
+                                <td>
+                                    <input className="form-control time Total"  value={this.state.trFormdata.WeeklyItemsData[0].Total} id="0_Total_weekrow" onChange={this.changeTime} type="text" disabled></input>
+                                </td>
+                                <td>
+                                <span className='span-fa-plus' onClick={this.CreateWeeklyHrsRow} id='addnewRow' hidden={this.state.isSubmitted}><FontAwesomeIcon icon={faPlus}></FontAwesomeIcon></span>
+                                </td>
+                            </tr>
+                            {this.dynamicFieldsRow("weekrow")}
+                            <tr id="rowOVR1" className="font-td-bold">
+                                <td className=" text-start"> 
+                                    <div className="p-2">
+                                        <i className="fas fa-user-clock color-gray"></i> Overtime
+                                    </div>
+                                </td>
+                                <td>
+                                    <textarea className="form-control time" value={this.state.trFormdata.OTItemsData[0].Description} id="0_Description_otrow" onChange={this.changeTime}  disabled={this.state.isSubmitted} ></textarea>
+                                </td>
+                                <td>
+                                    <input className="form-control time" value={this.state.trFormdata.OTItemsData[0].ProjectCode}  id="0_ProjectCode_otrow"  onChange={this.changeTime}  disabled={this.state.isSubmitted} ></input>
+                                </td>
+                                <td>
+                                    <input className="form-control time changerowOVR1 Mon" value={this.state.trFormdata.OTItemsData[0].Mon} id="0_Mon_otrow" onChange={this.changeTime}  disabled={this.state.isSubmitted} type="time"></input>
+                                </td>
+                                <td>
+                                    <input className="form-control time changerowOVR1 Tue" value={this.state.trFormdata.OTItemsData[0].Tue} id="0_Tue_otrow" onChange={this.changeTime}  disabled={this.state.isSubmitted} type="time"></input>
+                                </td>
+                                <td>
+                                    <input className="form-control time changerowOVR1 Wed" value={this.state.trFormdata.OTItemsData[0].Wed} id="0_Wed_otrow" onChange={this.changeTime}  disabled={this.state.isSubmitted} type="time"></input>
+                                </td>
+                                <td>
+                                    <input className="form-control time changerowOVR1 Thu" value={this.state.trFormdata.OTItemsData[0].Thu} id="0_Thu_otrow" onChange={this.changeTime}  disabled={this.state.isSubmitted} type="time"></input>
+                                </td>
+                                <td>
+                                    <input className="form-control time changerowOVR1 Fri" value={this.state.trFormdata.OTItemsData[0].Fri} id="0_Fri_otrow" onChange={this.changeTime}  disabled={this.state.isSubmitted} type="time"></input>
+                                </td>
+                                <td>
+                                    <input className="form-control time changerowOVR1 Sat" value={this.state.trFormdata.OTItemsData[0].Sat} id="0_Sat_otrow" onChange={this.changeTime}  disabled={this.state.isSubmitted} type="time"></input>
+                                </td>
+                                <td>
+                                    <input className="form-control time changerowOVR1 Sun" value={this.state.trFormdata.OTItemsData[0].Sun} id="0_Sun_otrow" onChange={this.changeTime}  disabled={this.state.isSubmitted} type="time"></input>
+                                </td>
+                                <td>
+                                    <span className="c-badge">OT</span>
+                                </td>
+                                <td>
+                                    <input className="form-control time" value={this.state.trFormdata.OTItemsData[0].Total} id="0_Total_otrow" onChange={this.changeTime} type="text" disabled></input>
+                                </td>
+                                <td>
+                                <span className='span-fa-plus'   onClick={this.CreateOTHrsRow} id=''><FontAwesomeIcon icon={faPlus}></FontAwesomeIcon></span>
+                                </td>
+                            </tr>
+                            {this.dynamicFieldsRow("otrow")}
+                            <tr className="font-td-bold" id="BillableTotal">
+                                <td className="fw-bold text-start"> 
+                                    <div className="p-2">
+                                        <i className="fas fa-business-time color-gray"></i> Billable Subtotal
+                                    </div>
+                                </td>
+                                <td>
+                                   
+                                </td>
+                                <td>
+                                    
+                                </td>
+                                <td>
+                                    <input className="form-control time" id="BillableTotalMon" value={this.state.trFormdata.BillableSubTotal[0].Mon} type="text" disabled></input>
+                                </td>
+                                <td>
+                                    <input className="form-control time" id="BillableTotalTue" value={this.state.trFormdata.BillableSubTotal[0].Tue} type="text" disabled></input>
+                                </td>
+                                <td>
+                                    <input className="form-control time" id="BillableTotalWed" value={this.state.trFormdata.BillableSubTotal[0].Wed} type="text" disabled></input>
+                                </td>
+                                <td>
+                                    <input className="form-control time" id="BillableTotalThu" value={this.state.trFormdata.BillableSubTotal[0].Thu} type="text" disabled></input>
+                                </td>
+                                <td>
+                                    <input className="form-control time" id="BillableTotalFri" value={this.state.trFormdata.BillableSubTotal[0].Fri} type="text" disabled></input>
+                                </td>
+                                <td>
+                                    <input className="form-control time" id="BillableTotalSat" value={this.state.trFormdata.BillableSubTotal[0].Sat} type="text" disabled></input>
+                                </td>
+                                <td>
+                                    <input className="form-control time" id="BillableTotalSat" value={this.state.trFormdata.BillableSubTotal[0].Sun} type="text" disabled></input>
+                                </td>
+                                <td>
+                                    <span className="c-badge">BS</span>
+                                </td>
+                                <td>
+                                    <input className="form-control time" id="BillableTotal" value={this.state.trFormdata.BillableSubTotal[0].Total}  type="text" disabled></input>
+                                </td>
+                                <td>
+                                    
+                                </td>
+                            </tr>
+                            
+                            <tr>
+                                <td colSpan={13} className="text-start"><h4 className="my-2">NonBillable Hours</h4></td>
+                            </tr>
+                            <tr id="SynergyOfficeHrs">
+                                <td className="text-start"><div className="p-2">Synergy Office Hours</div></td>
+                                <td><textarea className="form-control time" value={this.state.trFormdata.SynergyOfficeHrs[0].Description} onChange={this.changeTime} id="0_Description_SynOffcHrs"  disabled={this.state.isSubmitted} ></textarea></td>
+                                <td><input className="form-control time" value={this.state.trFormdata.SynergyOfficeHrs[0].ProjectCode} onChange={this.changeTime} id="0_ProjectCode_SynOffcHrs"  disabled={this.state.isSubmitted} ></input></td>
+                                <td><input className="form-control time" value={this.state.trFormdata.SynergyOfficeHrs[0].Mon} onChange={this.changeTime} id="0_Mon_SynOffcHrs"  disabled={this.state.isSubmitted} type="time"></input></td>
+                                <td><input className="form-control time" value={this.state.trFormdata.SynergyOfficeHrs[0].Tue} onChange={this.changeTime} id="0_Tue_SynOffcHrs"  disabled={this.state.isSubmitted} type="time"></input></td>
+                                <td><input className="form-control time" value={this.state.trFormdata.SynergyOfficeHrs[0].Wed} onChange={this.changeTime} id="0_Wed_SynOffcHrs"  disabled={this.state.isSubmitted} type="time"></input></td>
+                                <td><input className="form-control time" value={this.state.trFormdata.SynergyOfficeHrs[0].Thu} onChange={this.changeTime} id="0_Thu_SynOffcHrs"  disabled={this.state.isSubmitted} type="time"></input></td>
+                                <td><input className="form-control time" value={this.state.trFormdata.SynergyOfficeHrs[0].Fri} onChange={this.changeTime} id="0_Fri_SynOffcHrs"  disabled={this.state.isSubmitted} type="time"></input></td>
+                                <td><input className="form-control time" value={this.state.trFormdata.SynergyOfficeHrs[0].Sat} onChange={this.changeTime} id="0_Sat_SynOffcHrs"  disabled={this.state.isSubmitted} type="time"></input></td>
+                                <td><input className="form-control time" value={this.state.trFormdata.SynergyOfficeHrs[0].Sun} onChange={this.changeTime} id="0_Sun_SynOffcHrs"  disabled={this.state.isSubmitted} type="time"></input></td>
+                                <td><span className="c-badge">O</span></td>
+                                <td><input className="form-control time" value={this.state.trFormdata.SynergyOfficeHrs[0].Total} onChange={this.changeTime} id="0_Total_SynOffcHrs" type="text" disabled></input></td>
+                                <td></td>
+                            </tr>
+                            <tr id="SynergyHolidayHrs">
+                                <td className="text-start"><div className="p-2">Synergy Holiday</div></td>
+                                <td><textarea className="form-control time" value={this.state.trFormdata.SynergyHolidayHrs[0].Description} onChange={this.changeTime} id="0_Description_SynHldHrs"  disabled={this.state.isSubmitted} ></textarea></td>
+                                <td><input className="form-control time" value={this.state.trFormdata.SynergyHolidayHrs[0].ProjectCode} onChange={this.changeTime} id="0_ProjectCode_SynHldHrs"  disabled={this.state.isSubmitted} ></input></td>
+                                <td><input className="form-control time" value={this.state.trFormdata.SynergyHolidayHrs[0].Mon} onChange={this.changeTime} id="0_Mon_SynHldHrs"  disabled={this.state.isSubmitted} type="time"></input></td>
+                                <td><input className="form-control time" value={this.state.trFormdata.SynergyHolidayHrs[0].Tue} onChange={this.changeTime} id="0_Tue_SynHldHrs"  disabled={this.state.isSubmitted} type="time"></input></td>
+                                <td><input className="form-control time" value={this.state.trFormdata.SynergyHolidayHrs[0].Wed} onChange={this.changeTime} id="0_Wed_SynHldHrs"  disabled={this.state.isSubmitted} type="time"></input></td>
+                                <td><input className="form-control time" value={this.state.trFormdata.SynergyHolidayHrs[0].Thu} onChange={this.changeTime} id="0_Thu_SynHldHrs"  disabled={this.state.isSubmitted} type="time"></input></td>
+                                <td><input className="form-control time" value={this.state.trFormdata.SynergyHolidayHrs[0].Fri} onChange={this.changeTime} id="0_Fri_SynHldHrs"  disabled={this.state.isSubmitted} type="time"></input></td>
+                                <td><input className="form-control time" value={this.state.trFormdata.SynergyHolidayHrs[0].Sat} onChange={this.changeTime} id="0_Sat_SynHldHrs"  disabled={this.state.isSubmitted} type="time"></input></td>
+                                <td><input className="form-control time" value={this.state.trFormdata.SynergyHolidayHrs[0].Sun} onChange={this.changeTime} id="0_Sun_SynHldHrs"  disabled={this.state.isSubmitted} type="time"></input></td>
+                                <td><span className="c-badge">H</span></td>
+                                <td><input className="form-control time" value={this.state.trFormdata.SynergyHolidayHrs[0].Total} onChange={this.changeTime} id="0_Total_SynHldHrs" type="text" disabled></input></td>
+                                <td></td>
+                            </tr>
+                            <tr id="PTOHrs">
+                                <td className="text-start"><div className="p-2">PTO (Paid Time Off)</div></td>
+                                <td><textarea className="form-control time" value={this.state.trFormdata.PTOHrs[0].Description} onChange={this.changeTime} id="0_Description_PTOHrs"  disabled={this.state.isSubmitted}></textarea></td>
+                                <td><input className="form-control time" value={this.state.trFormdata.PTOHrs[0].ProjectCode} onChange={this.changeTime} id="0_ProjectCode_PTOHrs"  disabled={this.state.isSubmitted} ></input></td>
+                                <td><input className="form-control time" value={this.state.trFormdata.PTOHrs[0].Mon} onChange={this.changeTime} id="0_Mon_PTOHrs"  disabled={this.state.isSubmitted} type="time"></input></td>
+                                <td><input className="form-control time" value={this.state.trFormdata.PTOHrs[0].Tue} onChange={this.changeTime} id="0_Tue_PTOHrs"  disabled={this.state.isSubmitted} type="time"></input></td>
+                                <td><input className="form-control time" value={this.state.trFormdata.PTOHrs[0].Wed} onChange={this.changeTime} id="0_Wed_PTOHrs"  disabled={this.state.isSubmitted} type="time"></input></td>
+                                <td><input className="form-control time" value={this.state.trFormdata.PTOHrs[0].Thu} onChange={this.changeTime} id="0_Thu_PTOHrs"  disabled={this.state.isSubmitted} type="time"></input></td>
+                                <td><input className="form-control time" value={this.state.trFormdata.PTOHrs[0].Fri} onChange={this.changeTime} id="0_Fri_PTOHrs"  disabled={this.state.isSubmitted} type="time"></input></td>
+                                <td><input className="form-control time" value={this.state.trFormdata.PTOHrs[0].Sat} onChange={this.changeTime} id="0_Sat_PTOHrs"  disabled={this.state.isSubmitted} type="time"></input></td>
+                                <td><input className="form-control time" value={this.state.trFormdata.PTOHrs[0].Sun} onChange={this.changeTime} id="0_Sun_PTOHrs"  disabled={this.state.isSubmitted} type="time"></input></td>
+                                <td><span className="c-badge">PTO</span></td>
+                                <td><input className="form-control time" value={this.state.trFormdata.PTOHrs[0].Total} onChange={this.changeTime} id="0_Total_PTOHrs" type="text" disabled></input></td>
+                                <td></td>
+                            </tr>
+    
+                            <tr className="font-td-bold" id="NonBillableTotal">
+                                <td className="fw-bold text-start"> 
+                                    <div className="p-2">
+                                        <i className="fas fa-business-time color-gray"></i> NonBillable Subtotal
+                                    </div>
+                                </td>
+                                <td></td>
+                                <td></td>
+                                <td>
+                                    <input className="form-control time" value={this.state.trFormdata.NonBillableSubTotal[0].Mon} type="text" disabled></input>
+                                </td>
+                                <td>
+                                    <input className="form-control time" value={this.state.trFormdata.NonBillableSubTotal[0].Tue} type="text" disabled></input>
+                                </td>
+                                <td>
+                                    <input className="form-control time" value={this.state.trFormdata.NonBillableSubTotal[0].Wed} type="text" disabled></input>
+                                </td>
+                                <td>
+                                    <input className="form-control time" value={this.state.trFormdata.NonBillableSubTotal[0].Thu} type="text" disabled></input>
+                                </td>
+                                <td>
+                                    <input className="form-control time" value={this.state.trFormdata.NonBillableSubTotal[0].Fri} type="text" disabled></input>
+                                </td>
+                                <td>
+                                    <input className="form-control time" value={this.state.trFormdata.NonBillableSubTotal[0].Sat} type="text" disabled></input>
+                                </td>
+                                <td>
+                                    <input className="form-control time" value={this.state.trFormdata.NonBillableSubTotal[0].Sun} type="text" disabled></input>
+                                </td>
+                                <td><span className="c-badge">NS</span></td>
+                                <td>
+                                    <input className="form-control time" value={this.state.trFormdata.NonBillableSubTotal[0].Total} type="text" disabled></input>
+                                </td>
+                                <td>
+                                    
+                                </td>
+                            </tr>
+                            <tr className="font-td-bold" id="GrandTotal">
+                                <td className="fw-bold text-start"> 
+                                    <div className="p-2">
+                                        <i className="fas fa-business-time color-gray"></i> Total
+                                    </div>
+                                </td>
+                                <td></td>
+                                <td></td>
+                                <td>
+                                    <input className="form-control time" value={this.state.trFormdata.Total[0].Mon} type="text" disabled></input>
+                                </td>
+                                <td>
+                                    <input className="form-control time" value={this.state.trFormdata.Total[0].Tue} type="text" disabled></input>
+                                </td>
+                                <td>
+                                    <input className="form-control time" value={this.state.trFormdata.Total[0].Wed} type="text" disabled></input>
+                                </td>
+                                <td>
+                                    <input className="form-control time" value={this.state.trFormdata.Total[0].Thu} type="text" disabled></input>
+                                </td>
+                                <td>
+                                    <input className="form-control time" value={this.state.trFormdata.Total[0].Fri} type="text" disabled></input>
+                                </td>
+                                <td>
+                                    <input className="form-control time" value={this.state.trFormdata.Total[0].Sat} type="text" disabled></input>
+                                </td>
+                                <td>
+                                    <input className="form-control time" value={this.state.trFormdata.Total[0].Sun} type="text" disabled></input>
+                                </td>
+                                <td><span className="c-badge">T</span></td>
+                                <td>
+                                    <input className="form-control time" value={this.state.trFormdata.Total[0].Total} type="text" disabled></input>
+                                </td>
+                                <td>
+                                    
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <div className="light-box border-box-shadow m-1 p-2 pt-3">
+                                                <div className="media-px-12">
+    
+                                                    <div className="light-text height-auto">
+                                                        <label className="floatingTextarea2 top-11">Comments </label>
+                                                        <textarea className="position-static form-control requiredinput" onChange={this.handleChange} value={this.state.trFormdata.Comments} placeholder="" maxLength={500} id="txtComments" name="Comments"  disabled={false}></textarea>
+                                                    </div>
+                                                </div>
+                    </div>
+                    {/* <div className="col-md-6">
+                            <div className="light-text div-readonly col-md-3">
+                                <label className="z-in-9">Date Submitted</label>
+                                    <input className="form-control"  name="Name" title="DateSubmitted" value={(this.state.trFormdata.DateSubmitted.getMonth()+1)+"/"+this.state.trFormdata.DateSubmitted.getDate()+"/"+this.state.trFormdata.DateSubmitted.getFullYear()}  disabled={true} />
+                            </div>
+                            <div className="light-text div-readonly col-md-3">
+                                <label>Superviser Names</label>
+                                <div className="light-text div-readonly">
+                                    <div className="" id="SuperviserNames">
+                                        {this.state.trFormdata.SuperviserNames.map((option) => (
+                                            <label>{option}</label>
+                                        ))}
+                                    </div>
+                                </div>
+    
+                            </div>
+                    </div> */}
+               
+                </div>
+                <div className="row">
+                    <div className="col-md-12"><hr></hr></div>
+                    <div className="col-md-12 text-center mt-3">
+                        <button type="button" id="btnApprove" onClick={this.handleApprove} hidden={!(this.state.isSubmitted)} className="SubmitButtons btn">Approve</button>
+                        <button type="button" id="btnReject" onClick={this.handleReject} hidden={!(this.state.isSubmitted)} className="CancelButtons btn">Reject</button>
+                        <button type="button" id="btnSubmit" onClick={this.handleSubmitorSave} hidden={this.state.isSubmitted} className="SubmitButtons btn">Submit</button>
+                        <button type="button" id="btnSave" onClick={this.handleSubmitorSave} hidden={this.state.isSubmitted} className="SaveButtons btn">Save</button>
+                        <button type="button" id="btnCancel" className="CancelButtons btn">Cancel</button>
+                    </div>
+                </div>
+                            <div className="p-2">
+                             <h2>Comments History</h2>
+                            </div>
+                            <div>
+                            <table className="table table-bordered m-0 timetable text-center">
+                                    <thead style={{ borderTop: "8px solid #9E9D9E" }}>
+                                        <tr>
+                                            <th className="" >Action</th>
+                                            <th className="" >Role</th>
+                                            <th className="" >User</th>
+                                            <th className="" >Comments</th>
+                                            <th className="" >Date</th>
+                                        </tr>
+                                    </thead>
+                        <tbody>
+                        {this.bindComments()}
+                            
+                        </tbody>
+                    </table>
+                            </div>
+            </div>
+        </div>
+            {this.state.loading && <Loader />}
+                </React.Fragment>
+            );
+    
+        }
+       
     }
 }
 export default WeeklyTimesheet;
