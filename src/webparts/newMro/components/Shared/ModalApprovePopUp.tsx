@@ -20,9 +20,9 @@ const ModalApprovePopUp =({ message,title,isVisible,isSuccess, onConfirm, onCanc
             <div className={`modal-header txt-white bc-dblue`}>
               <h5 className="modal-title txt-white">{message}</h5>
             </div>
-            <div className="modal-body">
+            {/* <div className="modal-body">
               <p>{`Would you like to ${title} the item`}</p>
-            </div>
+            </div> */}
             <div className="light-box border-box-shadow m-1 p-2 pt-3">
                                             <div className="media-px-12">
 

@@ -269,7 +269,7 @@ private async validateDuplicateRecord () {
             //update existing record
             sp.web.lists.getByTitle(this.listName).items.getById(this.state.ItemID).update(formdata).then((res) => {
                 this.setState({ loading: false});
-                alert('Data updated sucessfully');
+                // alert('Data updated sucessfully');
                 this.setState({Homeredirect : true});
             }, (error) => {
                 console.log(error);
@@ -280,7 +280,7 @@ private async validateDuplicateRecord () {
                 sp.web.lists.getByTitle(this.listName).items.add(formdata).then((res) => {
                     console.log(res);
                     this.setState({ loading: false});
-                    alert('Data inserted sucessfully')
+                    // alert('Data inserted sucessfully')
                     this.setState({Homeredirect : true});
                 }, (error) => {
                     console.log(error);

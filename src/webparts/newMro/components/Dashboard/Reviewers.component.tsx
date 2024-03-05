@@ -68,6 +68,7 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
                         Id : d.Id,
                         Date : `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`,
                         EmployeName: d.Name,
+                        Company : d.ClientName,
                         Status : d.Status,
                         BillableHrs: d.WeeklyTotalHrs,
                         OTTotalHrs : d.OTTotalHrs,
@@ -95,12 +96,12 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
             To: emaildetails.toemail,  
             CC: emaildetails.ccemail
           }).then((i) => {  
-            alert("Record Updated Sucessfully");
+            // alert("Record Updated Sucessfully");
             this.setState({showHideModal : false,ItemID:0,message:'',title:'',Action:'',loading: false});
             this.setState({redirect : true});
             // <Navigate to={'/'} />
           }).catch((i) => {
-            alert("Error while updating the record");
+            // alert("Error while updating the record");
             this.setState({showHideModal : false,ItemID:0,message:'',title:'',Action:'',loading: false});
             this.setState({redirect : true});
             console.log(i)
@@ -215,7 +216,7 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
 
             var filterString = "Id eq '"+recordId+"'"
             this.setState({ loading: true });
-            let data =  await sp.web.lists.getByTitle('WeeklyTimeSheet').items.filter(filterString).select('Initiator/ID,Initiator/Title,*').expand('Initiator').get()
+            let data =  await sp.web.lists.getByTitle('WeeklyTimeSheet').items.filter(filterString).select('Initiator/ID,Initiator/Title,*').expand('Initiator').orderBy('WeekStartDate,DateSubmitted', false).get()
             console.log(data)
             let commentsObj = JSON.parse(data[0].CommentsHistory)
             commentsObj.push({
@@ -269,12 +270,12 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
         let name = e.target.dataset.name
         if(name == 'Approve')
         {
-            this.setState({message : 'Action : Approve',title : 'Approve', Action : 'Approve'});
+            this.setState({message : 'Please confirm to Approve',title : 'Approve', Action : 'Approve'});
             this.setState({showHideModal : true})
         }
         else if(name == 'Reject')
         {
-            this.setState({message : 'Action : Reject',title : 'Reject', Action : 'Reject'});
+            this.setState({message : 'Please confirm to Reject',title : 'Reject', Action : 'Reject'});
             this.setState({showHideModal : true})
         }
         else{
@@ -325,12 +326,21 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
                     name: "Employe Name",
                     //selector: "Department",
                     selector: (row, i) => row.EmployeName,
+                    // width: '180px',
+                    sortable: true
+                },
+                {
+                    name: "Company",
+                    //selector: "Department",
+                    selector: (row, i) => row.Company,
+                    // width: '150px',
                     sortable: true
                 },
                 {
                     name: "Status",
                     //selector: 'VendorName',
                     selector: (row, i) => row.Status,
+                    // width: '180px',
                     sortable: true
 
                 },

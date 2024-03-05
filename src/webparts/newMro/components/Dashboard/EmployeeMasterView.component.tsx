@@ -56,7 +56,7 @@ class EmployeeMasterView extends React.Component<EmployeeMasterViewProps, Employ
         const userId = this.props.spContext.userId;
         var selectQuery = "Employee/Title,ReportingManager/Title,Approvers/Title,Reviewers/Title,Notifiers/Title,*";
         var expandQuery = "Employee,ReportingManager,Approvers,Reviewers,Notifiers";
-        sp.web.lists.getByTitle('EmployeeMaster').items.top(2000).expand(expandQuery).select(selectQuery).orderBy('ID', false).get()
+        sp.web.lists.getByTitle('EmployeeMaster').items.top(2000).expand(expandQuery).select(selectQuery).orderBy('Modified', false).get()
             .then((response) => {
                 console.log(response)
                 let Data = [];
@@ -137,7 +137,7 @@ class EmployeeMasterView extends React.Component<EmployeeMasterViewProps, Employ
             {
                 name: "Company",
                 selector: (row, i) => row.Company,
-                width: '100px',
+                width: '150px',
                 sortable: true
             },
             // {
