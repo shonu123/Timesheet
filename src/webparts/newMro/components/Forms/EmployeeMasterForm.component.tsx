@@ -211,6 +211,11 @@ private async validateDuplicateRecord () {
     }
 }
 
+    private handleCancel = async (e)=>{
+        this.setState({Homeredirect : true});
+    }
+
+
     private handleSubmit = async (e)=>{
         let data ={
         Employee : { val: this.state.EmployeeId, required: true, Name: 'Employee', Type: ControlType.people,Focusid:'divEmployee' },
@@ -263,8 +268,9 @@ private async validateDuplicateRecord () {
             this.setState({ loading: true });
             //update existing record
             sp.web.lists.getByTitle(this.listName).items.getById(this.state.ItemID).update(formdata).then((res) => {
-                this.setState({ loading: false ,Homeredirect : true });
+                this.setState({ loading: false});
                 alert('Data updated sucessfully');
+                this.setState({Homeredirect : true});
             }, (error) => {
                 console.log(error);
             });
@@ -273,8 +279,9 @@ private async validateDuplicateRecord () {
                 this.setState({ loading: true });
                 sp.web.lists.getByTitle(this.listName).items.add(formdata).then((res) => {
                     console.log(res);
-                    this.setState({ loading: false ,Homeredirect : true });
+                    this.setState({ loading: false});
                     alert('Data inserted sucessfully')
+                    this.setState({Homeredirect : true});
                 }, (error) => {
                     console.log(error);
                 });
@@ -303,8 +310,9 @@ private async validateDuplicateRecord () {
     
    public render() {
     if (this.state.Homeredirect) {
-        // let url = `/EmployeeMasterForm`
-        return (<Navigate to={'/'} />);
+        // let url = `/WeeklyTimeSheet`
+        let url = `/`
+        return (<Navigate to={url} />);
     }
 else {
             return (
@@ -471,7 +479,7 @@ else {
                                 <div className="row mx-1" id="">
                                                 <div className="col-sm-12 text-center my-2" id="">
                                                     <button type="button" className="SubmitButtons btn" onClick={this.handleSubmit}>Submit</button>
-                                                    <button type="button" className="CancelButtons btn">Cancel</button>
+                                                    <button type="button" className="CancelButtons btn" onClick={this.handleCancel}>Cancel</button>
                                                 </div>
                                 </div>
 

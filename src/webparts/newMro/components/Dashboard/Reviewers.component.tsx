@@ -97,10 +97,12 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
           }).then((i) => {  
             alert("Record Updated Sucessfully");
             this.setState({showHideModal : false,ItemID:0,message:'',title:'',Action:'',loading: false});
+            this.setState({redirect : true});
             // <Navigate to={'/'} />
           }).catch((i) => {
             alert("Error while updating the record");
             this.setState({showHideModal : false,ItemID:0,message:'',title:'',Action:'',loading: false});
+            this.setState({redirect : true});
             console.log(i)
           });  
     }
@@ -289,9 +291,9 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
 
     public render() {
         if (this.state.redirect) {
-            let url = `/Dashboard`;
+            let url = `/`
             return (<Navigate to={url} />);
-        } 
+        }
         else {
             const columns = [
                 {
