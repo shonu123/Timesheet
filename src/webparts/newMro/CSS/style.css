@@ -13,6 +13,80 @@
       padding-bottom: 16px;
   }
 }
+.custom-tab{
+  margin-bottom: -2px;
+  }
+  .custom-tab .nav-tabs{
+  background-color: transparent;
+  border: none;
+  }
+  .custom-tab .nav.nav-pills{
+  margin-bottom: 0 !important;
+  /* margin-left: 30px; */
+  }
+  .nav-main {
+    display: flex;
+  }
+  #s4-titlerow{
+    display: none!important;
+  }
+  .synergyLogo{
+    width: 185px;
+  }
+  .main-title{
+    padding: 10px;
+    font-weight: 700;
+    font-size: 2rem;
+    color: #444444;
+    border-left: 2px solid lightgray;
+    padding-left: 20px;
+    margin-left: 20px;
+  }
+  .custom-tab .nav.nav-pills li a {
+  /* background: #cecece52; */
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 1px;
+  text-align: center;
+  padding: 11px 15px 10px;
+  border: 1px solid #ede8e8 !important;
+  /* margin: 0 10px 1px 0; */
+  overflow: hidden;
+  position: relative;
+  z-index: 1;
+  border: 0;
+  /* border-top-left-radius: 5px;
+  border-top-right-radius: 5px; */
+  border-bottom: 0 !important;
+  color: #8e979e;
+  background: hsla(0,0%,80.8%,.3215686274509804);
+  border-radius: 0;
+  }
+  .custom-tab .nav.nav-pills li:last-child a{ margin-right: 0; }
+  /* .custom-tab .nav.nav-pills li a:hover,
+  .custom-tab .nav.nav-pills li.active a{
+  color: #666666;
+  background: #cccccc;
+  border: none;
+  } */
+  .custom-tab .nav.nav-pills li a:hover {
+    color: #938989;
+    background: #e7e3e3;
+    border: none;
+    }
+  /* .custom-tab .nav-pills .nav-link.active,
+  .custom-tab .nav-pills .nav-link.selected,
+  .custom-tab .nav-pills .show>.nav-link {
+  /* background-color: #8c8686e3!important; */
+  /* background-color: #6c757d!important;
+  color: #fff !important;
+  } */
+  .custom-tab .nav-pills .nav-link.active, 
+  .custom-tab .nav.nav-pills li.active a, .custom-tab .nav-pills .nav-link.selected, .custom-tab .nav-pills .show>.nav-link {
+     /* background-color: #ffffff!important;
+      color: #433a3a!important; */
+      color: #fff;
+  }
 .FormContent{
   position: relative;
   margin-bottom: 10px;
@@ -29,6 +103,10 @@
   -moz-box-shadow: rgba(0, 0, 0, 0.13) 0px 2px 12px;
   transition: all .4s ease 0s;
   -webkit-transition: all .4s ease 0s; 
+}
+
+#s4-ribbonrow{
+  display: none!important;
 }
 .border-box-shadow {
   box-shadow: 0px 10px 24px 0 rgba(0, 0, 0, 0.09);

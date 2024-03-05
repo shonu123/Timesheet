@@ -226,12 +226,12 @@ class Dashboard extends React.Component<DashboardProps, DashboardState> {
                 {highlightCurrentNav("liDashboardLink")}
                 <div className="container-fluid">
                     <div className='FormContent'>
-                        <div className='title'>Dashboard
-                        </div>
+                        {/* <div className='title'>Dashboard
+                        </div> */}
 
-                        <div className="after-title"></div>
-                        <h1>Welcome {this.state.userRole}</h1>
-                        <App {...this.props}></App>
+                        {/* <div className="after-title"></div>
+                        <h1>Welcome {this.state.userRole}</h1> */}
+                        {/* <App {...this.props}></App> */}
                         <div className="p-1">
                             <div className="border-box-shadow light-box m-2">
                                 <ul className="nav nav-tabs nav-fill" id="myTab" role="tablist">
