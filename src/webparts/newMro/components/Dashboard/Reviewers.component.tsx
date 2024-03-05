@@ -159,10 +159,10 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
     }
 
     private handleApprove = async (e) => {
-        this.setState({ loading: true });
+        
         let recordId = this.state.ItemID;
         var filterString = "Id eq '"+recordId+"'"
-
+        this.setState({ loading: true });
         let data =  await sp.web.lists.getByTitle('WeeklyTimeSheet').items.filter(filterString).select('Initiator/ID,Initiator/Title,*').expand('Initiator').get()
         console.log(data)
         let commentsObj = JSON.parse(data[0].CommentsHistory)
@@ -212,9 +212,9 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
             this.setState({errorMessage : 'Comments cannot be Blank'})
         }
         else{
-            this.setState({ loading: true });
+
             var filterString = "Id eq '"+recordId+"'"
-    
+            this.setState({ loading: true });
             let data =  await sp.web.lists.getByTitle('WeeklyTimeSheet').items.filter(filterString).select('Initiator/ID,Initiator/Title,*').expand('Initiator').get()
             console.log(data)
             let commentsObj = JSON.parse(data[0].CommentsHistory)
