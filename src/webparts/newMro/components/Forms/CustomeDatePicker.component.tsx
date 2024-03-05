@@ -35,13 +35,13 @@ function App(joinDate) {
 
      const filterDays = (date) => {
       let currentDate = new Date(date)
-      let formateDate = `${currentDate.getMonth() + 1}/${currentDate.getDate()}/${currentDate.getFullYear()}`
-      if(formateDate == '2/29/2024'){
-        return new Date(formateDate)
-      }
-      else if(formateDate == '2/26/2024'){
-        return false;
-      }
+      // let formateDate = `${currentDate.getMonth() + 1}/${currentDate.getDate()}/${currentDate.getFullYear()}`
+      // if(formateDate == '2/29/2024'){
+      //   return new Date(formateDate)
+      // }
+      // else if(formateDate == '2/26/2024'){
+      //   return false;
+      // }
       return   currentDate.getDay() === 1;
     }
 

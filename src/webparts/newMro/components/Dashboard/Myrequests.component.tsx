@@ -113,6 +113,7 @@ class MyRequests extends React.Component<MyRequestsProps, MyRequestsState> {
             {
                 name: "Company",
                 selector: (row, i) => row.Company,
+                width: '130px',
                 sortable: true
             },
             {
@@ -124,6 +125,7 @@ class MyRequests extends React.Component<MyRequestsProps, MyRequestsState> {
             {
                 name: "Status",
                 selector: (row, i) => row.Status,
+                width: '100px',
                 sortable: true
 
             }
