@@ -262,7 +262,7 @@ class Dashboard extends React.Component<DashboardProps, DashboardState> {
                                             {this.state.showMyRequestsComp && <MyRequests {...this.props} />}
                                         </div>
                                     </div>
-                                    <div className="tab-pane fade csMyRequests" id="MyRequests" role="tabpanel" aria-labelledby="MyRequests-tab">
+                                    <div className="" id="" role="tabpanel" aria-labelledby="">
                                         <div className="v-table">
                                             {/* {this.state.isAdmin && <EmployeeMasterForm {...this.props} />} */}
                                             {this.state.isAdmin && <EmployeeMasterView {...this.props} />}
