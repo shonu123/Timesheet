@@ -2,6 +2,7 @@ import * as React from 'react';
 import { NavLink } from 'react-router-dom';
 // const sitePermissions: any = require('./Routing.module');
 import sitePermissions from './Routing.module';
+import './CSS/style.css';
 export interface NavBarProps {
     currentUserGroups: any;
 }

@@ -26,6 +26,7 @@ import formValidation from '../../Utilities/Formvalidator';
 import { Navigate } from 'react-router-dom';
 import { confirm } from 'react-confirm-box';
 import InputCheckBox from '../Shared/InputCheckBox';
+import CustomDatePicker from './DatePicker';
 // import '../../CSS/EmployeeMaster.css';
 
 export interface EmployeeMasterFormProps {
@@ -76,7 +77,8 @@ class EmployeeMasterForm extends React.Component<EmployeeMasterFormProps, Employ
         ReviewerEmail: [],
         NotifierEmail: [],
         SelectedEmployee : '',
-        SelectedClient : ''
+        SelectedClient : '',
+        Homeredirect: false
     }
 
     public componentDidMount() {
@@ -261,8 +263,8 @@ private async validateDuplicateRecord () {
             this.setState({ loading: true });
             //update existing record
             sp.web.lists.getByTitle(this.listName).items.getById(this.state.ItemID).update(formdata).then((res) => {
-                this.setState({ loading: false });
-                alert('Data updated sucessfully')
+                this.setState({ loading: false ,Homeredirect : true });
+                alert('Data updated sucessfully');
             }, (error) => {
                 console.log(error);
             });
@@ -271,7 +273,7 @@ private async validateDuplicateRecord () {
                 this.setState({ loading: true });
                 sp.web.lists.getByTitle(this.listName).items.add(formdata).then((res) => {
                     console.log(res);
-                    this.setState({ loading: false });
+                    this.setState({ loading: false ,Homeredirect : true });
                     alert('Data inserted sucessfully')
                 }, (error) => {
                     console.log(error);
@@ -300,6 +302,11 @@ private async validateDuplicateRecord () {
     }
     
    public render() {
+    if (this.state.Homeredirect) {
+        // let url = `/EmployeeMasterForm`
+        return (<Navigate to={'/'} />);
+    }
+else {
             return (
                 <React.Fragment>
                     <div id="content" className="content p-2 pt-2">
@@ -315,7 +322,7 @@ private async validateDuplicateRecord () {
                         </div>
                         <div className='container-fluid'>
                             <div className='FormContent'>
-                                <div className="title">Employee Master
+                                <div className="title">Consultants
                                     <div className='mandatory-note'>
                                         <span className='mandatoryhastrick'>*</span> indicates a required field
                                     </div>
@@ -343,6 +350,19 @@ private async validateDuplicateRecord () {
                                                     </div>
                                                 </div>
                                             </div>
+
+                                            <div className="col-md-3">
+                                                <div className="light-text">
+                                                    <label>Client<span className="mandatoryhastrick">*</span></label>
+                                                    <select className="form-control" required={true} name="Client" title="Client" id='client' ref={this.client} onChange={this.handleChangeEvents}>
+                                                        <option value=''>None</option>
+                                                        {this.state.ClientsObject.map((option) => (
+                                                            <option value={option.Title} selected={option.Title ==this.state.ClientName}>{option.Title}</option>
+                                                        ))}
+                                                    </select>
+                                                </div>
+                                            </div>
+
                                             <div className="col-md-3">
                                                 <div className="light-text">
                                                     <label>Reporting Manager <span className="mandatoryhastrick">*</span></label>
@@ -362,20 +382,6 @@ private async validateDuplicateRecord () {
                                                     </div>
                                                 </div>
                                             </div>
-
-                                            <div className="col-md-3">
-                                                <div className="light-text">
-                                                    <label>Client<span className="mandatoryhastrick">*</span></label>
-                                                    <select className="form-control" required={true} name="Client" title="Client" id='client' ref={this.client} onChange={this.handleChangeEvents}>
-                                                        <option value=''>None</option>
-                                                        {this.state.ClientsObject.map((option) => (
-                                                            <option value={option.Title} selected={option.Title ==this.state.ClientName}>{option.Title}</option>
-                                                        ))}
-                                                    </select>
-                                                </div>
-                                            </div>
-
-
                                             {/* <div className="col-md-3">
                                                 <div className="light-text">
                                                     <label>Approver <span className="mandatoryhastrick">*</span></label>
@@ -481,43 +487,8 @@ private async validateDuplicateRecord () {
                     {this.state.loading && <Loader />}
                 </React.Fragment >
             );
+    }
 }
 }
 export default EmployeeMasterForm
 
-{
-    /* 
-    
-    <div className="row pt-2 px-2">
-                                            <div className="col-md-3">
-                                                <div className="light-text">
-                                                    <label>Employee <span className="mandatoryhastrick">*</span></label>
-                                                    <div className="custom-peoplepicker" id="divEmployee">
-                                                        <PeoplePicker
-                                                            context={this.props.context}
-                                                            titleText=""
-                                                            personSelectionLimit={1}
-                                                            showtooltip={false}
-                                                            disabled={true}
-                                                            onChange={(e) => this._getPeoplePickerItems(e, 'EmployeeId')}
-                                                            showHiddenInUI={false}
-                                                            ensureUser={true}
-                                                            required={true}
-                                                            defaultSelectedUsers={[this.state.EmployeeEmail]}
-                                                            principalTypes={[PrincipalType.User]} placeholder="Employee"
-                                                            resolveDelay={1000} peoplePickerCntrlclassName={"input-peoplePicker-custom"} />
-                                                    </div>
-                                                </div>
-                                            </div>
-    
-    
-    
-    
-    <div className="col-md-3">
-<div className="light-text div-readonly">
-    <label className="z-in-9">Date Required </label>
-    <div className="custom-datepicker" id="divRDate">
-        <DatePicker onDatechange={this.UpdateDate} selectedDate={this.state.trFormdata.ItemsData[i].DateRequired} id={i + '_DateRequired'} isDisabled={this.state.DynamicDisabled} />
-    </div>
-</div>
-</div> */}
