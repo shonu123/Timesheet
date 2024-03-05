@@ -139,11 +139,11 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
         sp.web.lists.getByTitle('WeeklyTimeSheet').items.getById(recordId).update(postObject).then((res) => {
             // alert("Record Updated Sucessfully");
             // this.setState({showHideModal : false,ItemID:0,message:'',title:'',Action:'',loading: false});
-            let sub=''
+            let sub=''; 
             if(Status==StatusType.Approved)
-            sub = "Weekly Time Sheet has been "+Status+"."
+            sub = "Weekly Time Sheet has been "+Status+" by Reviewers"
             else
-            sub = "Weekly Time Sheet has been "+StatusType.Reject+".Please re-submit with necessary details."
+            sub = "Weekly Time Sheet has been "+StatusType.Reject+" by Reviewers.Please re-submit with necessary details."
 
             let emaildetails ={toemail:To,ccemail:CC,subject:sub,bodyString:sub,body:'' };
              let table = tableContent;
