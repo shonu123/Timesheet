@@ -35,7 +35,7 @@ interface DatePickerProps {
     else{
       let Currentdate = new Date(date)
       while(Currentdate.getDay()!==1){
-        Currentdate.setDate(new Date().getDate() - 1)
+        Currentdate.setDate(Currentdate.getDate() - 1)
       }
       return new Date(Currentdate);
     }
