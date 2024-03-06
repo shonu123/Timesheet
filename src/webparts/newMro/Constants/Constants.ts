@@ -1,7 +1,7 @@
 
 export enum StatusType {
   Save = 'In-Draft',
-  Submit = 'Submited',
+  Submit = 'Submitted',
   InProgress = 'In-Progress',
   Approved = "Approved",
   Reject = "Rejected"

@@ -143,8 +143,10 @@
 }
 .table th {
   border-top: 0!important;
-  background: linear-gradient(rgb(228 228 228), rgb(191 191 191));
-  color: #444444;
+  /* background: linear-gradient(rgb(228 228 228), rgb(191 191 191)); */
+  background: #0D2F4B !important;
+  /* color: #444444; */
+  color: #fff;
   font-size: .9rem;
   padding: .95rem .75rem;
 }
@@ -479,7 +481,7 @@ span.comments-date {
 .click-close-box{
   position: relative;
 }
-span.span-fa-close{
+/* span.span-fa-close{
   position: absolute;
   right: 3px;
   top: 3px;
@@ -492,7 +494,7 @@ span.span-fa-close{
 }
 span.span-fa-close:hover{
   cursor: pointer;
-}
+} */
 /*E N D*/
 .ds-none{
   display: none;

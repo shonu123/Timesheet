@@ -70,9 +70,13 @@
         scale: .9;
     }
 
+    .text-start{
+        text-align: left;
+        background-color: #DEF1FF;
+    }
     .day {
         display: block;
-        color: #5652FE;
+        color: #ffff;
         font-size: 16px;
     }
     .weekDay{
@@ -82,7 +86,12 @@
         width: 120px !important;
     }
     .greyBackground{
-        background-color: rgba(169, 169, 169, 0.702);
+        background-color:#EAEAEA !important;
+        text-align: center !important;
+        height: 20px !important;
+    }
+    .nonBillableHours{
+        line-height: 0px !important;
     }
     /* .textareaBorder{
         border: 0.6px solid #0000007a !important;
@@ -107,13 +116,14 @@
         font-weight: bold;
     }
     span.c-badge {
-            background: #dfce8d;
-    padding: 3px 6px;
-    border-radius: 5px;
-    min-width: 35px;
-    display: inline-block;
-    font-weight: bold;
-    border: 2px solid #8f7100;
+            /* background: #dfce8d; */
+            background: #def1ff;
+            padding: 3px 6px;
+            border-radius: 5px;
+            min-width: 35px;
+            display: inline-block;
+            border-radius: 10px;
+            border: 1px solid #0D2F4B;
     }
     .ds-none{
         display: none;
@@ -132,13 +142,15 @@
     }
     /*color*/
     .color-FF9800{
-        color: #FF9800;
+        /* color: #FF9800; */
+        color: #FFC93E !important;
+        /* background-color: #FFC93E; */
     }
     .bc-FF9800{
         background-color: #FF9800;
     }
     .bc-e1f2ff{
-        background-color: #e1f2ff!important;
+        /* background-color: #e1f2ff!important; */
         width: 150px !important;
     }
     .color-2cbdff{
@@ -204,3 +216,4 @@
         left: 40px !important;
         width: 150px !important;
     }
+
