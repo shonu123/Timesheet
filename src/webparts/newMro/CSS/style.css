@@ -2215,3 +2215,21 @@ li {
 .ms-BasePicker-itemsWrapper{
   width: 100%;
 }
+
+.divWeeklyStartDate{    
+  position: relative !important;
+  left: 40px !important;
+  width: 150px !important;
+  }
+
+  .ddlClient{
+    height: 35px !important;
+  }
+
+  .weeklysection1{
+    margin-bottom: 1pc !important;
+  }
+
+  .dateWeeklyTimesheet,.txtEmployeeName{
+    height: 30px !important;
+  }

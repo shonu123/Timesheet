@@ -14,7 +14,8 @@ import 'react-datepicker/dist/react-datepicker.css'
 
 interface DatePickerProps {
     handleChange : (e:any) => void;
-    selectedDate : Date
+    selectedDate : Date;
+    className: string;
   }
 
 //   const [selectedDate,setDate] = React.useState(new Date())
@@ -41,7 +42,7 @@ interface DatePickerProps {
     }
    }
 
-  const CustomDatePicker =({ handleChange,selectedDate } : DatePickerProps) => {
+  const CustomDatePicker =({ handleChange,selectedDate,className } : DatePickerProps) => {
     return  (
 
             <div className="App">
@@ -52,6 +53,7 @@ interface DatePickerProps {
                     minDate={addDays(getStartDate(new Date()),-14)}
                     maxDate={new Date()}
                     filterDate = {filterDays}
+                    className = {className}
               />
             </div>
           );

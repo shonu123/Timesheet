@@ -23,7 +23,7 @@ import "../Shared/Menuhandler";
 import DatePicker from "../Shared/DatePickerField";
 import CustomDatePicker from "../Forms/DatePicker";
 import { addDays } from 'office-ui-fabric-react';
-
+import '../../CSS/WeeklyTimesheet.css'
 
 
 export interface WeeklyTimesheetProps {
@@ -1119,32 +1119,37 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
     <div className="container-fluid">
             <div className="my-3 media-p-1 Billable Hours">
                 <div className="col-md-4 SynergyAddress">
-                <h3>Synergy Computer Solutions, Inc.</h3>
-                <h6>30700 Telegraph Rd.  Suite 2615</h6>
-                <h6>Bingham Farms, MI  48025</h6>
-                <p>248.723.5100  Fax: 248.723.5372</p>
+                <h2>Synergy Computer Solutions, Inc.</h2>
+                <h4>30700 Telegraph Rd.  Suite 2615</h4>
+                <h4>Bingham Farms, MI  48025</h4>
+                <h6>248.723.5100  Fax: 248.723.5372</h6>
                 </div>
-            <div className="col-md-4">
-                <div className="light-text clientName">
-                    <label>Client Name <span className="mandatoryhastrick">*</span></label>
-                    <select className="form-control" required={true} name="ClientName" title="ClientName" onChange={this.handleClientChange}  ref={this.Client} disabled={this.state.isSubmitted}>
-                        <option value='None'>None</option>
-                        {this.state.ClientNames.map((option) => (
-                            <option value={option} selected={this.state.trFormdata.ClientName != ''}>{option}</option>
-                        ))}
-                    </select>
-                </div>
+                <div className="row pt-2 px-2 weeklysection1">
+
                 <div className="col-md-4">
-                    <div className="light-text">
-                        <label>Name</label>
-                        <input className="form-control" required={true} placeholder="" name="Name" title="Name" value={this.currentUser} disabled={true} />
+                            <div className="light-text">
+                                <label>Name</label>
+                                <input className="txtEmployeeName" required={true} placeholder="" name="Name" title="Name" value={this.currentUser} disabled={true} />
+                            </div>
                     </div>
-                </div>
-                <div className="col-md-4">
+
+                    <div className="col-md-4">
+                            <div className="light-text clientName">
+                                <label>Client Name <span className="mandatoryhastrick">*</span></label>
+                                <select className="ddlClient" required={true}  name="ClientName" title="ClientName" onChange={this.handleClientChange} ref={this.Client} disabled={this.state.isSubmitted}>
+                                            <option value='None'>None</option>
+                                            {this.state.ClientNames.map((option) => (
+                                                <option value={option} selected={this.state.trFormdata.ClientName != ''}>{option}</option>
+                                            ))}
+                                </select>
+                            </div>
+                    </div>
+
+                    <div className="col-md-4 divWeeklyStartDate">
                             <div className="light-text div-readonly">
-                                <label className="z-in-9">Weekly Start Date</label>
-                                <div className="custom-datepicker" id="divWeekStartDate">
-                                {/* <DatePicker 
+                                        <label className="z-in-9">Weekly Start Date</label>
+                                        <div className="custom-datepicker" id="divWeekStartDate">
+                                            {/* <DatePicker 
                                     onDatechange={this.WeekStartDateChange} 
                                     selectedDate={this.state.trFormdata.WeekStartDate} 
                                     name="WeeklyStartDate" 
@@ -1153,14 +1158,15 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                                     disabled={this.state.isSubmitted}
                                      
                                     /> */}
-                                    <CustomDatePicker 
-                                    handleChange={this.WeekStartDateChange}
-                                    selectedDate={this.state.trFormdata.WeekStartDate}
-                                    />
-                                </div>
+                                            <CustomDatePicker
+                                                handleChange={this.WeekStartDateChange}
+                                                selectedDate={this.state.trFormdata.WeekStartDate}
+                                                className='dateWeeklyTimesheet'
+                                            />
+                                        </div>
                             </div>
+                    </div>
                 </div>
-            </div>
                 <div className="border-box-shadow light-box table-responsive dataTables_wrapper-overflow p-2">
                     <h4>Billable Hours</h4>
                     <table className="table table-bordered m-0 timetable text-center">
