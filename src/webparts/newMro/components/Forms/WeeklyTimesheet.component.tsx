@@ -640,10 +640,10 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
             section.push(<tr id={rowId+(i+1)}>
                 <td> </td>
                 <td> 
-                    <textarea className="form-control" value={Obj[i].Description}  id={i+"_Description_"+rowType}  onChange={this.changeTime}  disabled={this.state.isSubmitted} ></textarea>
+                    <textarea className="form-control textareaBorder" placeholder='Enter Description' value={Obj[i].Description}  id={i+"_Description_"+rowType}  onChange={this.changeTime}  disabled={this.state.isSubmitted} ></textarea>
                 </td>
                 <td>      
-                    <input className="form-control" value={Obj[i].ProjectCode} id={i+"_ProjectCode_"+rowType} onChange={this.changeTime}  disabled={this.state.isSubmitted} type="text"></input>
+                    <input className="form-control" placeholder='Enter Project Code' value={Obj[i].ProjectCode} id={i+"_ProjectCode_"+rowType} onChange={this.changeTime}  disabled={this.state.isSubmitted} type="text"></input>
                 </td>
                 <td>
                     <input className="form-control time changerowPRJ1 Mon" value={Obj[i].Mon} id={i+"_Mon_"+rowType} onChange={this.changeTime}  disabled={this.state.isSubmitted} type="time"></input>
@@ -670,7 +670,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                 {this.getOTBadge(rowType)}
                 </td>
                 <td>
-                    <input className="form-control time Total" value={Obj[i].Total} id={i+"_Total_"+rowType} onChange={this.changeTime} type="text" disabled></input>
+                    <input className="form-control textareaBorder time Total" placeholder='Enter Description' value={Obj[i].Total} id={i+"_Total_"+rowType} onChange={this.changeTime} type="text" disabled></input>
                 </td>
                 <td>
                 {/* <span className="span-fa-close"><i className='fas fa-plus'></i></span> */}
@@ -1119,10 +1119,10 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
     <div className="container-fluid">
             <div className="my-3 media-p-1 Billable Hours">
                 <div className="col-md-4 SynergyAddress">
-                <h2>Synergy Computer Solutions, Inc.</h2>
-                <h4>30700 Telegraph Rd.  Suite 2615</h4>
-                <h4>Bingham Farms, MI  48025</h4>
-                <h6>248.723.5100  Fax: 248.723.5372</h6>
+                <h4>Synergy Computer Solutions, Inc.</h4>
+                <h6>30700 Telegraph Rd.  Suite 2615</h6>
+                <h6>Bingham Farms, MI  48025</h6>
+                <p id='fax'>248.723.5100  Fax: 248.723.5372</p>
                 </div>
                 <div className="row pt-2 px-2 weeklysection1">
 
@@ -1147,41 +1147,34 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
 
                     <div className="col-md-4 divWeeklyStartDate">
                             <div className="light-text div-readonly">
-                                        <label className="z-in-9">Weekly Start Date</label>
+                                        {/* <label className="z-in-9">Weekly Start Date</label> */}
                                         <div className="custom-datepicker" id="divWeekStartDate">
-                                            {/* <DatePicker 
-                                    onDatechange={this.WeekStartDateChange} 
-                                    selectedDate={this.state.trFormdata.WeekStartDate} 
-                                    name="WeeklyStartDate" 
-                                    id="txtWeekStartDate"
-                                    filterData={this.isDisabled}
-                                    disabled={this.state.isSubmitted}
-                                     
-                                    /> */}
                                             <CustomDatePicker
                                                 handleChange={this.WeekStartDateChange}
                                                 selectedDate={this.state.trFormdata.WeekStartDate}
                                                 className='dateWeeklyTimesheet'
+                                                labelName='Weekly Start Date'
+                                                isDisabled = {false}
                                             />
                                         </div>
                             </div>
                     </div>
                 </div>
                 <div className="border-box-shadow light-box table-responsive dataTables_wrapper-overflow p-2">
-                    <h4>Billable Hours</h4>
+                    {/* <h4>Billable Hours</h4> */}
                     <table className="table table-bordered m-0 timetable text-center">
-                                    <thead style={{ borderTop: "8px solid #9E9D9E" }}>
+                                    <thead style={{ borderBottom: "4px solid #444444" }}>
                                         <tr>
                                             <th className="" ><div className="have-h"></div></th>
                                             <th className="">Description</th>
-                                            <th className="">Project Code</th>
-                                            <th>Mon <span className="day">{this.WeekHeadings[0].Mon}</span></th>
-                                            <th>Tue <span className="day">{this.WeekHeadings[0].Tue}</span></th>
-                                            <th>Wed <span className="day">{this.WeekHeadings[0].Wed}</span></th>
-                                            <th>Thu <span className="day">{this.WeekHeadings[0].Thu}</span></th>
-                                            <th>Fri <span className="day">{this.WeekHeadings[0].Fri}</span></th>
-                                            <th className="color-FF9800">Sat <span className="day color-FF9800">{this.WeekHeadings[0].Sat}</span></th>
-                                            <th className="color-FF9800">Sun <span className="day color-FF9800">{this.WeekHeadings[0].Sun}</span></th>
+                                            <th className="projectCode">Project Code</th>
+                                            <th className="weekDay">Mon <span className="day">{this.WeekHeadings[0].Mon}</span></th>
+                                            <th className="weekDay">Tue <span className="day">{this.WeekHeadings[0].Tue}</span></th>
+                                            <th className="weekDay">Wed <span className="day">{this.WeekHeadings[0].Wed}</span></th>
+                                            <th className="weekDay">Thu <span className="day">{this.WeekHeadings[0].Thu}</span></th>
+                                            <th className="weekDay">Fri <span className="day">{this.WeekHeadings[0].Fri}</span></th>
+                                            <th className="color-FF9800 weekDay" color='#953704'>Sat <span className="day color-FF9800">{this.WeekHeadings[0].Sat}</span></th>
+                                            <th className="color-FF9800 weekDay" color='#953704'>Sun <span className="day color-FF9800">{this.WeekHeadings[0].Sun}</span></th>
                                             <th><div className="px-2"></div></th>
                                             <th className="bc-e1f2ff">Total</th>
                                             <th className=""><div className="px-3"></div></th>
@@ -1190,12 +1183,16 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                         <tbody>
                             
                             <tr id="rowPRJ1">
-                                <td> </td>
+                                <td className=" text-start"> 
+                                    <div className="p-2">
+                                         <strong>Billabel Hours</strong>
+                                    </div>
+                                </td>
                                 <td> 
-                                    <textarea className="form-control" value={this.state.trFormdata.WeeklyItemsData[0].Description} id="0_Description_weekrow" onChange={this.changeTime}  disabled={this.state.isSubmitted}  ></textarea>
+                                    <textarea className="form-control textareaBorder" placeholder='Enter Description' value={this.state.trFormdata.WeeklyItemsData[0].Description} id="0_Description_weekrow" onChange={this.changeTime}  disabled={this.state.isSubmitted}  ></textarea>
                                 </td>
                                 <td>      
-                                    <input className="form-control" value={this.state.trFormdata.WeeklyItemsData[0].ProjectCode} id="0_ProjectCode_weekrow" onChange={this.changeTime}  disabled={this.state.isSubmitted} ></input>
+                                    <input className="form-control" value={this.state.trFormdata.WeeklyItemsData[0].ProjectCode} placeholder='Enter Project Code' id="0_ProjectCode_weekrow" onChange={this.changeTime}  disabled={this.state.isSubmitted} ></input>
                                 </td>
                                 <td>
                                     <input className="form-control time changerowPRJ1 Mon"  value={this.state.trFormdata.WeeklyItemsData[0].Mon} id="0_Mon_weekrow"  onChange={this.changeTime}  disabled={this.state.isSubmitted} type="time"></input>
@@ -1236,10 +1233,10 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                                     </div>
                                 </td>
                                 <td>
-                                    <textarea className="form-control time" value={this.state.trFormdata.OTItemsData[0].Description} id="0_Description_otrow" onChange={this.changeTime}  disabled={this.state.isSubmitted} ></textarea>
+                                    <textarea className="form-control textareaBorder time"placeholder='Enter Description' value={this.state.trFormdata.OTItemsData[0].Description} id="0_Description_otrow" onChange={this.changeTime}  disabled={this.state.isSubmitted} ></textarea>
                                 </td>
                                 <td>
-                                    <input className="form-control time" value={this.state.trFormdata.OTItemsData[0].ProjectCode}  id="0_ProjectCode_otrow"  onChange={this.changeTime}  disabled={this.state.isSubmitted} ></input>
+                                    <input className="form-control time" value={this.state.trFormdata.OTItemsData[0].ProjectCode} placeholder='Enter Project Code'  id="0_ProjectCode_otrow"  onChange={this.changeTime}  disabled={this.state.isSubmitted} ></input>
                                 </td>
                                 <td>
                                     <input className="form-control time changerowOVR1 Mon" value={this.state.trFormdata.OTItemsData[0].Mon} id="0_Mon_otrow" onChange={this.changeTime}  disabled={this.state.isSubmitted} type="time"></input>
@@ -1318,12 +1315,12 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                             </tr>
                             
                             <tr>
-                                <td colSpan={13} className="text-start"><h4 className="my-2">NonBillable Hours</h4></td>
+                                <td colSpan={13} className="text-start greyBackground"><h4 className="my-2">NonBillable Hours</h4></td>
                             </tr>
                             <tr id="SynergyOfficeHrs">
                                 <td className="text-start"><div className="p-2">Synergy Office Hours</div></td>
-                                <td><textarea className="form-control time" value={this.state.trFormdata.SynergyOfficeHrs[0].Description} onChange={this.changeTime} id="0_Description_SynOffcHrs"  disabled={this.state.isSubmitted} ></textarea></td>
-                                <td><input className="form-control time" value={this.state.trFormdata.SynergyOfficeHrs[0].ProjectCode} onChange={this.changeTime} id="0_ProjectCode_SynOffcHrs"  disabled={this.state.isSubmitted} ></input></td>
+                                <td><textarea className="form-control textareaBorder time" placeholder='Enter Description' value={this.state.trFormdata.SynergyOfficeHrs[0].Description} onChange={this.changeTime} id="0_Description_SynOffcHrs"  disabled={this.state.isSubmitted} ></textarea></td>
+                                <td><input className="form-control time" value={this.state.trFormdata.SynergyOfficeHrs[0].ProjectCode} onChange={this.changeTime} id="0_ProjectCode_SynOffcHrs" placeholder='Enter Project Code'  disabled={this.state.isSubmitted} ></input></td>
                                 <td><input className="form-control time" value={this.state.trFormdata.SynergyOfficeHrs[0].Mon} onChange={this.changeTime} id="0_Mon_SynOffcHrs"  disabled={this.state.isSubmitted} type="time"></input></td>
                                 <td><input className="form-control time" value={this.state.trFormdata.SynergyOfficeHrs[0].Tue} onChange={this.changeTime} id="0_Tue_SynOffcHrs"  disabled={this.state.isSubmitted} type="time"></input></td>
                                 <td><input className="form-control time" value={this.state.trFormdata.SynergyOfficeHrs[0].Wed} onChange={this.changeTime} id="0_Wed_SynOffcHrs"  disabled={this.state.isSubmitted} type="time"></input></td>
@@ -1337,8 +1334,8 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                             </tr>
                             <tr id="SynergyHolidayHrs">
                                 <td className="text-start"><div className="p-2">Synergy Holiday</div></td>
-                                <td><textarea className="form-control time" value={this.state.trFormdata.SynergyHolidayHrs[0].Description} onChange={this.changeTime} id="0_Description_SynHldHrs"  disabled={this.state.isSubmitted} ></textarea></td>
-                                <td><input className="form-control time" value={this.state.trFormdata.SynergyHolidayHrs[0].ProjectCode} onChange={this.changeTime} id="0_ProjectCode_SynHldHrs"  disabled={this.state.isSubmitted} ></input></td>
+                                <td><textarea className="form-control textareaBorder time" placeholder='Enter Description' value={this.state.trFormdata.SynergyHolidayHrs[0].Description} onChange={this.changeTime} id="0_Description_SynHldHrs"  disabled={this.state.isSubmitted} ></textarea></td>
+                                <td><input className="form-control time" value={this.state.trFormdata.SynergyHolidayHrs[0].ProjectCode} onChange={this.changeTime} id="0_ProjectCode_SynHldHrs" placeholder='Enter Project Code'  disabled={this.state.isSubmitted} ></input></td>
                                 <td><input className="form-control time" value={this.state.trFormdata.SynergyHolidayHrs[0].Mon} onChange={this.changeTime} id="0_Mon_SynHldHrs"  disabled={this.state.isSubmitted} type="time"></input></td>
                                 <td><input className="form-control time" value={this.state.trFormdata.SynergyHolidayHrs[0].Tue} onChange={this.changeTime} id="0_Tue_SynHldHrs"  disabled={this.state.isSubmitted} type="time"></input></td>
                                 <td><input className="form-control time" value={this.state.trFormdata.SynergyHolidayHrs[0].Wed} onChange={this.changeTime} id="0_Wed_SynHldHrs"  disabled={this.state.isSubmitted} type="time"></input></td>
@@ -1352,8 +1349,8 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                             </tr>
                             <tr id="PTOHrs">
                                 <td className="text-start"><div className="p-2">PTO (Paid Time Off)</div></td>
-                                <td><textarea className="form-control time" value={this.state.trFormdata.PTOHrs[0].Description} onChange={this.changeTime} id="0_Description_PTOHrs"  disabled={this.state.isSubmitted}></textarea></td>
-                                <td><input className="form-control time" value={this.state.trFormdata.PTOHrs[0].ProjectCode} onChange={this.changeTime} id="0_ProjectCode_PTOHrs"  disabled={this.state.isSubmitted} ></input></td>
+                                <td><textarea className="form-control textareaBorder time" placeholder='Enter Description' value={this.state.trFormdata.PTOHrs[0].Description} onChange={this.changeTime} id="0_Description_PTOHrs"  disabled={this.state.isSubmitted}></textarea></td>
+                                <td><input className="form-control time" value={this.state.trFormdata.PTOHrs[0].ProjectCode} onChange={this.changeTime} id="0_ProjectCode_PTOHrs" placeholder='Enter Project Code'  disabled={this.state.isSubmitted} ></input></td>
                                 <td><input className="form-control time" value={this.state.trFormdata.PTOHrs[0].Mon} onChange={this.changeTime} id="0_Mon_PTOHrs"  disabled={this.state.isSubmitted} type="time"></input></td>
                                 <td><input className="form-control time" value={this.state.trFormdata.PTOHrs[0].Tue} onChange={this.changeTime} id="0_Tue_PTOHrs"  disabled={this.state.isSubmitted} type="time"></input></td>
                                 <td><input className="form-control time" value={this.state.trFormdata.PTOHrs[0].Wed} onChange={this.changeTime} id="0_Wed_PTOHrs"  disabled={this.state.isSubmitted} type="time"></input></td>
@@ -1485,7 +1482,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                             </div>
                             <div>
                             <table className="table table-bordered m-0 timetable text-center">
-                                    <thead style={{ borderTop: "8px solid #9E9D9E" }}>
+                                    <thead style={{ borderBottom: "4px solid #444444" }}>
                                         <tr>
                                             <th className="" >Action</th>
                                             <th className="" >Role</th>

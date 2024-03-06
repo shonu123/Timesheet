@@ -16,6 +16,8 @@ interface DatePickerProps {
     handleChange : (e:any) => void;
     selectedDate : Date;
     className: string;
+    labelName:string;
+    isDisabled:boolean;
   }
 
 //   const [selectedDate,setDate] = React.useState(new Date())
@@ -42,11 +44,11 @@ interface DatePickerProps {
     }
    }
 
-  const CustomDatePicker =({ handleChange,selectedDate,className } : DatePickerProps) => {
+  const CustomDatePicker =({ handleChange,selectedDate,className,labelName,isDisabled } : DatePickerProps) => {
     return  (
 
             <div className="App">
-                   <label htmlFor="current-date"> Current Date</label>
+                   <label className='z-in-9'>{labelName}</label>
                    <DatePicker
                     selected = {selectedDate}
                     onChange={handleChange}
@@ -54,6 +56,7 @@ interface DatePickerProps {
                     maxDate={new Date()}
                     filterDate = {filterDays}
                     className = {className}
+                    disabled = {isDisabled}
               />
             </div>
           );

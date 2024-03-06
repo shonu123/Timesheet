@@ -1514,7 +1514,7 @@ div[id^="_TopSpan_NotificationSpan"]{
       background: linear-gradient(#494ca2, rgba(0, 82, 112, .75));
       color: white; 
       font-size: .9rem;
-      font-weight: normal;     
+      font-weight: normal;  
   }
   .SPUN-table .dataTables_wrapper .table th{
       border-bottom: 0; 
@@ -2232,4 +2232,13 @@ li {
 
   .dateWeeklyTimesheet,.txtEmployeeName{
     height: 30px !important;
+  }
+
+  #fax{
+    font-size: 0.8rem !important;
+    font-weight: bold !important;
+  }
+  input[type="time"]::-webkit-calendar-picker-indicator { 
+    background: none !important;
+     display:none !important; 
   }

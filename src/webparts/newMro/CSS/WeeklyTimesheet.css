@@ -75,6 +75,18 @@
         color: #5652FE;
         font-size: 16px;
     }
+    .weekDay{
+        width: 100px !important;
+    }
+    .projectCode{
+        width: 120px !important;
+    }
+    .greyBackground{
+        background-color: rgba(169, 169, 169, 0.702);
+    }
+    /* .textareaBorder{
+        border: 0.6px solid #0000007a !important;
+    } */
     .span-pending{
         /*    background-color: #2cbdff;*/
         color: #ffffff;
@@ -127,6 +139,7 @@
     }
     .bc-e1f2ff{
         background-color: #e1f2ff!important;
+        width: 150px !important;
     }
     .color-2cbdff{
         color: #2cbdff
