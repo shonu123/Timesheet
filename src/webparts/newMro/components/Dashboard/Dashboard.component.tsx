@@ -236,13 +236,13 @@ class Dashboard extends React.Component<DashboardProps, DashboardState> {
                             <div className="border-box-shadow light-box m-2">
                                 <ul className="nav nav-tabs nav-fill" id="myTab" role="tablist">
                                      <li className="nav-item" role="presentation" onClick={() => this.onHandleClick('Approvers')} hidden={!this.state.isApprover}>
-                                        <a className="nav-link active tabsBackground" id="Approvers-tab" data-toggle="tab" href="#/Approvers" role="tab" aria-controls="home"  aria-selected="true">My Approvals</a>
+                                        <a className="nav-link active" id="Approvers-tab" data-toggle="tab" href="#/Approvers" role="tab" aria-controls="home" aria-selected="true">My Approvals</a>
                                     </li>
                                     <li className="nav-item" role="presentation" onClick={() => this.onHandleClick('MyRequests')} hidden={!this.state.isInitiator}>
-                                        <a className="nav-link tabsBackground" id="MyRequests-tab" data-toggle="tab" href="#/MyRequests" role="tab" aria-controls="profile"  aria-selected="false">My Requests</a>
+                                        <a className="nav-link" id="MyRequests-tab" data-toggle="tab" href="#/MyRequests" role="tab" aria-controls="profile" aria-selected="false">My Requests</a>
                                     </li> 
                                     <li className="nav-item" role="presentation" onClick={() => this.onHandleClick('Reviewers')} hidden={!this.state.isReviewer}>
-                                        <a className="nav-link tabsBackground" id="ReviewersApprovals-tab" data-toggle="tab" href="#/Reviewers" role="tab" aria-controls="profile"  aria-selected="false">My Approvals</a>
+                                        <a className="nav-link" id="ReviewersApprovals-tab" data-toggle="tab" href="#/Reviewers" role="tab" aria-controls="profile" aria-selected="false">My Approvals</a>
                                     </li>
                                 </ul>
                                 

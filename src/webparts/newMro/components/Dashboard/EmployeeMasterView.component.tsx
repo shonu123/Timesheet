@@ -173,7 +173,7 @@ class EmployeeMasterView extends React.Component<EmployeeMasterViewProps, Employ
         ];
         return (
             <React.Fragment>
-            <h1 className='tabsBackground'>Approval Matrix</h1>
+            <h1 className='title'>Approval Matrix</h1>
 
                 <div style={{ paddingLeft: '10px' }} className="px-1 text-right" id='divAddNewEmployeeMaster'>
                     <NavLink title="Edit"  className="csrLink ms-draggable" to={`/EmployeeMasterForm`}>

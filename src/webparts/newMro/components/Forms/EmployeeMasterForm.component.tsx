@@ -130,7 +130,7 @@ class EmployeeMasterForm extends React.Component<EmployeeMasterFormProps, Employ
         this.setState({EmployeeEmail : data[0].Employee.EMail,EmployeeId : data[0].Employee.ID})
         // this.setState({ReportingManagerEmail : data[0].ReportingManager.EMail,ReportingManagerId:data[0].ReportingManager.ID})
         this.setState({ClientName : data[0].ClientName})
-        this.setState({IsActive : data[0].IsActive})
+        this.setState({isActive : data[0].IsActive})
         let date = new Date(data[0].DateOfJoining)
         this.setState({ DateOfJoining : date })
         this.setState({SelectedEmployee : data[0].Employee.ID})
@@ -353,7 +353,7 @@ else {
                         </div>
                         <div className='container-fluid'>
                             <div className='FormContent'>
-                                <div className="tabsBackground">Approval Matrix
+                                <div className="title">Approval Matrix
                                     <div className='mandatory-note'>
                                         <span className='mandatoryhastrick'>*</span> indicates a required field
                                     </div>

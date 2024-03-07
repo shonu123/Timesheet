@@ -167,15 +167,15 @@
   opacity: .8;
 }
 .btn-add{
-  border: 1px solid #494ca2!important;
+  border: 1px solid #0D2F4b!important;
   color: #ffffff!important;
-  background-color: #494ca2!important;
+  background-color: #0D2F4b!important;
 }
 .btn-add:hover{
  color: #ffffff!important; 
 }
 .title {
-  background-color: #494ca2;
+  background-color: #0D2F4b;
   color: white;
   font-size: 1.5rem;
   padding: 8px 9px;
@@ -189,7 +189,7 @@
 }
 /* .title p:nth-child(1){
 font-size: 2rem;
-color: #494ca2;
+color: #0D2F4B;
 margin-bottom: 1.5rem;
 } */
 .mandatory-note{
@@ -239,9 +239,9 @@ margin-bottom: 1.5rem;
 .nav-tabs .nav-link{
   background-color: #f1f1f1;
   margin: 0 6px 0 0;
-  color: #494ca2;
+  color: #0D2F4B;
   border: 0!important;
-  border-bottom: 3px solid #494ca2!important;
+  border-bottom: 3px solid #0D2F4B!important;
   margin-right: 0;
   border-radius: 0!important;
   font-weight: bold;
@@ -329,7 +329,7 @@ margin-bottom: 1.5rem;
 }
 .select2-container--default .select2-selection--single{
   border: 0;
-  border-bottom: 1px solid #494ca2;
+  border-bottom: 1px solid #0D2F4B;
   border-radius: 0;
   height: inherit;
   padding-left: 2px;
@@ -656,7 +656,7 @@ a{
   /* .FormContent input ,.FormContent select{
       background: transparent;
       border: none;
-      border-bottom: 1px solid #494ca2;
+      border-bottom: 1px solid #0D2F4B;
       padding-left: 2px;
       margin-bottom: 5px;
       padding-top: .38rem;
@@ -827,7 +827,7 @@ input.c-input-readonly {
 .datetimepicker[readonly]{
   background-color: transparent;
   opacity: 1;
-  border-bottom: 1px solid #494ca2; 
+  border-bottom: 1px solid #0D2F4B; 
 }
 .form-control[readonly]{
   background-color: #ffffff!important;
@@ -929,7 +929,7 @@ a:active {
 }
 .btn.upload-btn {
   color: white!important;
-  background-color: #494ca2!important;
+  background-color: #0D2F4B!important;
   border-radius: 0!important;
 }
 .button-area {
@@ -978,9 +978,9 @@ a:active {
   line-height: 1.5;
   transition: all .15s ease-in-out;
   margin-bottom: 25px;
-  background: #494ca2;
+  background: #0D2F4B;
   color: white;
-  border: 1px solid #494ca2;
+  border: 1px solid #0D2F4B;
   padding: 6px 18px;
   margin-left: inherit;
   font-family: inherit;
@@ -1044,8 +1044,8 @@ a:active {
   line-height: 1.5;
   transition: all .15s ease-in-out;
   background-color: white;
-  color: #494ca2;
-  border: 1px solid #494ca2;
+  color: #0D2F4B;
+  border: 1px solid #0D2F4B;
   margin-bottom: 25px;
   padding: 6px 18px;
   margin-left: inherit;
@@ -1057,7 +1057,7 @@ a:active {
 } 
 .SaveButtons-lg:hover{
   background-color: #e9ecef;
-  color: #494ca2;
+  color: #0D2F4B;
 }
 .ReturnButtons{
   line-height: 1.5;
@@ -1084,9 +1084,9 @@ a:active {
   line-height: 1.5;
   transition: all .15s ease-in-out;
   margin-bottom: 25px;
-  background: #494ca2;
+  background: #0D2F4B;
   color: white;
-  border: 1px solid #494ca2;
+  border: 1px solid #0D2F4B;
   padding: 6px 18px;
   margin-left: inherit;
   font-family: inherit;
@@ -1097,7 +1097,7 @@ a:active {
 }
 .buttons:hover{
   background: white;
-  color: #494ca2;
+  color: #0D2F4B;
 }
 .btn{
   margin: 2px!important;
@@ -1106,9 +1106,9 @@ a:active {
   line-height: 1.5;
   transition: all .15s ease-in-out;
   margin-bottom: 25px;
-  background: #494ca2;
+  background: #0D2F4B;
   color: white;
-  border: 1px solid #494ca2;
+  border: 1px solid #0D2F4B;
   padding: 6px 18px;
   margin-left: inherit;
   font-family: inherit;
@@ -1172,9 +1172,9 @@ a:active {
   line-height: 1.5;
   transition: all .15s ease-in-out;
   margin-bottom: 25px;
-  background: #494ca2;
+  background: #0D2F4B;
   color: white;
-  border: 1px solid #494ca2;
+  border: 1px solid #0D2F4B;
   padding: 6px 18px;
   margin-left: inherit;
   font-family: inherit;
@@ -1185,11 +1185,11 @@ a:active {
 }
 .SubmitButtons-lg:hover{
   background: rgba(0, 82, 112, 0.85);
-  /* color: #494ca2; */
+  /* color: #0D2F4B; */
 }
 .link-btn{
   margin-bottom: 25px;
-  color: #494ca2;
+  color: #0D2F4B;
   padding: 6px 18px;
   margin-left: inherit;
   font-family: inherit;
@@ -1296,7 +1296,7 @@ div[id^="_TopSpan_NotificationSpan"]{
   display: none;
 }
 .sp-peoplepicker-topLevel{
-  border-bottom: 1px solid #494ca2;
+  border-bottom: 1px solid #0D2F4B;
   padding: 5px;
   margin-bottom: 9px;
   white-space: normal;
@@ -1320,7 +1320,7 @@ div[id^="_TopSpan_NotificationSpan"]{
   white-space: normal;
 }
 /* .FormContent textarea.form-control{
-  border-bottom: 1px solid #494ca2;  
+  border-bottom: 1px solid #0D2F4B;  
   margin-bottom: 9px;  
   padding: 2px 5px; 
   line-height: 1.2;     
@@ -1513,7 +1513,7 @@ div[id^="_TopSpan_NotificationSpan"]{
   }
   .dataTables_wrapper .table th{
       border-top:0;
-      background: linear-gradient(#494ca2, rgba(0, 82, 112, .75));
+      background: linear-gradient(#0D2F4B, rgba(0, 82, 112, .75));
       color: white; 
       font-size: .9rem;
       font-weight: normal;  
@@ -1544,12 +1544,12 @@ div[id^="_TopSpan_NotificationSpan"]{
 
   } */
   .page-item.active .page-link{
-      background-color: #494ca2;
-      border-color: #494ca2;
+      background-color: #0D2F4B;
+      border-color: #0D2F4B;
       color: white;
   }
   .page-link{
-      color: #494ca2;
+      color: #0D2F4B;
   }
   .dataTables_wrapper-overflow #piechart{
       margin: auto;
@@ -1642,7 +1642,7 @@ div[id^="_TopSpan_NotificationSpan"]{
   }  
   .nav-tabs .nav-link.active{
     color: #ffffff!important;
-    background-color: #494ca2!important;
+    background-color: #0D2F4B!important;
     position: relative;
   } 
   .nav-tabs .nav-link.active:after {
@@ -1953,7 +1953,7 @@ top: 43.5%;
 .add-button {
   transition: all .15s ease-in-out;
     background: #ffffff;
-    color: #494ca2;
+    color: #0D2F4B;
     border-radius: 10px;
     width: 60px;
     height: 40px;
@@ -1961,7 +1961,7 @@ top: 43.5%;
     text-align: center;
     margin: 0;
     padding: 9px 0 0;
-    border: 2px solid #494ca2;
+    border: 2px solid #0D2F4B;
 }
 .add-button .fa-plus {
   font-size: 1.1rem;
@@ -1969,7 +1969,7 @@ top: 43.5%;
 .add-button:hover{
   cursor: pointer;
   transition: all .15s ease-in-out;
-    background: #494ca2;
+    background: #0D2F4B;
     color: #ffffff;
     border: 2px solid #686abf;
 }
@@ -2175,7 +2175,7 @@ li {
   right: 3px;
   top: 4px;
   border-radius: 33px;
-  background-color: #494ca2;
+  background-color: #0D2F4B;
   color: white;
   padding: 4px 9px;
 }
@@ -2245,7 +2245,7 @@ li {
      display:none !important; 
   }
 
-  .tabsBackground{
+  /* .tabsBackground{
     background-color: #0D2F4B !important;
     color: #ffff !important;
     font-size: 1.5rem;
@@ -2254,4 +2254,4 @@ li {
     width: 100%;
     left: -10px;
     top: 10px;  
-  }
+  } */
