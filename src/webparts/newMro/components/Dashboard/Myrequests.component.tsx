@@ -132,7 +132,7 @@ class MyRequests extends React.Component<MyRequestsProps, MyRequestsState> {
         ];
         return (
             <React.Fragment>
-            <h1>Initiator Screen</h1>
+            {/* <h1>Initiator Screen</h1> */}
 
                 <div style={{ paddingLeft: '10px' }} className="px-1 text-right" id='divAddNewWeeklyTimeSheet'>
                     <NavLink title="Edit"  className="csrLink ms-draggable" to={`/WeeklyTimesheet`}>

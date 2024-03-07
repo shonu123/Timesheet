@@ -78,7 +78,8 @@ class EmployeeMasterForm extends React.Component<EmployeeMasterFormProps, Employ
         NotifierEmail: [],
         SelectedEmployee : '',
         SelectedClient : '',
-        Homeredirect: false
+        Homeredirect: false,
+        isPageAccessable: true
     }
 
     public componentDidMount() {
@@ -90,7 +91,11 @@ class EmployeeMasterForm extends React.Component<EmployeeMasterFormProps, Employ
 
     private async GetClients() {
 
-    let clients = await sp.web.lists.getByTitle('Client').items.filter("IsActive eq 1").select('*').orderBy('Title').get()
+        let [clients,groups] = await Promise.all([
+            sp.web.lists.getByTitle('Client').items.filter("IsActive eq 1").select('*').orderBy('Title').get(),
+            await sp.web.currentUser.groups()
+        ])
+    // let clients = await sp.web.lists.getByTitle('Client').items.filter("IsActive eq 1").select('*').orderBy('Title').get()
         // sp.web.currentUser.groups()
         this.setState({ClientsObject : clients})
         console.log(clients);
@@ -102,6 +107,18 @@ class EmployeeMasterForm extends React.Component<EmployeeMasterFormProps, Employ
             this.setState({ItemID : this.props.match.params.id})
             this.getData()
         }
+        //  groups = await sp.web.currentUser.groups();
+        console.log("current user deatils")
+        console.log(this.props.context.pageContext)
+
+        let userGroup = groups[0].Title
+        let user = userGroup=='Timesheet Initiators' ?'Initiator': userGroup=='Timesheet Approvers'?'Approver':userGroup=='Timesheet Reviewers'?'Reviewer':'Administrator'
+        console.log('You are :'+user)
+
+        if(user !='Administrator'){
+            this.setState({isPageAccessable : false})
+        }
+
 
     }
 
@@ -188,8 +205,10 @@ class EmployeeMasterForm extends React.Component<EmployeeMasterFormProps, Employ
     
     private UpdateDate = (dateprops) => {
         console.log(dateprops)
- 
-       let date = new Date(dateprops[0])
+        let date = new Date()
+        if(dateprops[0]!= null){
+            date = new Date(dateprops[0])
+        }
         this.setState({ DateOfJoining : date });
 
     }
@@ -309,8 +328,12 @@ private async validateDuplicateRecord () {
     }
     
    public render() {
+    if(!this.state.isPageAccessable){
+        let url = `https://synergycomcom.sharepoint.com/sites/Billing.Timesheet/SitePages/AccessDenied.aspx?`
+        return (<Navigate to={url} />);
+    }
     if (this.state.Homeredirect) {
-        // let url = `/WeeklyTimeSheet`
+       
         let url = `/`
         return (<Navigate to={url} />);
     }

@@ -89,6 +89,7 @@ export interface WeeklyTimesheetState {
     showBillable: boolean;
     showNonBillable : boolean;
     showApproveRejectbtn: boolean;
+    isRecordAcessable:boolean;
 }
 
 class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetState> {
@@ -165,7 +166,8 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
             isSubmitted:false,
             showBillable:true,
             showNonBillable : true,
-            showApproveRejectbtn : false
+            showApproveRejectbtn : false,
+            isRecordAcessable: true
         };
         this.oweb = Web(this.props.spContext.siteAbsoluteUrl);
          // for first row of weekly and OT hrs
@@ -232,6 +234,11 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
             this.setState({ItemID : this.props.match.params.id})
             this.getItemData()
         }
+        else {
+            if(this.state.userRole != 'Initiator'){
+                this.setState({isSubmitted : true});
+            }
+        }
 
     }
     private async getItemData(){
@@ -278,12 +285,19 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
         }
     
         this.setState({ trFormdata:trFormdata,currentWeeklyRowsCount:trFormdata.WeeklyItemsData.length,currentOTRowsCount: trFormdata.OTItemsData.length,EmployeeEmail:EmpEmail,ReportingManagersEmail:RMEmail,ReviewersEmail:ReviewEmail,NotifiersEmail:NotifyEmail});
-        this.hideApproveAndRejectButton()
+        this.hideApproveAndRejectButton();
+        this.userAccessableRecord();
     }
 
     //functions related to calculation
     private WeekStartDateChange = (dateprops) => {
-        let date=new Date(dateprops);
+        let date  = new Date()
+        if(dateprops==null){
+            date = this.GetCurrentWeekMonday(new Date())
+        }
+        else{
+            date=new Date(dateprops);
+        }
         let WeekStartDate=new Date(date);
         const Formdata = { ...this.state.trFormdata };
             Formdata.WeekStartDate=date;
@@ -685,7 +699,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
         for(var i=1;i<NoOfRows;i++)
         {
             section.push(<tr id={rowId+(i+1)}>
-                <td> </td>
+                <td className=" text-start"> </td>
                 <td> 
                     <textarea className="form-control textareaBorder" value={Obj[i].Description}  id={i+"_Description_"+rowType}  onChange={this.changeTime}  disabled={this.state.isSubmitted || this.state.showBillable} ></textarea>
                 </td>
@@ -1263,9 +1277,36 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
          this.setState({showApproveRejectbtn  :value})
      }
   
+     private userAccessableRecord(){
+        let currentUserEmail = this.props.spContext.userEmail;
+        let userEmail = this.state.EmployeeEmail
+        let NotifiersEmail = this.state.NotifiersEmail 
+        let ReviewerEmails = this.state.ReviewersEmail
+        let ApproverEmails = this.state.ReportingManagersEmail
+
+        let isAccessable = false;
+        if(userEmail.includes(currentUserEmail)){
+            isAccessable = true
+        }
+        else if(ApproverEmails.includes(currentUserEmail)){
+            isAccessable = true
+        }
+        else if(ReviewerEmails.includes(currentUserEmail)){
+            isAccessable = true
+        }
+        else if(NotifiersEmail.includes(currentUserEmail)){
+            isAccessable = true
+        }
+        this.setState({isRecordAcessable : isAccessable})
+    }
 
     public render() {
 
+        if (!this.state.isRecordAcessable) {
+            
+            let url = `https://synergycomcom.sharepoint.com/sites/Billing.Timesheet/SitePages/AccessDenied.aspx?`
+            return (<Navigate to={url} />);
+        }
         if (this.state.redirect) {
             let url = `/`
             return (<Navigate to={url} />);

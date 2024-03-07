@@ -37,11 +37,11 @@
     .span-fa-plus{
         display: inline-block;
         margin: auto;
-        width: 26px;
-        height: 26px;
+        width: 24px;
+        height: 24px;
         text-align: center;
         border-radius: 50%;
-        background: #009688;
+        background: #0D2F4B;;
         color: white;
         font-size: 14px;
         padding-top: 2px;
@@ -54,15 +54,15 @@
     .span-fa-close{
         display: inline-block;
         margin: auto;
-        width: 26px;
-        height: 26px;
+        width: 24px;
+        height: 24px;
         text-align: center;
         border-radius: 50%;
         background: #bf0033;
         color: white;
         font-size: 14px;
         padding-top: 2px;
-        transform: rotate(45deg);
+        /* transform: rotate(45deg); */
     }
     .span-fa-close:hover{
         cursor: pointer;

@@ -413,12 +413,12 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
             ];
             return (
                 <React.Fragment>
-                <h1>Reviewer Screen</h1>
+                {/* <h1>Reviewer Screen</h1> */}
                 {/* <ModalPopUp title={this.state.modalTitle} modalText={this.state.modalText} isVisible={this.state.showHideModal} onClose={this.handlefullClose} isSuccess={this.state.isSuccess}></ModalPopUp> */}
                 <ModalApprovePopUp message={this.state.message} title={this.state.title} isVisible={this.state.showHideModal} isSuccess={false} onConfirm={this.handleAction} onCancel={this.handlefullClose} comments={this.handleComments} errorMessage={this.state.errorMessage} commentsValue={this.state.comments} ></ModalApprovePopUp>
                 <div>
                     <div className='table-head-1st-td'>
-                        <TableGenerator columns={columns} data={this.state.Reviewers} fileName={'Reviewes Approvals'} showExportExcel={false}></TableGenerator>
+                        <TableGenerator columns={columns} data={this.state.Reviewers} fileName={'My Approvals'} showExportExcel={false}></TableGenerator>
                     </div>
                 </div>
                 {this.state.loading && <Loader />}

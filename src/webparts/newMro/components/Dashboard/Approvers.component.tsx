@@ -146,10 +146,10 @@ class ApproversApprovals extends React.Component<ApproversProps, ApproversState>
         ];
         return (
             <React.Fragment>
-            <h1>Approver Screen</h1>
+            {/* <h1>Approver Screen</h1> */}
             <div>
                 <div className='table-head-1st-td'>
-                    <TableGenerator columns={columns} data={this.state.ReportingManager} fileName={'Approvers Approvals'} showExportExcel={false}></TableGenerator>
+                    <TableGenerator columns={columns} data={this.state.ReportingManager} fileName={'My Approvals'} showExportExcel={false}></TableGenerator>
                 </div>
             </div>
             </React.Fragment> 
