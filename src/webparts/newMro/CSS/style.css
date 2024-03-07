@@ -2244,3 +2244,14 @@ li {
     background: none !important;
      display:none !important; 
   }
+
+  .tabsBackground{
+    background-color: #0D2F4B !important;
+    color: #ffff !important;
+    font-size: 1.5rem;
+    padding: 8px 9px;
+    position: absolute;
+    width: 100%;
+    left: -10px;
+    top: 10px;  
+  }

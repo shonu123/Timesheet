@@ -353,7 +353,7 @@ else {
                         </div>
                         <div className='container-fluid'>
                             <div className='FormContent'>
-                                <div className="title">Approval Matrix
+                                <div className="tabsBackground">Approval Matrix
                                     <div className='mandatory-note'>
                                         <span className='mandatoryhastrick'>*</span> indicates a required field
                                     </div>
