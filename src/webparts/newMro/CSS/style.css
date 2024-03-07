@@ -245,6 +245,7 @@ margin-bottom: 1.5rem;
   margin-right: 0;
   border-radius: 0!important;
   font-weight: bold;
+  text-align: center;
 }
 .border-dashed{
   border: 2px dashed rgba(0, 128, 180, 0.50);      
@@ -1645,7 +1646,7 @@ div[id^="_TopSpan_NotificationSpan"]{
     background-color: #0D2F4B!important;
     position: relative;
   } 
-  .nav-tabs .nav-link.active:after {
+  /* .nav-tabs .nav-link.active:after {
     content: "";
     position: absolute;
     bottom: -22px;
@@ -1653,7 +1654,8 @@ div[id^="_TopSpan_NotificationSpan"]{
     left: 40%;
     border: 10px solid transparent;
     border-top-color: rgb(73 76 162);
-} 
+    border-top-color: #0D2F4B;
+}  */
   .nav-pills .nav-link{
       cursor: pointer;
   }

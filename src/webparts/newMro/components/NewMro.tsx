@@ -54,7 +54,7 @@ export default class NewMro extends React.Component<INewMroProps, {}> {
     return (
       <HashRouter>
         <div className="custom-tab">
-          <div className='menu-hide wrapper d-flex align-items-stretch' id="">
+          <div className='menu-hide wrapper  align-items-stretch' id="">
             {this.state.isPermissionChecked ? <NavBar {...this.props} {...this.state} /> : null}
             {this.state.isPermissionChecked ? <Routes  {...this.state} {...this.props} /> : null}
           </div>
