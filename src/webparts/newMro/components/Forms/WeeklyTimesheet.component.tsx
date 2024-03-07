@@ -98,6 +98,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
     private currentUserId:number;
     private listName = 'WeeklyTimeSheet';
     private Client;
+    private Comments;
     private WeekHeadings=[];
     constructor(props: WeeklyTimesheetProps) {
         super(props);
@@ -108,6 +109,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
         this.currentUser=this.props.spContext.userDisplayName;
         this.currentUserId=this.props.spContext.userId;
         this.Client=React.createRef();
+        this.Comments=React.createRef();
         this.state = {
           
             trFormdata: {
@@ -720,7 +722,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                 <td>
                 {/* <span className="span-fa-close"><i className='fas fa-plus'></i></span> */}
                 {/* <span className='span-fa-close' title='Delete Row' onClick={this.RemoveCurrentRow} id={i+"_"+rowType}  hidden={this.state.isSubmitted}><FontAwesomeIcon icon={faClose}></FontAwesomeIcon></span> */}
-                {this.state.showBillable? '' :this.state.isSubmitted? '' : <span className='span-fa-close' title='Delete row' onClick={this.RemoveCurrentRow} id={i+"_"+rowType} ><FontAwesomeIcon icon={faClose}></FontAwesomeIcon></span> }
+                {this.state.showBillable? '' :this.state.isSubmitted? '' : <span className='span-fa-close' title='Delete row' onClick={this.RemoveCurrentRow} id={i+"_"+rowType} ><FontAwesomeIcon icon={faClose} id={i+"_"+rowType}></FontAwesomeIcon></span> }
                 </td>
             </tr>);
         }   
@@ -868,7 +870,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
             }
                  postObject["CommentsHistory"]=JSON.stringify(formdata.CommentsHistoryData),
                 this.setState({errorMessage : '',trFormdata:formdata});
-                this.InsertorUpdatedata(postObject);
+                this.InsertorUpdatedata(postObject,formdata);
          
         } 
         else {
@@ -968,13 +970,13 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
         }
              postObject["CommentsHistory"]=JSON.stringify(formdata.CommentsHistoryData),
             this.setState({errorMessage : '',trFormdata:formdata});
-            this.InsertorUpdatedata(postObject);
+            this.InsertorUpdatedata(postObject,formdata);
     }
     private handleReject=async (event)=>
     {
         var formdata = { ...this.state.trFormdata };
         let data = {
-            Comments:{val:this.state.trFormdata.Comments,required:true, Name: 'Comments', Type: ControlType.string, Focusid:"txtComments"},
+            Comments:{val:this.state.trFormdata.Comments,required:true, Name: 'Comments', Type: ControlType.string, Focusid:this.Comments},
         };
         //postObject["WeeklyTotalHrs"]=formdata.WeeklyItemsTotalTime;
         //postObject["OTTotalHrs"]=formdata.OTItemsTotalTime;
@@ -988,7 +990,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
             postObject['PendingWith']="NA";
             postObject["CommentsHistory"]=JSON.stringify(formdata.CommentsHistoryData),
             this.setState({errorMessage : '',trFormdata:formdata});
-            this.InsertorUpdatedata(postObject);
+            this.InsertorUpdatedata(postObject,formdata);
         }
         else
         {
@@ -1000,9 +1002,9 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
         this.setState({showHideModal : false,ItemID:0,errorMessage:'',loading: false});
         this.setState({redirect : true}); 
     }
-    private InsertorUpdatedata(formdata) {
+    private InsertorUpdatedata(formdata,formObject) {
         this.setState({ loading: true });
-        let tableContent = {'Name':this.state.trFormdata.Name,'Company':this.state.trFormdata.ClientName,'Submitted Date':`${this.state.trFormdata.DateSubmitted.getMonth() + 1}/${this.state.trFormdata.DateSubmitted.getDate()}/${this.state.trFormdata.DateSubmitted.getFullYear()}`,'Billable Hours':this.state.trFormdata.WeeklyItemsTotalTime,'OT Hours':this.state.trFormdata.OTItemsTotalTime,'Total Billable Hours':this.state.trFormdata.BillableSubTotal[0].Total,'Non-Billable  Hours':this.state.trFormdata.NonBillableSubTotal[0].Total,'Total Hours':this.state.trFormdata.Total[0].Total}
+        let tableContent = {'Name':this.state.trFormdata.Name,'Company':this.state.trFormdata.ClientName,'Submitted Date':`${this.state.trFormdata.DateSubmitted.getMonth() + 1}/${this.state.trFormdata.DateSubmitted.getDate()}/${this.state.trFormdata.DateSubmitted.getFullYear()}`,'Billable Hours':formObject.WeeklyItemsTotalTime,'OT Hours':formObject.OTItemsTotalTime,'Total Billable Hours':this.state.trFormdata.BillableSubTotal[0].Total,'Non-Billable  Hours':this.state.trFormdata.NonBillableSubTotal[0].Total,'Total Hours':this.state.trFormdata.Total[0].Total}
         let sub='';
         let emaildetails={};
         let CC=[];
@@ -1293,7 +1295,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                     <div className="col-md-4">
                             <div className="light-text clientName">
                                 <label>Client Name <span className="mandatoryhastrick">*</span></label>
-                                <select className="ddlClient" required={true}  name="ClientName" title="ClientName" onChange={this.handleClientChange} ref={this.Client} disabled={this.state.isSubmitted}>
+                                <select className="ddlClient" required={true}  name="ClientName" title="Client Name" onChange={this.handleClientChange} ref={this.Client} disabled={this.state.isSubmitted}>
                                             <option value='None'>None</option>
                                             {this.state.ClientNames.map((option) => (
                                                 <option value={option} selected={this.state.trFormdata.ClientName==option}>{option}</option>
@@ -1603,7 +1605,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
     
                                                     <div className="light-text height-auto">
                                                         <label className="floatingTextarea2 top-11">Comments </label>
-                                                        <textarea className="position-static form-control requiredinput" onChange={this.handleChange} value={this.state.trFormdata.Comments} placeholder="" maxLength={500} id="txtComments" name="Comments"  disabled={false}></textarea>
+                                                        <textarea className="position-static form-control requiredinput" ref={ this.Comments} onChange={this.handleChange} value={this.state.trFormdata.Comments} placeholder="" maxLength={500} id="txtComments" name="Comments"  disabled={false}></textarea>
                                                     </div>
                                                 </div>
                     </div>
