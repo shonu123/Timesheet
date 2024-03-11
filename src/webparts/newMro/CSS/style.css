@@ -707,6 +707,7 @@ a{
 position: relative !important;
 width: 100px !important;
 top: 0px !important;
+z-index: 0;
 }
 label{
   /* color: #572ba7; */
@@ -1533,6 +1534,7 @@ div[id^="_TopSpan_NotificationSpan"]{
   .v-table{
       width: 80vw;
       margin: auto;
+      margin-top: 80px !important;
   }
   .c-v-table{
     width: 82vw;
@@ -2194,12 +2196,12 @@ li {
 #divAddNewWeeklyTimeSheet,#divAddNewEmployeeMaster{
   position: relative;
 }
-#newWeeklyTimeSheet,#newEmployeeMasterForm{
+/* #newWeeklyTimeSheet{
   position: absolute;
   right: 10px;
   top: -70px;
   z-index: 10;
-}
+} */
 .ms-PickerPersona-container{
   padding: .125rem .1rem;
   border-radius: 24px !important;
@@ -2247,6 +2249,29 @@ li {
      display:none !important; 
   }
 
+  #tablePDF{
+    position: relative;
+    top: 50px;
+  }
+
+  #txtTableSearch{
+    width: 240px;
+    height: 15px;
+    position: absolute;
+    left: 5px;
+    /* top: 10px; */
+  }
+
+
+  #newEmployeeMasterForm,#newWeeklyTimeSheet{
+    position: absolute;
+    z-index: 10;
+    right: 10px;
+    height: 25px;
+    width: 80px;
+    text-align: center;
+    cursor: pointer;
+  }
   /* .tabsBackground{
     background-color: #0D2F4B !important;
     color: #ffff !important;

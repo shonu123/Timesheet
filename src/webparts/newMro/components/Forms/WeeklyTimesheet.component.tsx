@@ -1517,7 +1517,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                             </tr>
                             
                             <tr className='nonBillableHours'>
-                                <td colSpan={13} className="text-start greyBackground"><h4 className="my-2">NonBillable Hours</h4></td>
+                                <td colSpan={13} className="text-start greyBackground"><h4 className="my-2">Non-Billable Hours</h4></td>
                             </tr>
                             <tr id="SynergyOfficeHrs">
                                 <td className="text-start"><div className="p-2">Synergy Office Hours</div></td>
@@ -1568,7 +1568,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                             <tr className="font-td-bold" id="NonBillableTotal">
                                 <td className="fw-bold text-start"> 
                                     <div className="p-2">
-                                        <i className="fas fa-business-time color-gray"></i> NonBillable Subtotal
+                                        <i className="fas fa-business-time color-gray"></i> Non-Billable Subtotal
                                     </div>
                                 </td>
                                 <td></td>
