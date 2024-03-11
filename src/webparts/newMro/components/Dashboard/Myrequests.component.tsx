@@ -62,8 +62,8 @@ class MyRequests extends React.Component<MyRequestsProps, MyRequestsState> {
                 let Data = [];
                 for (const d of response) {
                     let date;
-                    if(!["",undefined,null].includes(d.DateSubmitted)){
-                        date = new Date(d.DateSubmitted)
+                    if(!["",undefined,null].includes(d.WeekStartDate)){
+                        date = new Date(d.WeekStartDate)
                         date = `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`
                     }
 
@@ -105,9 +105,9 @@ class MyRequests extends React.Component<MyRequestsProps, MyRequestsState> {
                 width: '100px'
             },
             {
-                name: "Date",
+                name: "Week Start Date",
                 selector: (row, i) => row.Date,
-                width: '100px',
+                width: '250px',
                 sortable: true
             },
             {
