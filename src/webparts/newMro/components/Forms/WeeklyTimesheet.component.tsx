@@ -875,9 +875,10 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
         {
             this.state.trFormdata.CommentsHistoryData.map((option) => (
                 body.push(<tr>
-                <td className="" >{option["Action"]==StatusType.InProgress?"Approved by Manager":
+                <td className="" >{option["Action"]}</td>
+                {/* <td className="" >{option["Action"]==StatusType.InProgress?"Approved by Manager":
                 option["Action"]==StatusType.Approved?"Approved by Reviewer":
-                option["Action"]==StatusType.Reject?"Rejected":"Pending with initiator"}</td>
+                option["Action"]==StatusType.Reject?"Rejected":"Pending with initiator"}</td> */}
                 <td className="" >{option["Role"]}</td>
                 <td className="" >{option["User"]}</td>
                 <td className="" >{option["Comments"]}</td>
@@ -1336,6 +1337,31 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                 trFormdata.ReportingManagersEmail=[];
                 trFormdata.ReviewersEmail=[];
                 trFormdata.NotifiersEmail=[];
+                for( var item of this.state.Clients_DateOfJoinings)
+                {
+                    if(item.ClientName.toLowerCase()==ExistRecordData[0].ClientName.toLowerCase())
+                    {
+                        trFormdata.DateOfJoining=new Date(item.DOJ);
+                        break;
+                    }
+                }
+                let WeekStartDate=new Date(ExistRecordData[0].WeekStartDate);
+                this.WeekHeadings=[];
+                this.WeekHeadings.push({"Mon":(WeekStartDate.getDate().toString().length == 1 ? "0" +WeekStartDate.getDate() :WeekStartDate.getDate()),
+                "IsMonJoined":WeekStartDate<trFormdata.DateOfJoining,
+                "Tue":(new Date(WeekStartDate.setDate(WeekStartDate.getDate()+1)).getDate().toString().length == 1 ? "0" +WeekStartDate.getDate() :WeekStartDate.getDate()),
+                "IsTueJoined":WeekStartDate<trFormdata.DateOfJoining,
+                "Wed":(new Date(WeekStartDate.setDate(WeekStartDate.getDate()+1)).getDate().toString().length == 1 ? "0" +WeekStartDate.getDate() :WeekStartDate.getDate()),
+                "IsWedJoined":WeekStartDate<trFormdata.DateOfJoining,
+                "Thu":(new Date(WeekStartDate.setDate(WeekStartDate.getDate()+1)).getDate().toString().length == 1 ? "0" +WeekStartDate.getDate() :WeekStartDate.getDate()),
+                "IsThuJoined":WeekStartDate<trFormdata.DateOfJoining,
+                "Fri":(new Date(WeekStartDate.setDate(WeekStartDate.getDate()+1)).getDate().toString().length == 1 ? "0" +WeekStartDate.getDate() :WeekStartDate.getDate()),
+                "IsFriJoined":WeekStartDate<trFormdata.DateOfJoining,
+                "Sat":(new Date(WeekStartDate.setDate(WeekStartDate.getDate()+1)).getDate().toString().length == 1 ? "0" +WeekStartDate.getDate() :WeekStartDate.getDate()),
+                "IsSatJoined":WeekStartDate<trFormdata.DateOfJoining,
+                "Sun":(new Date(WeekStartDate.setDate(WeekStartDate.getDate()+1)).getDate().toString().length == 1 ? "0" +WeekStartDate.getDate() :WeekStartDate.getDate()),
+                "IsSunJoined":WeekStartDate<trFormdata.DateOfJoining,
+                })
                 this.setState({ trFormdata:trFormdata,currentWeeklyRowsCount:trFormdata.WeeklyItemsData.length,currentOTRowsCount: trFormdata.OTItemsData.length,ItemID:0,EmployeeEmail:[this.state.EmployeeEmail],isSubmitted:false});
             }
             this.hideApproveAndRejectButton()  
@@ -1463,7 +1489,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                 <div className="col-md-4">
                             <div className="light-text">
                                 <label>Name</label>
-                                <input className="txtEmployeeName" required={true} placeholder="" name="Name" title="Name" value={this.state.trFormdata.Name} disabled={true} />
+                                <input className="txtEmployeeName" required={true}  name="Name" title="Name" value={this.state.trFormdata.Name} disabled={true} />
                             </div>
                     </div>
 
@@ -1523,10 +1549,10 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                                     </div>
                                 </td>
                                 <td> 
-                                    <textarea className="form-control textareaBorder" placeholder='Enter Description' value={this.state.trFormdata.WeeklyItemsData[0].Description} id="0_Description_weekrow" onChange={this.changeTime}  disabled={this.state.isSubmitted || this.state.showBillable}  ></textarea>
+                                    <textarea className="form-control textareaBorder"  value={this.state.trFormdata.WeeklyItemsData[0].Description} id="0_Description_weekrow" onChange={this.changeTime}  disabled={this.state.isSubmitted || this.state.showBillable}  ></textarea>
                                 </td>
                                 <td>      
-                                    <input className="form-control" value={this.state.trFormdata.WeeklyItemsData[0].ProjectCode} placeholder='Enter Project Code' id="0_ProjectCode_weekrow" onChange={this.changeTime}  disabled={this.state.isSubmitted || this.state.showBillable} ></input>
+                                    <input className="form-control" value={this.state.trFormdata.WeeklyItemsData[0].ProjectCode}  id="0_ProjectCode_weekrow" onChange={this.changeTime}  disabled={this.state.isSubmitted || this.state.showBillable} ></input>
                                 </td>
                                 <td>
                                     <input className="form-control time changerowPRJ1 Mon"  value={this.state.trFormdata.WeeklyItemsData[0].Mon} id="0_Mon_weekrow"  onChange={this.changeTime}  disabled={this.state.isSubmitted || this.state.showBillable || this.WeekHeadings[0].IsMonJoined} type="time"></input>
@@ -1557,7 +1583,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                                 </td>
                                 <td>
                                 {/* <span className='span-fa-plus' title='Add New Row' onClick={this.CreateWeeklyHrsRow} id='addnewRow' hidden={this.state.isSubmitted}><FontAwesomeIcon icon={faPlus}></FontAwesomeIcon></span> */}
-                                { this.state.showBillable ? '' :this.state.isSubmitted?'':<span className='span-fa-plus' title='Add new row'   onClick={this.CreateWeeklyHrsRow} id='addnewRow'><FontAwesomeIcon icon={faPlus}></FontAwesomeIcon></span>}
+                                { this.state.showBillable ? '' :this.state.isSubmitted?'':<span className='span-fa-plus' title='Add new Billable Hours row'   onClick={this.CreateWeeklyHrsRow} id='addnewRow'><FontAwesomeIcon icon={faPlus}></FontAwesomeIcon></span>}
                                 </td>
                             </tr>
                             {this.dynamicFieldsRow("weekrow")}
@@ -1568,10 +1594,10 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                                     </div>
                                 </td>
                                 <td>
-                                    <textarea className="form-control textareaBorder time"placeholder='Enter Description' value={this.state.trFormdata.OTItemsData[0].Description} id="0_Description_otrow" onChange={this.changeTime}  disabled={this.state.isSubmitted || this.state.showBillable} ></textarea>
+                                    <textarea className="form-control textareaBorder time" value={this.state.trFormdata.OTItemsData[0].Description} id="0_Description_otrow" onChange={this.changeTime}  disabled={this.state.isSubmitted || this.state.showBillable} ></textarea>
                                 </td>
                                 <td>
-                                    <input className="form-control time" value={this.state.trFormdata.OTItemsData[0].ProjectCode} placeholder='Enter Project Code'  id="0_ProjectCode_otrow"  onChange={this.changeTime}  disabled={this.state.isSubmitted || this.state.showBillable} ></input>
+                                    <input className="form-control time" value={this.state.trFormdata.OTItemsData[0].ProjectCode}   id="0_ProjectCode_otrow"  onChange={this.changeTime}  disabled={this.state.isSubmitted || this.state.showBillable} ></input>
                                 </td>
                                 <td>
                                     <input className="form-control time changerowOVR1 Mon" value={this.state.trFormdata.OTItemsData[0].Mon} id="0_Mon_otrow" onChange={this.changeTime}  disabled={this.state.isSubmitted || this.state.showBillable || this.WeekHeadings[0].IsMonJoined} type="time"></input>
@@ -1602,19 +1628,19 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                                 </td>
                                 <td>
                                 {/* <span className='span-fa-plus' title='Add New row'   onClick={this.CreateOTHrsRow} id='' hidden={this.state.isSubmitted}><FontAwesomeIcon icon={faPlus}></FontAwesomeIcon></span> */}
-                                { this.state.showBillable ? '' :this.state.isSubmitted?'':<span className='span-fa-plus' title='Add new row'   onClick={this.CreateOTHrsRow} id=''><FontAwesomeIcon icon={faPlus}></FontAwesomeIcon></span>}
+                                { this.state.showBillable ? '' :this.state.isSubmitted?'':<span className='span-fa-plus' title='Add new OT row'   onClick={this.CreateOTHrsRow} id=''><FontAwesomeIcon icon={faPlus}></FontAwesomeIcon></span>}
                                 </td>
                             </tr>
                             {this.dynamicFieldsRow("otrow")}
                             <tr className="font-td-bold" id="BillableTotal">
-                                <td className="fw-bold text-start"> 
+                                <td className="fw-bold text-start" colSpan={2}>
                                     <div className="p-2">
                                         <i className="fas fa-business-time color-gray"></i> Billable Subtotal
                                     </div>
                                 </td>
-                                <td>
+                                {/* <td>
                                    
-                                </td>
+                                </td> */}
                                 <td>
                                     
                                 </td>
@@ -1655,8 +1681,8 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                             </tr>
                             <tr id="SynergyOfficeHrs">
                                 <td className="text-start"><div className="p-2">Synergy Office Hours</div></td>
-                                <td><textarea className="form-control textareaBorder time" placeholder='Enter Description' value={this.state.trFormdata.SynergyOfficeHrs[0].Description} onChange={this.changeTime} id="0_Description_SynOffcHrs"  disabled={this.state.isSubmitted || this.state.showNonBillable} ></textarea></td>
-                                <td><input className="form-control time" value={this.state.trFormdata.SynergyOfficeHrs[0].ProjectCode} onChange={this.changeTime} id="0_ProjectCode_SynOffcHrs" placeholder='Enter Project Code'  disabled={this.state.isSubmitted || this.state.showNonBillable} ></input></td>
+                                <td><textarea className="form-control textareaBorder time"  value={this.state.trFormdata.SynergyOfficeHrs[0].Description} onChange={this.changeTime} id="0_Description_SynOffcHrs"  disabled={this.state.isSubmitted || this.state.showNonBillable} ></textarea></td>
+                                <td><input className="form-control time" value={this.state.trFormdata.SynergyOfficeHrs[0].ProjectCode} onChange={this.changeTime} id="0_ProjectCode_SynOffcHrs"   disabled={this.state.isSubmitted || this.state.showNonBillable} ></input></td>
                                 <td><input className="form-control time" value={this.state.trFormdata.SynergyOfficeHrs[0].Mon} onChange={this.changeTime} id="0_Mon_SynOffcHrs"  disabled={this.state.isSubmitted || this.state.showNonBillable || this.WeekHeadings[0].IsMonJoined} type="time"></input></td>
                                 <td><input className="form-control time" value={this.state.trFormdata.SynergyOfficeHrs[0].Tue} onChange={this.changeTime} id="0_Tue_SynOffcHrs"  disabled={this.state.isSubmitted || this.state.showNonBillable || this.WeekHeadings[0].IsTueJoined} type="time"></input></td>
                                 <td><input className="form-control time" value={this.state.trFormdata.SynergyOfficeHrs[0].Wed} onChange={this.changeTime} id="0_Wed_SynOffcHrs"  disabled={this.state.isSubmitted || this.state.showNonBillable || this.WeekHeadings[0].IsWedJoined} type="time"></input></td>
@@ -1670,8 +1696,8 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                             </tr>
                             <tr id="SynergyHolidayHrs">
                                 <td className="text-start"><div className="p-2">Synergy Holiday</div></td>
-                                <td><textarea className="form-control textareaBorder time" placeholder='Enter Description' value={this.state.trFormdata.SynergyHolidayHrs[0].Description} onChange={this.changeTime} id="0_Description_SynHldHrs"  disabled={this.state.isSubmitted || this.state.showNonBillable} ></textarea></td>
-                                <td><input className="form-control time" value={this.state.trFormdata.SynergyHolidayHrs[0].ProjectCode} onChange={this.changeTime} id="0_ProjectCode_SynHldHrs" placeholder='Enter Project Code'  disabled={this.state.isSubmitted || this.state.showNonBillable} ></input></td>
+                                <td><textarea className="form-control textareaBorder time"  value={this.state.trFormdata.SynergyHolidayHrs[0].Description} onChange={this.changeTime} id="0_Description_SynHldHrs"  disabled={this.state.isSubmitted || this.state.showNonBillable} ></textarea></td>
+                                <td><input className="form-control time" value={this.state.trFormdata.SynergyHolidayHrs[0].ProjectCode} onChange={this.changeTime} id="0_ProjectCode_SynHldHrs"   disabled={this.state.isSubmitted || this.state.showNonBillable} ></input></td>
                                 <td><input className="form-control time" value={this.state.trFormdata.SynergyHolidayHrs[0].Mon} onChange={this.changeTime} id="0_Mon_SynHldHrs"  disabled={this.state.isSubmitted || this.state.showNonBillable || this.WeekHeadings[0].IsMonJoined} type="time"></input></td>
                                 <td><input className="form-control time" value={this.state.trFormdata.SynergyHolidayHrs[0].Tue} onChange={this.changeTime} id="0_Tue_SynHldHrs"  disabled={this.state.isSubmitted || this.state.showNonBillable || this.WeekHeadings[0].IsTueJoined} type="time"></input></td>
                                 <td><input className="form-control time" value={this.state.trFormdata.SynergyHolidayHrs[0].Wed} onChange={this.changeTime} id="0_Wed_SynHldHrs"  disabled={this.state.isSubmitted || this.state.showNonBillable || this.WeekHeadings[0].IsWedJoined} type="time"></input></td>
@@ -1685,8 +1711,8 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                             </tr>
                             <tr id="PTOHrs">
                                 <td className="text-start"><div className="p-2">PTO (Paid Time Off)</div></td>
-                                <td><textarea className="form-control textareaBorder time" placeholder='Enter Description' value={this.state.trFormdata.PTOHrs[0].Description} onChange={this.changeTime} id="0_Description_PTOHrs"  disabled={this.state.isSubmitted || this.state.showNonBillable}></textarea></td>
-                                <td><input className="form-control time" value={this.state.trFormdata.PTOHrs[0].ProjectCode} onChange={this.changeTime} id="0_ProjectCode_PTOHrs" placeholder='Enter Project Code'  disabled={this.state.isSubmitted || this.state.showNonBillable} ></input></td>
+                                <td><textarea className="form-control textareaBorder time"  value={this.state.trFormdata.PTOHrs[0].Description} onChange={this.changeTime} id="0_Description_PTOHrs"  disabled={this.state.isSubmitted || this.state.showNonBillable}></textarea></td>
+                                <td><input className="form-control time" value={this.state.trFormdata.PTOHrs[0].ProjectCode} onChange={this.changeTime} id="0_ProjectCode_PTOHrs"   disabled={this.state.isSubmitted || this.state.showNonBillable} ></input></td>
                                 <td><input className="form-control time" value={this.state.trFormdata.PTOHrs[0].Mon} onChange={this.changeTime} id="0_Mon_PTOHrs"  disabled={this.state.isSubmitted || this.state.showNonBillable || this.WeekHeadings[0].IsMonJoined} type="time"></input></td>
                                 <td><input className="form-control time" value={this.state.trFormdata.PTOHrs[0].Tue} onChange={this.changeTime} id="0_Tue_PTOHrs"  disabled={this.state.isSubmitted || this.state.showNonBillable || this.WeekHeadings[0].IsTueJoined} type="time"></input></td>
                                 <td><input className="form-control time" value={this.state.trFormdata.PTOHrs[0].Wed} onChange={this.changeTime} id="0_Wed_PTOHrs"  disabled={this.state.isSubmitted || this.state.showNonBillable || this.WeekHeadings[0].IsWedJoined} type="time"></input></td>
@@ -1780,7 +1806,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
     
                                                     <div className="light-text height-auto">
                                                         <label className="floatingTextarea2 top-11">Comments </label>
-                                                        <textarea className="position-static form-control requiredinput" ref={ this.Comments} onChange={this.handleChange} value={this.state.trFormdata.Comments} placeholder="" maxLength={500} id="txtComments" name="Comments"  disabled={false}></textarea>
+                                                        <textarea className="position-static form-control requiredinput" ref={ this.Comments} onChange={this.handleChange} value={this.state.trFormdata.Comments} maxLength={500} id="txtComments" name="Comments"  disabled={false}></textarea>
                                                     </div>
                                                 </div>
                     </div>

@@ -117,7 +117,8 @@
     }
     span.c-badge {
             /* background: #dfce8d; */
-            background: #def1ff;
+            /* background: #def1ff; */
+            background: transparent;
             padding: 3px 6px;
             border-radius: 5px;
             min-width: 35px;

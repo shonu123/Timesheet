@@ -39,9 +39,9 @@ class NavBar extends React.Component<NavBarProps, NavBarState> {
                         <img src='/sites/billing.Timesheet/SiteAssets/SynergyLogo-SM.jpg' className='synergyLogo'/>
                     </div> */}
                     <div className="main-title">Timesheet</div>
-                    </div>
+                    
                     <div className='container-fluid'>                
-                        <ul className="list-unstyled ul-leftnav components mb-5">
+                         {/* <ul className="list-unstyled ul-leftnav components mb-5">
                             {(this.props.currentUserGroups.includes('Timesheet Administrators'))?
                             <li className="">
                                 {this.state.currentUserLinks.includes('/') ? <NavLink className="" to="/"><span className=""><span className="">Masters</span></span>
@@ -82,7 +82,7 @@ class NavBar extends React.Component<NavBarProps, NavBarState> {
                                     </li>
                                 </ul>
                             </li> :''}
-                            {/* <li className="" id="employeemaster" onClick={(event) => this.onNavItemClick(event)}>
+                            <li className="" id="employeemaster" onClick={(event) => this.onNavItemClick(event)}>
                                 <NavLink className="" to="/employeemasterform"><span className=""><span className="">Employee Master Form</span></span></NavLink>
                             </li>
                             <li className="" id="weeklytimesheet" onClick={(event) => this.onNavItemClick(event)}>
@@ -90,8 +90,30 @@ class NavBar extends React.Component<NavBarProps, NavBarState> {
                             </li>
                             <li id="liDashboardLink" className="" onClick={(event) => this.onNavItemClick(event)}>
                                 <NavLink className="" to="/dashboard"><span className=""><span className="">Dashboard</span></span></NavLink>
-                            </li> */}
+                            </li> 
+                        </ul> */}
+
+
+                        <ul className="list-unstyled ul-leftnav components mb-5">
+                            {(this.props.currentUserGroups.includes('Timesheet Administrators'))?
+                                <li className="nav-item" id="employeemaster" onClick={(event) => this.onNavItemClick(event)}>
+                                    <NavLink className="" to="/employeemasterview"><span className=""><span className="">Approval Matrix</span></span></NavLink>
+                                </li>:''}
+                             
+                            {(this.props.currentUserGroups.includes('Timesheet Initiators'))?
+                            <li className="nav-item" id="weeklytimesheet" onClick={(event) => this.onNavItemClick(event)}>
+                                <NavLink className="" to="/weeklytimesheet"><span className=""><span className="">Weekly Timesheet</span></span></NavLink>
+                            </li>:''}
+                            {(this.props.currentUserGroups.includes('Timesheet Approvers'))?
+                            <li className="nav-item" id="myapprovals" onClick={(event) => this.onNavItemClick(event)}>
+                                <NavLink className="" to="/Dashboard"><span className=""><span className="">My approvals</span></span></NavLink>
+                            </li>:''}
+                            {(this.props.currentUserGroups.includes('Timesheet Reviewers'))?
+                            <li className="nav-item" id="reviewers" onClick={(event) => this.onNavItemClick(event)}>
+                                <NavLink className="" to="/Dashboard"><span className=""><span className="">My approvals</span></span></NavLink>
+                            </li>:''}
                         </ul>
+                </div>
                 </div>
                 {/* <nav id="" className="sidebar">
                     <div className="">

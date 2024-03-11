@@ -27,7 +27,7 @@ const ModalApprovePopUp =({ message,title,isVisible,isSuccess, onConfirm, onCanc
                                             <div className="media-px-12">
 
                                                 <div className="light-text height-auto">
-                                                    <label className="floatingTextarea2 top-11">Comments </label>
+                                                    <label className="floatingTextarea2 top-11">Comments<span hidden={isSuccess}>*</span> </label>
                                                     <textarea className="position-static form-control requiredinput" onChange={comments} value={commentsValue} placeholder="" maxLength={500} id="txtComments" name="Comments" disabled={false}></textarea>
                                                 </div>
                                                 <div>
@@ -38,7 +38,7 @@ const ModalApprovePopUp =({ message,title,isVisible,isSuccess, onConfirm, onCanc
                                         </div>
             <div className="modal-footer">
               <button type="button" onClick={onConfirm} className={`btn bc-dblue txt-white modalclosesuccess bc-dblue`} data-dismiss="modal">Confirm</button>
-              <button type="button" onClick={onCancel} className={`btn bc-dblue txt-white modalclosesuccess bc-dblue`} data-dismiss="modal">Cancel</button>
+              <button type="button" onClick={onCancel} className={`btn CancelButtons txt-white modalclosesuccess CancelButtons`} data-dismiss="modal">Cancel</button>
             </div>
           </div>
         </div>

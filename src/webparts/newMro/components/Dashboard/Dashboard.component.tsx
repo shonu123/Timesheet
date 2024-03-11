@@ -97,6 +97,7 @@ class Dashboard extends React.Component<DashboardProps, DashboardState> {
         }
         else if(user=='Approver'){
             this.setState({isApprover : true});
+            // this.onHandleClick('MyRequests')
             this.onHandleClick('Approvers')
         }
         else if(user=='Reviewer'){

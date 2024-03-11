@@ -12,6 +12,7 @@ import "@pnp/sp/lists";
 import "@pnp/sp/items";
 import Loader from '../Shared/Loader';
 import { StatusType } from '../../Constants/Constants';
+import ModalPopUp from '../Shared/ModalPopUp';
 
 export interface ReviewerApprovalsProps {
     match: any;
@@ -34,6 +35,9 @@ export interface ReviewerApprovalsState {
     ItemID : Number;
     siteURL : string;
     redirect:boolean;
+    modalTitle:string;
+    modalText:string;
+    successPopUp:boolean;
     // pageNumber:number;
     // sortBy:number;
     // sortOrder:boolean;
@@ -45,7 +49,7 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
         sp.setup({
             spfxContext: this.props.context
         });
-        this.state = {Reviewers: [], loading:false,message:'',title:'',showHideModal:false,isSuccess:true,comments:'',Action:'',errorMessage:'',ItemID:0,siteURL : this.props.spContext.webAbsoluteUrl,redirect:false};
+        this.state = {Reviewers: [], loading:false,message:'',title:'',showHideModal:false,isSuccess:true,comments:'',Action:'',errorMessage:'',ItemID:0,siteURL : this.props.spContext.webAbsoluteUrl,redirect:false,modalTitle:'',modalText:'',successPopUp:false};
     }
 
     public componentDidMount() {
@@ -86,7 +90,7 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
             });
     }
 
-    private sendemail(emaildetails){
+    private sendemail(emaildetails,modalTitle,modalText){
         sp.utility.sendEmail({
             //Body of Email  
             Body: emaildetails.body,  
@@ -141,14 +145,17 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
             // this.setState({showHideModal : false,ItemID:0,message:'',title:'',Action:'',loading: false});
             let sub=''; 
             if(Status==StatusType.Approved)
-            sub = "Weekly Time Sheet has been "+Status+" by Reviewers"
+            sub = "Weekly Time Sheet has been approved by Reviewer"
             else
-            sub = "Weekly Time Sheet has been "+StatusType.Reject+" by Reviewers.Please re-submit with necessary details."
+            sub = "Weekly Time Sheet has been rejected by Reviewer.Please re-submit with necessary details."
 
             let emaildetails ={toemail:To,ccemail:CC,subject:sub,bodyString:sub,body:'' };
              let table = tableContent;
              emaildetails.body = this.emailBodyPreparation(this.state.siteURL+'/SitePages/TimeSheet.aspx#/WeeklyTimesheet/'+this.state.ItemID,table,emaildetails.bodyString,this.props.spContext.userDisplayName);
-             this.sendemail(emaildetails);
+             if(Status == StatusType.Approved)
+             this.sendemail(emaildetails,'Record approved successfully','')
+            else
+            this.sendemail(emaildetails,'Record rejected successfully','')
             // <Navigate to={'/'} />
             // this.setState({redirect:true})
         });
@@ -201,7 +208,7 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
         }
         // this.setState({comments : comments })
         let date = new Date(data[0].DateSubmitted)
-        let tableContent = {'Name':data[0].Name,'Company':data[0].ClientName,'Submitted Date':`${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`,'Billable Hours':data[0].WeeklyTotalHrs,'OT Hours':data[0].OTTotalHrs,'Total Billable Hours':data[0].BillableTotalHrs,'Non-Billable  Hours':data[0].WeeklyTotalHrs,'Total Hours':data[0].WeeklyTotalHrs}
+        let tableContent = {'Name':data[0].Name,'Client':data[0].ClientName,'Submitted Date':`${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`,'Billable Hours':data[0].WeeklyTotalHrs,'OT Hours':data[0].OTTotalHrs,'Total Billable Hours':data[0].BillableTotalHrs,'Non-Billable  Hours':data[0].WeeklyTotalHrs,'Total Hours':data[0].WeeklyTotalHrs}
         console.log(tableContent)
         this.updateStatus(recordId,StatusType.Approved,commentsObj,toEmail,ccEmail,tableContent)
     }
@@ -211,6 +218,7 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
         let recordId = this.state.ItemID;
         if(['',undefined,null].includes(this.state.comments)){
             this.setState({errorMessage : 'Comments cannot be Blank'})
+            this.setState({loading : false})
         }
         else{
 
@@ -261,6 +269,11 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
         this.setState({ showHideModal: false, Action :'', errorMessage : '',ItemID : 0});
     }
 
+    private navigateAfterAction =()=>{
+        this.setState({successPopUp : false});
+        return (<Navigate to={`/`} />);
+    }
+
     private showPopUp = (e) =>{
         console.log(e.target.id);
         console.log(e.target.dataset);
@@ -284,6 +297,7 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
     }
 
     private handleAction = (e) =>{
+        this.setState({loading : true})
         if(this.state.Action == 'Approve')
         this.handleApprove(e)
         else
@@ -379,7 +393,7 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
                     sortable: true
                 },
                 {
-                    name: "",
+                    name: "Approve",
                     //selector: "Id",
                     selector: (row, i) => row.Id,
                     export: false,
@@ -395,7 +409,7 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
                     width: '100px'
                 },
                 {
-                    name: "",
+                    name: "Reject",
                     //selector: "Id",
                     selector: (row, i) => row.Id,
                     export: false,
@@ -414,6 +428,7 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
             return (
                 <React.Fragment>
                 {/* <h1>Reviewer Screen</h1> */}
+                <ModalPopUp title={this.state.modalTitle} modalText={this.state.modalText} isVisible={this.state.successPopUp} onClose={this.navigateAfterAction} isSuccess={this.state.isSuccess}></ModalPopUp>
                 {/* <ModalPopUp title={this.state.modalTitle} modalText={this.state.modalText} isVisible={this.state.showHideModal} onClose={this.handlefullClose} isSuccess={this.state.isSuccess}></ModalPopUp> */}
                 <ModalApprovePopUp message={this.state.message} title={this.state.title} isVisible={this.state.showHideModal} isSuccess={false} onConfirm={this.handleAction} onCancel={this.handlefullClose} comments={this.handleComments} errorMessage={this.state.errorMessage} commentsValue={this.state.comments} ></ModalApprovePopUp>
                 <div>

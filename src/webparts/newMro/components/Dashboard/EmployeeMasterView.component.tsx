@@ -135,7 +135,7 @@ class EmployeeMasterView extends React.Component<EmployeeMasterViewProps, Employ
                 sortable: true
             },
             {
-                name: "Company",
+                name: "Client",
                 selector: (row, i) => row.Company,
                 width: '150px',
                 sortable: true

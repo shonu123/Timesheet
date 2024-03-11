@@ -111,7 +111,7 @@ class MyRequests extends React.Component<MyRequestsProps, MyRequestsState> {
                 sortable: true
             },
             {
-                name: "Company",
+                name: "Client",
                 selector: (row, i) => row.Company,
                 width: '130px',
                 sortable: true
