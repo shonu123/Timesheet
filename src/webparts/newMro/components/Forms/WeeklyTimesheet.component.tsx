@@ -208,8 +208,17 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
     }
     //functions related to  initial loading
      private async loadWeeklyTimeSheetData() {
-       
-        var ClientNames: any = await this.oweb.lists.getByTitle('EmployeeMaster').items.filter(" Employee/Id eq "+this.currentUserId+"and IsActive eq 1").select("ClientName ,DateOfJoining,Employee/Title,Employee/Id,Employee/EMail,ReportingManager/Id,Reviewers/Id,Notifiers/Id,ReportingManager/Title,Reviewers/Title,Notifiers/Title,ReportingManager/EMail,Reviewers/EMail,Notifiers/EMail,*").orderBy("Employee/Title").expand("Employee,ReportingManager,Reviewers,Notifiers").getAll();
+        var ClientNames: any;
+
+         if(this.props.match.params.id!=undefined){
+            this.setState({ItemID : this.props.match.params.id})
+             ClientNames= await this.getItemData(this.props.match.params.id)
+            //  ClientNames = await this.oweb.lists.getByTitle('EmployeeMaster').items.filter(" Employee/Id eq "+data[0].InitiatorId+"and IsActive eq 1").select("ClientName ,DateOfJoining,Employee/Title,Employee/Id,Employee/EMail,ReportingManager/Id,Reviewers/Id,Notifiers/Id,ReportingManager/Title,Reviewers/Title,Notifiers/Title,ReportingManager/EMail,Reviewers/EMail,Notifiers/EMail,*").orderBy("Employee/Title").expand("Employee,ReportingManager,Reviewers,Notifiers").getAll();
+         }
+         else{
+
+             ClientNames = await this.oweb.lists.getByTitle('EmployeeMaster').items.filter(" Employee/Id eq "+this.currentUserId+"and IsActive eq 1").select("ClientName ,DateOfJoining,Employee/Title,Employee/Id,Employee/EMail,ReportingManager/Id,Reviewers/Id,Notifiers/Id,ReportingManager/Title,Reviewers/Title,Notifiers/Title,ReportingManager/EMail,Reviewers/EMail,Notifiers/EMail,*").orderBy("Employee/Title").expand("Employee,ReportingManager,Reviewers,Notifiers").getAll();
+         }
         console.log(ClientNames);
         this.state.EmployeeEmail.push(ClientNames[0].Employee.EMail);
         ClientNames.filter(item => {
@@ -234,7 +243,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
         if(this.props.match.params.id != undefined){
             console.log(this.props.match.params.id)
             this.setState({ItemID : this.props.match.params.id})
-            this.getItemData()
+            this.getItemData(this.state.ItemID);
         }
         else {
             if(this.state.userRole != 'Initiator'){
@@ -243,8 +252,9 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
         }
 
     }
-    private async getItemData(){
-        let filterQuery = "ID eq '"+this.state.ItemID+"'";
+    private async getItemData(TimesheetID){
+        var ClientNames: any;
+        let filterQuery = "ID eq '"+TimesheetID+"'";
         let selectQuery = "Initiator/EMail,Reviewers/EMail,ReportingManager/EMail,Notifiers/EMail,*";
         let data = await sp.web.lists.getByTitle(this.listName).items.filter(filterQuery).select(selectQuery).expand("Initiator,Reviewers,ReportingManager,Notifiers").get();
         console.log(data);
@@ -292,6 +302,10 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
         this.setState({ trFormdata:trFormdata,currentWeeklyRowsCount:trFormdata.WeeklyItemsData.length,currentOTRowsCount: trFormdata.OTItemsData.length,EmployeeEmail:EmpEmail});
         this.hideApproveAndRejectButton();
         this.userAccessableRecord();
+
+        ClientNames = await this.oweb.lists.getByTitle('EmployeeMaster').items.filter(" Employee/Id eq "+data[0].InitiatorId+"and IsActive eq 1").select("ClientName ,DateOfJoining,Employee/Title,Employee/Id,Employee/EMail,ReportingManager/Id,Reviewers/Id,Notifiers/Id,ReportingManager/Title,Reviewers/Title,Notifiers/Title,ReportingManager/EMail,Reviewers/EMail,Notifiers/EMail,*").orderBy("Employee/Title").expand("Employee,ReportingManager,Reviewers,Notifiers").getAll();
+        
+        return ClientNames;
     }
 
     //functions related to calculation
@@ -397,9 +411,12 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
     private changeTime=(event)=>{
         const trFormdata = { ...this.state.trFormdata };
         let value=event.target.value;
+        
         let index=parseInt(event.target.id.split("_")[0]);
         let prop=event.target.id.split("_")[1];
         let rowType=event.target.id.split("_")[2];
+        if(!["Description","ProjectCode","Total"].includes(prop))
+        [undefined,null,""].includes(value)?value="00:00":value;
 
         //FOR ROW WISE CALCULATION
         let TotalRowMins=0;
