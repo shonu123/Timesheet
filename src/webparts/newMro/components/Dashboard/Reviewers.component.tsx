@@ -251,7 +251,7 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
             }
             // this.setState({comments : comments })
             let date = new Date(data[0].DateSubmitted)
-            let tableContent = {'Name':data[0].Name,'Company':data[0].ClientName,'Submitted Date':`${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`,'Billable Hours':data[0].WeeklyTotalHrs,'OT Hours':data[0].OTTotalHrs,'Total Billable Hours':data[0].BillableTotalHrs,'Non-Billable  Hours':data[0].WeeklyTotalHrs,'Total Hours':data[0].WeeklyTotalHrs}
+            let tableContent = {'Name':data[0].Name,'Client':data[0].ClientName,'Submitted Date':`${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`,'Billable Hours':data[0].WeeklyTotalHrs,'OT Hours':data[0].OTTotalHrs,'Total Billable Hours':data[0].BillableTotalHrs,'Non-Billable  Hours':data[0].NonBillableTotalHrs,'Total Hours':data[0].GrandTotal}
             console.log(tableContent)
     
             this.updateStatus(recordId,StatusType.Reject,commentsObj,toEmail,ccEmail,tableContent)
@@ -330,7 +330,7 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
                     sortable: true
                 },
                 {
-                    name: "Company",
+                    name: "Client",
                     //selector: "Department",
                     selector: (row, i) => row.Company,
                     // width: '150px',
@@ -361,21 +361,21 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
                 {
                     name: "Total Billable Hours",
                     //selector: "Requisitioner",
-                    selector: (row, i) => row.BillableTotalHrs,
+                    selector: (row, i) => row.TotalBillableHours,
                     sortable: true,
                     width: '175px'
                 },
                 {
-                    name: "NonBillable Hours",
+                    name: "Non-Billable Hours",
                     //selector: "TotalAmount",
                     selector: (row, i) => row.NonBillableTotalHrs,
                     sortable: true,
                     width: '200px'
                 },
                 {
-                    name: "Total",
+                    name: "Total Hours",
                     //selector: "Status",
-                    selector: (row, i) => row.GrandTotal,
+                    selector: (row, i) => row.WeeklyTotalHrs,
                     sortable: true
                 },
                 {

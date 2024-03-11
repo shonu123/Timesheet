@@ -35,14 +35,14 @@ class NavBar extends React.Component<NavBarProps, NavBarState> {
         return (
             <div className=''>
                 <div className='nav-main container-fluid'>
-                    <div>
+                    {/* <div>
                         <img src='/sites/billing.Timesheet/SiteAssets/SynergyLogo-SM.jpg' className='synergyLogo'/>
-                    </div>
+                    </div> */}
                     <div className="main-title">Timesheet</div>
                     </div>
                     <div className='container-fluid'>                
                         <ul className="list-unstyled ul-leftnav components mb-5">
-                            {(this.props.currentUserGroups.includes('TImesheet Administrators'))?
+                            {(this.props.currentUserGroups.includes('Timesheet Administrators'))?
                             <li className="">
                                 {this.state.currentUserLinks.includes('/') ? <NavLink className="" to="/"><span className=""><span className="">Masters</span></span>
                                 </NavLink> : null}
@@ -52,7 +52,7 @@ class NavBar extends React.Component<NavBarProps, NavBarState> {
                                     </li>
                                 </ul>
                             </li> :''}
-                            {(this.props.currentUserGroups.includes('TImesheet Initiators'))?
+                            {(this.props.currentUserGroups.includes('Timesheet Initiators'))?
                             <li className="">
                                 {this.state.currentUserLinks.includes('/') ? <NavLink className="" to="/"><span className=""><span className="">Masters</span></span>
                                 </NavLink> : null}
@@ -62,7 +62,7 @@ class NavBar extends React.Component<NavBarProps, NavBarState> {
                                     </li>
                                 </ul>
                             </li> :''}
-                            {(this.props.currentUserGroups.includes('TImesheet Approvers'))?
+                            {(this.props.currentUserGroups.includes('Timesheet Approvers'))?
                             <li className="">
                                 {this.state.currentUserLinks.includes('/') ? <NavLink className="" to="/"><span className=""><span className="">Masters</span></span>
                                 </NavLink> : null}
@@ -72,7 +72,7 @@ class NavBar extends React.Component<NavBarProps, NavBarState> {
                                     </li>
                                 </ul>
                             </li> :''}
-                            {(this.props.currentUserGroups.includes('TImesheet Reviewers'))?
+                            {(this.props.currentUserGroups.includes('Timesheet Reviewers'))?
                             <li className="">
                                 {this.state.currentUserLinks.includes('/') ? <NavLink className="" to="/"><span className=""><span className="">Masters</span></span>
                                 </NavLink> : null}
