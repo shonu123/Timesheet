@@ -1305,7 +1305,8 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
         if (!this.state.isRecordAcessable) {
             
             let url = `https://synergycomcom.sharepoint.com/sites/Billing.Timesheet/SitePages/AccessDenied.aspx?`
-            return (<Navigate to={url} />);
+            // return (<Navigate to={url} />);
+            window.location.href = url
         }
         if (this.state.redirect) {
             let url = `/`

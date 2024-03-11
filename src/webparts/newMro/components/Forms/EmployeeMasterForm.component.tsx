@@ -330,7 +330,8 @@ private async validateDuplicateRecord () {
    public render() {
     if(!this.state.isPageAccessable){
         let url = `https://synergycomcom.sharepoint.com/sites/Billing.Timesheet/SitePages/AccessDenied.aspx?`
-        return (<Navigate to={url} />);
+        // return (<Navigate to={url} />);
+        window.location.href = url
     }
     if (this.state.Homeredirect) {
        
