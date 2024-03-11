@@ -305,6 +305,12 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
         trFormdata.NotifiersEmail=NotifyEmail;
     
         this.setState({ trFormdata:trFormdata,currentWeeklyRowsCount:trFormdata.WeeklyItemsData.length,currentOTRowsCount: trFormdata.OTItemsData.length,EmployeeEmail:EmpEmail});
+        if(data[0].ClientName =='Synergy-HQ'){
+            this.setState({showBillable : true, showNonBillable: false})
+        }
+        else{
+            this.setState({showBillable : false, showNonBillable: true})
+        }
         this.hideApproveAndRejectButton();
         this.userAccessableRecord();
 
@@ -1242,6 +1248,12 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                 trFormdata.ReviewersEmail=ReviewEmail;
                 trFormdata.NotifiersEmail=NotifyEmail;
                 this.setState({ trFormdata:trFormdata,currentWeeklyRowsCount:trFormdata.WeeklyItemsData.length,currentOTRowsCount: trFormdata.OTItemsData.length,ItemID:ExistRecordData[0].ID,EmployeeEmail:EmpEmail});
+                if(ExistRecordData[0].ClientName =='Synergy-HQ'){
+                    this.setState({showBillable : true, showNonBillable: false})
+                }
+                else{
+                    this.setState({showBillable : false, showNonBillable: true})
+                }
             }
             else{
                 trFormdata.ClientName=this.state.trFormdata.ClientName;
