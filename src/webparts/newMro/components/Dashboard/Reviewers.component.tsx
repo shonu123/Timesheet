@@ -323,7 +323,7 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
                     sortable: true
                 },
                 {
-                    name: "Employe Name",
+                    name: "Employee Name",
                     //selector: "Department",
                     selector: (row, i) => row.EmployeName,
                     // width: '180px',

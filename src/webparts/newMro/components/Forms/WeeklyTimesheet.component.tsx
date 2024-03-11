@@ -60,6 +60,10 @@ export interface WeeklyTimesheetState {
         NotifierIds:any,
         DateOfJoining:Date,
 
+        ReportingManagersEmail:any,
+        ReviewersEmail:any,
+        NotifiersEmail:any,
+
     };
     ClientNames:any;
     Clients_DateOfJoinings:any,
@@ -71,9 +75,6 @@ export interface WeeklyTimesheetState {
     ItemID:any,
     userRole:string,
     EmployeeEmail:any,
-    ReportingManagersEmail:any,
-    ReviewersEmail:any,
-    NotifiersEmail:any,
 //-------------------------------------
     SaveUpdateText: string;
     showLabel: boolean;
@@ -137,7 +138,11 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                 SuperviserIds:[],
                 ReviewerIds:[],
                 NotifierIds:[],
-                DateOfJoining:new Date()
+                DateOfJoining:new Date(),
+
+                ReportingManagersEmail:[],
+                ReviewersEmail:[],
+                NotifiersEmail:[],
             },
             ClientNames:[],
             Clients_DateOfJoinings:[],
@@ -149,9 +154,6 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
             ItemID:0,
             userRole:"",
             EmployeeEmail:[],
-            ReportingManagersEmail:[],
-            ReviewersEmail:[],
-            NotifiersEmail:[],
 //---------------------------------------------------   
             SaveUpdateText:StatusType.Save,
             showLabel: false,
@@ -283,8 +285,11 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
         {
             this.setState({isSubmitted:false});
         }
+        trFormdata.ReportingManagersEmail=RMEmail;
+        trFormdata.ReviewersEmail=ReviewEmail;
+        trFormdata.NotifiersEmail=NotifyEmail;
     
-        this.setState({ trFormdata:trFormdata,currentWeeklyRowsCount:trFormdata.WeeklyItemsData.length,currentOTRowsCount: trFormdata.OTItemsData.length,EmployeeEmail:EmpEmail,ReportingManagersEmail:RMEmail,ReviewersEmail:ReviewEmail,NotifiersEmail:NotifyEmail});
+        this.setState({ trFormdata:trFormdata,currentWeeklyRowsCount:trFormdata.WeeklyItemsData.length,currentOTRowsCount: trFormdata.OTItemsData.length,EmployeeEmail:EmpEmail});
         this.hideApproveAndRejectButton();
         this.userAccessableRecord();
     }
@@ -820,7 +825,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                 <td className="" >{option["Role"]}</td>
                 <td className="" >{option["User"]}</td>
                 <td className="" >{option["Comments"]}</td>
-                <td className="" >{(new Date(option["Date"]).getMonth().toString().length==1?"0"+new Date(option["Date"]).getMonth():new Date(option["Date"]).getMonth())+"/"+(new Date(option["Date"]).getDate().toString().length==1?"0"+new Date(option["Date"]).getDate():new Date(option["Date"]).getDate())+"/"+new Date(option["Date"]).getFullYear()}</td>
+                <td className="" >{(new Date(option["Date"]).getMonth().toString().length==1?"0"+(new Date(option["Date"]).getMonth()+1):new Date(option["Date"]).getMonth()+1)+"/"+(new Date(option["Date"]).getDate().toString().length==1?"0"+new Date(option["Date"]).getDate():new Date(option["Date"]).getDate())+"/"+new Date(option["Date"]).getFullYear()}</td>
             </tr>)
            ))
         }
@@ -840,6 +845,9 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
         formdata=this.Calculte_Indvidual_OT_Weekly_TotalTime(formdata);
         this.setState({trFormdata:formdata})
         let isValid = Formvalidator.checkValidations(data);
+        // if (isValid.status) {
+        //     isValid=this.validateTimeControls(formdata);
+        // }
         if (isValid.status) {
             console.log(this.state);
             formdata=this.GetRequiredEmails(formdata.ClientName,formdata);
@@ -928,7 +936,10 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                 NotifyEmail.push(item.NotifierEmail);
             }
         }
-        this.setState({ReportingManagersEmail:RMEmail,ReviewersEmail:ReviewEmail,NotifiersEmail:NotifyEmail});
+        Formdata.ReportingManagersEmail=RMEmail;
+        Formdata.ReviewEmail=ReviewEmail;
+        Formdata.NotifierEmail=NotifyEmail;
+        //this.setState({ReportingManagersEmail:RMEmail,ReviewersEmail:ReviewEmail,NotifiersEmail:NotifyEmail});
         return Formdata;
      }
      private Calculte_Indvidual_OT_Weekly_TotalTime=(Formdata)=>{
@@ -1032,7 +1043,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                else if(StatusType.Submit==formdata.Status)
                {
                     sub="Weekly Time Sheet has been "+formdata.Status+"."
-                    emaildetails ={toemail:this.state.ReportingManagersEmail,ccemail:this.state.EmployeeEmail,subject:sub,bodyString:sub,body:'' };
+                    emaildetails ={toemail:formObject.ReportingManagersEmail,ccemail:this.state.EmployeeEmail,subject:sub,bodyString:sub,body:'' };
                     emaildetails['body'] = this.emailBodyPreparation(this.siteURL+'/SitePages/TimeSheet.aspx#/WeeklyTimesheet/'+this.state.ItemID,tableContent,emaildetails['bodyString'],this.props.spContext.userDisplayName);
                     this.sendemail(emaildetails);
                }
@@ -1040,11 +1051,11 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                {
                     sub="Weekly Time Sheet has been  Approved by Reporting Manager."
                      CC=this.state.EmployeeEmail;
-                    for(const mail of this.state.ReportingManagersEmail)
+                    for(const mail of formObject.ReportingManagersEmail)
                     {
                         CC.push(mail);
                     }
-                    emaildetails ={toemail:this.state.ReviewersEmail,ccemail:CC,subject:sub,bodyString:sub,body:'' };
+                    emaildetails ={toemail:formObject.ReviewersEmail,ccemail:CC,subject:sub,bodyString:sub,body:'' };
                     emaildetails['body'] = this.emailBodyPreparation(this.siteURL+'/SitePages/TimeSheet.aspx#/WeeklyTimesheet/'+this.state.ItemID,tableContent,emaildetails['bodyString'],this.props.spContext.userDisplayName);
                     this.sendemail(emaildetails);
                }
@@ -1052,15 +1063,15 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                {
                     sub="Weekly Time Sheet has been Approved by Reviewer."
                     CC=this.state.EmployeeEmail;
-                    for(const mail of this.state.ReportingManagersEmail)
+                    for(const mail of formObject.ReportingManagersEmail)
                     {
                         CC.push(mail);
                     }
-                    for(const mail of this.state.ReviewersEmail)
+                    for(const mail of formObject.ReviewersEmail)
                     {
                         CC.push(mail);
                     }
-                    emaildetails ={toemail:this.state.NotifiersEmail,ccemail:CC,subject:sub,bodyString:sub,body:'' };
+                    emaildetails ={toemail:formObject.NotifiersEmail,ccemail:CC,subject:sub,bodyString:sub,body:'' };
                     emaildetails['body'] = this.emailBodyPreparation(this.siteURL+'/SitePages/TimeSheet.aspx#/WeeklyTimesheet/'+this.state.ItemID,tableContent,emaildetails['bodyString'],this.props.spContext.userDisplayName);
                     this.sendemail(emaildetails);
                }
@@ -1068,11 +1079,11 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                {
                 sub="Weekly Time Sheet has been Rejected By "+this.state.userRole+". Please re-submit with necessary details."
                         CC=this.state.EmployeeEmail;
-                       for(const mail of this.state.ReportingManagersEmail)
+                       for(const mail of formObject.ReportingManagersEmail)
                        {
                            CC.push(mail);
                        }
-                       for(const mail of this.state.ReviewersEmail)
+                       for(const mail of formObject.ReviewersEmail)
                        {
                            CC.push(mail);
                        }
@@ -1102,7 +1113,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                     else if(StatusType.Submit==formdata.Status)
                     {
                          sub="Weekly Time Sheet has been "+formdata.Status+"."
-                         emaildetails ={toemail:this.state.ReportingManagersEmail,ccemail:this.state.EmployeeEmail,subject:sub,bodyString:sub,body:'' };
+                         emaildetails ={toemail:formObject.ReportingManagersEmail,ccemail:this.state.EmployeeEmail,subject:sub,bodyString:sub,body:'' };
                          emaildetails['body'] = this.emailBodyPreparation(this.siteURL+'/SitePages/TimeSheet.aspx#/WeeklyTimesheet/'+ItemID,tableContent,emaildetails['bodyString'],this.props.spContext.userDisplayName);
                          this.sendemail(emaildetails);
                     }
@@ -1205,7 +1216,10 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                 {
                     this.setState({isSubmitted:false});
                 }
-                this.setState({ trFormdata:trFormdata,currentWeeklyRowsCount:trFormdata.WeeklyItemsData.length,currentOTRowsCount: trFormdata.OTItemsData.length,ItemID:ExistRecordData[0].ID,EmployeeEmail:EmpEmail,ReportingManagersEmail:RMEmail,ReviewersEmail:ReviewEmail,NotifiersEmail:NotifyEmail});
+                trFormdata.ReportingManagersEmail=RMEmail;
+                trFormdata.ReviewersEmail=ReviewEmail;
+                trFormdata.NotifiersEmail=NotifyEmail;
+                this.setState({ trFormdata:trFormdata,currentWeeklyRowsCount:trFormdata.WeeklyItemsData.length,currentOTRowsCount: trFormdata.OTItemsData.length,ItemID:ExistRecordData[0].ID,EmployeeEmail:EmpEmail});
             }
             else{
                 trFormdata.ClientName=this.state.trFormdata.ClientName;
@@ -1231,8 +1245,10 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                 trFormdata.PTOHrs.push({Description:'',ProjectCode:'',Mon: '00:00',Tue: '00:00',Wed:'00:00',Thu: '00:00',Fri: '00:00',Sat: '00:00',Sun: '00:00',Total: '00:00',});
                 trFormdata.NonBillableSubTotal.push({Mon: '00:00',Tue: '00:00',Wed:'00:00',Thu: '00:00',Fri: '00:00',Sat: '00:00',Sun: '00:00',Total: '00:00',});
                 trFormdata.Total.push({Mon: '00:00',Tue: '00:00',Wed:'00:00',Thu: '00:00',Fri: '00:00',Sat: '00:00',Sun: '00:00',Total: '00:00',});
-
-                this.setState({ trFormdata:trFormdata,currentWeeklyRowsCount:trFormdata.WeeklyItemsData.length,currentOTRowsCount: trFormdata.OTItemsData.length,ItemID:0,EmployeeEmail:[this.state.EmployeeEmail],ReportingManagersEmail:[],ReviewersEmail:[],NotifiersEmail:[],isSubmitted:false});
+                trFormdata.ReportingManagersEmail=[];
+                trFormdata.ReviewersEmail=[];
+                trFormdata.NotifiersEmail=[];
+                this.setState({ trFormdata:trFormdata,currentWeeklyRowsCount:trFormdata.WeeklyItemsData.length,currentOTRowsCount: trFormdata.OTItemsData.length,ItemID:0,EmployeeEmail:[this.state.EmployeeEmail],isSubmitted:false});
             }
             this.hideApproveAndRejectButton()  
     }
@@ -1280,9 +1296,9 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
      private userAccessableRecord(){
         let currentUserEmail = this.props.spContext.userEmail;
         let userEmail = this.state.EmployeeEmail
-        let NotifiersEmail = this.state.NotifiersEmail 
-        let ReviewerEmails = this.state.ReviewersEmail
-        let ApproverEmails = this.state.ReportingManagersEmail
+        let NotifiersEmail = this.state.trFormdata.NotifiersEmail 
+        let ReviewerEmails = this.state.trFormdata.ReviewersEmail
+        let ApproverEmails = this.state.trFormdata.ReportingManagersEmail
 
         let isAccessable = false;
         if(userEmail.includes(currentUserEmail)){
@@ -1299,14 +1315,43 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
         }
         this.setState({isRecordAcessable : isAccessable})
     }
+    //function for custom Validation
+    private validateTimeControls(formdata){
+        let isValid={status:true,message:''};
+         let val;
+        let Time;
+         Object.keys(formdata.Total[0]).forEach(key =>{
+                 val=formdata.Total[0][key];
+                let DayTime=0;
+                if(!["Description","ProjectCode","Total"].includes(key))
+                {
+                    DayTime=( parseInt(val.split(":")[0])*60 ) + (parseInt(val.split(":")[1]));
+                    if(DayTime>1440)
+                    {
+                         isValid.message=" Total Day time should not exceed 24 hours";
+                          isValid.status=false;
+                          return isValid;
+                    } 
+                }
+              })
+           val=formdata.Total[0].Total;
+           Time=( parseInt(val.split(":")[0])*60 ) + (parseInt(val.split(":")[1]));
+           if(Time>10080)
+           {
+              isValid.message="Total week time should not exceed 168 hours";
+                 isValid.status=false;
+                return isValid;
+           }
+           return isValid;
+    }
 
     public render() {
 
         if (!this.state.isRecordAcessable) {
             
             let url = `https://synergycomcom.sharepoint.com/sites/Billing.Timesheet/SitePages/AccessDenied.aspx?`
-            // return (<Navigate to={url} />);
-            window.location.href = url
+            //return (<Navigate to={url} />);
+            window.location.href = url;
         }
         if (this.state.redirect) {
             let url = `/`

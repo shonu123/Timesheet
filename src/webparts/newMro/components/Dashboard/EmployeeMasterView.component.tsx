@@ -162,7 +162,7 @@ class EmployeeMasterView extends React.Component<EmployeeMasterViewProps, Employ
                 name: "Date of Joining",
                 selector: (row, i) => row.Doj,
                 sortable: true,
-                width: '100px'
+                width: '150px'
             },
             {
                 name: "Status",
