@@ -2251,14 +2251,14 @@ li {
 
   #tablePDF{
     position: relative;
-    top: 50px;
+    /* top: 50px; */
   }
 
   #txtTableSearch{
     width: 240px;
-    height: 15px;
-    position: absolute;
-    left: 5px;
+    /* height: 15px; */
+    /* position: absolute; */
+    /* left: 5px; */
     /* top: 10px; */
   }
 
@@ -2266,11 +2266,12 @@ li {
   #newEmployeeMasterForm,#newWeeklyTimeSheet{
     position: absolute;
     z-index: 10;
-    right: 10px;
-    height: 25px;
+    left: 15px;
+    /* height: 25px; */
     width: 80px;
     text-align: center;
     cursor: pointer;
+    top: 5px;
   }
   /* .tabsBackground{
     background-color: #0D2F4B !important;
