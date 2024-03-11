@@ -69,7 +69,7 @@ class ApproversApprovals extends React.Component<ApproversProps, ApproversState>
                         Date : `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`,
                         EmployeName: d.Name,
                         Status : d.Status,
-                        BillableTotalHrs: d.BillableTotalHrs,
+                        BillableTotalHrs: d.WeeklyTotalHrs,
                         OTTotalHrs : d.OTTotalHrs,
                         NonBillableTotalHrs: d.NonBillableTotalHrs,
                         WeeklyTotalHrs: d.GrandTotal
