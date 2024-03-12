@@ -311,6 +311,7 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
     public render() {
         if (this.state.redirect) {
             let url = `/Dashboard`
+            // this.ReviewerApproval();
             // return (<Navigate to={url} replace />);
             window.location.href = 'https://synergycomcom.sharepoint.com/sites/Billing.Timesheet/SitePages/Timesheet.aspx'
         }
