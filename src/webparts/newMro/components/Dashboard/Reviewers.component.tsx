@@ -38,6 +38,7 @@ export interface ReviewerApprovalsState {
     modalTitle:string;
     modalText:string;
     successPopUp:boolean;
+    ModalHeader: string;
     // pageNumber:number;
     // sortBy:number;
     // sortOrder:boolean;
@@ -49,7 +50,7 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
         sp.setup({
             spfxContext: this.props.context
         });
-        this.state = {Reviewers: [], loading:false,message:'',title:'',showHideModal:false,isSuccess:false,comments:'',Action:'',errorMessage:'',ItemID:0,siteURL : this.props.spContext.webAbsoluteUrl,redirect:false,modalTitle:'',modalText:'',successPopUp:false};
+        this.state = {Reviewers: [], loading:false,message:'',title:'',showHideModal:false,isSuccess:false,comments:'',Action:'',errorMessage:'',ItemID:0,siteURL : this.props.spContext.webAbsoluteUrl,redirect:false,modalTitle:'',modalText:'',successPopUp:false,ModalHeader:'modal-header-Approve'};
     }
 
     public componentDidMount() {
@@ -143,10 +144,14 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
             // alert("Record Updated Sucessfully");
             // this.setState({showHideModal : false,ItemID:0,message:'',title:'',Action:'',loading: false});
             let sub=''; 
-            if(Status==StatusType.Approved)
-            sub = "Weekly Time Sheet has been approved by Reviewer"
-            else
-            sub = "Weekly Time Sheet has been rejected by Reviewer.Please re-submit with necessary details."
+            if(Status==StatusType.Approved){
+                sub = "Weekly Time Sheet has been approved by Reviewer"
+                this.setState({ModalHeader:'modal-header-Approve'})
+            }
+            else{
+                sub = "Weekly Time Sheet has been rejected by Reviewer.Please re-submit with necessary details."
+                this.setState({ModalHeader:'modal-header-reject'})
+            }
 
             let emaildetails ={toemail:To,ccemail:CC,subject:sub,bodyString:sub,body:'' };
              let table = tableContent;
@@ -368,7 +373,7 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
                     name: "OT Hours",
                     //selector: 'Created',
                     selector: (row, i) => row.OTTotalHrs,
-                    width: '110px',
+                    width: '130px',
                     sortable: true,
                 },
                 {
@@ -430,7 +435,7 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
                 {/* <h1>Reviewer Screen</h1> */}
                 <ModalPopUp title={this.state.modalTitle} modalText={this.state.modalText} isVisible={this.state.successPopUp} onClose={this.navigateAfterAction} isSuccess={this.state.isSuccess}></ModalPopUp>
                 {/* <ModalPopUp title={this.state.modalTitle} modalText={this.state.modalText} isVisible={this.state.showHideModal} onClose={this.handlefullClose} isSuccess={this.state.isSuccess}></ModalPopUp> */}
-                <ModalApprovePopUp message={this.state.message} title={this.state.title} isVisible={this.state.showHideModal} isSuccess={this.state.isSuccess} onConfirm={this.handleAction} onCancel={this.handlefullClose} comments={this.handleComments} errorMessage={this.state.errorMessage} commentsValue={this.state.comments} ></ModalApprovePopUp>
+                <ModalApprovePopUp message={this.state.message} title={this.state.title} isVisible={this.state.showHideModal} isSuccess={this.state.isSuccess} onConfirm={this.handleAction} onCancel={this.handlefullClose} comments={this.handleComments} errorMessage={this.state.errorMessage} commentsValue={this.state.comments} modalHeader={this.state.ModalHeader} ></ModalApprovePopUp>
                 <div>
                     <div className='table-head-1st-td'>
                         <TableGenerator columns={columns} data={this.state.Reviewers} fileName={'My Approvals'} showExportExcel={false}></TableGenerator>

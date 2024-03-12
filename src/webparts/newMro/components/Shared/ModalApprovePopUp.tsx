@@ -10,22 +10,24 @@ interface modalProps {
   onCancel : () => void;
   comments : (e:any) => void;
   commentsValue : string;
+  modalHeader : string;
 }
 
-const ModalApprovePopUp =({ message,title,isVisible,isSuccess, onConfirm, onCancel, comments,errorMessage,commentsValue } : modalProps) => {
+const ModalApprovePopUp =({ message,modalHeader,title,isVisible,isSuccess, onConfirm, onCancel, comments,errorMessage,commentsValue } : modalProps) => {
     return isVisible ? (
       // <div className="modal" tabIndex={-1} style={{display:'block',background:'rgb(165 165 165 / 25%)'}} >
         <div className="modal" tabIndex={-1} style={{display:'block'}} >
         <div className="modal-dialog modal-dialog-centered">
           <div className="modal-content">
-            <div className={`modal-header`}>
+            <div className={modalHeader}>
+          
               {!isSuccess&& <h5 className="" color='rgb(232, 87, 87)'>{message}</h5>}
               {isSuccess && <h5 className="" color='#0D2F4B'>{message}</h5>}
             </div>
             {/* <div className="modal-body">
               <p>{`Would you like to ${title} the item`}</p>
             </div> */}
-            <div className="light-box border-box-shadow m-1 p-2 pt-3">
+            <div className="light-box border-box-shadow m-1 p-2">
                                             <div className="media-px-12">
 
                                                 <div className="light-text height-auto">

@@ -113,19 +113,19 @@ class MyRequests extends React.Component<MyRequestsProps, MyRequestsState> {
             {
                 name: "Client",
                 selector: (row, i) => row.Company,
-                // width: '130px',
+                width: '150px',
                 sortable: true
             },
             {
                 name: "Pending With",
                 selector: (row, i) => row.PendingWith,
                 sortable: true,
-                // width: '135px'
+                // width: '150px'
             },
             {
                 name: "Status",
                 selector: (row, i) => row.Status,
-                width: '100px',
+                // width: '100px',
                 sortable: true
 
             }

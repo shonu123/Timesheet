@@ -91,6 +91,7 @@ export interface WeeklyTimesheetState {
     showNonBillable : boolean;
     showApproveRejectbtn: boolean;
     isRecordAcessable:boolean;
+    UserGoups : any;
 }
 
 class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetState> {
@@ -172,7 +173,8 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
             showBillable:true,
             showNonBillable : true,
             showApproveRejectbtn : false,
-            isRecordAcessable: true
+            isRecordAcessable: true,
+            UserGoups: []
         };
         this.oweb = Web(this.props.spContext.siteAbsoluteUrl);
          // for first row of weekly and OT hrs
@@ -243,7 +245,13 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
         let groups = await sp.web.currentUser.groups();
         console.log("current user deatils")
         console.log(this.props.context.pageContext)
-
+        //------new-----
+        let userGroups = []
+        for (const grp of groups) {
+            userGroups.push(grp.Title)
+        }
+        this.setState({UserGoups:userGroups})
+        // ---new -------
         let userGroup = groups[0].Title
         let user = userGroup=='Timesheet Initiators' ?'Initiator': userGroup=='Timesheet Approvers'?'Approver':userGroup=='Timesheet Reviewers'?'Reviewer':'Administrator'
         console.log('You are :'+user)
@@ -340,6 +348,14 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
         "Sun":(new Date(WeekStartDate.setDate(WeekStartDate.getDate()+1)).getDate().toString().length == 1 ? "0" +WeekStartDate.getDate() :WeekStartDate.getDate()),
         "IsSunJoined":WeekStartDate<trFormdata.DateOfJoining,
         })
+        let groups = await sp.web.currentUser.groups();
+        //------new-----
+        let userGroups = []
+        for (const grp of groups) {
+            userGroups.push(grp.Title)
+        }
+        this.setState({UserGoups:userGroups})
+
         this.hideApproveAndRejectButton();
         this.userAccessableRecord();
 
@@ -1437,7 +1453,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
         let NotifiersEmail = this.state.trFormdata.NotifiersEmail 
         let ReviewerEmails = this.state.trFormdata.ReviewersEmail
         let ApproverEmails = this.state.trFormdata.ReportingManagersEmail
-
+        let userGroups = this.state.UserGoups
         let isAccessable = false;
         if(userEmail.includes(currentUserEmail)){
             isAccessable = true
@@ -1450,6 +1466,10 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
         }
         else if(NotifiersEmail.includes(currentUserEmail)){
             isAccessable = true
+        }
+        else if(userGroups.includes('Timesheet Owners') || userGroups.includes('Timesheet Members')){
+            isAccessable = true;
+            this.setState({isSubmitted:true})
         }
         this.setState({isRecordAcessable : isAccessable})
     }

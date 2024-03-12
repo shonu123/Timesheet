@@ -248,6 +248,7 @@ margin-bottom: 1.5rem;
   font-weight: bold;
   text-align: center;
   text-align: left;
+  font-size: 1.3rem;
 }
 .border-dashed{
   border: 2px dashed rgba(0, 128, 180, 0.50);      
@@ -1534,7 +1535,7 @@ div[id^="_TopSpan_NotificationSpan"]{
       border-spacing: 0px;      
   }
   .v-table{
-      width: 99vw;
+      /* width: 99vw !important; */
       margin: auto;
       /* margin-top: 80px !important; */
   }
@@ -1652,7 +1653,7 @@ div[id^="_TopSpan_NotificationSpan"]{
     color: #fff !important;
     background-color: #0d2f4b !important;
     position: relative;
-    font-size: 1.5rem;
+    font-size: 1.3rem;
     text-align: left;
   } 
   .nav-tabs .nav-link.active:after {
@@ -2080,25 +2081,25 @@ li {
 	}
 }
 @media only screen and (max-width: 1304px) {
-	.v-table{
+	/* .v-table{
 		width: 71vw!important;
-	}
+	} */
   .c-v-table{
 		width: 74vw!important;
 	}
 }
 @media only screen and (max-width: 1211px) {
-	.v-table{
+	/* .v-table{
 		width: 68vw!important;
-	}
+	} */
   .c-v-table{
 		width: 70vw!important;
 	}
 }
 @media only screen and (max-width: 1096px) {
-	.v-table{
+	/* .v-table{
 		width: 67vw!important;
-	}
+	} */
   .c-v-table{
 		width: 67vw!important;
 	}
@@ -2296,6 +2297,41 @@ li {
   .Billable {
     margin-top: 4rem !important;
   }
+
+  .modal-header-reject {
+    display: -ms-flexbox;
+    display: flex;
+    -ms-flex-align: start;
+    align-items: flex-start;
+    -ms-flex-pack: justify;
+    justify-content: space-between;
+    padding: 0.5rem 1rem;
+    border-bottom: 1px solid #dee2e6;
+    border-top-left-radius: calc(.3rem - 1px);
+    border-top-right-radius: calc(.3rem - 1px);
+    background: #ff18022b;
+    color: red;
+}
+
+.modal-header-Approve {
+  display: -ms-flexbox;
+  display: flex;
+  -ms-flex-align: start;
+  align-items: flex-start;
+  -ms-flex-pack: justify;
+  justify-content: space-between;
+  padding: 0.5rem 1rem;
+  border-bottom: 1px solid #dee2e6;
+  border-top-left-radius: calc(.3rem - 1px);
+  border-top-right-radius: calc(.3rem - 1px);
+  background: #0d2f4b;
+  color: #fff;
+}
+
+.bRirNn{
+  font-size: 1.0rem !important;
+}
+
   /* .tabsBackground{
     background-color: #0D2F4B !important;
     color: #ffff !important;
