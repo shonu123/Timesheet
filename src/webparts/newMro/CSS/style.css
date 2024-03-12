@@ -684,7 +684,7 @@ a{
 .light-text label{
   position: absolute;
   /* top: -2px; */
-  top: -11px;
+  top: -12px;
   left: 6px;
   padding: 0 5px;
   background-color: white;
@@ -2292,6 +2292,9 @@ li {
     color: #444 !important;
     text-decoration-line: none !important;
     font-size: 1rem !important;
+  }
+  .Billable {
+    margin-top: 4rem !important;
   }
   /* .tabsBackground{
     background-color: #0D2F4B !important;

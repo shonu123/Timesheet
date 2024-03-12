@@ -362,7 +362,7 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
                     //selector: "Requisitioner",
                     selector: (row, i) => row.BillableHrs,
                     sortable: true,
-                    width: '135px'
+                    // width: '135px'
                 },
                 {
                     name: "OT Hours",
@@ -376,20 +376,20 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
                     //selector: "Requisitioner",
                     selector: (row, i) => row.TotalBillableHours,
                     sortable: true,
-                    width: '175px'
+                    // width: '175px'
                 },
                 {
                     name: "Non-Billable Hours",
                     //selector: "TotalAmount",
                     selector: (row, i) => row.NonBillableTotalHrs,
                     sortable: true,
-                    width: '200px'
+                    // width: '200px'
                 },
                 {
                     name: "Total Hours",
                     //selector: "Status",
                     selector: (row, i) => row.WeeklyTotalHrs,
-                    width: '150px',
+                    // width: '150px',
                     sortable: true
                 },
                 {

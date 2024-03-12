@@ -125,19 +125,19 @@ class EmployeeMasterView extends React.Component<EmployeeMasterViewProps, Employ
             {
                 name: "Employee",
                 selector: (row, i) => row.Employee,
-                width: '150px',
+                // width: '150px',
                 sortable: true
             },
             {
                 name: "Reporting Manager",
                 selector: (row, i) => row.ReportingManager,
-                width: '250px',
+                // width: '250px',
                 sortable: true
             },
             {
                 name: "Client",
                 selector: (row, i) => row.Company,
-                width: '150px',
+                // width: '150px',
                 sortable: true
             },
             // {
@@ -150,13 +150,13 @@ class EmployeeMasterView extends React.Component<EmployeeMasterViewProps, Employ
                 name: "Reviewers",
                 selector: (row, i) => row.Reviewers,
                 sortable: true,
-                width: '250px'
+                // width: '250px'
             },
             {
                 name: "Notifiers",
                 selector: (row, i) => row.Notifiers,
                 sortable: true,
-                width: '250px'
+                // width: '250px'
             },
             {
                 name: "Date of Joining",
@@ -179,7 +179,7 @@ class EmployeeMasterView extends React.Component<EmployeeMasterViewProps, Employ
                                 <div className="title">Approval Matrix</div>
             {/* <h1 className='title'>Approval Matrix</h1> */}
 
-                <div style={{ paddingLeft: '10px' }} className="px-1 text-right" id='divAddNewEmployeeMaster'>
+                <div style={{ paddingLeft: '10px' }} className="px-1 text-right Billable" id='divAddNewEmployeeMaster'>
                     <NavLink title="New Approval Matrix"  className="csrLink ms-draggable" to={`/EmployeeMasterForm`}>
                         <span className='add-button' id='newEmployeeMasterForm'><FontAwesomeIcon icon={faPlus}></FontAwesomeIcon> New</span>
                     </NavLink>

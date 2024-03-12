@@ -107,20 +107,20 @@ class MyRequests extends React.Component<MyRequestsProps, MyRequestsState> {
             {
                 name: "Week Start Date",
                 selector: (row, i) => row.Date,
-                width: '250px',
+                // width: '250px',
                 sortable: true
             },
             {
                 name: "Client",
                 selector: (row, i) => row.Company,
-                width: '130px',
+                // width: '130px',
                 sortable: true
             },
             {
                 name: "Pending With",
                 selector: (row, i) => row.PendingWith,
                 sortable: true,
-                width: '135px'
+                // width: '135px'
             },
             {
                 name: "Status",
