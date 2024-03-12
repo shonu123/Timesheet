@@ -121,7 +121,7 @@ class Dashboard extends React.Component<DashboardProps, DashboardState> {
         //     this.setState({isAdmin : true}) 
         // }
         if(userGroup.includes('Timesheet Initiators')){
-            this.setState({ showMyRequestsComp: true});
+            this.setState({ showRequestTab: true});
             this.onHandleClick('MyRequests')
         }
         if(userGroup.includes('Timesheet Approvers')){
@@ -141,7 +141,7 @@ class Dashboard extends React.Component<DashboardProps, DashboardState> {
             this.setState({ showAllRequestsTab: true});
             this.onHandleClick('AllRequests')
         }
-        if(userGroup.includes('Timesheet Memebers')){
+        if(userGroup.includes('Timesheet Members')){
             this.setState({ showAllRequestsTab: true});
             this.onHandleClick('AllRequests')
         }

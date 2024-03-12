@@ -113,7 +113,7 @@ class EmployeeMasterView extends React.Component<EmployeeMasterViewProps, Employ
                     return (
                         <React.Fragment>
                             <div style={{ paddingLeft: '10px' }}>
-                                <NavLink title="New Approval Matrix"  className="csrLink ms-draggable" to={`/EmployeeMasterForm/${record.Id}`}>
+                                <NavLink title="Edit"  className="csrLink ms-draggable" to={`/EmployeeMasterForm/${record.Id}`}>
                                     <FontAwesomeIcon icon={faEdit}></FontAwesomeIcon>
                                 </NavLink>
                             </div>
@@ -173,10 +173,14 @@ class EmployeeMasterView extends React.Component<EmployeeMasterViewProps, Employ
         ];
         return (
             <React.Fragment>
-            <h1 className='title'>Approval Matrix</h1>
+            <div id="content" className="content p-2 pt-2">
+            <div className='container-fluid'>
+                            <div className='FormContent'>
+                                <div className="title">Approval Matrix</div>
+            {/* <h1 className='title'>Approval Matrix</h1> */}
 
                 <div style={{ paddingLeft: '10px' }} className="px-1 text-right" id='divAddNewEmployeeMaster'>
-                    <NavLink title="Edit"  className="csrLink ms-draggable" to={`/EmployeeMasterForm`}>
+                    <NavLink title="New Approval Matrix"  className="csrLink ms-draggable" to={`/EmployeeMasterForm`}>
                         <span className='add-button' id='newEmployeeMasterForm'><FontAwesomeIcon icon={faPlus}></FontAwesomeIcon> New</span>
                     </NavLink>
                 </div>
@@ -184,6 +188,9 @@ class EmployeeMasterView extends React.Component<EmployeeMasterViewProps, Employ
                 <div className='table-head-1st-td'>
                     <TableGenerator columns={columns} data={this.state.Details} fileName={'My Details'} showExportExcel={false}></TableGenerator>
                 </div>
+            </div>
+            </div>
+            </div>
             </div>
             </React.Fragment> 
         );

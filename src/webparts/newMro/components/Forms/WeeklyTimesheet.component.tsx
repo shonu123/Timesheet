@@ -1280,7 +1280,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                 trFormdata.ReportingManagersEmail=RMEmail;
                 trFormdata.ReviewersEmail=ReviewEmail;
                 trFormdata.NotifiersEmail=NotifyEmail;
-                this.setState({ trFormdata:trFormdata,currentWeeklyRowsCount:trFormdata.WeeklyItemsData.length,currentOTRowsCount: trFormdata.OTItemsData.length,ItemID:ExistRecordData[0].ID,EmployeeEmail:EmpEmail});
+                this.setState({ trFormdata:trFormdata,currentWeeklyRowsCount:trFormdata.WeeklyItemsData.length,currentOTRowsCount: trFormdata.OTItemsData.length,ItemID:ExistRecordData[0].ID,EmployeeEmail:EmpEmail,errorMessage:''});
                 if(ExistRecordData[0].ClientName =='Synergy-HQ'){
                     this.setState({showBillable : true, showNonBillable: false})
                 }
@@ -1386,7 +1386,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                     "IsSunJoined":WeekStartDate<trFormdata.DateOfJoining,
                     })
                 }
-                this.setState({ trFormdata:trFormdata,currentWeeklyRowsCount:trFormdata.WeeklyItemsData.length,currentOTRowsCount: trFormdata.OTItemsData.length,ItemID:0,EmployeeEmail:this.state.EmployeeEmail,isSubmitted:false});
+                this.setState({ trFormdata:trFormdata,currentWeeklyRowsCount:trFormdata.WeeklyItemsData.length,currentOTRowsCount: trFormdata.OTItemsData.length,ItemID:0,EmployeeEmail:this.state.EmployeeEmail,isSubmitted:false,errorMessage:''});
             }
             this.hideApproveAndRejectButton()  
     }
@@ -1500,7 +1500,8 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
 
                 <React.Fragment>
                       <ModalPopUp title={this.state.modalTitle} modalText={this.state.modalText} isVisible={this.state.showHideModal} onClose={this.handlefullClose} isSuccess={this.state.isSuccess}></ModalPopUp>
-    <div className="container-fluid">
+            <div id="content" className="content p-2 pt-2">
+            <div className="container-fluid">
             <div className="my-3 media-p-1 Billable Hours">
             <div className="title">Weekly Timesheet
                                     <div className='mandatory-note'>
@@ -1897,6 +1898,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                     </table>
                             </div>
             </div>
+        </div>
         </div>
             {this.state.loading && <Loader />}
                 </React.Fragment>
