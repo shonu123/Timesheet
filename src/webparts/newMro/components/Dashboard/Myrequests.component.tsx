@@ -107,7 +107,7 @@ class MyRequests extends React.Component<MyRequestsProps, MyRequestsState> {
             {
                 name: "Week Start Date",
                 selector: (row, i) => row.Date,
-                // width: '250px',
+                width: '250px',
                 sortable: true
             },
             {
@@ -125,7 +125,7 @@ class MyRequests extends React.Component<MyRequestsProps, MyRequestsState> {
             {
                 name: "Status",
                 selector: (row, i) => row.Status,
-                // width: '100px',
+                width: '100px',
                 sortable: true
 
             }

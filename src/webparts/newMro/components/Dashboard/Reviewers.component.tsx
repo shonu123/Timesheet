@@ -146,11 +146,10 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
             let sub=''; 
             if(Status==StatusType.Approved){
                 sub = "Weekly Time Sheet has been approved by Reviewer"
-                this.setState({ModalHeader:'modal-header-Approve'})
+                // this.setState({ModalHeader:'modal-header-Approve'})
             }
             else{
                 sub = "Weekly Time Sheet has been rejected by Reviewer.Please re-submit with necessary details."
-                this.setState({ModalHeader:'modal-header-reject'})
             }
 
             let emaildetails ={toemail:To,ccemail:CC,subject:sub,bodyString:sub,body:'' };
@@ -270,7 +269,7 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
         }
     }
     private handlefullClose = () => {
-        this.setState({ showHideModal: false, Action :'', errorMessage : '',ItemID : 0});
+        this.setState({ showHideModal: false, Action :'', errorMessage : '',ItemID : 0,comments:''});
     }
 
     private navigateAfterAction =()=>{
@@ -288,12 +287,13 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
         if(name == 'Approve')
         {
             this.setState({message : 'Are you sure you want to approve?',title : 'Approve', Action : 'Approve'});
-            this.setState({showHideModal : true,isSuccess:true})
+            this.setState({showHideModal : true,isSuccess:true,ModalHeader:'modal-header-Approve'})
+
         }
         else if(name == 'Reject')
         {
             this.setState({message : 'Are you sure you want to reject?',title : 'Reject', Action : 'Reject'});
-            this.setState({showHideModal : true,isSuccess:false})
+            this.setState({showHideModal : true,isSuccess:false,ModalHeader:'modal-header-reject'})
         }
         else{
             this.setState({showHideModal : false})
@@ -310,8 +310,9 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
 
     public render() {
         if (this.state.redirect) {
-            let url = `/`
-            return (<Navigate to={url} />);
+            let url = `/Dashboard`
+            // return (<Navigate to={url} replace />);
+            window.location.href = 'https://synergycomcom.sharepoint.com/sites/Billing.Timesheet/SitePages/Timesheet.aspx'
         }
         else {
             const columns = [
