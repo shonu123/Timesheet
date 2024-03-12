@@ -1653,16 +1653,16 @@ div[id^="_TopSpan_NotificationSpan"]{
     font-size: 1.5rem;
     text-align: left;
   } 
-  /* .nav-tabs .nav-link.active:after {
+  .nav-tabs .nav-link.active:after {
     content: "";
     position: absolute;
     bottom: -22px;
     z-index: 9999999999;
     left: 40%;
     border: 10px solid transparent;
-    border-top-color: rgb(73 76 162);
     border-top-color: #0D2F4B;
-}  */
+    border-top-color: #0D2F4B;
+} 
   .nav-pills .nav-link{
       cursor: pointer;
   }
@@ -1961,8 +1961,10 @@ top: 43.5%;
 }
 .add-button {
   transition: all .15s ease-in-out;
-    background: #ffffff;
-    color: #0D2F4B;
+    /* background: #ffffff;
+    color: #0D2F4B; */
+    background: #0D2F4B;
+    color: #ffffff;
     border-radius: 10px;
     width: 60px;
     height: 40px;
@@ -1978,8 +1980,10 @@ top: 43.5%;
 .add-button:hover{
   cursor: pointer;
   transition: all .15s ease-in-out;
-    background: #0D2F4B;
-    color: #ffffff;
+    /* background: #0D2F4B;
+    color: #ffffff; */
+    background: #ffffff;
+    color: #0D2F4B;
     border: 2px solid #686abf;
 }
 #contentBox {
@@ -2277,6 +2281,15 @@ li {
     text-align: center;
     cursor: pointer;
     top: 5px;
+  }
+
+  .nav-item{
+    display: inline-block;
+  }
+  .nav-item a{
+    color: #444 !important;
+    text-decoration-line: none !important;
+    font-size: 1rem !important;
   }
   /* .tabsBackground{
     background-color: #0D2F4B !important;

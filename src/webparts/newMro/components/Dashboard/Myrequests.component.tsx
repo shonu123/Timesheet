@@ -135,7 +135,7 @@ class MyRequests extends React.Component<MyRequestsProps, MyRequestsState> {
             {/* <h1>Initiator Screen</h1> */}
 
                 <div style={{ paddingLeft: '10px' }} className="px-1 text-right" id='divAddNewWeeklyTimeSheet'>
-                    <NavLink title="Edit"  className="csrLink ms-draggable" to={`/WeeklyTimesheet`}>
+                    <NavLink title="New Weekly Timesheet"  className="csrLink ms-draggable" to={`/WeeklyTimesheet`}>
                         <span className='add-button' id='newWeeklyTimeSheet'><FontAwesomeIcon icon={faPlus}></FontAwesomeIcon> New</span>
                     </NavLink>
                 </div>

@@ -113,7 +113,7 @@ class EmployeeMasterView extends React.Component<EmployeeMasterViewProps, Employ
                     return (
                         <React.Fragment>
                             <div style={{ paddingLeft: '10px' }}>
-                                <NavLink title="Edit"  className="csrLink ms-draggable" to={`/EmployeeMasterForm/${record.Id}`}>
+                                <NavLink title="New Approval Matrix"  className="csrLink ms-draggable" to={`/EmployeeMasterForm/${record.Id}`}>
                                     <FontAwesomeIcon icon={faEdit}></FontAwesomeIcon>
                                 </NavLink>
                             </div>

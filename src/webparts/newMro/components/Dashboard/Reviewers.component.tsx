@@ -49,7 +49,7 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
         sp.setup({
             spfxContext: this.props.context
         });
-        this.state = {Reviewers: [], loading:false,message:'',title:'',showHideModal:false,isSuccess:true,comments:'',Action:'',errorMessage:'',ItemID:0,siteURL : this.props.spContext.webAbsoluteUrl,redirect:false,modalTitle:'',modalText:'',successPopUp:false};
+        this.state = {Reviewers: [], loading:false,message:'',title:'',showHideModal:false,isSuccess:false,comments:'',Action:'',errorMessage:'',ItemID:0,siteURL : this.props.spContext.webAbsoluteUrl,redirect:false,modalTitle:'',modalText:'',successPopUp:false};
     }
 
     public componentDidMount() {
@@ -67,7 +67,7 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
                 console.log(response)
                 let Data = [];
                 for (const d of response) {
-                    let date = new Date(d.DateSubmitted)
+                    let date = new Date(d.WeekStartDate)
                     Data.push({
                         Id : d.Id,
                         Date : `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`,
@@ -101,13 +101,12 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
             CC: emaildetails.ccemail
           }).then((i) => {  
             // alert("Record Updated Sucessfully");
-            this.setState({showHideModal : false,ItemID:0,message:'',title:'',Action:'',loading: false});
-            this.setState({redirect : true});
+            this.setState({showHideModal : false,ItemID:0,message:'',title:'',Action:'',loading: false,successPopUp:true,modalTitle:modalTitle});
+            // this.setState({redirect : true});
             // <Navigate to={'/'} />
           }).catch((i) => {
             // alert("Error while updating the record");
-            this.setState({showHideModal : false,ItemID:0,message:'',title:'',Action:'',loading: false});
-            this.setState({redirect : true});
+            this.setState({showHideModal : false,ItemID:0,message:'',title:'',Action:'',loading: false,successPopUp:true,modalTitle:'Email sending failed',modalText:'Something went wrong please try again'});            // this.setState({redirect : true});
             console.log(i)
           });  
     }
@@ -271,7 +270,7 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
 
     private navigateAfterAction =()=>{
         this.setState({successPopUp : false});
-        return (<Navigate to={`/`} />);
+        this.setState({redirect : true});
     }
 
     private showPopUp = (e) =>{
@@ -283,13 +282,13 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
         let name = e.target.dataset.name
         if(name == 'Approve')
         {
-            this.setState({message : 'Please confirm to Approve',title : 'Approve', Action : 'Approve'});
-            this.setState({showHideModal : true})
+            this.setState({message : 'Are you sure you want to approve?',title : 'Approve', Action : 'Approve'});
+            this.setState({showHideModal : true,isSuccess:true})
         }
         else if(name == 'Reject')
         {
-            this.setState({message : 'Please confirm to Reject',title : 'Reject', Action : 'Reject'});
-            this.setState({showHideModal : true})
+            this.setState({message : 'Are you sure you want to reject?',title : 'Reject', Action : 'Reject'});
+            this.setState({showHideModal : true,isSuccess:false})
         }
         else{
             this.setState({showHideModal : false})
@@ -390,6 +389,7 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
                     name: "Total Hours",
                     //selector: "Status",
                     selector: (row, i) => row.WeeklyTotalHrs,
+                    width: '150px',
                     sortable: true
                 },
                 {
@@ -430,7 +430,7 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
                 {/* <h1>Reviewer Screen</h1> */}
                 <ModalPopUp title={this.state.modalTitle} modalText={this.state.modalText} isVisible={this.state.successPopUp} onClose={this.navigateAfterAction} isSuccess={this.state.isSuccess}></ModalPopUp>
                 {/* <ModalPopUp title={this.state.modalTitle} modalText={this.state.modalText} isVisible={this.state.showHideModal} onClose={this.handlefullClose} isSuccess={this.state.isSuccess}></ModalPopUp> */}
-                <ModalApprovePopUp message={this.state.message} title={this.state.title} isVisible={this.state.showHideModal} isSuccess={false} onConfirm={this.handleAction} onCancel={this.handlefullClose} comments={this.handleComments} errorMessage={this.state.errorMessage} commentsValue={this.state.comments} ></ModalApprovePopUp>
+                <ModalApprovePopUp message={this.state.message} title={this.state.title} isVisible={this.state.showHideModal} isSuccess={this.state.isSuccess} onConfirm={this.handleAction} onCancel={this.handlefullClose} comments={this.handleComments} errorMessage={this.state.errorMessage} commentsValue={this.state.comments} ></ModalApprovePopUp>
                 <div>
                     <div className='table-head-1st-td'>
                         <TableGenerator columns={columns} data={this.state.Reviewers} fileName={'My Approvals'} showExportExcel={false}></TableGenerator>

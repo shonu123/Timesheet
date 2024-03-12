@@ -95,12 +95,15 @@ class NavBar extends React.Component<NavBarProps, NavBarState> {
 
 
                         <ul className="list-unstyled ul-leftnav components mb-5">
-                            {(this.props.currentUserGroups.includes('Timesheet Administrators'))?
+                            {(this.props.currentUserGroups.includes("Timesheet Owners")||this.props.currentUserGroups.includes('Timesheet Members') || this.props.currentUserGroups.includes('Timesheet Administrators'))?
                                 <li className="nav-item" id="employeemaster" onClick={(event) => this.onNavItemClick(event)}>
-                                    <NavLink className="" to="/employeemasterview"><span className=""><span className="">Approval Matrix</span></span></NavLink>
+                                    <NavLink className="" to="/EmployeeMasterView"><span className=""><span className="">Approval Matrix</span></span></NavLink>
                                 </li>:''}
-                             
-                            {(this.props.currentUserGroups.includes('Timesheet Initiators'))?
+                                {(this.props.currentUserGroups.includes('Timesheet Initiators') ||this.props.currentUserGroups.includes('Timesheet Approvers') || this.props.currentUserGroups.includes('Timesheet Reviewers') )?
+                            <li className="nav-item" id="weeklytimesheet" onClick={(event) => this.onNavItemClick(event)}>
+                                <NavLink className="" to="/Dashboard"><span className=""><span className="">Dashboard</span></span></NavLink>
+                            </li>:''}
+                            {/* {(this.props.currentUserGroups.includes('Timesheet Initiators'))?
                             <li className="nav-item" id="weeklytimesheet" onClick={(event) => this.onNavItemClick(event)}>
                                 <NavLink className="" to="/weeklytimesheet"><span className=""><span className="">Weekly Timesheet</span></span></NavLink>
                             </li>:''}
@@ -111,7 +114,7 @@ class NavBar extends React.Component<NavBarProps, NavBarState> {
                             {(this.props.currentUserGroups.includes('Timesheet Reviewers'))?
                             <li className="nav-item" id="reviewers" onClick={(event) => this.onNavItemClick(event)}>
                                 <NavLink className="" to="/Dashboard"><span className=""><span className="">My approvals</span></span></NavLink>
-                            </li>:''}
+                            </li>:''} */}
                         </ul>
                 </div>
                 </div>
