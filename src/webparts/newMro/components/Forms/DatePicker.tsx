@@ -18,6 +18,7 @@ interface DatePickerProps {
     className: string;
     labelName:string;
     isDisabled:boolean;
+    ref:any;
   }
 
 //   const [selectedDate,setDate] = React.useState(new Date())
@@ -44,11 +45,11 @@ interface DatePickerProps {
     }
    }
 
-  const CustomDatePicker =({ handleChange,selectedDate,className,labelName,isDisabled } : DatePickerProps) => {
+  const CustomDatePicker =({ handleChange,selectedDate,className,labelName,isDisabled,ref} : DatePickerProps) => {
     return  (
 
             <div className="App">
-                   <label className='z-in-9'>{labelName}</label>
+                   <label className='z-in-9'>{labelName}<span className="mandatoryhastrick">*</span></label>
                    <DatePicker
                     selected = {selectedDate}
                     onChange={handleChange}
@@ -56,7 +57,13 @@ interface DatePickerProps {
                     maxDate={new Date()}
                     filterDate = {filterDays}
                     className = {className}
-                    disabled = {isDisabled}
+                    disabled = {isDisabled} 
+                    ref={ref}   
+                    required={true}
+                    name={labelName}
+                    title={labelName}
+                    id={className}
+                    placeholder={"MM/DD/YYYY"}
               />
             </div>
           );
