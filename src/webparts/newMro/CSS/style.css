@@ -2346,6 +2346,10 @@ li {
 .iconApprove,.iconReject{
   cursor: pointer;
 }
+.fa-xmark{
+  position: relative;
+  z-index: 0;
+}
   /* .tabsBackground{
     background-color: #0D2F4B !important;
     color: #ffff !important;
