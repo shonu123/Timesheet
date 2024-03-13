@@ -103,7 +103,7 @@ class NavBar extends React.Component<NavBarProps, NavBarState> {
                             }
                             {
                                 (this.props.currentUserGroups.includes('Timesheet Initiators') ||this.props.currentUserGroups.includes('Timesheet Approvers') || this.props.currentUserGroups.includes('Timesheet Reviewers') )?
-                                    <li className="nav-click" id="weeklytimesheet" onClick={(event) => this.onNavItemClick(event)}>
+                                    <li className="nav-click" id="liDashboard" onClick={(event) => this.onNavItemClick(event)}>
                                         <NavLink className="" to="/Dashboard"><span className=""><span className="">Dashboard</span></span></NavLink>
                                     </li>:''
                             }
