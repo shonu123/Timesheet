@@ -11,18 +11,18 @@ interface modalProps {
 
 const ModalPopUpConfirm =({ message,title,isVisible,isSuccess, onConfirm, onCancel } : modalProps) => {
     return isVisible ? (
-      <div className="modal" tabIndex={-1} style={{display:'block',background:'rgb(165 165 165 / 25%)'}} >
+      <div className="modal" tabIndex={-1} style={{display:'block'}} >
         <div className="modal-dialog modal-dialog-centered">
           <div className="modal-content">
-            <div className={`modal-header txt-white bc-dblue`}>
-              <h5 className="modal-title txt-white">{message}</h5>
+            <div className={`modal-header-reject`}>
+              <h5 className="" color='rgb(232, 87, 87)'>{message}</h5>
             </div>
-            <div className="modal-body">
+            {/* <div className="modal-body">
               <p>{`Would you like to update the item`}</p>
-            </div>
+            </div> */}
             <div className="modal-footer">
-              <button type="button" onClick={onConfirm} className={`btn bc-dblue txt-white modalclosesuccess bc-dblue`} data-dismiss="modal">Confirm</button>
-              <button type="button" onClick={onCancel} className={`btn bc-dblue txt-white modalclosesuccess bc-dblue`} data-dismiss="modal">Cancel</button>
+              <button type="button" onClick={onConfirm} className={`btn RejectButtons txt-white modalclosesuccess `} data-dismiss="modal">Ok</button>
+              <button type="button" onClick={onCancel} className={`btn CancelButtons txt-white modalclosesuccess`} data-dismiss="modal">Cancel</button>
             </div>
           </div>
         </div>
