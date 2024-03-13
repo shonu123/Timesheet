@@ -1555,7 +1555,15 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
         if(userGroups.includes('Timesheet Initiators')){
             value = false;
     }
-        if(userGroups.includes('Timesheet Approvers')){
+    
+    // trFormdata.ReportingManagersEmail=RMEmail;
+    //     trFormdata.ReviewersEmail=ReviewEmail;
+let RMEmails = this.state.trFormdata.ReportingManagersEmail
+let RevEmails = this.state.trFormdata.ReviewersEmail
+let userEmail = this.props.spContext.userEmail
+console.log(this.props.spContext)
+
+        if(RMEmails.includes(userEmail)){
             if(this.state.trFormdata.Pendingwith == "Approver"){
                 value = true;
                 this.setState({showApproveRejectbtn  :value})
@@ -1565,7 +1573,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                 value = false
             }
         }
-        if(userGroups.includes('Timesheet Reviewers')){
+        if(RevEmails.includes(userEmail)){
             if(this.state.trFormdata.Pendingwith == "Reviewer"){
                 value = true
                 this.setState({showApproveRejectbtn  :value})
