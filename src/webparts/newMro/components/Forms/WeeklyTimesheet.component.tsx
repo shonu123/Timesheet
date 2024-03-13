@@ -24,6 +24,7 @@ import DatePicker from "../Shared/DatePickerField";
 import CustomDatePicker from "../Forms/DatePicker";
 import { addDays } from 'office-ui-fabric-react';
 import '../../CSS/WeeklyTimesheet.css'
+import ModalPopUpConfirm from '../Shared/ModalPopUpConfirm';
 
 
 export interface WeeklyTimesheetProps {
@@ -92,6 +93,10 @@ export interface WeeklyTimesheetState {
     showApproveRejectbtn: boolean;
     isRecordAcessable:boolean;
     UserGoups : any;
+    showConfirmDeletePopup:boolean;
+    RowType:string;
+    rowCount:string;
+
 }
 
 class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetState> {
@@ -174,7 +179,10 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
             showNonBillable : true,
             showApproveRejectbtn : false,
             isRecordAcessable: true,
-            UserGoups: []
+            UserGoups: [],
+            showConfirmDeletePopup:false,
+            RowType:"",
+            rowCount:"",
         };
         this.oweb = Web(this.props.spContext.siteAbsoluteUrl);
          // for first row of weekly and OT hrs
@@ -813,9 +821,8 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                     <input className="form-control textareaBorder time WeekTotal" value={Obj[i].Total} id={i+"_Total_"+rowType} onChange={this.changeTime} type="text" readOnly></input>
                 </td>
                 <td>
-                {/* <span className="span-fa-close"><i className='fas fa-plus'></i></span> */}
-                {/* <span className='span-fa-close' title='Delete Row' onClick={this.RemoveCurrentRow} id={i+"_"+rowType}  hidden={this.state.isSubmitted}><FontAwesomeIcon icon={faClose}></FontAwesomeIcon></span> */}
-                {this.state.showBillable? '' :this.state.isSubmitted? '' : <span className='span-fa-close' title='Delete row' onClick={this.RemoveCurrentRow} id={i+"_"+rowType} ><FontAwesomeIcon icon={faClose} id={i+"_"+rowType}></FontAwesomeIcon></span> }
+    
+                {this.state.showBillable? '' :this.state.isSubmitted? '' : <span className='span-fa-close' title='Delete row' onClick={this.showConfirmDeleteRow} id={i+"_"+rowType} ><FontAwesomeIcon icon={faClose} id={i+"_"+rowType}></FontAwesomeIcon></span> }
                 </td>
             </tr>);
         }   
@@ -830,9 +837,19 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
         }
           return badge;
     }
-    private RemoveCurrentRow=(event)=>{
-        let RowType=event.target.id.split("_")[1];
-        let rowCount=event.target.id.split("_")[0]
+    private showConfirmDeleteRow = (event)=>{
+        this.setState({showConfirmDeletePopup:true});
+         let TypeofRow = event.target.id.split("_")[1];
+         let  CountOfRow = event.target.id.split("_")[0];
+         this.setState({RowType:TypeofRow,rowCount:CountOfRow})
+    }
+    private CancelDeleteRow()
+    {
+        this.setState({showConfirmDeletePopup:false});
+    }
+    private RemoveCurrentRow=()=>{
+        let RowType=this.state.RowType;
+        let rowCount=parseInt(this.state.rowCount);
         let count;
         // let ItemsAfterRemove=[];
         if(RowType.toLowerCase()=="weekrow")
@@ -850,7 +867,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
            }
            //trFormdata.WeeklyItemsData=ItemsAfterRemove;
             trFormdata=this.calculateTimeWhenRemoveRow(trFormdata,trFormdata.WeeklyItemsData,RowType);
-            this.setState({trFormdata, currentWeeklyRowsCount: count});
+            this.setState({trFormdata, currentWeeklyRowsCount: count,showConfirmDeletePopup:false});
 
         }
         else{
@@ -867,31 +884,114 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
            }
         //trFormdata.OTItemsData=ItemsAfterRemove;
         trFormdata=this.calculateTimeWhenRemoveRow(trFormdata,trFormdata.OTItemsData,RowType);
-            this.setState({ trFormdata, currentOTRowsCount: count});
+            this.setState({ trFormdata, currentOTRowsCount: count,showConfirmDeletePopup:false});
         }
     }
     private CreateWeeklyHrsRow= () => {
         const trFormdata = { ...this.state.trFormdata };
-        let WeeklyRowsCount = this.state.currentWeeklyRowsCount;
-        let count = WeeklyRowsCount + 1;
-        let newObj={Description:'',ProjectCode:'',Mon: '00:00',Tue: '00:00',Wed:'00:00',Thu: '00:00',Fri: '00:00',Sat: '00:00',Sun: '00:00',Total: '00:00'};
-        trFormdata.WeeklyItemsData.push(newObj);
-        this.setState({ trFormdata, currentWeeklyRowsCount: count });
+        let isValid={status:true,message:''};
+        for(let i in trFormdata.WeeklyItemsData)
+        {
+            if(trFormdata.WeeklyItemsData[i].Description.trim()=="")
+            {
+                isValid.message="Description can not be blank";
+                isValid.status=false;
+                document.getElementById(i+"_Description_weekrow").focus();
+                document.getElementById(i+"_Description_weekrow").classList.add('mandatory-FormContent-focus');
+                break;
+
+            }
+            else if(trFormdata.WeeklyItemsData[i].ProjectCode.trim()=="")
+            {
+                isValid.message="ProjectCode can not be blank";
+                isValid.status=false;
+                document.getElementById(i+"_ProjectCode_weekrow").focus();
+                document.getElementById(i+"_ProjectCode_weekrow").classList.add('mandatory-FormContent-focus');
+                break;
+            }
+            else if(trFormdata.WeeklyItemsData[i].Total=="00:00")
+            {
+                isValid.message="Total working hours in a week can not be '00:00' hours";
+                isValid.status=false;
+                document.getElementById(i+"_Total_weekrow").focus();
+                document.getElementById(i+"_Total_weekrow").classList.add('mandatory-FormContent-focus');
+                break;
+            }
+        }
+        if(isValid.status)
+        {
+            for(let i in trFormdata.WeeklyItemsData)
+            {
+            document.getElementById(i+"_Description_weekrow").classList.remove('mandatory-FormContent-focus');
+            document.getElementById(i+"_ProjectCode_weekrow").classList.remove('mandatory-FormContent-focus');
+            document.getElementById(i+"_Total_weekrow").classList.remove('mandatory-FormContent-focus');
+            }
+            
+            let WeeklyRowsCount = this.state.currentWeeklyRowsCount;
+            let count = WeeklyRowsCount + 1;
+            let newObj={Description:'',ProjectCode:'',Mon: '00:00',Tue: '00:00',Wed:'00:00',Thu: '00:00',Fri: '00:00',Sat: '00:00',Sun: '00:00',Total: '00:00'};
+            trFormdata.WeeklyItemsData.push(newObj);
+            this.setState({ trFormdata, currentWeeklyRowsCount: count ,showLabel: true, errorMessage:""});
+        }
+        else{
+            this.setState({ showLabel: true, errorMessage: isValid.message});
+        }
     }
     private CreateOTHrsRow= () => {
         const trFormdata = { ...this.state.trFormdata };
-        let OTRowsCount = this.state.currentOTRowsCount;
-        let count = OTRowsCount + 1;
-        let newObj={Description:'',ProjectCode:'',Mon: '00:00',Tue: '00:00',Wed:'00:00',Thu: '00:00',Fri: '00:00',Sat: '00:00',Sun: '00:00',Total: '00:00'};
+        let isValid={status:true,message:''};
+        for(let i in trFormdata.OTItemsData)
+        {
+            if(trFormdata.OTItemsData[i].Description.trim()=="")
+            {
+                isValid.message="Description can not be blank";
+                isValid.status=false;
+                document.getElementById(i+"_Description_otrow").focus();
+                document.getElementById(i+"_Description_otrow").classList.add('mandatory-FormContent-focus');
+                break;
 
-        trFormdata.OTItemsData.push(newObj);
-        this.setState({ trFormdata, currentOTRowsCount: count });
+            }
+            else if(trFormdata.OTItemsData[i].ProjectCode.trim()=="")
+            {
+                isValid.message="ProjectCode can not be blank";
+                isValid.status=false;
+                document.getElementById(i+"_ProjectCode_otrow").focus();
+                document.getElementById(i+"_ProjectCode_otrow").classList.add('mandatory-FormContent-focus');
+                break;
+            }
+            else if(trFormdata.OTItemsData[i].Total=="00:00")
+            {
+                isValid.message="Total working hours in a week can not be '00:00' hours";
+                isValid.status=false;
+                document.getElementById(i+"_Total_otrow").focus();
+                document.getElementById(i+"_Total_otrow").classList.add('mandatory-FormContent-focus');
+                break;
+            }
+        }
+      if(isValid.status)
+      {
+        for(let i in trFormdata.OTItemsData)
+            {
+            document.getElementById(i+"_Description_otrow").classList.remove('mandatory-FormContent-focus');
+            document.getElementById(i+"_ProjectCode_otrow").classList.remove('mandatory-FormContent-focus');
+            document.getElementById(i+"_Total_otrow").classList.remove('mandatory-FormContent-focus');
+            }
+          let OTRowsCount = this.state.currentOTRowsCount;
+          let count = OTRowsCount + 1;
+          let newObj={Description:'',ProjectCode:'',Mon: '00:00',Tue: '00:00',Wed:'00:00',Thu: '00:00',Fri: '00:00',Sat: '00:00',Sun: '00:00',Total: '00:00'};
+  
+          trFormdata.OTItemsData.push(newObj);
+          this.setState({ trFormdata, currentOTRowsCount: count,showLabel:false, errorMessage:""});
+      }
+      else{
+        this.setState({ showLabel: true, errorMessage: isValid.message});
+      }
     }
      
 
     private bindComments=()=>{
         let body=[];
-        if( this.state.trFormdata.CommentsHistoryData.length>0)
+        if(this.state.trFormdata.CommentsHistoryData.length>0)
         {
             this.state.trFormdata.CommentsHistoryData.map((option) => (
                 body.push(<tr>
@@ -1441,9 +1541,29 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
     }
     //functions related to approval process
     private hideApproveAndRejectButton(){
-        let value = this.state.trFormdata.Status!= StatusType.Save? true:false;
-        value = value?this.state.trFormdata.Pendingwith == "Approver"?this.state.userRole == 'Approver'?true:false:this.state.trFormdata.Pendingwith == "Reviewer"?this.state.userRole == 'Reviewer'?true:false:false:false
-  
+       let value = this.state.trFormdata.Status!= StatusType.Save? true:false;
+        let userGroups = this.state.UserGoups
+        if(userGroups.includes('Timesheet Approvers')){
+            if(this.state.trFormdata.Pendingwith == "Approver"){
+                value = true;
+                this.setState({showApproveRejectbtn  :value})
+                return false;
+            }
+            else{
+                value = false
+            }
+        }
+        if(userGroups.includes('Timesheet Reviewers')){
+            if(this.state.trFormdata.Pendingwith == "Reviewer"){
+                value = true
+                this.setState({showApproveRejectbtn  :value})
+                return false;
+            }
+            else{
+                value = false
+            }
+        }
+        // value = value?this.state.trFormdata.Pendingwith == "Approver"?this.state.userRole == 'Approver'?true:false:this.state.trFormdata.Pendingwith == "Reviewer"?this.state.userRole == 'Reviewer'?true:false:false:false
          this.setState({showApproveRejectbtn  :value})
      }
   
@@ -1486,8 +1606,10 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                     DayTime=( parseInt(val.split(":")[0])*60 ) + (parseInt(val.split(":")[1]));
                     if(DayTime>1440)
                     {
-                         isValid.message=" Total Day time should not exceed 24 hours";
+                         isValid.message="Total working hours in a day can not exceed '24' hours";
                           isValid.status=false;
+                        document.getElementById("Total"+key).focus();
+                        document.getElementById("Total"+key).classList.add('mandatory-FormContent-focus');
                           return isValid;
                     } 
                 }
@@ -1496,10 +1618,134 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
            Time=( parseInt(val.split(":")[0])*60 ) + (parseInt(val.split(":")[1]));
            if(Time>10080)
            {
-              isValid.message="Total week time should not exceed 168 hours";
-                 isValid.status=false;
+              isValid.message="Total working hours in a week can not exceed '168' hours";
+              isValid.status=false;
+              document.getElementById("GrandTotal").focus();
+              document.getElementById("GrandTotal").classList.add('mandatory-FormContent-focus');
                 return isValid;
            }
+           else if(Time==0)
+           {
+            isValid.message="Total working hours in a week can not be '00:00' hours";
+            isValid.status=false;
+            document.getElementById("GrandTotal").focus();
+            document.getElementById("GrandTotal").classList.add('mandatory-FormContent-focus');
+            return isValid;
+           }
+           else if(formdata.ClientName.toLowerCase()=="synergy-hq")
+           {
+               if(formdata.SynergyOfficeHrs[0].Description.trim()=="")
+                {
+                    isValid.message="Description can not be blank";
+                    isValid.status=false;
+                    document.getElementById("0_Description_SynOffcHrs").focus();
+                    document.getElementById("0_Description_SynOffcHrs").classList.add('mandatory-FormContent-focus');
+                    return isValid;
+                }
+                else if(formdata.SynergyOfficeHrs[0].ProjectCode.trim()=="")
+                {
+                    isValid.message="ProjectCode can not be blank";
+                    isValid.status=false;
+                    document.getElementById("0_ProjectCode_SynOffcHrs").focus();
+                    document.getElementById("0_ProjectCode_SynOffcHrs").classList.add('mandatory-FormContent-focus');
+                    return isValid;
+                }
+                else if(formdata.SynergyHolidayHrs[0].Description.trim()=="")
+                {
+                    isValid.message="Description can not be blank";
+                    isValid.status=false;
+                    document.getElementById("0_Description_SynHldHrs").focus();
+                    document.getElementById("0_Description_SynHldHrs").classList.add('mandatory-FormContent-focus');
+                    return isValid;
+                }
+                else if(formdata.SynergyHolidayHrs[0].ProjectCode.trim()=="")
+                {
+                    isValid.message="ProjectCode can not be blank";
+                    isValid.status=false;
+                    document.getElementById("0_ProjectCode_SynHldHrs").focus();
+                    document.getElementById("0_ProjectCode_SynHldHrs").classList.add('mandatory-FormContent-focus');
+                    return isValid;
+                }
+                else if(formdata.PTOHrs[0].Description.trim()=="")
+                {
+                    isValid.message="Description can not be blank";
+                    isValid.status=false;
+                    document.getElementById("0_Description_PTOHrs").focus();
+                    document.getElementById("0_Description_PTOHrs").classList.add('mandatory-FormContent-focus');
+                    return isValid;
+                }
+                else if(formdata.PTOHrs[0].ProjectCode.trim()=="")
+                {
+                    isValid.message="ProjectCode can not be blank";
+                    isValid.status=false;
+                    document.getElementById("0_ProjectCode_PTOHrs").focus();
+                    document.getElementById("0_ProjectCode_PTOHrs").classList.add('mandatory-FormContent-focus');
+                    return isValid;
+                }
+           }
+           else if(formdata.ClientName.toLowerCase()!="synergy-hq")
+           {
+                 for(let i in formdata.WeeklyItemsData)
+                 { 
+                    if(formdata.WeeklyItemsData[i].Description.trim()=="")
+                    {
+                        isValid.message="Description can not be blank";
+                        isValid.status=false;
+                        document.getElementById(i+"_Description_weekrow").focus();
+                        document.getElementById(i+"_Description_weekrow").classList.add('mandatory-FormContent-focus');
+                       return isValid;
+                    }
+                    else if(formdata.WeeklyItemsData[i].ProjectCode.trim()=="")
+                    {
+                        isValid.message="ProjectCode can not be blank";
+                        isValid.status=false;
+                        document.getElementById(i+"_ProjectCode_weekrow").focus();
+                        document.getElementById(i+"_ProjectCode_weekrow").classList.add('mandatory-FormContent-focus');
+                        return isValid;
+                    }
+
+                 }
+                 for(let i in formdata.OTItemsData)
+                 { 
+                    if(formdata.OTItemsData[i].Description.trim()=="")
+                    {
+                        isValid.message="Description can not be blank";
+                        isValid.status=false;
+                        document.getElementById(i+"_Description_otrow").focus();
+                        document.getElementById(i+"_Description_otrow").classList.add('mandatory-FormContent-focus');
+                       return isValid;
+                    }
+                    else if(formdata.OTItemsData[i].ProjectCode.trim()=="")
+                    {
+                        isValid.message="ProjectCode can not be blank";
+                        isValid.status=false;
+                        document.getElementById(i+"_ProjectCode_otrow").focus();
+                        document.getElementById(i+"_ProjectCode_otrow").classList.add('mandatory-FormContent-focus');
+                        return isValid;
+                    }
+
+                 }
+           }
+           document.getElementById("0_Description_SynOffcHrs").classList.remove('mandatory-FormContent-focus');
+           document.getElementById("0_ProjectCode_SynOffcHrs").classList.remove('mandatory-FormContent-focus');
+           document.getElementById("0_Description_SynHldHrs").classList.remove('mandatory-FormContent-focus');
+           document.getElementById("0_ProjectCode_SynHldHrs").classList.remove('mandatory-FormContent-focus');
+           document.getElementById("0_Description_PTOHrs").classList.remove('mandatory-FormContent-focus');
+           document.getElementById("0_ProjectCode_PTOHrs").classList.remove('mandatory-FormContent-focus');
+           for(let i in formdata.WeeklyItemsData)
+           { 
+                  document.getElementById(i+"_Description_weekrow").classList.remove('mandatory-FormContent-focus');
+                  document.getElementById(i+"_ProjectCode_weekrow").classList.remove('mandatory-FormContent-focus');   
+           }
+           for(let i in formdata.OTItemsData)
+            { 
+                  document.getElementById(i+"_Description_otrow").classList.remove('mandatory-FormContent-focus');
+                  document.getElementById(i+"_ProjectCode_otrow").classList.remove('mandatory-FormContent-focus');
+              }
+           Object.keys(formdata.Total[0]).forEach(key =>{
+            document.getElementById("Total"+key).classList.remove('mandatory-FormContent-focus');        
+           })
+           document.getElementById("GrandTotal").classList.remove('mandatory-FormContent-focus');
            return isValid;
     }
 
@@ -1512,7 +1758,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
             window.location.href = url;
         }
         if (this.state.redirect) {
-            let url = `/`
+            let url = `/Dashboard`
             return (<Navigate to={url} />);
         }
         else{
@@ -1520,6 +1766,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
 
                 <React.Fragment>
                       <ModalPopUp title={this.state.modalTitle} modalText={this.state.modalText} isVisible={this.state.showHideModal} onClose={this.handlefullClose} isSuccess={this.state.isSuccess}></ModalPopUp>
+                      <ModalPopUpConfirm message={'Are you sure you want to delete this row?'} title={''} isVisible={this.state.showConfirmDeletePopup} isSuccess={false} onConfirm={this.RemoveCurrentRow} onCancel={this.CancelDeleteRow}></ModalPopUpConfirm>
             <div id="content" className="content p-2 pt-2">
             <div className="container-fluid">
             <div className='FormContent'>
@@ -1547,7 +1794,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                         <div className="col-md-4">
                                 <div className="light-text clientName">
                                     <label>Client Name <span className="mandatoryhastrick">*</span></label>
-                                    <select className="ddlClient" required={true}  name="ClientName" title="Client Name" onChange={this.handleClientChange} ref={this.Client} disabled={this.state.isSubmitted}>
+                                    <select className="ddlClient" required={true}  name="ClientName" title="Client Name" onChange={this.handleClientChange} ref={this.Client} disabled={(this.currentUser==this.state.trFormdata.Name?false: this.state.isSubmitted)}>
                                                 <option value=''>None</option>
                                                 {this.state.ClientNames.map((option) => (
                                                     <option value={option} selected={this.state.trFormdata.ClientName==option}>{option}</option>
@@ -1565,7 +1812,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                                                     selectedDate={this.state.trFormdata.WeekStartDate}
                                                     className='dateWeeklyTimesheet'
                                                     labelName='Weekly Start Date'
-                                                    isDisabled = {this.state.isSubmitted}
+                                                    isDisabled = {(this.currentUser==this.state.trFormdata.Name?false: this.state.isSubmitted)}
                                                     ref={this.weekStartDate}
                                                 />
                                             </div>
@@ -1578,8 +1825,8 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                                         <thead style={{ borderBottom: "4px solid #444444" }}>
                                             <tr>
                                                 <th className="" ><div className="have-h"></div></th>
-                                                <th className="">Description</th>
-                                                <th className="projectCode">Project Code</th>
+                                                <th className="">Description <span className="mandatoryhastrick">*</span></th>
+                                                <th className="projectCode">Project Code <span className="mandatoryhastrick">*</span></th>
                                                 <th className="weekDay">Mon <span className="day">{this.WeekHeadings[0].Mon}</span></th>
                                                 <th className="weekDay">Tue <span className="day">{this.WeekHeadings[0].Tue}</span></th>
                                                 <th className="weekDay">Wed <span className="day">{this.WeekHeadings[0].Wed}</span></th>
@@ -1597,7 +1844,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                                 <tr id="rowPRJ1"  >
                                     <td className=" text-start"> 
                                         <div className="p-2">
-                                            <strong>Billabel Hours</strong>
+                                            <strong>Billable Hours</strong>
                                         </div>
                                     </td>
                                     <td> 
@@ -1685,17 +1932,16 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                                 </tr>
                                 {this.dynamicFieldsRow("otrow")}
                                 <tr className="font-td-bold" id="BillableTotal">
-                                    <td className="fw-bold text-start" colSpan={2}>
+                                    <td className="fw-bold text-start">
                                         <div className="p-2">
                                             <i className="fas fa-business-time color-gray"></i> Billable Subtotal
                                         </div>
                                     </td>
-                                    {/* <td>
+                                     <td colSpan={2}>
                                     
-                                    </td> */}
-                                    <td>
-                                        
                                     </td>
+                                    {/* <td>   
+                                    </td> */}
                                     <td>
                                         <input className="form-control time DayTotal" id="BillableTotalMon" value={this.state.trFormdata.BillableSubTotal[0].Mon} type="text" readOnly></input>
                                     </td>
@@ -1783,8 +2029,8 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                                             <i className="fas fa-business-time color-gray"></i> Non-Billable Subtotal
                                         </div>
                                     </td>
-                                    <td></td>
-                                    <td></td>
+                                    <td colSpan={2}></td>
+                                    {/* <td></td> */}
                                     <td>
                                         <input className="form-control time DayTotal" value={this.state.trFormdata.NonBillableSubTotal[0].Mon} type="text" readOnly></input>
                                     </td>
@@ -1814,38 +2060,38 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                                         
                                     </td>
                                 </tr>
-                                <tr className="font-td-bold" id="GrandTotal">
+                                <tr className="font-td-bold" id="GrandTotalRow">
                                     <td className="fw-bold text-start"> 
                                         <div className="p-2">
                                             <i className="fas fa-business-time color-gray"></i> Total
                                         </div>
                                     </td>
-                                    <td></td>
-                                    <td></td>
+                                    <td colSpan={2}></td>
+                                    {/* <td></td> */}
                                     <td>
-                                        <input className="form-control time DayTotal" value={this.state.trFormdata.Total[0].Mon} type="text" readOnly></input>
+                                        <input className="form-control time DayTotal" id="TotalMon" value={this.state.trFormdata.Total[0].Mon} type="text" readOnly></input>
                                     </td>
                                     <td>
-                                        <input className="form-control time DayTotal" value={this.state.trFormdata.Total[0].Tue} type="text" readOnly></input>
+                                        <input className="form-control time DayTotal" id="TotalTue" value={this.state.trFormdata.Total[0].Tue} type="text" readOnly></input>
                                     </td>
                                     <td>
-                                        <input className="form-control time DayTotal" value={this.state.trFormdata.Total[0].Wed} type="text" readOnly></input>
+                                        <input className="form-control time DayTotal" id="TotalWed" value={this.state.trFormdata.Total[0].Wed} type="text" readOnly></input>
                                     </td>
                                     <td>
-                                        <input className="form-control time DayTotal" value={this.state.trFormdata.Total[0].Thu} type="text" readOnly></input>
+                                        <input className="form-control time DayTotal" id="TotalThu" value={this.state.trFormdata.Total[0].Thu} type="text" readOnly></input>
                                     </td>
                                     <td> 
-                                        <input className="form-control time DayTotal" value={this.state.trFormdata.Total[0].Fri} type="text" readOnly></input>
+                                        <input className="form-control time DayTotal" id="TotalFri" value={this.state.trFormdata.Total[0].Fri} type="text" readOnly></input>
                                     </td>
                                     <td>
-                                        <input className="form-control time DayTotal" value={this.state.trFormdata.Total[0].Sat} type="text" readOnly></input>
+                                        <input className="form-control time DayTotal" id="TotalSat" value={this.state.trFormdata.Total[0].Sat} type="text" readOnly></input>
                                     </td>
                                     <td>
-                                        <input className="form-control time DayTotal" value={this.state.trFormdata.Total[0].Sun} type="text" readOnly></input>
+                                        <input className="form-control time DayTotal" id="TotalSun" value={this.state.trFormdata.Total[0].Sun} type="text" readOnly></input>
                                     </td>
                                     <td><span className="c-badge">T</span></td>
                                     <td>
-                                        <input className="form-control time GrandTotal" value={this.state.trFormdata.Total[0].Total} type="text" readOnly></input>
+                                        <input className="form-control time GrandTotal" id="GrandTotal" value={this.state.trFormdata.Total[0].Total} type="text" readOnly></input>
                                     </td>
                                     <td>
                                         
@@ -1898,26 +2144,27 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                         <div>
                         <span className='text-validator'> {this.state.errorMessage}</span>
                         </div>
-                                <div className="p-2">
-                                <h4>Action History</h4>
-                                </div>
-                                <div>
-                                <table className="table table-bordered m-0 timetable text-center">
-                                        <thead style={{ borderBottom: "4px solid #444444" }}>
-                                            <tr>
-                                                <th className="" >Action</th>
-                                                <th className="" >Action By</th>
-                                                <th className="" >User</th>
-                                                <th className="" >Comments</th>
-                                                <th className="" > Action Date</th>
-                                            </tr>
-                                        </thead>
-                            <tbody>
-                            {this.bindComments()}
-                                
-                            </tbody>
-                        </table>
-                                </div>
+                       {this.state.trFormdata.CommentsHistoryData.length>0? <><div className="p-2">
+                                            <h4>Action History</h4>
+                                        </div><div>
+                                                <table className="table table-bordered m-0 timetable text-center">
+                                                    <thead style={{ borderBottom: "4px solid #444444" }}>
+                                                        <tr>
+                                                            <th className="">Action</th>
+                                                            <th className="">Action By</th>
+                                                            <th className="">User</th>
+                                                            <th className="">Comments</th>
+                                                            <th className=""> Action Date</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        {this.bindComments()}
+
+                                                    </tbody>
+                                                </table>
+                                            </div></>:""
+                               }
+                     
                 </div>
             </div>
         </div>

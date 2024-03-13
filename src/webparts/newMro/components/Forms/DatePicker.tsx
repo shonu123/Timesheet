@@ -56,7 +56,7 @@ interface DatePickerProps {
                     minDate={addDays(getStartDate(new Date()),-14)}
                     maxDate={new Date()}
                     filterDate = {filterDays}
-                    className = {className}
+                    className = {className+" "+(selectedDate==null?"mandatory-FormContent-focus":"")}
                     disabled = {isDisabled} 
                     ref={ref}   
                     required={true}
