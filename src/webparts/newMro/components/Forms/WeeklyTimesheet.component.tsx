@@ -1717,25 +1717,28 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                     }
 
                  }
-                 for(let i in formdata.OTItemsData)
-                 { 
-                    if(formdata.OTItemsData[i].Description.trim()=="")
-                    {
-                        isValid.message="Description can not be blank";
-                        isValid.status=false;
-                        document.getElementById(i+"_Description_otrow").focus();
-                        document.getElementById(i+"_Description_otrow").classList.add('mandatory-FormContent-focus');
-                       return isValid;
-                    }
-                    else if(formdata.OTItemsData[i].ProjectCode.trim()=="")
-                    {
-                        isValid.message="ProjectCode can not be blank";
-                        isValid.status=false;
-                        document.getElementById(i+"_ProjectCode_otrow").focus();
-                        document.getElementById(i+"_ProjectCode_otrow").classList.add('mandatory-FormContent-focus');
-                        return isValid;
-                    }
-
+                 if(formdata.OTItemsData.length>1)
+                 {
+                     for(let i in formdata.OTItemsData)
+                     { 
+                        if(formdata.OTItemsData[i].Description.trim()=="")
+                        {
+                            isValid.message="Description can not be blank";
+                            isValid.status=false;
+                            document.getElementById(i+"_Description_otrow").focus();
+                            document.getElementById(i+"_Description_otrow").classList.add('mandatory-FormContent-focus');
+                           return isValid;
+                        }
+                        else if(formdata.OTItemsData[i].ProjectCode.trim()=="")
+                        {
+                            isValid.message="ProjectCode can not be blank";
+                            isValid.status=false;
+                            document.getElementById(i+"_ProjectCode_otrow").focus();
+                            document.getElementById(i+"_ProjectCode_otrow").classList.add('mandatory-FormContent-focus');
+                            return isValid;
+                        }
+    
+                     }
                  }
            }
            document.getElementById("0_Description_SynOffcHrs").classList.remove('mandatory-FormContent-focus');
