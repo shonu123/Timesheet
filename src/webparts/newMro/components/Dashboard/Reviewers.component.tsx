@@ -84,7 +84,6 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
                 }
                 console.log(Data);
                 this.setState({ Reviewers: Data,loading:false });
-                this.setState({ loading: false });
                 //console.log(this.state.approvals);
             }).catch(err => {
                 console.log('Failed to fetch data.', err);
@@ -211,7 +210,7 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
         }
         // this.setState({comments : comments })
         let date = new Date(data[0].DateSubmitted)
-        let tableContent = {'Name':data[0].Name,'Client':data[0].ClientName,'Submitted Date':`${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`,'Billable Hours':data[0].WeeklyTotalHrs,'OT Hours':data[0].OTTotalHrs,'Total Billable Hours':data[0].BillableTotalHrs,'Non-Billable  Hours':data[0].WeeklyTotalHrs,'Total Hours':data[0].WeeklyTotalHrs}
+        let tableContent = {'Name':data[0].Name,'Client':data[0].ClientName,'Submitted Date':`${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`,'Billable Hours':data[0].WeeklyTotalHrs,'OT Hours':data[0].OTTotalHrs,'Total Billable Hours':data[0].BillableTotalHrs,'Non-Billable  Hours':data[0].NonBillableTotalHrs,'Total Hours':data[0].GrandTotal}
         console.log(tableContent)
         this.updateStatus(recordId,StatusType.Approved,commentsObj,toEmail,ccEmail,tableContent)
     }
@@ -274,7 +273,7 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
 
     private navigateAfterAction =()=>{
         this.setState({successPopUp : false});
-        this.setState({redirect : true});
+        this.ReviewerApproval();
     }
 
     private showPopUp = (e) =>{

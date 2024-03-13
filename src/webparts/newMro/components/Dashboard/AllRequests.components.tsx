@@ -71,9 +71,9 @@ class AllRequests extends React.Component<AllRequestsProps,AllRequestsState> {
                     if(d.ReportingManager.length>0)
                     {
                         for(let r of d.ReportingManager){
-                            Rm += r.Title+","
+                            Rm += "<div>"+r.Title+"</div>"
                         }
-                        Rm = Rm.substring(0, Rm.lastIndexOf(","));
+                        // Rm = Rm.substring(0, Rm.lastIndexOf(","));
                     }
                     let date = new Date(d.WeekStartDate)
                     Data.push({
@@ -142,6 +142,7 @@ class AllRequests extends React.Component<AllRequestsProps,AllRequestsState> {
                 name: "Reporting Manager",
                 selector: (row, i) => row.RM,
                 width: '250px',
+                cell: row => <div dangerouslySetInnerHTML={{ __html: row.RM }} />,
                 sortable: true
             },
             {

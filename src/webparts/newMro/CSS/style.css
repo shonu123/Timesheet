@@ -2292,7 +2292,7 @@ li {
   .nav-item a{
     color: #444 !important;
     text-decoration-line: none !important;
-    font-size: 1rem !important;
+    font-size: 1.1rem !important;
   }
   .Billable {
     margin-top: 4rem !important;
@@ -2329,16 +2329,19 @@ li {
 }
 
 .bRirNn{
-  font-size: 16px !important;
+  font-size: 13px !important;
 }
 
 .lkrJOt{
   font-family: sans-serif !important;
-  font-size: 13px !important;
+  font-size: 12px !important;
 }
 
 .Sun,.Sat{
   color: rgb(241, 94, 94);
+}
+#s4-workspace{
+  font-family: Verdana, Geneva, Tahoma, sans-serif !important;
 }
   /* .tabsBackground{
     background-color: #0D2F4B !important;

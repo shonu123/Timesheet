@@ -64,21 +64,21 @@ class EmployeeMasterView extends React.Component<EmployeeMasterViewProps, Employ
                     let ReportingManagerString = '',ReviewersString = '',NotifiersString ='';
                     if(d.ReportingManager.length>0){
                         for(let user of d.ReportingManager){
-                            ReportingManagerString+= user.Title+","
+                            ReportingManagerString+= "<div>"+user.Title+"</div>"
                         }
                     }
-                    ReportingManagerString = ReportingManagerString.substring(0, ReportingManagerString.lastIndexOf(","));
+                    // ReportingManagerString = ReportingManagerString.substring(0, ReportingManagerString.lastIndexOf(","));
                     if(d.Reviewers.length>0){
                         for(let user of d.Reviewers){
-                            ReviewersString+= user.Title+","
+                            ReviewersString+= "<div>"+user.Title+"</div>"
                         }
                     }
-                    ReviewersString = ReviewersString.substring(0, ReviewersString.lastIndexOf(","));
+                    // ReviewersString = ReviewersString.substring(0, ReviewersString.lastIndexOf(","));
                     if(d.Notifiers.length>0){
                         for(let user of d.Notifiers){
-                            NotifiersString+= user.Title+","
+                            NotifiersString+= "<div>"+user.Title+"<div>"
                         }
-                        NotifiersString = NotifiersString.substring(0, NotifiersString.lastIndexOf(","));
+                        // NotifiersString = NotifiersString.substring(0, NotifiersString.lastIndexOf(","));
                     }
                     let date = new Date(d.DateOfJoining)
                     Data.push({
@@ -132,6 +132,7 @@ class EmployeeMasterView extends React.Component<EmployeeMasterViewProps, Employ
                 name: "Reporting Manager",
                 selector: (row, i) => row.ReportingManager,
                 // width: '250px',
+                cell: row => <div dangerouslySetInnerHTML={{ __html: row.ReportingManager }} />,
                 sortable: true
             },
             {
@@ -150,12 +151,14 @@ class EmployeeMasterView extends React.Component<EmployeeMasterViewProps, Employ
                 name: "Reviewers",
                 selector: (row, i) => row.Reviewers,
                 sortable: true,
+                cell: row => <div dangerouslySetInnerHTML={{ __html: row.Reviewers }} />
                 // width: '250px'
             },
             {
                 name: "Notifiers",
                 selector: (row, i) => row.Notifiers,
                 sortable: true,
+                cell: row => <div dangerouslySetInnerHTML={{ __html: row.Notifiers }} />
                 // width: '250px'
             },
             {
