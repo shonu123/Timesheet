@@ -2343,6 +2343,9 @@ li {
 #s4-workspace{
   font-family: Verdana, Geneva, Tahoma, sans-serif !important;
 }
+.iconApprove,.iconReject{
+  cursor: pointer;
+}
   /* .tabsBackground{
     background-color: #0D2F4B !important;
     color: #ffff !important;

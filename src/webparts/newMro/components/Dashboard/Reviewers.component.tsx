@@ -407,7 +407,7 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
                         return (
                             <React.Fragment>
                             <div style={{ paddingLeft: '10px' }} >
-                                    <FontAwesomeIcon icon={faCheck} id={record.Id} data-name={'Approve'} color='green' size="lg" onClick={this.showPopUp} title='Approve'></FontAwesomeIcon>
+                                    <FontAwesomeIcon className='iconApprove' icon={faCheck} id={record.Id} data-name={'Approve'} color='green' size="lg" onClick={this.showPopUp} title='Approve'></FontAwesomeIcon>
                             </div>
                         </React.Fragment>
                         );
@@ -423,7 +423,7 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
                         return (
                         <React.Fragment>
                             <div style={{ paddingLeft: '10px' }}>
-                                    <FontAwesomeIcon icon={faXmark} id={record.Id} data-name='Reject' color='red' size="lg" onClick={this.showPopUp} title='Reject'></FontAwesomeIcon>
+                                    <FontAwesomeIcon className='iconReject' icon={faXmark} id={record.Id} data-name='Reject' color='red' size="lg" onClick={this.showPopUp} title='Reject'></FontAwesomeIcon>
                             </div>
                         </React.Fragment>
                         );
