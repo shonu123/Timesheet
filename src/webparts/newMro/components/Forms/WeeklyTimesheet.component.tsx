@@ -852,7 +852,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
          let  CountOfRow = event.target.id.split("_")[0];
          this.setState({RowType:TypeofRow,rowCount:CountOfRow})
     }
-    private CancelDeleteRow()
+    private CancelDeleteRow =() =>
     {
         this.setState({showConfirmDeletePopup:false});
     }
