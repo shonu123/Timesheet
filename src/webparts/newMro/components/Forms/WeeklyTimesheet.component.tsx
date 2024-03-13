@@ -647,6 +647,8 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
              WeeklyColHrs=0;
              WeeklyColMins=0;
              [Total,TotalColHrs,TotalColMins]=[0,0,0];
+             if(!["Description","ProjectCode"].includes(prop))
+             {
              let TotalColVal=trFormdata.BillableSubTotal[0][prop];
             let BillableTotalVal=trFormdata.BillableSubTotal[0]["Total"];
              WeeklyTotal=WeeklyTotal+( parseInt(TotalColVal.split(":")[0])*60 ) + (parseInt(TotalColVal.split(":")[1])); 
@@ -661,9 +663,16 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
              WeeklyColMins=Math.floor(WeeklyTotal%60);
              TotalColHrs=Math.floor(Total/60);
              TotalColMins=Math.floor(Total%60);
+             }
              if(!["Description","ProjectCode"].includes(prop))
-             trFormdata.Total[0][prop]=(WeeklyColHrs.toString().length==1?"0"+WeeklyColHrs:WeeklyColHrs)+":"+(WeeklyColMins.toString().length==1?"0"+WeeklyColMins:WeeklyColMins);
-             trFormdata.Total[0]["Total"]=(TotalColHrs.toString().length==1?"0"+TotalColHrs:TotalColHrs)+":"+(TotalColMins.toString().length==1?"0"+TotalColMins:TotalColMins);
+             {
+
+                 trFormdata.Total[0][prop]=(WeeklyColHrs.toString().length==1?"0"+WeeklyColHrs:WeeklyColHrs)+":"+(WeeklyColMins.toString().length==1?"0"+WeeklyColMins:WeeklyColMins);
+                 trFormdata.Total[0]["Total"]=(TotalColHrs.toString().length==1?"0"+TotalColHrs:TotalColHrs)+":"+(TotalColMins.toString().length==1?"0"+TotalColMins:TotalColMins);
+             }else{
+                trFormdata.Total[0][prop]=trFormdata.Total[0][prop]
+                trFormdata.Total[0]["Total"]=trFormdata.Total[0]["Total"]
+             }
           
         this.setState({ trFormdata});
     }
@@ -1543,6 +1552,9 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
     private hideApproveAndRejectButton(){
        let value = this.state.trFormdata.Status!= StatusType.Save? true:false;
         let userGroups = this.state.UserGoups
+        if(userGroups.includes('Timesheet Initiators')){
+            value = false;
+    }
         if(userGroups.includes('Timesheet Approvers')){
             if(this.state.trFormdata.Pendingwith == "Approver"){
                 value = true;
@@ -1743,6 +1755,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                   document.getElementById(i+"_ProjectCode_otrow").classList.remove('mandatory-FormContent-focus');
               }
            Object.keys(formdata.Total[0]).forEach(key =>{
+            if(!["Total","Description","ProjectCode"].includes(key))
             document.getElementById("Total"+key).classList.remove('mandatory-FormContent-focus');        
            })
            document.getElementById("GrandTotal").classList.remove('mandatory-FormContent-focus');
