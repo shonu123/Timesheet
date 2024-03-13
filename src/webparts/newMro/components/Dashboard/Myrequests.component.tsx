@@ -102,30 +102,30 @@ class MyRequests extends React.Component<MyRequestsProps, MyRequestsState> {
                         </React.Fragment>
                     );
                 },
-                width: '100px'
+                // width: '100px'
             },
             {
                 name: "Week Start Date",
                 selector: (row, i) => row.Date,
-                width: '250px',
+                // width: '250px',
                 sortable: true
             },
             {
                 name: "Client",
                 selector: (row, i) => row.Company,
-                width: '150px',
+                // width: '150px',
                 sortable: true
             },
             {
                 name: "Pending With",
                 selector: (row, i) => row.PendingWith,
                 sortable: true,
-                // width: '150px'
+                // width: '250px'
             },
             {
                 name: "Status",
                 selector: (row, i) => row.Status,
-                width: '100px',
+                // width: '100px',
                 sortable: true
 
             }
@@ -140,7 +140,7 @@ class MyRequests extends React.Component<MyRequestsProps, MyRequestsState> {
                     </NavLink>
                 </div>
             <div>
-                <div className='table-head-1st-td'>
+                <div className='c-v-table table-head-1st-td'>
                     <TableGenerator columns={columns} data={this.state.Requests} fileName={'My Requests'} showExportExcel={false}></TableGenerator>
                 </div>
             </div>
