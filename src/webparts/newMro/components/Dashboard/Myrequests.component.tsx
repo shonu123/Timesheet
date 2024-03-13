@@ -140,7 +140,7 @@ class MyRequests extends React.Component<MyRequestsProps, MyRequestsState> {
                     </NavLink>
                 </div>
             <div>
-                <div className='c-v-table table-head-1st-td'>
+                <div className='table-head-1st-td'>
                     <TableGenerator columns={columns} data={this.state.Requests} fileName={'My Requests'} showExportExcel={false}></TableGenerator>
                 </div>
             </div>

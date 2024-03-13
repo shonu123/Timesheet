@@ -123,45 +123,45 @@ class AllRequests extends React.Component<AllRequestsProps,AllRequestsState> {
             {
                 name: "Date",
                 selector: (row, i) => row.Date,
-                width: '100px',
+                width: '120px',
                 sortable: true
             },
             {
                 name: "Employee Name",
                 selector: (row, i) => row.EmployeName,
-                width: '250px',
+                // width: '250px',
                 sortable: true
             },
             {
                 name: "Client",
                 selector: (row, i) => row.Client,
-                width: '120px',
+                // width: '120px',
                 sortable: true
             },
             {
                 name: "Reporting Manager",
                 selector: (row, i) => row.RM,
-                width: '250px',
+                // width: '250px',
                 cell: row => <div dangerouslySetInnerHTML={{ __html: row.RM }} />,
                 sortable: true
             },
             {
                 name: "Status",
                 selector: (row, i) => row.Status,
-                width: '250px',
+                // width: '250px',
                 sortable: true
             },
             {
                 name: "Pending With",
                 selector: (row, i) => row.PendingWith,
-                width: '140px',
+                // width: '140px',
                 sortable: true
             },
             {
                 name: "Billable Hours",
                 selector: (row, i) => row.BillableHours,
                 sortable: true,
-                width: '140px'
+                // width: '160px'
             },
             {
                 name: "OT Hours",
@@ -173,17 +173,18 @@ class AllRequests extends React.Component<AllRequestsProps,AllRequestsState> {
                 name: "Total Billable Hours",
                 selector: (row, i) => row.TotalBillableHrs,
                 sortable: true,
-                width: '170px'
+                // width: '170px'
             },
             {
                 name: "Non-Billable Hours",
                 selector: (row, i) => row.NonBillableTotalHrs,
                 sortable: true,
-                width: '170px'
+                // width: '185px'
             },
             {
                 name: "Total Hours",
                 selector: (row, i) => row.TotalHours,
+                width:'140px',
                 sortable: true
             }
         ];

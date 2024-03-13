@@ -278,6 +278,8 @@ class Dashboard extends React.Component<DashboardProps, DashboardState> {
                     </div>
                 </div>
                 {highlightCurrentNav("liDashboard")}
+
+                <div id="content" className="content p-2 pt-2">
                 <div className="container-fluid">
                     <div className='FormContent'>
                         {/* <div className='title'>Dashboard
@@ -335,7 +337,8 @@ class Dashboard extends React.Component<DashboardProps, DashboardState> {
                         </div> 
                     </div>
                 </div>
-            </div>
+             </div>
+        </div>
         );
            
     }
