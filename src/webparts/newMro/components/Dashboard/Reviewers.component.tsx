@@ -74,6 +74,7 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
                         Date : `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`,
                         EmployeName: d.Name,
                         Company : d.ClientName,
+                        PendingWith: d.PendingWith,
                         Status : d.Status,
                         BillableHrs: d.WeeklyTotalHrs,
                         OTTotalHrs : d.OTTotalHrs,
@@ -354,6 +355,14 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
                     selector: (row, i) => row.Company,
                     // width: '150px',
                     sortable: true
+                },
+                {
+                    name: "Pending With",
+                    //selector: 'VendorName',
+                    selector: (row, i) => row.PendingWith,
+                    // width: '180px',
+                    sortable: true
+
                 },
                 {
                     name: "Status",

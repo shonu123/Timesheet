@@ -68,6 +68,7 @@ class ApproversApprovals extends React.Component<ApproversProps, ApproversState>
                         Id : d.Id,
                         Date : `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`,
                         EmployeName: d.Name,
+                        PendingWith: d.PendingWith,
                         Status : d.Status,
                         BillableTotalHrs: d.WeeklyTotalHrs,
                         OTTotalHrs : d.OTTotalHrs,
@@ -116,6 +117,14 @@ class ApproversApprovals extends React.Component<ApproversProps, ApproversState>
                 sortable: true
             },
             {
+                name: "Pending With",
+                //selector: 'VendorName',
+                selector: (row, i) => row.PendingWith,
+                // width: '180px',
+                sortable: true
+
+            },
+            {
                 name: "Status",
                 selector: (row, i) => row.Status,
                 sortable: true
@@ -134,7 +143,7 @@ class ApproversApprovals extends React.Component<ApproversProps, ApproversState>
                 sortable: true,
             },
             {
-                name: "NonBillable Hours",
+                name: "Non-Billable Hours",
                 selector: (row, i) => row.NonBillableTotalHrs,
                 sortable: true,
                 // width: '200px'

@@ -80,7 +80,8 @@ class AllRequests extends React.Component<AllRequestsProps,AllRequestsState> {
                         Id : d.Id,
                         Date : `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`,
                         EmployeName: d.Name,
-                        Status : d.Status == StatusType.Submit?'Pending With Reporting Manager':d.Status== StatusType.InProgress?'Pending With Reviewer':d.Status,
+                        // Status : d.Status == StatusType.Submit?'Pending With Reporting Manager':d.Status== StatusType.InProgress?'Pending With Reviewer':d.Status,
+                        Status : d.Status,
                         Client: d.ClientName,
                         PendingWith: d.PendingWith,
                         BillableHours: d.WeeklyTotalHrs,
@@ -139,7 +140,7 @@ class AllRequests extends React.Component<AllRequestsProps,AllRequestsState> {
                 sortable: true
             },
             {
-                name: "Reporting Manager",
+                name: "Manager",
                 selector: (row, i) => row.RM,
                 // width: '250px',
                 cell: row => <div dangerouslySetInnerHTML={{ __html: row.RM }} />,

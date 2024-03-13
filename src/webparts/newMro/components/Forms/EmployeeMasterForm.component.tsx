@@ -409,7 +409,7 @@ else {
 
                                             <div className="col-md-3">
                                                 <div className="light-text">
-                                                    <label>Reporting Manager <span className="mandatoryhastrick">*</span></label>
+                                                    <label>Manager <span className="mandatoryhastrick">*</span></label>
                                                     <div className="custom-peoplepicker" id="divReportingManager">
                                                             <PeoplePicker
                                                                 context={this.props.context}
