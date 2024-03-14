@@ -47,6 +47,9 @@ class EmployeeMasterForm extends React.Component<EmployeeMasterFormProps, Employ
     private clientListName="Client";
     private ItemID = "";
     private client;
+    private WeekStartDay;
+    private MandatoryDescription;
+    private MandatoryProjectCode;
     constructor(props: EmployeeMasterFormProps) {
         super(props);
         this.siteURL = this.props.spContext.webAbsoluteUrl;
@@ -55,6 +58,9 @@ class EmployeeMasterForm extends React.Component<EmployeeMasterFormProps, Employ
             spfxContext: this.props.context
         });
         this.client=React.createRef();
+        this.WeekStartDay = React.createRef();
+        this.MandatoryDescription = React.createRef();
+        this.MandatoryProjectCode  = React.createRef();
     }
 
     public state = {
@@ -76,9 +82,12 @@ class EmployeeMasterForm extends React.Component<EmployeeMasterFormProps, Employ
         ApproverEmail : [],
         ReviewerEmail: [],
         NotifierEmail: [],
+        weekStartDay: 'Monday',
         SelectedEmployee : '',
         SelectedClient : '',
         Homeredirect: false,
+        MandatoryProjectCode:'No',
+        MandatoryDescription:'No',
         isPageAccessable: true
     }
 
@@ -93,10 +102,8 @@ class EmployeeMasterForm extends React.Component<EmployeeMasterFormProps, Employ
 
         let [clients,groups] = await Promise.all([
             sp.web.lists.getByTitle('Client').items.filter("IsActive eq 1").select('*').orderBy('Title').get(),
-            await sp.web.currentUser.groups()
+            sp.web.currentUser.groups()
         ])
-    // let clients = await sp.web.lists.getByTitle('Client').items.filter("IsActive eq 1").select('*').orderBy('Title').get()
-        // sp.web.currentUser.groups()
         this.setState({ClientsObject : clients})
         console.log(clients);
         this.setState({ loading: false });
@@ -107,17 +114,25 @@ class EmployeeMasterForm extends React.Component<EmployeeMasterFormProps, Employ
             this.setState({ItemID : this.props.match.params.id})
             this.getData()
         }
-        //  groups = await sp.web.currentUser.groups();
         console.log("current user deatils")
         console.log(this.props.context.pageContext)
 
-        let userGroup = groups[0].Title
-        let user = userGroup=='Timesheet Initiators' ?'Initiator': userGroup=='Timesheet Approvers'?'Approver':userGroup=='Timesheet Reviewers'?'Reviewer':'Administrator'
-        console.log('You are :'+user)
-
-        if(user !='Administrator'){
+        let userGroups = []
+        for (const grp of groups) {
+            userGroups.push(grp.Title)
+        }
+        if(userGroups.includes('Timesheet Owners') || userGroups.includes('Timesheet Members')){
+            this.setState({isPageAccessable : true})
+        }
+        else{
             this.setState({isPageAccessable : false})
         }
+        // let user = userGroup=='Timesheet Initiators' ?'Initiator': userGroup=='Timesheet Approvers'?'Approver':userGroup=='Timesheet Reviewers'?'Reviewer':'Administrator'
+        // console.log('You are :'+user)
+
+        // if(user !='Administrator'){
+        //     this.setState({isPageAccessable : false})
+        // }
 
 
     }
@@ -135,6 +150,10 @@ class EmployeeMasterForm extends React.Component<EmployeeMasterFormProps, Employ
         this.setState({ DateOfJoining : date })
         this.setState({SelectedEmployee : data[0].Employee.ID})
         this.setState({SelectedClient : data[0].ClientName })
+        this.setState({weekStartDay : data[0].WeekStartDay })
+        this.setState({MandatoryProjectCode : data[0].MandatoryProjectCode?"Yes":"No" })
+        this.setState({MandatoryDescription : data[0].MandatoryDescription?"Yes":"No" })
+
         // let ApproversEMail = []
         let ReportingManagersEmail = []
         // let ApproverIds = {results:[]}
@@ -194,13 +213,11 @@ class EmployeeMasterForm extends React.Component<EmployeeMasterFormProps, Employ
         console.log(this.state);
         let value = event.target.type == 'checkbox' ? event.target.checked : event.target.value.trim();
         console.log(value);
-        // let obj = {...this.state.obj}
-        // this.state.isActive = value
-        const { name } = event.target;
-        if(name == 'IsActive')
-        this.setState({isActive : value})
-        else
-        this.setState({ClientName : value})
+        let  {name}  = event.target;
+        // if(name == 'isActive')
+        // this.setState({isActive : value})
+        // else
+        this.setState({[name] : value})
     }
     
     private UpdateDate = (dateprops) => {
@@ -239,9 +256,9 @@ private async validateDuplicateRecord () {
         let data ={
         Employee : { val: this.state.EmployeeId, required: true, Name: 'Employee', Type: ControlType.people,Focusid:'divEmployee' },
         ReportingManager: { val: this.state.ReportingManagerId, required: true, Name: 'Reporting Manager', Type: ControlType.people,Focusid:'divReportingManager' },
-        Approver : { val: this.state.ApproverId, required: true, Name: 'Approver', Type: ControlType.people,Focusid:'divApprover' },
-        Reviewer: { val: this.state.ReviewerId, required: true, Name: 'Reviewer', Type: ControlType.people,Focusid:'divReviewer' },
-        Notifier : { val: this.state.NotifierId, required: true, Name: 'Notifier', Type: ControlType.people,Focusid:'divNotifier' },
+        // Approver : { val: this.state.ApproverId, required: true, Name: 'Approver', Type: ControlType.people,Focusid:'divApprover' },
+        // Reviewer: { val: this.state.ReviewerId, required: true, Name: 'Reviewer', Type: ControlType.people,Focusid:'divReviewer' },
+        // Notifier : { val: this.state.NotifierId, required: true, Name: 'Notifier', Type: ControlType.people,Focusid:'divNotifier' },
         Client:{ val: this.state.ClientName, required: true, Name: 'Client', Type: ControlType.string,Focusid:this.client },
         DateOfJoining: { val: this.state.DateOfJoining, required: true, Name: 'Date Of Joining', Type: ControlType.date }
         }
@@ -254,8 +271,17 @@ private async validateDuplicateRecord () {
         }
         isValid = isValid.status?Formvalidator.multiplePeoplePickerValidation(pdata):isValid
         console.log(isValid)
+        let EID = this.state.EmployeeId
+        let Rm = []
+        for(let manager of this.state.ReportingManagerId.results){
+            Rm.push(manager)
+        }
         if(!isValid.status){
             this.setState({errorMessage : isValid.message})
+        }
+        else if(Rm.includes(this.state.EmployeeId)){
+            let errMsg = 'Employee can not be as a Manager';
+            this.setState({errorMessage : errMsg});
         }
         else{
             console.log(data);
@@ -267,7 +293,10 @@ private async validateDuplicateRecord () {
                 ApproversId : this.state.ApproverId,
                 ReviewersId : this.state.ReviewerId,
                 NotifiersId : this.state.NotifierId,
-                DateOfJoining : this.state.DateOfJoining
+                DateOfJoining : this.state.DateOfJoining,
+                MandatoryDescription:this.state.MandatoryDescription == 'Yes'?true:false,
+                MandatoryProjectCode:this.state.MandatoryProjectCode == 'Yes'?true:false,
+                WeekStartDay: this.state.weekStartDay
             }
            let duplicate = await this.validateDuplicateRecord()
            if(duplicate>0){
@@ -362,142 +391,262 @@ else {
                                 <div className="after-title"></div>
                                 <div className="media-m-2 media-p-1">
                                     <div className="my-2">
-                                        <div className="row pt-2 px-2">
-                                            <div className="col-md-3">
-                                                
-                                                <div className="light-text">
-                                                    <label>Employee <span className="mandatoryhastrick">*</span></label>
-                                                    <div className="custom-peoplepicker" id="divEmployee">
-                                                            <PeoplePicker
-                                                                context={this.props.context}
-                                                                titleText=""
-                                                                personSelectionLimit={1}
-                                                                showtooltip={false}
-                                                                disabled={false}
-                                                                onChange={(e) => this._getPeoplePickerItems(e, 'EmployeeId')}    
-                                                                ensureUser={true}
-                                                                required={true}   
-                                                                defaultSelectedUsers = {[this.state.EmployeeEmail]}
-                                                                principalTypes={[PrincipalType.User]} placeholder="Employee"
-                                                                resolveDelay={1000} peoplePickerCntrlclassName={"input-peoplePicker-custom"} />
+                                            <div className="row pt-2 px-2">
+                                                <div className="col-md-3">
+                                                    
+                                                    <div className="light-text">
+                                                        <label>Employee <span className="mandatoryhastrick">*</span></label>
+                                                        <div className="custom-peoplepicker" id="divEmployee">
+                                                                <PeoplePicker
+                                                                    context={this.props.context}
+                                                                    titleText=""
+                                                                    personSelectionLimit={1}
+                                                                    showtooltip={false}
+                                                                    disabled={false}
+                                                                    onChange={(e) => this._getPeoplePickerItems(e, 'EmployeeId')}    
+                                                                    ensureUser={true}
+                                                                    required={true}   
+                                                                    defaultSelectedUsers = {[this.state.EmployeeEmail]}
+                                                                    principalTypes={[PrincipalType.User]} placeholder="Employee"
+                                                                    resolveDelay={1000} peoplePickerCntrlclassName={"input-peoplePicker-custom"} />
+                                                        </div>
+                                                    </div>
+
+                                                </div>
+
+                                                <div className="col-md-3">
+                                                    <div className="light-text">
+                                                        <label>Client<span className="mandatoryhastrick">*</span></label>
+                                                        <select className="form-control" required={true} name="ClientName" title="Client" id='client' ref={this.client} onChange={this.handleChangeEvents}>
+                                                            <option value=''>None</option>
+                                                            {this.state.ClientsObject.map((option) => (
+                                                                <option value={option.Title} selected={option.Title ==this.state.ClientName}>{option.Title}</option>
+                                                            ))}
+                                                        </select>
                                                     </div>
                                                 </div>
 
+                                                <div className="col-md-3">
+                                            <div className="light-text div-readonly">
+                                                <label className="z-in-9">Date of Joining <span className="mandatoryhastrick">*</span></label>
+                                                <div className="custom-datepicker" id="divDateofJoining">
+                                                    
+                                                    <DatePicker onDatechange={this.UpdateDate} selectedDate={this.state.DateOfJoining}/>
+                                                </div>
+                                            </div>
+                                                </div>
+
+                                                <div className="col-md-3">
+                                                    <div className="light-text">
+                                                        <label>Manager <span className="mandatoryhastrick">*</span></label>
+                                                        <div className="custom-peoplepicker" id="divReportingManager">
+                                                                <PeoplePicker
+                                                                    context={this.props.context}
+                                                                    titleText=""
+                                                                    personSelectionLimit={10}
+                                                                    showtooltip={false}
+                                                                    disabled={false}
+                                                                    defaultSelectedUsers = {this.state.ReportingManagerEmail}
+                                                                    onChange={(e) => this._getPeoplePickerItems(e, 'ReportingManagerId')}    
+                                                                    ensureUser={true}
+                                                                    required={true}        
+                                                                    principalTypes={[PrincipalType.User]} placeholder="Reporting Manager"
+                                                                    resolveDelay={1000} peoplePickerCntrlclassName={"input-peoplePicker-custom"} />
+                                                        </div>
+                                                    </div>
+                                                </div>
                                             </div>
 
-                                            <div className="col-md-3">
-                                                <div className="light-text">
-                                                    <label>Client<span className="mandatoryhastrick">*</span></label>
-                                                    <select className="form-control" required={true} name="Client" title="Client" id='client' ref={this.client} onChange={this.handleChangeEvents}>
-                                                        <option value=''>None</option>
-                                                        {this.state.ClientsObject.map((option) => (
-                                                            <option value={option.Title} selected={option.Title ==this.state.ClientName}>{option.Title}</option>
-                                                        ))}
-                                                    </select>
-                                                </div>
-                                            </div>
+                                            <div className="row pt-2 px-2">
 
                                             <div className="col-md-3">
-                                        <div className="light-text div-readonly">
-                                            <label className="z-in-9">Date of Joining <span className="mandatoryhastrick">*</span></label>
-                                            <div className="custom-datepicker" id="divDateofJoining">
-                                                
-                                                <DatePicker onDatechange={this.UpdateDate} selectedDate={this.state.DateOfJoining}/>
-                                            </div>
-                                        </div>
+                                                    <div className="light-text">
+                                                        <label>Reviewer <span className="mandatoryhastrick">*</span></label>
+                                                        <div className="custom-peoplepicker" id="divReviewer">
+                                                                <PeoplePicker
+                                                                    context={this.props.context}
+                                                                    titleText=""
+                                                                    personSelectionLimit={10}
+                                                                    showtooltip={false}
+                                                                    disabled={false}
+                                                                    defaultSelectedUsers = {this.state.ReviewerEmail}
+                                                                    onChange={(e) => this._getPeoplePickerItems(e, 'ReviewerId')}    
+                                                                    ensureUser={true}
+                                                                    required={true}        
+                                                                    principalTypes={[PrincipalType.User]} placeholder="Reviewer"
+                                                                    resolveDelay={1000} peoplePickerCntrlclassName={"input-peoplePicker-custom"} />
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div className="col-md-3">
+                                                    <div className="light-text">
+                                                        <label>Notifier <span className="mandatoryhastrick">*</span></label>
+                                                        <div className="custom-peoplepicker" id="divNotifier">
+                                                                <PeoplePicker
+                                                                    context={this.props.context}
+                                                                    titleText=""
+                                                                    personSelectionLimit={10}
+                                                                    showtooltip={false}
+                                                                    disabled={false}
+                                                                    defaultSelectedUsers = {this.state.NotifierEmail}
+                                                                    onChange={(e) => this._getPeoplePickerItems(e, 'NotifierId')}    
+                                                                    ensureUser={true}
+                                                                    required={true}        
+                                                                    principalTypes={[PrincipalType.User]} placeholder="Notifier"
+                                                                    resolveDelay={1000} peoplePickerCntrlclassName={"input-peoplePicker-custom"} />
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                {/* ///////////// */}
+                                                    {/* <div className="col-md-3">
+                                                        <div className="light-text">
+                                                            <label>Week Start Day<span className="mandatoryhastrick">*</span></label>
+                                                            <select className="form-control"  name="weekStartDay" title="WeekStartDay" id='WeekStartDay' ref={this.WeekStartDay} onChange={this.handleChangeEvents} value={this.state.weekStartDay}>
+                                                                <option value='Monday'>Monday</option>
+                                                                <option value='Tuesday'>Tuesday</option>
+                                                                <option value='Wednessday'>Wednessday</option>
+                                                                <option value='Thursday'>Thursday</option>
+                                                                <option value='Friday'>Friday</option>
+                                                                <option value='Saturday'>Saturday</option>
+                                                                <option value='Sunday'>Sunday</option>
+                                                            </select>
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="col-md-3">
+                                                        <div className="light-text">
+                                                            <label>Is Description Mandatory<span className="mandatoryhastrick">*</span></label>
+                                                            <select className="form-control"  name="MandatoryDescription" title="MandatoryDescription" id='MandatoryDescription' ref={this.MandatoryDescription} onChange={this.handleChangeEvents} value={this.state.MandatoryDescription}>
+                                                                <option value='No'>No</option>
+                                                                <option value='Yes'>Yes</option>
+                                                            </select>
+                                                        </div>
+                                                    </div> */}
+                                                    {/* /////// */}
+                                                    <div className="col-md-3">
+                                                        <div className="light-text">
+                                                            <label>Week Start Day</label>
+                                                            <select className="form-control"  name="weekStartDay" title="WeekStartDay" id='WeekStartDay' ref={this.WeekStartDay} onChange={this.handleChangeEvents} value={this.state.weekStartDay}>
+                                                                <option value='Monday'>Monday</option>
+                                                                <option value='Tuesday'>Tuesday</option>
+                                                                <option value='Wednessday'>Wednessday</option>
+                                                                <option value='Thursday'>Thursday</option>
+                                                                <option value='Friday'>Friday</option>
+                                                                <option value='Saturday'>Saturday</option>
+                                                                <option value='Sunday'>Sunday</option>
+                                                            </select>
+                                                        </div>
+                                                    </div>
+                                                    <div className="col-md-3">
+                                                        <div className="light-text">
+                                                            <label>Is Project Code Mandatory</label>
+                                                            <select className="form-control"  name="MandatoryProjectCode" title="MandatoryProjectCode" id='MandatoryProjectCode' ref={this.MandatoryProjectCode} onChange={this.handleChangeEvents} value={this.state.MandatoryProjectCode}>
+                                                                <option value='No'>No</option>
+                                                                <option value='Yes'>Yes</option>
+                                                            </select>
+                                                        </div>
+                                                    </div>
+
+
                                             </div>
 
+                                            <div className="row pt-2 px-2">
+                                                {/* <div className="col-md-3">
+                                                    <div className="light-text">
+                                                        <label>Approver <span className="mandatoryhastrick">*</span></label>
+                                                        <div className="custom-peoplepicker" id="divApprover">
+                                                                <PeoplePicker
+                                                                    context={this.props.context}
+                                                                    titleText=""
+                                                                    personSelectionLimit={10}
+                                                                    showtooltip={false}
+                                                                    disabled={false}
+                                                                    defaultSelectedUsers = {this.state.ApproverEmail}
+                                                                    onChange={(e) => this._getPeoplePickerItems(e, 'ApproverId')}    
+                                                                    ensureUser={true}
+                                                                    required={true}        
+                                                                    principalTypes={[PrincipalType.User]} placeholder="Approver"
+                                                                    resolveDelay={1000} peoplePickerCntrlclassName={"input-peoplePicker-custom"} />
+                                                        </div>
+                                                    </div>
+                                                </div> */}
+                                                {/* /////////////// */}
+                                                {/* <div className="col-md-3">
+                                                        <div className="light-text">
+                                                            <label>Week Start Day<span className="mandatoryhastrick">*</span></label>
+                                                            <select className="form-control"  name="weekStartDay" title="WeekStartDay" id='WeekStartDay' ref={this.WeekStartDay} onChange={this.handleChangeEvents} value={this.state.weekStartDay}>
+                                                                <option value='Monday'>Monday</option>
+                                                                <option value='Tuesday'>Tuesday</option>
+                                                                <option value='Wednessday'>Wednessday</option>
+                                                                <option value='Thursday'>Thursday</option>
+                                                                <option value='Friday'>Friday</option>
+                                                                <option value='Saturday'>Saturday</option>
+                                                                <option value='Sunday'>Sunday</option>
+                                                            </select>
+                                                        </div>
+                                                    </div> */}
+
+                                                    <div className="col-md-3">
+                                                        <div className="light-text">
+                                                            <label>Is Description Mandatory</label>
+                                                            <select className="form-control"  name="MandatoryDescription" title="MandatoryDescription" id='MandatoryDescription' ref={this.MandatoryDescription} onChange={this.handleChangeEvents} value={this.state.MandatoryDescription}>
+                                                                <option value='No'>No</option>
+                                                                <option value='Yes'>Yes</option>
+                                                            </select>
+                                                        </div>
+                                                    </div>
+                                                {/* <div className="col-md-3">
+                                                    <div className="light-text">
+                                                        <label>Reviewer <span className="mandatoryhastrick">*</span></label>
+                                                        <div className="custom-peoplepicker" id="divReviewer">
+                                                                <PeoplePicker
+                                                                    context={this.props.context}
+                                                                    titleText=""
+                                                                    personSelectionLimit={10}
+                                                                    showtooltip={false}
+                                                                    disabled={false}
+                                                                    defaultSelectedUsers = {this.state.ReviewerEmail}
+                                                                    onChange={(e) => this._getPeoplePickerItems(e, 'ReviewerId')}    
+                                                                    ensureUser={true}
+                                                                    required={true}        
+                                                                    principalTypes={[PrincipalType.User]} placeholder="Reviewer"
+                                                                    resolveDelay={1000} peoplePickerCntrlclassName={"input-peoplePicker-custom"} />
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div className="col-md-3">
+                                                    <div className="light-text">
+                                                        <label>Notifier <span className="mandatoryhastrick">*</span></label>
+                                                        <div className="custom-peoplepicker" id="divNotifier">
+                                                                <PeoplePicker
+                                                                    context={this.props.context}
+                                                                    titleText=""
+                                                                    personSelectionLimit={10}
+                                                                    showtooltip={false}
+                                                                    disabled={false}
+                                                                    defaultSelectedUsers = {this.state.NotifierEmail}
+                                                                    onChange={(e) => this._getPeoplePickerItems(e, 'NotifierId')}    
+                                                                    ensureUser={true}
+                                                                    required={true}        
+                                                                    principalTypes={[PrincipalType.User]} placeholder="Notifier"
+                                                                    resolveDelay={1000} peoplePickerCntrlclassName={"input-peoplePicker-custom"} />
+                                                        </div>
+                                                    </div>
+                                                </div> */}
+                                                {/* ////////////// */}
                                             <div className="col-md-3">
-                                                <div className="light-text">
-                                                    <label>Manager <span className="mandatoryhastrick">*</span></label>
-                                                    <div className="custom-peoplepicker" id="divReportingManager">
-                                                            <PeoplePicker
-                                                                context={this.props.context}
-                                                                titleText=""
-                                                                personSelectionLimit={10}
-                                                                showtooltip={false}
-                                                                disabled={false}
-                                                                defaultSelectedUsers = {this.state.ReportingManagerEmail}
-                                                                onChange={(e) => this._getPeoplePickerItems(e, 'ReportingManagerId')}    
-                                                                ensureUser={true}
-                                                                required={true}        
-                                                                principalTypes={[PrincipalType.User]} placeholder="Reporting Manager"
-                                                                resolveDelay={1000} peoplePickerCntrlclassName={"input-peoplePicker-custom"} />
+                                                    <div className="light-text" id='chkIsActive'>
+                                                        <InputCheckBox
+                                                        label={"Is Active"}
+                                                        name={"isActive"}
+                                                        checked={this.state.isActive}
+                                                        onChange={this.handleChangeEvents}
+                                                        isforMasters={false}
+                                                        isdisable={false}
+                                                        />
                                                     </div>
-                                                </div>
                                             </div>
-                                    </div>
-                                    <div className="row pt-2 px-2">
-                                            {/* <div className="col-md-3">
-                                                <div className="light-text">
-                                                    <label>Approver <span className="mandatoryhastrick">*</span></label>
-                                                    <div className="custom-peoplepicker" id="divApprover">
-                                                            <PeoplePicker
-                                                                context={this.props.context}
-                                                                titleText=""
-                                                                personSelectionLimit={10}
-                                                                showtooltip={false}
-                                                                disabled={false}
-                                                                defaultSelectedUsers = {this.state.ApproverEmail}
-                                                                onChange={(e) => this._getPeoplePickerItems(e, 'ApproverId')}    
-                                                                ensureUser={true}
-                                                                required={true}        
-                                                                principalTypes={[PrincipalType.User]} placeholder="Approver"
-                                                                resolveDelay={1000} peoplePickerCntrlclassName={"input-peoplePicker-custom"} />
-                                                    </div>
-                                                </div>
-                                            </div> */}
-                                            <div className="col-md-3">
-                                                <div className="light-text">
-                                                    <label>Reviewer <span className="mandatoryhastrick">*</span></label>
-                                                    <div className="custom-peoplepicker" id="divReviewer">
-                                                            <PeoplePicker
-                                                                context={this.props.context}
-                                                                titleText=""
-                                                                personSelectionLimit={10}
-                                                                showtooltip={false}
-                                                                disabled={false}
-                                                                defaultSelectedUsers = {this.state.ReviewerEmail}
-                                                                onChange={(e) => this._getPeoplePickerItems(e, 'ReviewerId')}    
-                                                                ensureUser={true}
-                                                                required={true}        
-                                                                principalTypes={[PrincipalType.User]} placeholder="Reviewer"
-                                                                resolveDelay={1000} peoplePickerCntrlclassName={"input-peoplePicker-custom"} />
-                                                    </div>
-                                                </div>
                                             </div>
-                                            <div className="col-md-3">
-                                                <div className="light-text">
-                                                    <label>Notifier <span className="mandatoryhastrick">*</span></label>
-                                                    <div className="custom-peoplepicker" id="divNotifier">
-                                                            <PeoplePicker
-                                                                context={this.props.context}
-                                                                titleText=""
-                                                                personSelectionLimit={10}
-                                                                showtooltip={false}
-                                                                disabled={false}
-                                                                defaultSelectedUsers = {this.state.NotifierEmail}
-                                                                onChange={(e) => this._getPeoplePickerItems(e, 'NotifierId')}    
-                                                                ensureUser={true}
-                                                                required={true}        
-                                                                principalTypes={[PrincipalType.User]} placeholder="Notifier"
-                                                                resolveDelay={1000} peoplePickerCntrlclassName={"input-peoplePicker-custom"} />
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        <div className="col-md-3">
-                                                <div className="light-text" id='chkIsActive'>
-                                                    <InputCheckBox
-                                                    label={"Is Active"}
-                                                    name={"IsActive"}
-                                                    checked={this.state.isActive}
-                                                    onChange={this.handleChangeEvents}
-                                                    isforMasters={false}
-                                                    isdisable={false}
-                                                    />
-                                                </div>
-                                        </div>
-                                        </div>
                                     </div>
 
                                 </div>
