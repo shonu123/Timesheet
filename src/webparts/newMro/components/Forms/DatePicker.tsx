@@ -35,7 +35,7 @@ interface DatePickerProps {
  }
  
 const DayCode =(Day)=>{
-let days = ['Sunday','Monday','Tuesday','Wednessday','Thursday','Friday','Saturday'];
+let days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
 return days.indexOf('Tuesday')
 }
  const getStartDate =(date) =>{
