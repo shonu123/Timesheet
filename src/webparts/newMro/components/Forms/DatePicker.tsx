@@ -19,6 +19,7 @@ interface DatePickerProps {
     labelName:string;
     isDisabled:boolean;
     ref:any;
+    Day:string;
   }
 
 //   const [selectedDate,setDate] = React.useState(new Date())
@@ -27,11 +28,16 @@ interface DatePickerProps {
 //      setDate(date)
 //   };
 
-  const filterDays = (date) => {
+  const filterDays = (date,enableDay) => {
    let currentDate = new Date(date)
-   return   currentDate.getDay() === 1;
+   let Day = DayCode(enableDay)
+   return   currentDate.getDay() === Day;
  }
-
+ 
+const DayCode =(Day)=>{
+let days = ['Sunday','Monday','Tuesday','Wednessday','Thursday','Friday','Saturday'];
+return days.indexOf('Tuesday')
+}
  const getStartDate =(date) =>{
     if(new Date(date).getDay() === 1){
       return new Date(date)
@@ -45,7 +51,7 @@ interface DatePickerProps {
     }
    }
 
-  const CustomDatePicker =({ handleChange,selectedDate,className,labelName,isDisabled,ref} : DatePickerProps) => {
+  const CustomDatePicker =({ handleChange,selectedDate,className,labelName,isDisabled,ref,Day} : DatePickerProps) => {
     return  (
 
             <div className="App">
@@ -53,7 +59,7 @@ interface DatePickerProps {
                    <DatePicker
                     selected = {selectedDate}
                     onChange={handleChange}
-                    minDate={addDays(getStartDate(new Date()),-14)}
+                    minDate={addDays(getStartDate(new Date()),-30)}
                     maxDate={new Date()}
                     filterDate = {filterDays}
                     className = {className+" "+(selectedDate==null?"mandatory-FormContent-focus":"")}
