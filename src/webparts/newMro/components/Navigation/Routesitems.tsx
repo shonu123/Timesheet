@@ -18,7 +18,7 @@ import Myapprovals from '../Dashboard/Myapprovals.component';
 import Myrequests from '../Dashboard/Myrequests.component';
 import EmployeeMasterForm from '../Forms/EmployeeMasterForm.component';
 import WeeklyTimesheet from '../Forms/WeeklyTimesheet.component'; 
-
+import HolidaysList from '../Dashboard/HolidayMaster.component';
 import { SPHttpClient, SPHttpClientResponse, SPHttpClientConfiguration } from '@microsoft/sp-http';
 import sitePermissions from './Routing.module';
 import EmployeeMasterView from '../Dashboard/EmployeeMasterView.component';
@@ -79,17 +79,22 @@ class Routesitems extends Component<RoutesProps, RoutesState> {
             let params =useParams();
             return <EmployeeMasterView {...this.context}{...this.props}  {...{...props, match: {params}} } />
           }
+          const WrapperHolidayMaster = (props) => {
+            let params =useParams();
+            return <HolidaysList {...this.context}{...this.props}  {...{...props, match: {params}} } />
+          }
         return (
             <Suspense fallback={<div></div>}>
                 <Routes>
-                    <Route path='/' element={<Dashboard {...this.context}{...this.props} />} />
+                    <Route path='/' element={<Dashboard {...this.context}{...this.props}  />} />
                     <Route path='/approvalmaster' element={<WrapperApprovalMaster/>} />
                    <Route path='/WeeklyTimesheet/:id?' element ={<WrapperWeeklyTimesheet/>} />
                    <Route path='/EmployeeMasterForm/:id?' element ={<WrapperEmployeeMasterForm/>} />
                    <Route path='/EmployeeMasterView/' element ={<WrapperMasterView/>} />
+                   <Route path='/HolidayMaster/:id?' element ={<WrapperHolidayMaster/>} />
                     <Route path='/purchaserequest/:id?' element={<Wrapper />} />
                     <Route path='/requisitionreport' element={(matchprops) => <RequisitionReport {...matchprops}{...this.props} />} />
-                    <Route path='/dashboard' element={<Dashboard {...this.context} {...this.props} />} />
+                    <Route path='/Dashboard' element={<Dashboard {...this.context} {...this.props} />} />
                     {/* <Route path='/approvalmasterForm/:id?' element={<ApprovalMasterform {...this.context}{...this.props} />} /> */}
                     <Route path='/approvalmasterForm/:id?' element={<WrappermasterForm/>} />
                     {/* <Route path='/approvalmasterForm/' element={<ApprovalMasterform {...this.context}{...this.props} />} />  */}

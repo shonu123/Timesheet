@@ -7,7 +7,7 @@ import { ControlType } from '../../Constants/Constants';
 import TableGenerator from '../Shared/TableGenerator';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEdit } from '@fortawesome/free-solid-svg-icons';
-import { NavLink } from 'react-router-dom';
+import { NavLink, Navigate,redirect } from 'react-router-dom';
 import { SPHttpClient } from '@microsoft/sp-http';
 import { WebPartContext } from '@microsoft/sp-webpart-base';
 import { sp } from '@pnp/sp';
@@ -37,7 +37,7 @@ interface HolidaysListState {
         Year:string,
     };
     SaveUpdateText: string;
-    ClientsObj: any;
+    ClientsObj: any[];
     HolidayListObj : any;
     showLabel: boolean;
     errorMessage: string;
@@ -49,13 +49,14 @@ interface HolidaysListState {
     addNewClient: boolean;
     isNewform: boolean;
     ImportedExcelData: any;
+    redirect: boolean;
 }
 
 class HolidaysList extends Component<HolidaysListProps, HolidaysListState> {
     private siteURL: string;
     private Client;
     private Holiday;
-    private Date;
+    private Date ;
     constructor(props: HolidaysListProps) {
         super(props);
         sp.setup({
@@ -67,10 +68,11 @@ class HolidaysList extends Component<HolidaysListProps, HolidaysListState> {
         this.siteURL = this.props.spContext.webAbsoluteUrl;
 
         this.state = {
+            
             formData: {
                 ClientName : '',
-                HolidayName: '',
-                HolidayDate: '',
+                HolidayName:'',
+                HolidayDate: `${new Date().getMonth() + 1}/${new Date().getDate()}/${new Date().getFullYear()}`,
                 Year:'',
             },
             SaveUpdateText: 'Submit',
@@ -85,13 +87,14 @@ class HolidaysList extends Component<HolidaysListProps, HolidaysListState> {
             isSuccess: true,
             addNewClient: false,
             isNewform: true,
-            ImportedExcelData: []
+            ImportedExcelData: [],
+            redirect: false,
         };
 
     }
 
     public componentDidMount() {
-        highlightCurrentNav("");
+        highlightCurrentNav("HolidayMaster");
         this.setState({ loading: true });
         this.loadListData();
     }
@@ -157,12 +160,13 @@ class HolidaysList extends Component<HolidaysListProps, HolidaysListState> {
 
     private checkDuplicates = (formData, id) => {
         let HolidaysList = 'HolidaysList';
+        formData['Year'] = new Date(formData.HolidayDate).getFullYear()+""
         var filterString;
         try {
             if (id == 0)
-                filterString = `(ClientName eq '${formData.ClientName}') and HolidayName eq '${formData.HolidayName}' and HolidayDate eq '${formData.HolidayDate}'`;
+                filterString = `ClientName eq '${formData.ClientName}' and HolidayName eq '${formData.HolidayName}' and HolidayDate eq '${formData.HolidayDate}'`;
             else
-                filterString = filterString = `(ClientName eq '${formData.ClientName}') and HolidayName eq '${formData.HolidayName}' and HolidayDate eq '${formData.HolidayDate}' Id ne ` + id;
+                filterString = filterString = `ClientName eq '${formData.ClientName}' and HolidayName eq '${formData.HolidayName}' and HolidayDate eq '${formData.HolidayDate}' and Id ne ` + id;
             sp.web.lists.getByTitle(HolidaysList).items.filter(filterString).get().
                 then((response: any[]) => {
                     if (response.length > 0) {
@@ -176,7 +180,7 @@ class HolidaysList extends Component<HolidaysListProps, HolidaysListState> {
                             //console.log(this.props);
                             sp.web.lists.getByTitle(HolidaysList).items.getById(id).update(formData).then((res) => {
                                 // this.loadListData();
-                                // this.resetVendorForm();
+                                // this.resetHolidayMasterForm();
                                 this.setState({
                                     modalTitle: 'Success',
                                     modalText: 'HolidaysList updated successfully',
@@ -192,7 +196,7 @@ class HolidaysList extends Component<HolidaysListProps, HolidaysListState> {
                                 sp.web.lists.getByTitle(HolidaysList).items.add({ ...this.state.formData })
                                     .then((res) => {
                                         this.loadListData();
-                                        this.resetVendorForm();
+                                        this.resetHolidayMasterForm();
                                         this.setState({
                                             modalTitle: 'Success',
                                             modalText: 'HolidaysList submitted successfully',
@@ -294,24 +298,24 @@ class HolidaysList extends Component<HolidaysListProps, HolidaysListState> {
             console.log('failed to fetch data for record :' + id);
         }
     }
-    private resetVendorForm = () => {
+    private resetHolidayMasterForm = () => {
         this.setState({
             formData: {
                 ClientName : '',
                 HolidayName: '',
-                HolidayDate: '',
+                HolidayDate:`${new Date().getMonth() + 1}/${new Date().getDate()}/${new Date().getFullYear()}`,
                 Year:'',
-            }, SaveUpdateText: 'Submit', addNewClient: false
+            }, SaveUpdateText: 'Submit', addNewClient: false,redirect:true
         });
-        () => this.props.history.push('/HolidaysList');
+        // () => this.props.history.push('/HolidayMaster');
     }
     private cancelHandler = () => {
-        this.resetVendorForm();
+        this.resetHolidayMasterForm();
     }
     public handleClose = () => {
         this.setState({ showHideModal: false });
         this.loadListData();
-        this.resetVendorForm();
+        this.resetHolidayMasterForm();
     }
     private addNewHolidayMaster = () => {
         var formdata = { ...this.state.formData };
@@ -343,18 +347,20 @@ class HolidaysList extends Component<HolidaysListProps, HolidaysListState> {
                 for (var j = 0; j < HolidayListData.length; j++) {
                    // VendorsData[j].Title= VendorsData[j].Title!=null?VendorsData[j].Title:"";
                    HolidayListData[j].ClientName=HolidayListData[j].ClientName!=null?HolidayListData[j].ClientName:"";
-                    if (excelData[i] && (excelData[i]["Client Name"].toLowerCase().trim() == HolidayListData[j].ClientName.toLowerCase().trim()) &&(excelData[i]["Holiday Name"].toLowerCase().trim() == HolidayListData[j].HolidayName.toLowerCase().trim()) && (excelData[i]["Holiday Date"].toLowerCase().trim() == HolidayListData[j].HolidayDate.toLowerCase().trim())) {
-                        // if (excelData[i].Status == VendorsData[j].IsActive ) {
+
+                    if (excelData[i] && (excelData[i]["Client Name"].toLowerCase().trim() == HolidayListData[j].ClientName.toLowerCase().trim()) &&(excelData[i]["Holiday Name"].toLowerCase().trim() == HolidayListData[j].HolidayName.toLowerCase().trim())) {
+
+                        let excelDataDate = `${new Date(excelData[i]["Holiday Date"]).getMonth() + 1}/${new Date(excelData[i]["Holiday Date"]).getDate()}/${new Date(excelData[i]["Holiday Date"]).getFullYear()}`
+                        let holidayListDate =`${new Date(HolidayListData[j].HolidayDate).getMonth() + 1}/${new Date(HolidayListData[j].HolidayDate).getDate()}/${new Date(HolidayListData[j].HolidayDate).getFullYear()}`
+
+                         if (excelDataDate == holidayListDate) {
                             excelData.splice(i, 1);
-                        // } else if (VendorsData[j].IsActive  != excelData[i].Status) {
-                        //     VendorsData[j].IsActive = excelData[i].Status == "Active" ? true : false;
-                        //     VendorsData[j].Database = VendorsData[j].Database.trim();
-                        //     VendorsData[j].Title = VendorsData[j].Title.trim();
-                        //     VendorsData[j].Vendor_x0020_Number = VendorsData[j].Vendor_x0020_Number.trim();
-                        //     VendorsData[j].Currency = VendorsData[j].Currency != undefined ? VendorsData[j].Currency.trim():'US';
-                        //     statusChangedRec.push(VendorsData[j]);
-                        //     excelData.splice(i, 1);
-                        // }
+                         } 
+                         else if (excelDataDate != holidayListDate) {
+                            HolidayListData[j].HolidayDate = excelDataDate;
+                                statusChangedRec.push(HolidayListData[j]);
+                                excelData.splice(i, 1);
+                         }
                     }
                 }
             }
@@ -363,7 +369,8 @@ class HolidaysList extends Component<HolidaysListProps, HolidaysListState> {
                     var obj = {};
                     obj["ClientName"] = item["Client Name"].trim();
                     obj["HolidayName"] = item["Holiday Name"].trim();
-                    obj["Holiday Date"] = item.HolidayDate;
+                    obj["HolidayDate"] = item["Holiday Date"].trim();
+                    obj["Year"] = `${new Date(obj["HolidayDate"]).getFullYear()}`,
                     nonDuplicateRec.push(obj);
                 });
             } else if (!excelData.length && !statusChangedRec.length) {
@@ -397,32 +404,35 @@ class HolidaysList extends Component<HolidaysListProps, HolidaysListState> {
 
     public updateImportExceldata = async (nonDuplicateRec, statusChangedData) => {
         statusChangedData.forEach(element => {
-            sp.web.lists.getByTitle('vendor').items.getById(element.Id).update(element).then((res) => {
+            sp.web.lists.getByTitle('HolidaysList').items.getById(element.Id).update(element).then((res) => {
 
             }).then((res) => {
                 if (!nonDuplicateRec.length) {
                     //this.loadListData();  //
                     this.setState({
                         modalTitle: 'Success',
-                        modalText: 'Vendors updated successfully',
+                        modalText: 'HolidaysList updated successfully',
                         showHideModal: true,
                         isSuccess: true
                     });
                     this.resetImportField();
                     console.log(res);
+                    this.loadListData();
+                }else{
+                    this.loadListData();
                 }
             }).catch((err) => {
                 console.log('Failed to add', err);
             });
         });
-        this.loadListData(); //
+       //
     }
 
     public insertImportedExcelData = async (data) => {
         let failedrecords: any = [];
         try {
             this.setState({ loading: true });
-            let list = await sp.web.lists.getByTitle("Vendor");
+            let list = await sp.web.lists.getByTitle("HolidaysList");
             const entityTypeFullName = await list.getListItemEntityTypeFullName();
 
             if (data && data != undefined) {
@@ -446,7 +456,7 @@ class HolidaysList extends Component<HolidaysListProps, HolidaysListState> {
                                     this.loadListData();
                                     this.setState({
                                         modalTitle: 'Success',
-                                        modalText: 'Vendors uploaded successfully',
+                                        modalText: 'HolidaysList uploaded successfully',
                                         showHideModal: true,
                                         isSuccess: true,
                                     });
@@ -488,7 +498,7 @@ class HolidaysList extends Component<HolidaysListProps, HolidaysListState> {
         this.setState({
             loading: false,
             modalTitle: 'Alert',
-            modalText: 'Invalid Vendors file selected',
+            modalText: 'Invalid Holiday List file selected',
             showHideModal: true,
             isSuccess: false
         });
@@ -522,7 +532,7 @@ class HolidaysList extends Component<HolidaysListProps, HolidaysListState> {
                     return (
                         <React.Fragment>
                             <div style={{ paddingLeft: '10px' }}>
-                                <NavLink title="Edit" className="csrLink ms-draggable" to={`/HolidaysList/${record.Id}`}>
+                                <NavLink title="Edit" className="csrLink ms-draggable" to={`/HolidayMaster/${record.Id}`}>
                                     <FontAwesomeIcon icon={faEdit} onClick={() => { this.onEditClickHandler(record.Id); }}></FontAwesomeIcon>
                                 </NavLink>
                             </div>
@@ -561,139 +571,143 @@ class HolidaysList extends Component<HolidaysListProps, HolidaysListState> {
             },
            
         ];
-
-        return (
-
-            <React.Fragment>
-                <ModalPopUp title={this.state.modalTitle} modalText={this.state.modalText} isVisible={this.state.showHideModal} onClose={this.handleClose} isSuccess={this.state.isSuccess}></ModalPopUp>
-                <div id="content" className="content p-2 pt-2">
-                    <div id="clickMenu" className="menu-icon-outer" onClick={(event) => this.onMenuItemClick(event)}>
-                        <div className="menu-icon">
-                            <span>
-                            </span>
-                            <span>
-                            </span>
-                            <span>
-                            </span>
-                        </div>
-                    </div>
-                    <div className='container-fluid'>
-                        <div className='FormContent'>
-                            <div className='title'>Vendors
-                                {this.state.addNewClient &&
-                                    <div className='mandatory-note'>
-                                        <span className='mandatoryhastrick'>*</span> indicates a required field
-                                    </div>
-                                }
+        if(this.state.redirect){
+                let url = `/HolidayMaster`
+                return (<Navigate to={url} />);
+        }
+    else
+        {
+            return (
+                <React.Fragment>
+                    <ModalPopUp title={this.state.modalTitle} modalText={this.state.modalText} isVisible={this.state.showHideModal} onClose={this.handleClose} isSuccess={this.state.isSuccess}></ModalPopUp>
+                    <div id="content" className="content p-2 pt-2">
+                        <div id="clickMenu" className="menu-icon-outer" onClick={(event) => this.onMenuItemClick(event)}>
+                            <div className="menu-icon">
+                                <span>
+                                </span>
+                                <span>
+                                </span>
+                                <span>
+                                </span>
                             </div>
-
-                            <div className="after-title"></div>
-
-                            {this.state.loading && <Loader />}
-
-
-                            <div className="row justify-content-md-left">
-                                <div className="col-12 col-md-12 col-lg-12">
-
-                                    <div className={this.state.addNewClient ? 'mx-2 activediv' : 'mx-2'}>
-                                        <div className="text-right pt-2">
-                                            <ImportExcel ErrorFileSelect={this.ErrorFileSelect} columns={["Vendor Name", "Vendor Number", "Status", "Database", "Currency"]} filename="Vendors" onDataFetch={this.fetchImportedExcelData} submitData={this.submitImportedExcelData}></ImportExcel>
-
-                                            <button type="button" id="btnSubmit" className="SubmitButtons btn" onClick={this.addNewHolidayMaster}>Add</button>
+                        </div>
+                        <div className='container-fluid'>
+                            <div className='FormContent'>
+                                <div className='title'>Holiday Master
+                                    {this.state.addNewClient &&
+                                        <div className='mandatory-note'>
+                                            <span className='mandatoryhastrick'>*</span> indicates a required field
                                         </div>
-                                    </div>
-                                    <div className="c-v-table">
-                                        <div className="light-box border-box-shadow mx-2">
-                                            <div className={this.state.addNewClient ? '' : 'activediv'}>
-                                                <div className="my-2">
+                                    }
+                                </div>
 
-                                                    
+                                <div className="after-title"></div>
 
-                                                    <div className="row pt-2 px-2">
-                                                        <InputText
-                                                            type='text'
-                                                            label={"Client Name"}
-                                                            name={"ClientName"}
-                                                            value={this.state.formData.ClientName || ''}
-                                                            isRequired={true}
-                                                            onChange={this.handleChange}
-                                                            refElement={this.Client}
-                                                            maxlength={250}
-                                                            onBlur={this.handleonBlur}
-                                                        />
+                                {this.state.loading && <Loader />}
 
-                                                        <InputText
-                                                            type='text'
-                                                            label={"Holiday Name"}
-                                                            name={"HolidayName"}
-                                                            value={this.state.formData.HolidayName || ''}
-                                                            isRequired={true}
-                                                            onChange={this.handleChange}
-                                                            refElement={this.Holiday}
-                                                            maxlength={50}
-                                                            onBlur={this.handleonBlur}
-                                                        />
-                                                        {/* <InputText
-                                                            type='text'
-                                                            label={"Currency"}
-                                                            name={"Currency"}
-                                                            value={this.state.formData.Currency || ''}
-                                                            isRequired={true}
-                                                            onChange={this.handleChange}
-                                                            refElement={this.inputCurrency}
-                                                            maxlength={50}
-                                                            onBlur={this.handleonBlur}
-                                                        /> */}
-                                                        <div className="col-md-4">
-                                                            <div className="light-text">
-                                                                <label>Currency <span className="mandatoryhastrick">*</span></label>
-                                                                <select className="form-control" required={true} name="Currency" title="Currency" value={this.state.formData.ClientName} onChange={this.handleChange} ref={this.Client}>
-                                                                    <option value=''>None</option>
-                                                                    {this.state.ClientsObj.map((option) => (
-                                                                        <option value={option} selected={this.state.formData.ClientName != option}>{option}</option>
-                                                                    ))}
-                                                                </select>
-                                                            </div>
-                                                        </div>
-                                                        <div className="col-md-4">
-                                                            <div className="light-text">
-                                                                <div className="custom-datepicker" id="divDateofJoining">
-                                                    
-                                                             <DatePicker onDatechange={this.UpdateDate} selectedDate={new Date(this.state.formData.HolidayDate)}/>
-                                                            </div>
-                                                            </div>
-                                                        </div>
-                                                        
-                                                    </div>
-                                                </div>
 
-                                                {this.state.showLabel &&
-                                                    <div>
-                                                        <span className='text-validator'> {this.state.errorMessage}</span>
-                                                    </div>
-                                                }
-                                                <div className="row mx-1" id="">
-                                                    <div className="col-sm-12 text-center my-2" id="">
-                                                        <button type="button" onClick={this.handleSubmit} id="btnSubmit" className="SubmitButtons btn">{this.state.SaveUpdateText}</button>
-                                                        <button type="button" id="btnCancel" className="CancelButtons btn" onClick={this.cancelHandler}>Cancel</button>
-                                                    </div>
-                                                </div>
+                                <div className="row justify-content-md-left">
+                                    <div className="col-12 col-md-12 col-lg-12">
 
+                                        <div className={this.state.addNewClient ? 'mx-2 activediv' : 'mx-2'}>
+                                            <div className="text-right pt-2">
+                                                <ImportExcel ErrorFileSelect={this.ErrorFileSelect} columns={["Client Name", "Holiday Name", "Holiday Date"]} filename="Hloiday List" onDataFetch={this.fetchImportedExcelData} submitData={this.submitImportedExcelData}></ImportExcel>
+
+                                                <button type="button" id="btnSubmit" className="SubmitButtons btn" onClick={this.addNewHolidayMaster}>Add</button>
                                             </div>
                                         </div>
-                                    </div>
+                                        <div className="c-v-table">
+                                            <div className="light-box border-box-shadow mx-2">
+                                                <div className={this.state.addNewClient ? '' : 'activediv'}>
+                                                    <div className="my-2">
 
-                                    <div className="c-v-table table-head-1st-td">
-                                        <TableGenerator columns={columns} data={this.state.HolidayListObj} fileName={'List of Holidays'}showExportExcel={true} ExportExcelCustomisedColumns={ExportExcelreportColumns} ></TableGenerator>
+                                                        
+
+                                                        <div className="row pt-2 px-2">
+                                                            {/* <InputText
+                                                                type='text'
+                                                                label={"Client Name"}
+                                                                name={"ClientName"}
+                                                                value={this.state.formData.ClientName || ''}
+                                                                isRequired={true}
+                                                                onChange={this.handleChange}
+                                                                refElement={this.Client}
+                                                                maxlength={250}
+                                                                onBlur={this.handleonBlur}
+                                                            /> */}
+
+                                                            <InputText
+                                                                type='text'
+                                                                label={"Holiday Name"}
+                                                                name={"HolidayName"}
+                                                                value={this.state.formData.HolidayName || ''}
+                                                                isRequired={true}
+                                                                onChange={this.handleChange}
+                                                                refElement={this.Holiday}
+                                                                maxlength={50}
+                                                                onBlur={this.handleonBlur}
+                                                            />
+                                                            {/* <InputText
+                                                                type='text'
+                                                                label={"Currency"}
+                                                                name={"Currency"}
+                                                                value={this.state.formData.Currency || ''}
+                                                                isRequired={true}
+                                                                onChange={this.handleChange}
+                                                                refElement={this.inputCurrency}
+                                                                maxlength={50}
+                                                                onBlur={this.handleonBlur}
+                                                            /> */}
+                                                            <div className="col-md-4">
+                                                                <div className="light-text">
+                                                                    <label>Client<span className="mandatoryhastrick">*</span></label>
+                                                                    <select className="form-control" required={true} name="ClientName" title="ClientName" value={this.state.formData.ClientName} onChange={this.handleChange} ref={this.Client}>
+                                                                        <option value=''>None</option>
+                                                                        {this.state.ClientsObj.map((option) => (
+                                                                    <option value={option.Title} selected={option.Title ==this.state.formData.ClientName}>{option.Title}</option>
+                                                                ))}
+                                                                    </select>
+                                                                </div>
+                                                            </div>
+                                                            <div className="col-md-4">
+                                                                <div className="light-text">
+                                                                    <div className="custom-datepicker" id="divDateofJoining">
+                                                        
+                                                                <DatePicker onDatechange={this.UpdateDate} selectedDate={new Date(this.state.formData.HolidayDate)}/>
+                                                                </div>
+                                                                </div>
+                                                            </div>
+                                                            
+                                                        </div>
+                                                    </div>
+
+                                                    {this.state.showLabel &&
+                                                        <div>
+                                                            <span className='text-validator'> {this.state.errorMessage}</span>
+                                                        </div>
+                                                    }
+                                                    <div className="row mx-1" id="">
+                                                        <div className="col-sm-12 text-center my-2" id="">
+                                                            <button type="button" onClick={this.handleSubmit} id="btnSubmit" className="SubmitButtons btn">{this.state.SaveUpdateText}</button>
+                                                            <button type="button" id="btnCancel" className="CancelButtons btn" onClick={this.cancelHandler}>Cancel</button>
+                                                        </div>
+                                                    </div>
+
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div className="c-v-table table-head-1st-td">
+                                            <TableGenerator columns={columns} data={this.state.HolidayListObj} fileName={'List of Holidays'}showExportExcel={true} ExportExcelCustomisedColumns={ExportExcelreportColumns} ></TableGenerator>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                </div>
-            </React.Fragment>
-        );
-        // }
+                </React.Fragment>
+            );
+        }
     }
 }
 
