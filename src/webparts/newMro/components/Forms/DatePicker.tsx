@@ -28,15 +28,15 @@ interface DatePickerProps {
 //      setDate(date)
 //   };
 
-  const filterDays = (date,enableDay) => {
+  const filterDays = (date,Day: any) => {
    let currentDate = new Date(date)
-   let Day = DayCode(enableDay)
-   return   currentDate.getDay() === Day;
+   let enableDay = DayCode(Day)
+   return   currentDate.getDay() === enableDay;
  }
  
 const DayCode =(Day)=>{
 let days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
-return days.indexOf('Tuesday')
+return days.indexOf(Day)
 }
  const getStartDate =(date) =>{
     if(new Date(date).getDay() === 1){
@@ -61,7 +61,7 @@ return days.indexOf('Tuesday')
                     onChange={handleChange}
                     minDate={addDays(getStartDate(new Date()),-30)}
                     maxDate={new Date()}
-                    filterDate = {filterDays}
+                    filterDate = {date=>filterDays(date,Day)}
                     className = {className+" "+(selectedDate==null?"mandatory-FormContent-focus":"")}
                     disabled = {isDisabled} 
                     ref={ref}   
