@@ -33,7 +33,7 @@ interface HolidaysListState {
     formData: {
         ClientName : string,
         HolidayName: string,
-        HolidayDate: string,
+        HolidayDate: Date,
         Year:string,
     };
     SaveUpdateText: string;
@@ -72,7 +72,8 @@ class HolidaysList extends Component<HolidaysListProps, HolidaysListState> {
             formData: {
                 ClientName : '',
                 HolidayName:'',
-                HolidayDate: `${new Date().getMonth() + 1}/${new Date().getDate()}/${new Date().getFullYear()}`,
+                // HolidayDate: `${new Date().getMonth() + 1}/${new Date().getDate()}/${new Date().getFullYear()}`,
+                HolidayDate: new Date(),
                 Year:'',
             },
             SaveUpdateText: 'Submit',
@@ -104,7 +105,7 @@ class HolidaysList extends Component<HolidaysListProps, HolidaysListState> {
                 formData: {
                     ClientName : '',
                     HolidayName: '',
-                    HolidayDate: '',
+                    HolidayDate: new Date(),
                     Year:'',
                 }, SaveUpdateText: 'Submit', addNewClient: false
             });
@@ -133,7 +134,8 @@ class HolidaysList extends Component<HolidaysListProps, HolidaysListState> {
         if(dateprops[0]!= null){
             date = new Date(dateprops[0])
         }
-        formData['HolidayDate'] = `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`,
+        // formData['HolidayDate'] = `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`,
+        formData['HolidayDate'] = date
         this.setState({ formData });
 
     }
@@ -253,7 +255,8 @@ class HolidaysList extends Component<HolidaysListProps, HolidaysListState> {
                 response.sort((a, b) => b.Id - a.Id);
                 this.setState({
                     HolidayListObj: response.map(o => ({
-                        Id: o.Id, ClientName: o.ClientName, HolidayName: o.HolidayName, HolidayDate: o.HolidayDate
+                        Id: o.Id, ClientName: o.ClientName, HolidayName: o.HolidayName,
+                         HolidayDate: `${new Date(o.HolidayDate).getMonth() + 1}/${new Date(o.HolidayDate).getDate()}/${new Date(o.HolidayDate).getFullYear()}`
                     })),
                     SaveUpdateText: 'Submit',
                     showLabel: false,
@@ -303,7 +306,8 @@ class HolidaysList extends Component<HolidaysListProps, HolidaysListState> {
             formData: {
                 ClientName : '',
                 HolidayName: '',
-                HolidayDate:`${new Date().getMonth() + 1}/${new Date().getDate()}/${new Date().getFullYear()}`,
+                // HolidayDate:`${new Date().getMonth() + 1}/${new Date().getDate()}/${new Date().getFullYear()}`,
+                HolidayDate: new Date(),
                 Year:'',
             }, SaveUpdateText: 'Submit', addNewClient: false,redirect:true
         });
@@ -369,7 +373,7 @@ class HolidaysList extends Component<HolidaysListProps, HolidaysListState> {
                     var obj = {};
                     obj["ClientName"] = item["Client Name"].trim();
                     obj["HolidayName"] = item["Holiday Name"].trim();
-                    obj["HolidayDate"] = item["Holiday Date"].trim();
+                    obj["HolidayDate"] = new Date(item["Holiday Date"].trim());
                     obj["Year"] = `${new Date(obj["HolidayDate"]).getFullYear()}`,
                     nonDuplicateRec.push(obj);
                 });
@@ -611,7 +615,7 @@ class HolidaysList extends Component<HolidaysListProps, HolidaysListState> {
 
                                         <div className={this.state.addNewClient ? 'mx-2 activediv' : 'mx-2'}>
                                             <div className="text-right pt-2">
-                                                <ImportExcel ErrorFileSelect={this.ErrorFileSelect} columns={["Client Name", "Holiday Name", "Holiday Date"]} filename="Hloiday List" onDataFetch={this.fetchImportedExcelData} submitData={this.submitImportedExcelData}></ImportExcel>
+                                                <ImportExcel ErrorFileSelect={this.ErrorFileSelect} columns={["Client Name", "Holiday Name", "Holiday Date"]} filename="Holiday List" onDataFetch={this.fetchImportedExcelData} submitData={this.submitImportedExcelData}></ImportExcel>
 
                                                 <button type="button" id="btnSubmit" className="SubmitButtons btn" onClick={this.addNewHolidayMaster}>Add</button>
                                             </div>
