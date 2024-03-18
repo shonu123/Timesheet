@@ -21,6 +21,7 @@ import { highlightCurrentNav } from '../../Utilities/HighlightCurrentComponent';
 import "../Shared/Menuhandler";
 import ImportExcel from '../Shared/ImportExcel';
 import DatePicker from "../Shared/DatePickerField";
+import { addDays } from 'office-ui-fabric-react';
 
 interface HolidaysListProps {
     match: any;
@@ -49,7 +50,7 @@ interface HolidaysListState {
     addNewClient: boolean;
     isNewform: boolean;
     ImportedExcelData: any;
-    redirect: boolean;
+    isRedirect: boolean;
 }
 
 class HolidaysList extends Component<HolidaysListProps, HolidaysListState> {
@@ -89,7 +90,7 @@ class HolidaysList extends Component<HolidaysListProps, HolidaysListState> {
             addNewClient: false,
             isNewform: true,
             ImportedExcelData: [],
-            redirect: false,
+            isRedirect: false,
         };
 
     }
@@ -98,6 +99,11 @@ class HolidaysList extends Component<HolidaysListProps, HolidaysListState> {
         highlightCurrentNav("HolidayMaster");
         this.setState({ loading: true });
         this.loadListData();
+    }
+    public componentDidUpdate = () => {
+        if (this.state.isRedirect) {
+            this.loadListData();
+        }
     }
     public componentWillReceiveProps(newProps) {
         if (newProps.match.params.id == undefined)
@@ -165,16 +171,26 @@ class HolidaysList extends Component<HolidaysListProps, HolidaysListState> {
         formData['Year'] = new Date(formData.HolidayDate).getFullYear()+""
         var filterString;
         let date = new Date(formData.HolidayDate)
-        let dateString = `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`
+        let prevDate = addDays(new Date(date), -1);
+        let nextDate = addDays(new Date(date), 1);
+        let prev = `${prevDate.getMonth() + 1}/${prevDate.getDate()}/${prevDate.getFullYear()}`
+        let next = `${nextDate.getMonth() + 1}/${nextDate.getDate()}/${nextDate.getFullYear()}`
+
+        let filterQuery = "HolidayDate gt '" + prev + "' and HolidayDate lt '" + next + "'"
+        // let dateString = `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`
+        //filterString = `ClientName eq '${formData.ClientName}' and HolidayName eq '${formData.HolidayName}' and ${filterQuery}`;
+
         try {
             if (id == 0)
-                filterString = `ClientName eq '${formData.ClientName}' and HolidayName eq '${formData.HolidayName}' and HolidayDate eq '${dateString}'`;
+                filterString = `ClientName eq '${formData.ClientName}' and ${filterQuery}`;
             else
-                filterString = filterString = `ClientName eq '${formData.ClientName}' and HolidayName eq '${formData.HolidayName}' and HolidayDate eq '${dateString}' and Id ne ` + id;
+                filterString = filterString = `ClientName eq '${formData.ClientName}' and ${filterQuery} and Id ne ` + id;
             sp.web.lists.getByTitle(HolidaysList).items.filter(filterString).get().
                 then((response: any[]) => {
                     if (response.length > 0) {
-                        this.setState({ showLabel: true, errorMessage: 'This Configured holiday alreday exists ' });
+                        let date = new Date(formData.HolidayDate)
+                        let dateSelected = `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`
+                        this.setState({ showLabel: true, errorMessage: 'A holiday already exists on '+dateSelected+' for '+this.state.formData.ClientName });
                     }
                     else {
                         // this.insertorupdateListitem(formData, HolidaysList);
@@ -183,13 +199,13 @@ class HolidaysList extends Component<HolidaysListProps, HolidaysListState> {
                         if (id > 0) {                       //update existing record
                             //console.log(this.props);
                             sp.web.lists.getByTitle(HolidaysList).items.getById(id).update(formData).then((res) => {
-                                // this.loadListData();
                                 // this.resetHolidayMasterForm();
                                 this.setState({
                                     modalTitle: 'Success',
                                     modalText: 'HolidaysList updated successfully',
                                     showHideModal: true,
-                                    isSuccess: true
+                                    isSuccess: true,
+                                    isRedirect: false
                                 });
                                 //console.log(res);
                             });
@@ -199,13 +215,13 @@ class HolidaysList extends Component<HolidaysListProps, HolidaysListState> {
                                 this.setState({ loading: true });
                                 sp.web.lists.getByTitle(HolidaysList).items.add({ ...this.state.formData })
                                     .then((res) => {
-                                        this.loadListData();
                                         this.resetHolidayMasterForm();
                                         this.setState({
                                             modalTitle: 'Success',
                                             modalText: 'HolidaysList submitted successfully',
                                             showHideModal: true,
-                                            isSuccess: true
+                                            isSuccess: true,
+                                            isRedirect: false
                                         });
                                     })
                                     .catch((err) => {
@@ -215,7 +231,8 @@ class HolidaysList extends Component<HolidaysListProps, HolidaysListState> {
                                             modalTitle: 'Error',
                                             modalText: 'Sorry! something went wrong',
                                             showHideModal: true,
-                                            isSuccess: false
+                                            isSuccess: false,
+                                            isRedirect: false
                                         });
                                     });
                             }
@@ -226,7 +243,8 @@ class HolidaysList extends Component<HolidaysListProps, HolidaysListState> {
                                     modalTitle: 'Error',
                                     modalText: 'Sorry! something went wrong',
                                     showHideModal: true,
-                                    isSuccess: false
+                                    isSuccess: false,
+                                    isRedirect: false
                                 });
                             }
                         }
@@ -247,9 +265,8 @@ class HolidaysList extends Component<HolidaysListProps, HolidaysListState> {
     }
 
     private async loadListData() {
-
         var Clients = await  sp.web.lists.getByTitle('Client').items.filter("IsActive eq 1").select('*').orderBy('Title').get()
-        this.setState({ClientsObj : Clients})
+        this.setState({ClientsObj : Clients,isRedirect:false})
         console.log(Clients);
         
         sp.web.lists.getByTitle('HolidaysList').items.select('Title,*').orderBy("Id", false).getAll()
@@ -262,7 +279,7 @@ class HolidaysList extends Component<HolidaysListProps, HolidaysListState> {
                     })),
                     SaveUpdateText: 'Submit',
                     showLabel: false,
-                    loading: false,
+                    loading: false
                 });
             }).catch(err => {
                 console.log('Failed to fetch data.');
@@ -311,7 +328,7 @@ class HolidaysList extends Component<HolidaysListProps, HolidaysListState> {
                 // HolidayDate:`${new Date().getMonth() + 1}/${new Date().getDate()}/${new Date().getFullYear()}`,
                 HolidayDate: new Date(),
                 Year:'',
-            }, SaveUpdateText: 'Submit', addNewClient: false,redirect:true
+            }, SaveUpdateText: 'Submit', addNewClient: false,isRedirect:true
         });
         // () => this.props.history.push('/HolidayMaster');
     }
@@ -319,9 +336,8 @@ class HolidaysList extends Component<HolidaysListProps, HolidaysListState> {
         this.resetHolidayMasterForm();
     }
     public handleClose = () => {
-        this.setState({ showHideModal: false });
+        this.setState({ showHideModal: false});
         this.resetHolidayMasterForm();
-        this.loadListData();
     }
     private addNewHolidayMaster = () => {
         var formdata = { ...this.state.formData };
@@ -414,7 +430,6 @@ class HolidaysList extends Component<HolidaysListProps, HolidaysListState> {
 
             }).then((res) => {
                 if (!nonDuplicateRec.length) {
-                    //this.loadListData();  //
                     this.setState({
                         modalTitle: 'Success',
                         modalText: 'HolidaysList updated successfully',
@@ -577,17 +592,17 @@ class HolidaysList extends Component<HolidaysListProps, HolidaysListState> {
             },
            
         ];
-        if(this.state.redirect){
-                let url = `/HolidayMaster`
-                return (<Navigate to={url} />);
+        if(this.state.isRedirect){
+                // let url = `/HolidayMaster/`
+                //  let url = `/`
+                return (<Navigate to={'/HolidayMaster'} />);
+                // return redirect(url);
         }
-    else
-        {
             return (
                 <React.Fragment>
                     <ModalPopUp title={this.state.modalTitle} modalText={this.state.modalText} isVisible={this.state.showHideModal} onClose={this.handleClose} isSuccess={this.state.isSuccess}></ModalPopUp>
                     <div id="content" className="content p-2 pt-2">
-                        <div id="clickMenu" className="menu-icon-outer" onClick={(event) => this.onMenuItemClick(event)}>
+                        {/* <div id="clickMenu" className="menu-icon-outer" onClick={(event) => this.onMenuItemClick(event)}>
                             <div className="menu-icon">
                                 <span>
                                 </span>
@@ -596,7 +611,7 @@ class HolidaysList extends Component<HolidaysListProps, HolidaysListState> {
                                 <span>
                                 </span>
                             </div>
-                        </div>
+                        </div> */}
                         <div className='container-fluid'>
                             <div className='FormContent'>
                                 <div className='title'>Holiday Master
@@ -677,6 +692,7 @@ class HolidaysList extends Component<HolidaysListProps, HolidaysListState> {
                                                             </div>
                                                             <div className="col-md-4">
                                                                 <div className="light-text">
+                                                                <label className="z-in-9">Holiday Date<span className="mandatoryhastrick">*</span></label>
                                                                     <div className="custom-datepicker" id="divDateofJoining">
                                                         
                                                                 <DatePicker onDatechange={this.UpdateDate} selectedDate={new Date(this.state.formData.HolidayDate)}/>
@@ -713,7 +729,7 @@ class HolidaysList extends Component<HolidaysListProps, HolidaysListState> {
                     </div>
                 </React.Fragment>
             );
-        }
+        
     }
 }
 

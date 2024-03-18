@@ -47,6 +47,7 @@ class EmployeeMasterForm extends React.Component<EmployeeMasterFormProps, Employ
     private clientListName="Client";
     private ItemID = "";
     private client;
+    private HolidayType;
     private WeekStartDay;
     private MandatoryDescription;
     private MandatoryProjectCode;
@@ -58,6 +59,7 @@ class EmployeeMasterForm extends React.Component<EmployeeMasterFormProps, Employ
             spfxContext: this.props.context
         });
         this.client=React.createRef();
+        this.HolidayType = React.createRef();
         this.WeekStartDay = React.createRef();
         this.MandatoryDescription = React.createRef();
         this.MandatoryProjectCode  = React.createRef();
@@ -68,10 +70,12 @@ class EmployeeMasterForm extends React.Component<EmployeeMasterFormProps, Employ
         EmployeeId : null,
         // ReportingManagerId : null,
         ClientName : '',
+        HolidayType: '',
         ApproverId : {results:[]},
         ReviewerId: {results:[]},
         NotifierId: {results:[]},
         ClientsObject : [],
+        HolidaysObject: [],
         DateOfJoining : new Date(),
         isActive: true,
         loading : false,
@@ -100,12 +104,19 @@ class EmployeeMasterForm extends React.Component<EmployeeMasterFormProps, Employ
 
     private async GetClients() {
 
-        let [clients,groups] = await Promise.all([
+        let [clients,Holidays,groups] = await Promise.all([
             sp.web.lists.getByTitle('Client').items.filter("IsActive eq 1").select('*').orderBy('Title').get(),
+            sp.web.lists.getByTitle('HolidaysList').items.select('*').orderBy('ClientName').get(),
             sp.web.currentUser.groups()
         ])
         this.setState({ClientsObject : clients})
-        console.log(clients);
+        let HolidayClients = []
+        for (const client of Holidays) {
+            if(!HolidayClients.includes(client.ClientName))
+            HolidayClients.push(client.ClientName)
+        }
+        this.setState({HolidaysObject : HolidayClients})
+        console.log(clients,Holidays);
         this.setState({ loading: false });
 
         if(this.props.match.params.id != undefined){
@@ -150,6 +161,7 @@ class EmployeeMasterForm extends React.Component<EmployeeMasterFormProps, Employ
         this.setState({ DateOfJoining : date })
         this.setState({SelectedEmployee : data[0].Employee.ID})
         this.setState({SelectedClient : data[0].ClientName })
+        this.setState({HolidayType : data[0].HolidayType})
         this.setState({weekStartDay : data[0].WeekStartDay })
         this.setState({MandatoryProjectCode : data[0].MandatoryProjectCode?"Yes":"No" })
         this.setState({MandatoryDescription : data[0].MandatoryDescription?"Yes":"No" })
@@ -260,6 +272,7 @@ private async validateDuplicateRecord () {
         // Reviewer: { val: this.state.ReviewerId, required: true, Name: 'Reviewer', Type: ControlType.people,Focusid:'divReviewer' },
         // Notifier : { val: this.state.NotifierId, required: true, Name: 'Notifier', Type: ControlType.people,Focusid:'divNotifier' },
         Client:{ val: this.state.ClientName, required: true, Name: 'Client', Type: ControlType.string,Focusid:this.client },
+        HolidayType:{val: this.state.HolidayType, required: true, Name: 'Holiday Type', Type: ControlType.string,Focusid:this.HolidayType},
         DateOfJoining: { val: this.state.DateOfJoining, required: true, Name: 'Date Of Joining', Type: ControlType.date }
         }
         let isValid = Formvalidator.checkValidations(data)
@@ -271,7 +284,6 @@ private async validateDuplicateRecord () {
         }
         isValid = isValid.status?Formvalidator.multiplePeoplePickerValidation(pdata):isValid
         console.log(isValid)
-        let EID = this.state.EmployeeId
         let Rm = []
         for(let manager of this.state.ReportingManagerId.results){
             Rm.push(manager)
@@ -280,7 +292,7 @@ private async validateDuplicateRecord () {
             this.setState({errorMessage : isValid.message})
         }
         else if(Rm.includes(this.state.EmployeeId)){
-            let errMsg = 'Employee can not be as a Manager';
+            let errMsg = 'The selected Employee can not be assigned as their own Manager';
             this.setState({errorMessage : errMsg});
         }
         else{
@@ -296,7 +308,8 @@ private async validateDuplicateRecord () {
                 DateOfJoining : this.state.DateOfJoining,
                 MandatoryDescription:this.state.MandatoryDescription == 'Yes'?true:false,
                 MandatoryProjectCode:this.state.MandatoryProjectCode == 'Yes'?true:false,
-                WeekStartDay: this.state.weekStartDay
+                WeekStartDay: this.state.weekStartDay,
+                HolidayType : this.state.HolidayType
             }
            let duplicate = await this.validateDuplicateRecord()
            if(duplicate>0){
@@ -364,7 +377,7 @@ private async validateDuplicateRecord () {
     }
     if (this.state.Homeredirect) {
        
-        let url = `/`
+        let url = `/EmployeeMasterView`
         return (<Navigate to={url} />);
     }
 else {
@@ -537,15 +550,18 @@ else {
                                                             </select>
                                                         </div>
                                                     </div>
+
                                                     <div className="col-md-3">
-                                                        <div className="light-text">
-                                                            <label>Is Project Code Mandatory</label>
-                                                            <select className="form-control"  name="MandatoryProjectCode" title="MandatoryProjectCode" id='MandatoryProjectCode' ref={this.MandatoryProjectCode} onChange={this.handleChangeEvents} value={this.state.MandatoryProjectCode}>
-                                                                <option value='No'>No</option>
-                                                                <option value='Yes'>Yes</option>
-                                                            </select>
-                                                        </div>
+                                                    <div className="light-text">
+                                                        <label>Holiday Type<span className="mandatoryhastrick">*</span></label>
+                                                        <select className="form-control" required={true} name="HolidayType" title="HolidayType" id='HolidayType' ref={this.HolidayType} onChange={this.handleChangeEvents}>
+                                                            <option value=''>None</option>
+                                                            {this.state.HolidaysObject.map((option) => (
+                                                                <option value={option} selected={option ==this.state.HolidayType}>{option}</option>
+                                                            ))}
+                                                        </select>
                                                     </div>
+                                                </div>
 
 
                                             </div>
@@ -585,7 +601,15 @@ else {
                                                             </select>
                                                         </div>
                                                     </div> */}
-
+                                                    <div className="col-md-3">
+                                                        <div className="light-text">
+                                                            <label>Is Project Code Mandatory</label>
+                                                            <select className="form-control"  name="MandatoryProjectCode" title="MandatoryProjectCode" id='MandatoryProjectCode' ref={this.MandatoryProjectCode} onChange={this.handleChangeEvents} value={this.state.MandatoryProjectCode}>
+                                                                <option value='No'>No</option>
+                                                                <option value='Yes'>Yes</option>
+                                                            </select>
+                                                        </div>
+                                                    </div>
                                                     <div className="col-md-3">
                                                         <div className="light-text">
                                                             <label>Is Description Mandatory</label>
