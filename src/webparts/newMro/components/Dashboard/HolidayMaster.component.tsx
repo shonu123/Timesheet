@@ -146,7 +146,7 @@ class HolidaysList extends Component<HolidaysListProps, HolidaysListState> {
         let data = {
             Clinet: { val: this.state.formData.ClientName, required: true, Name: 'Client', Type: ControlType.string, Focusid: this.Client },
             HolidayName: { val: this.state.formData.HolidayName, required: true, Name: 'Holiday Name', Type: ControlType.string, Focusid: this.Holiday },
-            Date: { val: this.state.formData.HolidayDate, required: true, Name: 'Holiday Date', Type: ControlType.string, Focusid: this.Date },
+            Date: { val: this.state.formData.HolidayDate, required: true, Name: 'Holiday Date', Type: ControlType.date, Focusid: this.Date },
         };
 
         const formdata = { ...this.state.formData };
@@ -164,11 +164,13 @@ class HolidaysList extends Component<HolidaysListProps, HolidaysListState> {
         let HolidaysList = 'HolidaysList';
         formData['Year'] = new Date(formData.HolidayDate).getFullYear()+""
         var filterString;
+        let date = new Date(formData.HolidayDate)
+        let dateString = `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`
         try {
             if (id == 0)
-                filterString = `ClientName eq '${formData.ClientName}' and HolidayName eq '${formData.HolidayName}' and HolidayDate eq '${formData.HolidayDate}'`;
+                filterString = `ClientName eq '${formData.ClientName}' and HolidayName eq '${formData.HolidayName}' and HolidayDate eq '${dateString}'`;
             else
-                filterString = filterString = `ClientName eq '${formData.ClientName}' and HolidayName eq '${formData.HolidayName}' and HolidayDate eq '${formData.HolidayDate}' and Id ne ` + id;
+                filterString = filterString = `ClientName eq '${formData.ClientName}' and HolidayName eq '${formData.HolidayName}' and HolidayDate eq '${dateString}' and Id ne ` + id;
             sp.web.lists.getByTitle(HolidaysList).items.filter(filterString).get().
                 then((response: any[]) => {
                     if (response.length > 0) {
@@ -318,8 +320,8 @@ class HolidaysList extends Component<HolidaysListProps, HolidaysListState> {
     }
     public handleClose = () => {
         this.setState({ showHideModal: false });
-        this.loadListData();
         this.resetHolidayMasterForm();
+        this.loadListData();
     }
     private addNewHolidayMaster = () => {
         var formdata = { ...this.state.formData };
