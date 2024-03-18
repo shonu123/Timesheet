@@ -39,6 +39,7 @@ export interface ReviewerApprovalsState {
     modalText:string;
     successPopUp:boolean;
     ModalHeader: string;
+    IsClientApprovalNeed:boolean;
     // pageNumber:number;
     // sortBy:number;
     // sortOrder:boolean;
@@ -50,7 +51,7 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
         sp.setup({
             spfxContext: this.props.context
         });
-        this.state = {Reviewers: [], loading:false,message:'',title:'',showHideModal:false,isSuccess:false,comments:'',Action:'',errorMessage:'',ItemID:0,siteURL : this.props.spContext.webAbsoluteUrl,redirect:false,modalTitle:'',modalText:'',successPopUp:false,ModalHeader:'modal-header-Approve'};
+        this.state = {Reviewers: [], loading:false,message:'',title:'',showHideModal:false,isSuccess:false,comments:'',Action:'',errorMessage:'',ItemID:0,siteURL : this.props.spContext.webAbsoluteUrl,redirect:false,modalTitle:'',modalText:'',successPopUp:false,ModalHeader:'modal-header-Approve',IsClientApprovalNeed:false};
     }
 
     public componentDidMount() {
@@ -61,7 +62,7 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
     private ReviewerApproval = async () => {
         this.setState({ loading: true });
         const userId = this.props.spContext.userId;
-        var filterString = "Reviewers/Id eq '"+userId+"' and PendingWith eq 'Reviewer' and Status eq '"+StatusType.InProgress+"'"
+        var filterString = "Reviewers/Id eq '"+userId+"' and PendingWith eq 'NA' and Status eq '"+StatusType.Approved+"'"
 
         sp.web.lists.getByTitle('WeeklyTimeSheet').items.top(2000).filter(filterString).expand("Reviewers").select('Reviewers/Title','*').orderBy('Modified', false).get()
             .then((response) => {
@@ -133,10 +134,12 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
 
     private  updateStatus = async (recordId,Status,Comments,To,CC,tableContent) =>{
 
+        let clinetApproval = this.state.IsClientApprovalNeed
         let postObject = {
             Status : Status,
             CommentsHistory : Comments,
-            PendingWith : 'NA'
+            PendingWith : clinetApproval?'Initiator':'NA',
+            IsClientApprovalNeed : clinetApproval
         }
         console.log(postObject);
         this.setState({comments  :''})
@@ -165,8 +168,14 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
     }
 
     private handleComments = async (e) =>{
-       let value = e.target.value
+       let value = e.target.type == 'checkbox' ? e.target.checked : e.target.value.trim();
+       console.log(value);
+       let  {name}  = e.target;
+       if(name =="comments")
        this.setState({comments : value})
+        else if(name == "IsClientApprovalNeed")
+        this.setState({IsClientApprovalNeed : value})
+
     }
 
     private handleApprove = async (e) => {
@@ -264,8 +273,9 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
             let date = new Date(data[0].DateSubmitted)
             let tableContent = {'Name':data[0].Name,'Client':data[0].ClientName,'Submitted Date':`${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`,'Billable Hours':data[0].WeeklyTotalHrs,'OT Hours':data[0].OTTotalHrs,'Total Billable Hours':data[0].BillableTotalHrs,'Non-Billable  Hours':data[0].NonBillableTotalHrs,'Total Hours':data[0].GrandTotal}
             console.log(tableContent)
-    
-            this.updateStatus(recordId,StatusType.Reject,commentsObj,toEmail,ccEmail,tableContent)
+            let clinetApproval = this.state.IsClientApprovalNeed
+
+            this.updateStatus(recordId,clinetApproval?StatusType.Reject:StatusType.Approved,commentsObj,toEmail,ccEmail,tableContent)
         }
     }
     private handlefullClose = () => {
@@ -445,7 +455,7 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
                 {/* <h1>Reviewer Screen</h1> */}
                 <ModalPopUp title={this.state.modalTitle} modalText={this.state.modalText} isVisible={this.state.successPopUp} onClose={this.navigateAfterAction} isSuccess={this.state.isSuccess}></ModalPopUp>
                 {/* <ModalPopUp title={this.state.modalTitle} modalText={this.state.modalText} isVisible={this.state.showHideModal} onClose={this.handlefullClose} isSuccess={this.state.isSuccess}></ModalPopUp> */}
-                <ModalApprovePopUp message={this.state.message} title={this.state.title} isVisible={this.state.showHideModal} isSuccess={this.state.isSuccess} onConfirm={this.handleAction} onCancel={this.handlefullClose} comments={this.handleComments} errorMessage={this.state.errorMessage} commentsValue={this.state.comments} modalHeader={this.state.ModalHeader} ></ModalApprovePopUp>
+                <ModalApprovePopUp message={this.state.message} title={this.state.title} isVisible={this.state.showHideModal} isSuccess={this.state.isSuccess} onConfirm={this.handleAction} onCancel={this.handlefullClose} comments={this.handleComments} errorMessage={this.state.errorMessage} commentsValue={this.state.comments} modalHeader={this.state.ModalHeader} IsClientApprovalNeed= {this.state.IsClientApprovalNeed}></ModalApprovePopUp>
                 <div>
                     <div className='table-head-1st-td'>
                         <TableGenerator columns={columns} data={this.state.Reviewers} fileName={'My Approvals'} showExportExcel={false}></TableGenerator>

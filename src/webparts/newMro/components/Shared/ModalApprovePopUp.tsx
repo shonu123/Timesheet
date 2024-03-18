@@ -1,4 +1,5 @@
 import * as React from 'react';
+import InputCheckBox from './InputCheckBox';
 
 interface modalProps {
   message : string;
@@ -11,9 +12,10 @@ interface modalProps {
   comments : (e:any) => void;
   commentsValue : string;
   modalHeader : string;
+  IsClientApprovalNeed:boolean;
 }
 
-const ModalApprovePopUp =({ message,modalHeader,title,isVisible,isSuccess, onConfirm, onCancel, comments,errorMessage,commentsValue } : modalProps) => {
+const ModalApprovePopUp =({ message,modalHeader,title,isVisible,isSuccess, onConfirm, onCancel, comments,errorMessage,commentsValue,IsClientApprovalNeed } : modalProps) => {
     return isVisible ? (
       // <div className="modal" tabIndex={-1} style={{display:'block',background:'rgb(165 165 165 / 25%)'}} >
         <div className="modal" tabIndex={-1} style={{display:'block'}} >
@@ -32,8 +34,18 @@ const ModalApprovePopUp =({ message,modalHeader,title,isVisible,isSuccess, onCon
 
                                                 <div className="light-text height-auto">
                                                     <label className="floatingTextarea2 top-11">Comments{!isSuccess&&<span className='mandatoryhastrick'>*</span>} </label>
-                                                    <textarea className="position-static form-control requiredinput" onChange={comments} value={commentsValue} placeholder="" maxLength={500} id="txtComments" name="Comments" disabled={false}></textarea>
+                                                    <textarea className="position-static form-control requiredinput" onChange={comments} value={commentsValue} placeholder="" maxLength={500} id="txtComments" name="comments" disabled={false}></textarea>
                                                 </div>
+                                                <div className="light-text" id=''>
+                                                            <InputCheckBox
+                                                            label={"Is Active"}
+                                                            name={"IsClientApprovalNeed"}
+                                                            checked={IsClientApprovalNeed}
+                                                            onChange={comments}
+                                                            isforMasters={false}
+                                                            isdisable={false}
+                                                            />
+                                                        </div>
                                                 <div>
                                                     <span className='text-validator'> {errorMessage}</span>
                                                 </div>

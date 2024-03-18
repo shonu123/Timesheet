@@ -104,19 +104,18 @@ class EmployeeMasterForm extends React.Component<EmployeeMasterFormProps, Employ
 
     private async GetClients() {
 
-        let [clients,Holidays,groups] = await Promise.all([
+        let [clients,groups] = await Promise.all([
             sp.web.lists.getByTitle('Client').items.filter("IsActive eq 1").select('*').orderBy('Title').get(),
-            sp.web.lists.getByTitle('HolidaysList').items.select('*').orderBy('ClientName').get(),
             sp.web.currentUser.groups()
         ])
         this.setState({ClientsObject : clients})
-        let HolidayClients = []
-        for (const client of Holidays) {
-            if(!HolidayClients.includes(client.ClientName))
-            HolidayClients.push(client.ClientName)
-        }
-        this.setState({HolidaysObject : HolidayClients})
-        console.log(clients,Holidays);
+        // let HolidayClients = []
+        // for (const client of Holidays) {
+        //     if(!HolidayClients.includes(client.ClientName))
+        //     HolidayClients.push(client.ClientName)
+        // }
+        // this.setState({HolidaysObject : HolidayClients})
+        console.log(clients);
         this.setState({ loading: false });
 
         if(this.props.match.params.id != undefined){
@@ -221,15 +220,40 @@ class EmployeeMasterForm extends React.Component<EmployeeMasterFormProps, Employ
         name == 'EmployeeId'?this.setState({ EmployeeId: value }):name == 'ReportingManagerId'?this.setState({ ReportingManagerId: values }):name == 'ApproverId'?this.setState({ ApproverId: values }):name == 'ReviewerId'?this.setState({ ReviewerId: values }):this.setState({ NotifierId: values })
     }
 
+    private async getHolidays(){
+        let Year = new Date().getFullYear()+"";
+        let Holidays = await  sp.web.lists.getByTitle('HolidaysList').items.filter("Year eq '"+Year+"'").select('*').orderBy('ClientName').get()
+      let HolidayClients = []
+      let filteredData = Holidays.filter(item=> {
+        const lowerCaseItem = item.ClientName .toLowerCase();
+        let selectedClient = this.state.ClientName.toLowerCase()
+        return lowerCaseItem.includes(selectedClient) || lowerCaseItem.includes('synergy');
+      });
+
+      console.log(filteredData);
+            for (const client of filteredData) {
+                    if(!HolidayClients.includes(client.ClientName)){
+                        HolidayClients.push(client.ClientName)
+                    }
+                }
+            this.setState({HolidaysObject : HolidayClients})
+    }
     private handleChangeEvents=(event)=>{
         console.log(this.state);
         let value = event.target.type == 'checkbox' ? event.target.checked : event.target.value.trim();
         console.log(value);
         let  {name}  = event.target;
+        this.setState({[name] : value});
+        if(name == 'ClientName'){
+            if(value!='')
+            this.getHolidays()
+            else
+            this.setState({HolidaysObject : []})
+        }
+        
         // if(name == 'isActive')
         // this.setState({isActive : value})
         // else
-        this.setState({[name] : value})
     }
     
     private UpdateDate = (dateprops) => {

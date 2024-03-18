@@ -2,7 +2,7 @@ import * as React from 'react';
 import Myapprovals from './Myapprovals.component';
 import Myrequests from './Myrequests.component';
 import ReviewerApprovals from './Reviewers.component'
-import Pending from './EmployeeMasterView.component';
+import Pending from '../Masters/EmployeeMasterView.component';
 import PurchasingManager from './PurchasingManager.component';
 import Approved from './Approvers.component';
 import Exported from './Exported.component';
@@ -15,8 +15,8 @@ import "@pnp/sp/site-users/web";
 import ApproversApprovals from './Approvers.component';
 import MyRequests from './Myrequests.component';
 import AllRequests from './AllRequests.components';
-import EmployeeMasterForm from '../Forms/EmployeeMasterForm.component';
-import EmployeeMasterView from './EmployeeMasterView.component';
+import EmployeeMasterForm from '../Masters/EmployeeMasterForm.component';
+import EmployeeMasterView from '../Masters/EmployeeMasterView.component';
 import App from '../Forms/CustomeDatePicker.component';
 export interface DashboardProps {
     match: any;

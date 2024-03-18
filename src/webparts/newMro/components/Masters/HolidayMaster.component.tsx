@@ -102,6 +102,7 @@ class HolidaysList extends Component<HolidaysListProps, HolidaysListState> {
     }
     public componentDidUpdate = () => {
         if (this.state.isRedirect) {
+            this.setState({isRedirect:false})
             this.loadListData();
         }
     }
@@ -169,6 +170,7 @@ class HolidaysList extends Component<HolidaysListProps, HolidaysListState> {
     private checkDuplicates = (formData, id) => {
         let HolidaysList = 'HolidaysList';
         formData['Year'] = new Date(formData.HolidayDate).getFullYear()+""
+        this.setState({formData})
         var filterString;
         let date = new Date(formData.HolidayDate)
         let prevDate = addDays(new Date(date), -1);
@@ -184,7 +186,7 @@ class HolidaysList extends Component<HolidaysListProps, HolidaysListState> {
             if (id == 0)
                 filterString = `ClientName eq '${formData.ClientName}' and ${filterQuery}`;
             else
-                filterString = filterString = `ClientName eq '${formData.ClientName}' and ${filterQuery} and Id ne ` + id;
+                filterString = `ClientName eq '${formData.ClientName}' and ${filterQuery} and Id ne ` + id;
             sp.web.lists.getByTitle(HolidaysList).items.filter(filterString).get().
                 then((response: any[]) => {
                     if (response.length > 0) {
@@ -328,16 +330,17 @@ class HolidaysList extends Component<HolidaysListProps, HolidaysListState> {
                 // HolidayDate:`${new Date().getMonth() + 1}/${new Date().getDate()}/${new Date().getFullYear()}`,
                 HolidayDate: new Date(),
                 Year:'',
-            }, SaveUpdateText: 'Submit', addNewClient: false,isRedirect:true
+            }, SaveUpdateText: 'Submit', addNewClient: false,
         });
         // () => this.props.history.push('/HolidayMaster');
     }
     private cancelHandler = () => {
         this.resetHolidayMasterForm();
+        this.setState({isRedirect:true})
     }
     public handleClose = () => {
-        this.setState({ showHideModal: false});
         this.resetHolidayMasterForm();
+        this.setState({ showHideModal: false,isRedirect:true});
     }
     private addNewHolidayMaster = () => {
         var formdata = { ...this.state.formData };
@@ -632,7 +635,7 @@ class HolidaysList extends Component<HolidaysListProps, HolidaysListState> {
 
                                         <div className={this.state.addNewClient ? 'mx-2 activediv' : 'mx-2'}>
                                             <div className="text-right pt-2">
-                                                <ImportExcel ErrorFileSelect={this.ErrorFileSelect} columns={["Client Name", "Holiday Name", "Holiday Date"]} filename="Holiday List" onDataFetch={this.fetchImportedExcelData} submitData={this.submitImportedExcelData}></ImportExcel>
+                                                <ImportExcel ErrorFileSelect={this.ErrorFileSelect} columns={["Client Name", "Holiday Name", "Holiday Date"]} filename="Holidays List" onDataFetch={this.fetchImportedExcelData} submitData={this.submitImportedExcelData}></ImportExcel>
 
                                                 <button type="button" id="btnSubmit" className="SubmitButtons btn" onClick={this.addNewHolidayMaster}>Add</button>
                                             </div>
@@ -720,7 +723,7 @@ class HolidaysList extends Component<HolidaysListProps, HolidaysListState> {
                                         </div>
 
                                         <div className="c-v-table table-head-1st-td">
-                                            <TableGenerator columns={columns} data={this.state.HolidayListObj} fileName={'List of Holidays'}showExportExcel={true} ExportExcelCustomisedColumns={ExportExcelreportColumns} ></TableGenerator>
+                                            <TableGenerator columns={columns} data={this.state.HolidayListObj} fileName={'Holidays List'}showExportExcel={true} ExportExcelCustomisedColumns={ExportExcelreportColumns} ></TableGenerator>
                                         </div>
                                     </div>
                                 </div>
