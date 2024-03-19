@@ -56,7 +56,7 @@ class ApproversApprovals extends React.Component<ApproversProps, ApproversState>
         this.setState({ loading: true });
         const userId = this.props.spContext.userId;
         // var filterString = "Approvers/Id eq '"+userId+"' and PendingWith eq 'Approver' and Status eq '"+StatusType.Submit+"'"
-        var filterString = "ReportingManager/Id eq '"+userId+"' and PendingWith eq 'Approver' and Status eq '"+StatusType.Submit+"'"
+        var filterString = "ReportingManager/Id eq '"+userId+"' and PendingWith eq 'Manager' and Status eq '"+StatusType.Submit+"'"
 
         sp.web.lists.getByTitle('WeeklyTimeSheet').items.top(2000).filter(filterString).expand("ReportingManager").select('ReportingManager/Title','*').orderBy('WeekStartDate,DateSubmitted', false).get()
             .then((response) => {
