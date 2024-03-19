@@ -199,6 +199,7 @@ class EmployeeMasterForm extends React.Component<EmployeeMasterFormProps, Employ
         this.setState({ ReportingManagerEmail: ReportingManagersEmail,ReportingManagerId : ReportingManagerIds})
         this.setState({ReviewerEmail : ReviewersEMail,ReviewerId : ReviewerIds})
         // this.setState({NotifierEmail : NotifiersEMail,NotifierId: NotifierIds})
+        this.getHolidays()
         this.setState({ loading: false });
     }
     private _getPeoplePickerItems(items, name) { 
@@ -223,6 +224,7 @@ class EmployeeMasterForm extends React.Component<EmployeeMasterFormProps, Employ
     }
 
     private async getHolidays(){
+        this.setState({ loading: true });
         let Year = new Date().getFullYear()+"";
         let Holidays = await  sp.web.lists.getByTitle('HolidaysList').items.filter("Year eq '"+Year+"'").select('*').orderBy('ClientName').get()
       let HolidayClients = []
@@ -238,7 +240,7 @@ class EmployeeMasterForm extends React.Component<EmployeeMasterFormProps, Employ
                         HolidayClients.push(client.ClientName)
                     }
                 }
-            this.setState({HolidaysObject : HolidayClients})
+            this.setState({HolidaysObject : HolidayClients,loading: false})
     }
     private handleChangeEvents=(event)=>{
         console.log(this.state);
@@ -395,7 +397,7 @@ private async validateDuplicateRecord () {
     private onError = () => {
         // this.setState({ modalTitle: 'Error', modalText: ActionStatus.Error, showHideModal: true, loading: false, isSuccess: false, ItemID: 0 ,showHideModalConfirm:false});
     }
-    private handleClose(){
+    private handleClose = ()=>{
         this.setState({showHideModal : false,Homeredirect: true})
     }
    public render() {
