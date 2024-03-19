@@ -704,11 +704,13 @@ a{
 } */
 .divIsActive{
   display: flex !important;
-  width: 150px !important;
+  width: 300px !important;
+  position: relative;
+  top: -8px;
 }
 #lblIsActive{
 position: relative !important;
-width: 100px !important;
+/* width: 100px !important; */
 top: 0px !important;
 z-index: 0;
 }

@@ -2310,9 +2310,15 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                         </div> */}
                 
                     </div>
+                    
+                                      
                     <div className="row">
                         <div className="col-md-12"><hr></hr></div>
                         <div className="col-md-12 text-center mt-3">
+                            {/* Error Message */}
+                        <div className='row'>
+                        <span className='text-validator'> {this.state.errorMessage}</span>
+                    </div> 
                             {/* <button type="button" id="btnApprove" onClick={this.handleApprove} hidden={!(this.state.isSubmitted) && ( (this.state.trFormdata.Pendingwith=="Approver" && this.state.userRole=="Approver")?false:(this.state.trFormdata.Pendingwith=="Reviewer" && this.state.userRole=="Reviewer")?false:true )} className="SubmitButtons btn">Approve</button>
                             <button type="button" id="btnReject" onClick={this.handleReject} hidden={!(this.state.isSubmitted) && ( (this.state.trFormdata.Pendingwith=="Approver" && this.state.userRole=="Approver")?false:(this.state.trFormdata.Pendingwith=="Reviewer" && this.state.userRole=="Reviewer")?false:true )} className="CancelButtons btn">Reject</button> */}
                             {this.state.showApproveRejectbtn&&!this.state.IsReviewer?<button type="button" id="btnApprove" onClick={this.handleApprove} className="SubmitButtons btn">Approve</button>:''}
@@ -2323,10 +2329,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                         </div>
                         
                     </div>
-                    {/* Error Message */}
-                        <div>
-                        <span className='text-validator'> {this.state.errorMessage}</span>
-                        </div>
+
                        {this.state.trFormdata.CommentsHistoryData.length>0? <><div className="p-2">
                                             <h4>Action History</h4>
                                         </div><div>

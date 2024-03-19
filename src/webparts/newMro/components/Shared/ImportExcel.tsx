@@ -12,7 +12,9 @@ const ImportExcel = ({ onDataFetch, submitData, filename, columns, ErrorFileSele
     // var fileExt = file.name;
     // fileExt = fileExt.substring(fileExt.lastIndexOf('.'));
 
-    if (file.name.includes(filename)) {
+    // if (file.name.includes(filename))
+    if (true) 
+    {
       const promise = new Promise((resolve, reject) => {
         const fileReader = new FileReader();
         fileReader.readAsArrayBuffer(file);

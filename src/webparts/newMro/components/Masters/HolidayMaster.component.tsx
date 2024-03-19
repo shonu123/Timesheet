@@ -522,7 +522,7 @@ class HolidaysList extends Component<HolidaysListProps, HolidaysListState> {
         this.setState({
             loading: false,
             modalTitle: 'Alert',
-            modalText: 'Invalid Holiday List file selected',
+            modalText: 'Invalid Holiday List file selected. File name sholud be Holidays List',
             showHideModal: true,
             isSuccess: false
         });
@@ -659,6 +659,18 @@ class HolidaysList extends Component<HolidaysListProps, HolidaysListState> {
                                                                 maxlength={250}
                                                                 onBlur={this.handleonBlur}
                                                             /> */}
+                                                            <div className="col-md-4">
+                                                                <div className="light-text">
+                                                                    <label>Client<span className="mandatoryhastrick">*</span></label>
+                                                                    <select className="form-control" required={true} name="ClientName" title="ClientName" value={this.state.formData.ClientName} onChange={this.handleChange} ref={this.Client}>
+                                                                        <option value=''>None</option>
+                                                                        {this.state.ClientsObj.map((option) => (
+                                                                    <option value={option.Title} selected={option.Title ==this.state.formData.ClientName}>{option.Title}</option>
+                                                                ))}
+                                                                    </select>
+                                                                </div>
+                                                            </div>                                                            
+
 
                                                             <InputText
                                                                 type='text'
@@ -682,17 +694,7 @@ class HolidaysList extends Component<HolidaysListProps, HolidaysListState> {
                                                                 maxlength={50}
                                                                 onBlur={this.handleonBlur}
                                                             /> */}
-                                                            <div className="col-md-4">
-                                                                <div className="light-text">
-                                                                    <label>Client<span className="mandatoryhastrick">*</span></label>
-                                                                    <select className="form-control" required={true} name="ClientName" title="ClientName" value={this.state.formData.ClientName} onChange={this.handleChange} ref={this.Client}>
-                                                                        <option value=''>None</option>
-                                                                        {this.state.ClientsObj.map((option) => (
-                                                                    <option value={option.Title} selected={option.Title ==this.state.formData.ClientName}>{option.Title}</option>
-                                                                ))}
-                                                                    </select>
-                                                                </div>
-                                                            </div>
+
                                                             <div className="col-md-4">
                                                                 <div className="light-text">
                                                                 <label className="z-in-9">Holiday Date<span className="mandatoryhastrick">*</span></label>

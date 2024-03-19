@@ -731,8 +731,10 @@ else {
                                     </div>
 
                                 </div>
-
-   
+                                {/* Error Message */}
+                                <div>
+                                    <span className='text-validator'> {this.state.errorMessage}</span>
+                                </div>
                                 <div className="row mx-1" id="">
                                                 <div className="col-sm-12 text-center my-2" id="">
                                                     <button type="button" className="SubmitButtons btn" onClick={this.handleSubmit}>Submit</button>
@@ -741,10 +743,7 @@ else {
                                 </div>
 
 
-                                {/* Error Message */}
-                                <div>
-                                    <span className='text-validator'> {this.state.errorMessage}</span>
-                                </div>
+                             
 
                             </div>
                         </div>
