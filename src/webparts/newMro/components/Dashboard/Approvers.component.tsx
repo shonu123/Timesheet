@@ -55,10 +55,13 @@ class ApproversApprovals extends React.Component<ApproversProps, ApproversState>
     private ReportingManagerApproval = async () => {
         this.setState({ loading: true });
         const userId = this.props.spContext.userId;
-        // var filterString = "Approvers/Id eq '"+userId+"' and PendingWith eq 'Approver' and Status eq '"+StatusType.Submit+"'"
+        let dateFilter = new Date()
+        dateFilter.setDate(new Date().getDate()-31);
+        let date = `${dateFilter.getMonth() + 1}/${dateFilter.getDate()}/${dateFilter.getFullYear()}`
+        var filterQuery = "and WeekStartDate ge '"+date+"'"
         var filterString = "ReportingManager/Id eq '"+userId+"' and PendingWith eq 'Manager' and Status eq '"+StatusType.Submit+"'"
 
-        sp.web.lists.getByTitle('WeeklyTimeSheet').items.top(2000).filter(filterString).expand("ReportingManager").select('ReportingManager/Title','*').orderBy('WeekStartDate,DateSubmitted', false).get()
+        sp.web.lists.getByTitle('WeeklyTimeSheet').items.top(2000).filter(filterString+filterQuery).expand("ReportingManager").select('ReportingManager/Title','*').orderBy('WeekStartDate,DateSubmitted', false).get()
             .then((response) => {
                 console.log(response)
                 let Data = [];

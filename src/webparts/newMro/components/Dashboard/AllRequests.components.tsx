@@ -56,7 +56,7 @@ class AllRequests extends React.Component<AllRequestsProps,AllRequestsState> {
         this.setState({ loading: true });
         const userId = this.props.spContext.userId;
         let dateFilter = new Date()
-        dateFilter.setDate(new Date().getDate()-21);
+        dateFilter.setDate(new Date().getDate()-31);
         let date = `${dateFilter.getMonth() + 1}/${dateFilter.getDate()}/${dateFilter.getFullYear()}`
         // var filterString = "Approvers/Id eq '"+userId+"' and PendingWith eq 'Approver' and Status eq '"+StatusType.Submit+"'"
         var filterString = "WeekStartDate ge '"+date+"' and Status ne 'In-Draft'"

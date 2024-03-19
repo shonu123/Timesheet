@@ -62,9 +62,14 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
     private ReviewerApproval = async () => {
         this.setState({ loading: true });
         const userId = this.props.spContext.userId;
+        let dateFilter = new Date()
+        dateFilter.setDate(new Date().getDate()-31);
+        let date = `${dateFilter.getMonth() + 1}/${dateFilter.getDate()}/${dateFilter.getFullYear()}`
+        var filterQuery = "and WeekStartDate ge '"+date+"'"
+
         var filterString = "Reviewers/Id eq '"+userId+"' and PendingWith eq 'NA' and Status eq '"+StatusType.Approved+"'"
 
-        sp.web.lists.getByTitle('WeeklyTimeSheet').items.top(2000).filter(filterString).expand("Reviewers").select('Reviewers/Title','*').orderBy('Modified', false).get()
+        sp.web.lists.getByTitle('WeeklyTimeSheet').items.top(2000).filter(filterString+filterQuery).expand("Reviewers").select('Reviewers/Title','*').orderBy('Modified', false).get()
             .then((response) => {
                 console.log(response)
                 let Data = [];
@@ -138,7 +143,7 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
         let postObject = {
             Status : Status,
             CommentsHistory : Comments,
-            PendingWith : clinetApproval?'Initiator':'NA',
+            PendingWith : 'Initiator',
             IsClientApprovalNeed : clinetApproval
         }
         console.log(postObject);
@@ -152,7 +157,7 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
                 // this.setState({ModalHeader:'modal-header-Approve'})
             }
             else{
-                sub = "Weekly Time Sheet has been rejected by Reviewer.Please re-submit with necessary details."
+                sub = "Weekly Time Sheet has been"+StatusType.ReviewerReject+". Please re-submit with necessary details."
             }
 
             let emaildetails ={toemail:To,ccemail:CC,subject:sub,bodyString:sub,body:'' };
@@ -168,7 +173,7 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
     }
 
     private handleComments = async (e) =>{
-       let value = e.target.type == 'checkbox' ? e.target.checked : e.target.value.trim();
+       let value = e.target.type == 'checkbox' ? e.target.checked : e.target.value;
        console.log(value);
        let  {name}  = e.target;
        if(name =="comments")
@@ -208,11 +213,12 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
             if(!ccEmail.includes(user.EMail))
             ccEmail.push(user.EMail);
         }
-        let notifires = emailData[0].Notifiers
-        for (const user of notifires) {
-            if(!toEmail.includes(user.EMail))
-            toEmail.push(user.EMail);
-        }
+        //---------Notofiers------------------
+        // let notifires = emailData[0].Notifiers
+        // for (const user of notifires) {
+        //     if(!toEmail.includes(user.EMail))
+        //     toEmail.push(user.EMail);
+        // }----------------------------------
         let reviewers = emailData[0].Reviewers
         for (const user of reviewers) {
             if(!toEmail.includes(user.EMail))
@@ -228,7 +234,7 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
     private handleReject= async (e) =>{
 
         let recordId = this.state.ItemID;
-        if(['',undefined,null].includes(this.state.comments)){
+        if(['',undefined,null].includes(this.state.comments.trim())){
             this.setState({errorMessage : 'Comments cannot be Blank'})
             this.setState({loading : false})
         }
@@ -242,28 +248,30 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
             commentsObj.push({
                 Action : 'Reject',
                 Role : 'Reviewer',
-                user : this.props.spContext.userDisplayName,
+                User : this.props.spContext.userDisplayName,
                 Comments : this.state.comments,
                 Date : new Date().toISOString()
             })
             commentsObj = JSON.stringify(commentsObj);
-            var filterString = "Employee/ID eq '"+data[0].Initiator.ID+"' and ClientName eq '"+data[0].ClientName+"'"
-            var selectString = 'Employee/EMail,Reviewers/EMail,ReportingManager/EMail,Notifiers/EMail,*'
-            let emailData = await sp.web.lists.getByTitle('EmployeeMaster').items.filter(filterString).select(selectString).expand('Employee,Reviewers,ReportingManager,Notifiers').get();
+            // var filterString = "Employee/ID eq '"+data[0].Initiator.ID+"' and ClientName eq '"+data[0].ClientName+"'"
+            var selectString = 'Initiator/EMail,Reviewers/EMail,ReportingManager/EMail,Notifiers/EMail,*'
+            let emailData = await sp.web.lists.getByTitle('WeeklyTimeSheet').items.filter(filterString).select(selectString).expand('Initiator,Reviewers,ReportingManager,Notifiers').get();
             console.log(emailData)
             let toEmail = [];
             let ccEmail = [];
-            toEmail.push(emailData[0].Employee.EMail);
+            toEmail.push(emailData[0].Initiator.EMail);
             let approvers = emailData[0].ReportingManager
-            for (const user of approvers) {
-                if(!ccEmail.includes(user.EMail))
-                ccEmail.push(user.EMail);
+            if(this.state.IsClientApprovalNeed){
+                for (const user of approvers) {
+                    if(!ccEmail.includes(user.EMail))
+                    ccEmail.push(user.EMail);
+                }
             }
-            let notifires = emailData[0].Notifiers
-            for (const user of notifires) {
-                if(!toEmail.includes(user.EMail))
-                toEmail.push(user.EMail);
-            }
+            // let notifires = emailData[0].Notifiers
+            // for (const user of notifires) {
+            //     if(!toEmail.includes(user.EMail))
+            //     toEmail.push(user.EMail);
+            // }
             let reviewers = emailData[0].Reviewers
             for (const user of reviewers) {
                 if(!toEmail.includes(user.EMail))
@@ -273,9 +281,9 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
             let date = new Date(data[0].DateSubmitted)
             let tableContent = {'Name':data[0].Name,'Client':data[0].ClientName,'Submitted Date':`${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`,'Billable Hours':data[0].WeeklyTotalHrs,'OT Hours':data[0].OTTotalHrs,'Total Billable Hours':data[0].BillableTotalHrs,'Non-Billable  Hours':data[0].NonBillableTotalHrs,'Total Hours':data[0].GrandTotal}
             console.log(tableContent)
-            let clinetApproval = this.state.IsClientApprovalNeed
+            let clientApproval = this.state.IsClientApprovalNeed
 
-            this.updateStatus(recordId,clinetApproval?StatusType.Reject:StatusType.Approved,commentsObj,toEmail,ccEmail,tableContent)
+            this.updateStatus(recordId,'Rejected by Synergy',commentsObj,toEmail,ccEmail,tableContent)
         }
     }
     private handlefullClose = () => {
@@ -294,13 +302,14 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
         let recordId = parseInt(e.target.id);
         this.setState({ItemID : recordId})
         let name = e.target.dataset.name
-        if(name == 'Approve')
-        {
-            this.setState({message : 'Are you sure you want to approve?',title : 'Approve', Action : 'Approve'});
-            this.setState({showHideModal : true,isSuccess:true,ModalHeader:'modal-header-Approve'})
+        // if(name == 'Approve')
+        // {
+        //     this.setState({message : 'Are you sure you want to approve?',title : 'Approve', Action : 'Approve'});
+        //     this.setState({showHideModal : true,isSuccess:true,ModalHeader:'modal-header-Approve'})
 
-        }
-        else if(name == 'Reject')
+        // }
+        // else
+         if(name == 'Reject')
         {
             this.setState({message : 'Are you sure you want to reject?',title : 'Reject', Action : 'Reject'});
             this.setState({showHideModal : true,isSuccess:false,ModalHeader:'modal-header-reject'})
@@ -312,9 +321,9 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
 
     private handleAction = (e) =>{
         this.setState({loading : true})
-        if(this.state.Action == 'Approve')
-        this.handleApprove(e)
-        else
+        // if(this.state.Action == 'Approve')
+        // this.handleApprove(e)
+        // else
          this.handleReject(e)
     }
 
@@ -417,22 +426,22 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
                     // width: '150px',
                     sortable: true
                 },
-                {
-                    name: "Approve",
-                    //selector: "Id",
-                    selector: (row, i) => row.Id,
-                    export: false,
-                    cell: record => {
-                        return (
-                            <React.Fragment>
-                            <div style={{ paddingLeft: '10px' }} >
-                                    <FontAwesomeIcon className='iconApprove' icon={faCheck} id={record.Id} data-name={'Approve'} color='green' size="lg" onClick={this.showPopUp} title='Approve'></FontAwesomeIcon>
-                            </div>
-                        </React.Fragment>
-                        );
-                    },
-                    width: '100px'
-                },
+                // {
+                //     name: "Approve",
+                //     //selector: "Id",
+                //     selector: (row, i) => row.Id,
+                //     export: false,
+                //     cell: record => {
+                //         return (
+                //             <React.Fragment>
+                //             <div style={{ paddingLeft: '10px' }} >
+                //                     <FontAwesomeIcon className='iconApprove' icon={faCheck} id={record.Id} data-name={'Approve'} color='green' size="lg" onClick={this.showPopUp} title='Approve'></FontAwesomeIcon>
+                //             </div>
+                //         </React.Fragment>
+                //         );
+                //     },
+                //     width: '100px'
+                // },
                 {
                     name: "Reject",
                     //selector: "Id",
@@ -441,7 +450,7 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
                     cell: record => {
                         return (
                         <React.Fragment>
-                            <div style={{ paddingLeft: '10px' }}>
+                            <div style={{ paddingLeft: '10px' }} data-name='Reject'>
                                     <FontAwesomeIcon className='iconReject' icon={faXmark} id={record.Id} data-name='Reject' color='red' size="lg" onClick={this.showPopUp} title='Reject'></FontAwesomeIcon>
                             </div>
                         </React.Fragment>

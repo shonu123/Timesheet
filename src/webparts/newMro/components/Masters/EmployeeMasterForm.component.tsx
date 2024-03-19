@@ -73,7 +73,7 @@ class EmployeeMasterForm extends React.Component<EmployeeMasterFormProps, Employ
         HolidayType: '',
         ApproverId : {results:[]},
         ReviewerId: {results:[]},
-        NotifierId: {results:[]},
+        // NotifierId: {results:[]},
         ClientsObject : [],
         HolidaysObject: [],
         DateOfJoining : new Date(),
@@ -85,14 +85,16 @@ class EmployeeMasterForm extends React.Component<EmployeeMasterFormProps, Employ
         ReportingManagerEmail:[],
         ApproverEmail : [],
         ReviewerEmail: [],
-        NotifierEmail: [],
+        // NotifierEmail: [],
         weekStartDay: 'Monday',
         SelectedEmployee : '',
         SelectedClient : '',
         Homeredirect: false,
         MandatoryProjectCode:'No',
         MandatoryDescription:'No',
-        isPageAccessable: true
+        isPageAccessable: true,
+        showHideModal: false,
+        modalTitle:'',
     }
 
     public componentDidMount() {
@@ -170,7 +172,7 @@ class EmployeeMasterForm extends React.Component<EmployeeMasterFormProps, Employ
         // let ApproverIds = {results:[]}
         let ReportingManagerIds = {results:[]}
         let ReviewerIds = {results:[]}
-        let NotifierIds = {results:[]}
+        // let NotifierIds = {results:[]}
 
         if(data[0].ReportingManager.length>0){
             let array = []
@@ -186,17 +188,17 @@ class EmployeeMasterForm extends React.Component<EmployeeMasterFormProps, Employ
                 ReviewerIds.results.push(user.ID)
             }
         }
-        let NotifiersEMail = []
-        if(data[0].Notifiers.length>0){
-            for (const user of data[0].Notifiers) {
-                NotifiersEMail.push(user.EMail)
-                NotifierIds.results.push(user.ID)
-            }
-        }
+        // let NotifiersEMail = []
+        // if(data[0].Notifiers.length>0){
+        //     for (const user of data[0].Notifiers) {
+        //         NotifiersEMail.push(user.EMail)
+        //         NotifierIds.results.push(user.ID)
+        //     }
+        // }
         // this.setState({ ApproverEmail: ApproversEMail,ApproverId : ApproverIds})
         this.setState({ ReportingManagerEmail: ReportingManagersEmail,ReportingManagerId : ReportingManagerIds})
         this.setState({ReviewerEmail : ReviewersEMail,ReviewerId : ReviewerIds})
-        this.setState({NotifierEmail : NotifiersEMail,NotifierId: NotifierIds})
+        // this.setState({NotifierEmail : NotifiersEMail,NotifierId: NotifierIds})
         this.setState({ loading: false });
     }
     private _getPeoplePickerItems(items, name) { 
@@ -304,7 +306,7 @@ private async validateDuplicateRecord () {
             // Approver : { val: this.state.ApproverId, required: true, Name: 'Approver', Type: ControlType.people,Focusid:'divApprover' },
             ReportingManager: { val: this.state.ReportingManagerId, required: true, Name: 'Reporting Manager', Type: ControlType.people,Focusid:'divReportingManager' },
             Reviewer: { val: this.state.ReviewerId, required: true, Name: 'Reviewer', Type: ControlType.people,Focusid:'divReviewer' },
-            Notifier : { val: this.state.NotifierId, required: true, Name: 'Notifier', Type: ControlType.people,Focusid:'divNotifier' },
+            // Notifier : { val: this.state.NotifierId, required: true, Name: 'Notifier', Type: ControlType.people,Focusid:'divNotifier' },
         }
         isValid = isValid.status?Formvalidator.multiplePeoplePickerValidation(pdata):isValid
         console.log(isValid)
@@ -328,7 +330,7 @@ private async validateDuplicateRecord () {
                 IsActive : this.state.isActive,
                 ApproversId : this.state.ApproverId,
                 ReviewersId : this.state.ReviewerId,
-                NotifiersId : this.state.NotifierId,
+                // NotifiersId : this.state.NotifierId,
                 DateOfJoining : this.state.DateOfJoining,
                 MandatoryDescription:this.state.MandatoryDescription == 'Yes'?true:false,
                 MandatoryProjectCode:this.state.MandatoryProjectCode == 'Yes'?true:false,
@@ -355,7 +357,7 @@ private async validateDuplicateRecord () {
             sp.web.lists.getByTitle(this.listName).items.getById(this.state.ItemID).update(formdata).then((res) => {
                 this.setState({ loading: false});
                 // alert('Data updated sucessfully');
-                this.setState({Homeredirect : true});
+                this.setState({showHideModal : true,modalTitle: 'Employee configuration updated sucessfully'});
             }, (error) => {
                 console.log(error);
             });
@@ -366,7 +368,8 @@ private async validateDuplicateRecord () {
                     console.log(res);
                     this.setState({ loading: false});
                     // alert('Data inserted sucessfully')
-                    this.setState({Homeredirect : true});
+                    
+                    this.setState({showHideModal : true,modalTitle: 'Employee configured added sucessfully'});
                 }, (error) => {
                     console.log(error);
                 });
@@ -392,7 +395,9 @@ private async validateDuplicateRecord () {
     private onError = () => {
         // this.setState({ modalTitle: 'Error', modalText: ActionStatus.Error, showHideModal: true, loading: false, isSuccess: false, ItemID: 0 ,showHideModalConfirm:false});
     }
-    
+    private handleClose(){
+        this.setState({showHideModal : false,Homeredirect: true})
+    }
    public render() {
     if(!this.state.isPageAccessable){
         let url = `https://synergycomcom.sharepoint.com/sites/Billing.Timesheet/SitePages/AccessDenied.aspx?`
@@ -407,6 +412,7 @@ private async validateDuplicateRecord () {
 else {
             return (
                 <React.Fragment>
+                <ModalPopUp title={this.state.modalTitle} modalText={''} isVisible={this.state.showHideModal} onClose={this.handleClose} isSuccess={true}></ModalPopUp>
                     <div id="content" className="content p-2 pt-2">
                         <div id="clickMenu" className="menu-icon-outer">
                             <div className="menu-icon">
@@ -475,6 +481,22 @@ else {
 
                                                 <div className="col-md-3">
                                                     <div className="light-text">
+                                                        <label>Holiday Type<span className="mandatoryhastrick">*</span></label>
+                                                        <select className="form-control" required={true} name="HolidayType" title="HolidayType" id='HolidayType' ref={this.HolidayType} onChange={this.handleChangeEvents}>
+                                                            <option value=''>None</option>
+                                                            {this.state.HolidaysObject.map((option) => (
+                                                                <option value={option} selected={option ==this.state.HolidayType}>{option}</option>
+                                                            ))}
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                               
+                                            </div>
+
+                                            <div className="row pt-2 px-2">
+
+                                            <div className="col-md-3">
+                                                    <div className="light-text">
                                                         <label>Manager <span className="mandatoryhastrick">*</span></label>
                                                         <div className="custom-peoplepicker" id="divReportingManager">
                                                                 <PeoplePicker
@@ -491,10 +513,7 @@ else {
                                                                     resolveDelay={1000} peoplePickerCntrlclassName={"input-peoplePicker-custom"} />
                                                         </div>
                                                     </div>
-                                                </div>
                                             </div>
-
-                                            <div className="row pt-2 px-2">
 
                                             <div className="col-md-3">
                                                     <div className="light-text">
@@ -514,8 +533,12 @@ else {
                                                                     resolveDelay={1000} peoplePickerCntrlclassName={"input-peoplePicker-custom"} />
                                                         </div>
                                                     </div>
-                                                </div>
-                                                <div className="col-md-3">
+                                            </div>
+
+ 
+
+                                                {/* Notifers */}
+                                                {/* <div className="col-md-3">
                                                     <div className="light-text">
                                                         <label>Notifier <span className="mandatoryhastrick">*</span></label>
                                                         <div className="custom-peoplepicker" id="divNotifier">
@@ -533,7 +556,9 @@ else {
                                                                     resolveDelay={1000} peoplePickerCntrlclassName={"input-peoplePicker-custom"} />
                                                         </div>
                                                     </div>
-                                                </div>
+                                                </div> */}
+                                                {/* Notifiers */}
+
                                                 {/* ///////////// */}
                                                     {/* <div className="col-md-3">
                                                         <div className="light-text">
@@ -560,6 +585,8 @@ else {
                                                         </div>
                                                     </div> */}
                                                     {/* /////// */}
+                                                 
+
                                                     <div className="col-md-3">
                                                         <div className="light-text">
                                                             <label>Week Start Day</label>
@@ -575,17 +602,19 @@ else {
                                                         </div>
                                                     </div>
 
-                                                    <div className="col-md-3">
-                                                    <div className="light-text">
-                                                        <label>Holiday Type<span className="mandatoryhastrick">*</span></label>
-                                                        <select className="form-control" required={true} name="HolidayType" title="HolidayType" id='HolidayType' ref={this.HolidayType} onChange={this.handleChangeEvents}>
-                                                            <option value=''>None</option>
-                                                            {this.state.HolidaysObject.map((option) => (
-                                                                <option value={option} selected={option ==this.state.HolidayType}>{option}</option>
-                                                            ))}
-                                                        </select>
+
+                                                   
+                                                {/* ---Description--- */}
+                                                <div className="col-md-3">
+                                                        <div className="light-text">
+                                                            <label>Is Description Mandatory</label>
+                                                            <select className="form-control"  name="MandatoryDescription" title="MandatoryDescription" id='MandatoryDescription' ref={this.MandatoryDescription} onChange={this.handleChangeEvents} value={this.state.MandatoryDescription}>
+                                                                <option value='No'>No</option>
+                                                                <option value='Yes'>Yes</option>
+                                                            </select>
+                                                        </div>
                                                     </div>
-                                                </div>
+                                                {/* ---Description--- */}
 
 
                                             </div>
@@ -634,7 +663,8 @@ else {
                                                             </select>
                                                         </div>
                                                     </div>
-                                                    <div className="col-md-3">
+                                                    {/* ------------ Description ------------- */}
+                                                    {/* <div className="col-md-3">
                                                         <div className="light-text">
                                                             <label>Is Description Mandatory</label>
                                                             <select className="form-control"  name="MandatoryDescription" title="MandatoryDescription" id='MandatoryDescription' ref={this.MandatoryDescription} onChange={this.handleChangeEvents} value={this.state.MandatoryDescription}>
@@ -642,7 +672,8 @@ else {
                                                                 <option value='Yes'>Yes</option>
                                                             </select>
                                                         </div>
-                                                    </div>
+                                                    </div> */}
+                                                    {/* -------------Description end------------- */}
                                                 {/* <div className="col-md-3">
                                                     <div className="light-text">
                                                         <label>Reviewer <span className="mandatoryhastrick">*</span></label>

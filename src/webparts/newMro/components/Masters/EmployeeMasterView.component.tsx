@@ -74,12 +74,15 @@ class EmployeeMasterView extends React.Component<EmployeeMasterViewProps, Employ
                         }
                     }
                     // ReviewersString = ReviewersString.substring(0, ReviewersString.lastIndexOf(","));
-                    if(d.Notifiers.length>0){
-                        for(let user of d.Notifiers){
-                            NotifiersString+= "<div>"+user.Title+"<div>"
-                        }
-                        // NotifiersString = NotifiersString.substring(0, NotifiersString.lastIndexOf(","));
-                    }
+                    // --------------Notifiers-----------
+                    // if(d.Notifiers.length>0){
+                    //     for(let user of d.Notifiers){
+                    //         NotifiersString+= "<div>"+user.Title+"<div>"
+                    //     }
+                    //     // NotifiersString = NotifiersString.substring(0, NotifiersString.lastIndexOf(","));
+                    // }
+                    // ----------------------------------
+
                     let date = new Date(d.DateOfJoining)
                     Data.push({
                         Id : d.Id,
@@ -88,7 +91,7 @@ class EmployeeMasterView extends React.Component<EmployeeMasterViewProps, Employ
                         Company : d.ClientName,
                         ReportingManager: ReportingManagerString,
                         Reviewers:ReviewersString,
-                        Notifiers:NotifiersString,
+                        // Notifiers:NotifiersString,
                         Doj : `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`,
                         IsActive: d.IsActive
                     })
@@ -154,13 +157,13 @@ class EmployeeMasterView extends React.Component<EmployeeMasterViewProps, Employ
                 cell: row => <div dangerouslySetInnerHTML={{ __html: row.Reviewers }} />
                 // width: '250px'
             },
-            {
-                name: "Notifiers",
-                selector: (row, i) => row.Notifiers,
-                sortable: true,
-                cell: row => <div dangerouslySetInnerHTML={{ __html: row.Notifiers }} />
-                // width: '250px'
-            },
+            // { ------Notifiers--------
+            //     name: "Notifiers",
+            //     selector: (row, i) => row.Notifiers,
+            //     sortable: true,
+            //     cell: row => <div dangerouslySetInnerHTML={{ __html: row.Notifiers }} />
+            //     // width: '250px'
+            // },
             {
                 name: "Date of Joining",
                 selector: (row, i) => row.Doj,

@@ -38,7 +38,7 @@ const ModalApprovePopUp =({ message,modalHeader,title,isVisible,isSuccess, onCon
                                                 </div>
                                                 <div className="light-text" id=''>
                                                             <InputCheckBox
-                                                            label={"Is Active"}
+                                                            label={"Is Client Approval Needed?"}
                                                             name={"IsClientApprovalNeed"}
                                                             checked={IsClientApprovalNeed}
                                                             onChange={comments}

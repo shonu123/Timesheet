@@ -54,7 +54,12 @@ class MyRequests extends React.Component<MyRequestsProps, MyRequestsState> {
     private ReviewerApproval = async () => {
         this.setState({ loading: true });
         const userId = this.props.spContext.userId;
-        var filterString = "Initiator/Id eq '"+userId+"'"
+        let dateFilter = new Date()
+        dateFilter.setDate(new Date().getDate()-31);
+        let date = `${dateFilter.getMonth() + 1}/${dateFilter.getDate()}/${dateFilter.getFullYear()}`
+        var filterQuery = "and WeekStartDate ge '"+date+"'"
+
+        var filterString = "Initiator/Id eq '"+userId+"'"+filterQuery
 
         sp.web.lists.getByTitle('WeeklyTimeSheet').items.top(2000).filter(filterString).expand("Initiator").select('Initiator/Title','*').orderBy('Modified', false).get()
             .then((response) => {
