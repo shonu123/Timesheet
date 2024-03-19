@@ -483,7 +483,7 @@ else {
 
                                                 <div className="col-md-3">
                                                     <div className="light-text">
-                                                        <label>Holiday Type<span className="mandatoryhastrick">*</span></label>
+                                                        <label>Holiday Calender<span className="mandatoryhastrick">*</span></label>
                                                         <select className="form-control" required={true} name="HolidayType" title="HolidayType" id='HolidayType' ref={this.HolidayType} onChange={this.handleChangeEvents}>
                                                             <option value=''>None</option>
                                                             {this.state.HolidaysObject.map((option) => (
