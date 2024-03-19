@@ -62,6 +62,7 @@ export interface WeeklyTimesheetState {
         IsDescriptionMandatory:boolean,
         IsProjectCodeMandatory:boolean,
         WeekStartDay:string,
+        HolidayType:string,
 
         ReportingManagersEmail:any,
         ReviewersEmail:any,
@@ -156,6 +157,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                 IsDescriptionMandatory:false,
                 IsProjectCodeMandatory:false,
                 WeekStartDay:'',
+                HolidayType:'',
 
                 ReportingManagersEmail:[],
                 ReviewersEmail:[],
@@ -209,18 +211,25 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
         
         this.WeekHeadings.push({"Mon":"",
         "IsMonJoined":true,
+        "IsDay1Holiday":this.IsHoliday(trFormdata.WeekStartDate),
         "Tue":"",
         "IsTueJoined":true,
+        "IsDay2Holiday":this.IsHoliday(trFormdata.WeekStartDate),
         "Wed":"",
         "IsWedJoined":true,
+        "IsDay3Holiday":this.IsHoliday(trFormdata.WeekStartDate),
         "Thu":"",
         "IsThuJoined":true,
+        "IsDay4Holiday":this.IsHoliday(trFormdata.WeekStartDate),
         "Fri":"",
         "IsFriJoined":true,
+        "IsDay5Holiday":this.IsHoliday(trFormdata.WeekStartDate),
         "Sat":"",
         "IsSatJoined":true,
+        "IsDay6Holiday":this.IsHoliday(trFormdata.WeekStartDate),
         "Sun":"",
         "IsSunJoined":true,
+        "IsDay7Holiday":this.IsHoliday(trFormdata.WeekStartDate),
         })
         this.WeekNames.push({"day1":"Mon","day2":"Tue","day3":"Wed","day4":"Thu","day5":"Fri","day6":"Sat","day7":"Sun","dayCode":1});
         this.setState({ trFormdata});
@@ -253,7 +262,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
         this.state.EmployeeEmail.push(ClientNames[0].Employee.EMail);
         ClientNames.filter(item => {
               this.state.ClientNames.push(item.ClientName);
-              this.state.Clients_DateOfJoinings.push({"ClientName":item.ClientName,"DOJ":item.DateOfJoining,"IsDescriptionMandatory":item.MandatoryDescription,"IsProjectCodeMandatory":item.MandatoryProjectCode,"WeekStartDay":item.WeekStartDay})
+              this.state.Clients_DateOfJoinings.push({"ClientName":item.ClientName,"DOJ":item.DateOfJoining,"IsDescriptionMandatory":item.MandatoryDescription,"IsProjectCodeMandatory":item.MandatoryProjectCode,"WeekStartDay":item.WeekStartDay,"HolidayType":item.HolidayType})
               if(item.hasOwnProperty("ReportingManager"))
               item.ReportingManager.map(i=>(this.state.SuperviserNames.push({"ClientName":item.ClientName,"ReportingManager":i.Title,"ReportingManagerId":i.Id,"ReportingManagerEmail":i.EMail})));
               if(item.hasOwnProperty("Reviewers"))
@@ -310,6 +319,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
         trFormdata.CommentsHistoryData=JSON.parse(data[0].CommentsHistory);
         trFormdata.SuperviserNames=JSON.parse(data[0].SuperviserName);
         trFormdata.Pendingwith=data[0].PendingWith;
+        trFormdata.IsClientApprovalNeeded=data[0].IsClientApprovalNeed;
         let EmpEmail=[];
         let RMEmail=[];
         let ReviewEmail=[];
@@ -362,7 +372,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
         }
     
         this.setState({ trFormdata:trFormdata,currentWeeklyRowsCount:trFormdata.WeeklyItemsData.length,currentOTRowsCount: trFormdata.OTItemsData.length,EmployeeEmail:EmpEmail,loading:false});
-        // if(data[0].ClientName =='Synergy-HQ'){
+        // if(data[0].ClientName =='synergy'){
         //     this.setState({showBillable : true, showNonBillable: false})
         // }
         // else{
@@ -393,18 +403,25 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
         this.WeekHeadings=[];
         this.WeekHeadings.push({"Mon":(new Date(WeekStartDate).getDate().toString().length == 1 ? "0" +WeekStartDate.getDate() :WeekStartDate.getDate()),
         "IsMonJoined":WeekStartDate<trFormdata.DateOfJoining,
+        "IsDay1Holiday":this.IsHoliday(WeekStartDate),
         "Tue":(new Date(WeekStartDate.setDate(WeekStartDate.getDate()+1)).getDate().toString().length == 1 ? "0" +WeekStartDate.getDate() :WeekStartDate.getDate()),
         "IsTueJoined":WeekStartDate<trFormdata.DateOfJoining,
+        "IsDay2Holiday":this.IsHoliday(WeekStartDate),
         "Wed":(new Date(WeekStartDate.setDate(WeekStartDate.getDate()+1)).getDate().toString().length == 1 ? "0" +WeekStartDate.getDate() :WeekStartDate.getDate()),
         "IsWedJoined":WeekStartDate<trFormdata.DateOfJoining,
+        "IsDay3Holiday":this.IsHoliday(WeekStartDate),
         "Thu":(new Date(WeekStartDate.setDate(WeekStartDate.getDate()+1)).getDate().toString().length == 1 ? "0" +WeekStartDate.getDate() :WeekStartDate.getDate()),
         "IsThuJoined":WeekStartDate<trFormdata.DateOfJoining,
+        "IsDay4Holiday":this.IsHoliday(WeekStartDate),
         "Fri":(new Date(WeekStartDate.setDate(WeekStartDate.getDate()+1)).getDate().toString().length == 1 ? "0" +WeekStartDate.getDate() :WeekStartDate.getDate()),
         "IsFriJoined":WeekStartDate<trFormdata.DateOfJoining,
+        "IsDay5Holiday":this.IsHoliday(WeekStartDate),
         "Sat":(new Date(WeekStartDate.setDate(WeekStartDate.getDate()+1)).getDate().toString().length == 1 ? "0" +WeekStartDate.getDate() :WeekStartDate.getDate()),
         "IsSatJoined":WeekStartDate<trFormdata.DateOfJoining,
+        "IsDay6Holiday":this.IsHoliday(WeekStartDate),
         "Sun":(new Date(WeekStartDate.setDate(WeekStartDate.getDate()+1)).getDate().toString().length == 1 ? "0" +WeekStartDate.getDate() :WeekStartDate.getDate()),
         "IsSunJoined":WeekStartDate<trFormdata.DateOfJoining,
+        "IsDay7Holiday":this.IsHoliday(WeekStartDate),
         })
         let groups = await sp.web.currentUser.groups();
         //------new-----
@@ -434,7 +451,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
         //let WeekStartDate=new Date(date);
         const Formdata = { ...this.state.trFormdata };
             Formdata.WeekStartDate=date;
-            this.GetHolidayMasterDataByClientName(date,Formdata.ClientName);
+            this.GetHolidayMasterDataByClientName(date,Formdata.HolidayType);
             this.validateDuplicateRecord(date,Formdata.ClientName);
         this.setState({trFormdata:Formdata});
         console.log(this.state);
@@ -453,7 +470,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
             let NotifyEmail=[];
         console.log(this.state);
 
-        // if(clientVal == 'Synergy-HQ')
+        // if(clientVal == 'synergy')
         // {
         //     this.setState({showBillable : true, showNonBillable: false})
         // }
@@ -479,6 +496,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                 Formdata.IsDescriptionMandatory=item.IsDescriptionMandatory;
                 Formdata.IsProjectCodeMandatory=item.IsProjectCodeMandatory;
                 Formdata.WeekStartDay=item.WeekStartDay;
+                Formdata.HolidayType=item.HolidayType;
                 this.WeekNames=[];
                 switch(Formdata.WeekStartDay)
                 {
@@ -972,7 +990,8 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                 OTTotalHrs:formdata.OTItemsTotalTime,
                 ReportingManagerId:{"results":formdata.SuperviserIds},
                 ReviewersId:{"results":formdata.ReviewerIds},
-                NotifiersId:{"results":formdata.NotifierIds}
+                NotifiersId:{"results":formdata.NotifierIds},
+               IsClientApprovalNeed:formdata.IsClientApprovalNeeded,
             }
             switch(btnId.toLowerCase())
             {
@@ -982,7 +1001,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                     postObject['PendingWith']="NA";
                     break;
                 case "btnsubmit":
-                    if(this.state.ItemID!=0)
+                    if(this.state.ItemID==0)
                     formdata.CommentsHistoryData.push({"Action":StatusType.Submit,"Role":this.state.userRole,"User":this.currentUser,"Comments":this.state.trFormdata.Comments,"Date":new Date()})
                     else
                     formdata.CommentsHistoryData.push({"Action":"Re-Submitted","Role":this.state.userRole,"User":this.currentUser,"Comments":this.state.trFormdata.Comments,"Date":new Date()})
@@ -1002,7 +1021,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                            postObject['DateSubmitted']=new Date();
                        }
                        else{
-                        postObject['Status']=formdata.Status;
+                           postObject['Status']=StatusType.Approved;
                            postObject['PendingWith']="NA";
                            postObject['DateSubmitted']=new Date();
                        }
@@ -1132,8 +1151,15 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
             formdata=this.Calculte_Indvidual_OT_Weekly_TotalTime(formdata);
             formdata=this.GetRequiredEmails(formdata.ClientName,formdata);
             var postObject={};
-            formdata.CommentsHistoryData.push({"Action":StatusType.Reject,"Role":this.state.userRole,"User":this.currentUser,"Comments":this.state.trFormdata.Comments,"Date":new Date()})
-            postObject['Status']=StatusType.Reject;
+            if(formdata.Status=StatusType.Submit)
+            {
+                formdata.CommentsHistoryData.push({"Action":StatusType.ManagerReject,"Role":this.state.userRole,"User":this.currentUser,"Comments":this.state.trFormdata.Comments,"Date":new Date()})
+                postObject['Status']=StatusType.ManagerReject;
+            }
+            else if(formdata.Status=StatusType.Approved){
+                formdata.CommentsHistoryData.push({"Action":StatusType.ReviewerReject,"Role":this.state.userRole,"User":this.currentUser,"Comments":this.state.trFormdata.Comments,"Date":new Date()})
+                postObject['Status']=StatusType.ReviewerReject;
+            }
             postObject['PendingWith']="initiator";
             postObject["CommentsHistory"]=JSON.stringify(formdata.CommentsHistoryData),
             postObject['IsClientApprovalNeed']=formdata.IsClientApprovalNeeded;
@@ -1182,6 +1208,26 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
             //         emaildetails['body'] = this.emailBodyPreparation(this.siteURL+'/SitePages/TimeSheet.aspx#/WeeklyTimesheet/'+this.state.ItemID,tableContent,emaildetails['bodyString'],this.props.spContext.userDisplayName);
             //         this.sendemail(emaildetails);
             //    }
+            else if(formObject.Status==StatusType.ReviewerReject)
+            {
+                sub="Weekly Time Sheet has been "+StatusType.Submit+"."
+                CC=this.state.EmployeeEmail;
+                if(formObject.IsClientApprovalNeeded)
+                {
+                    for(const mail of formObject.ReportingManagersEmail)
+                    {
+                        CC.push(mail);
+                    }
+                }
+               
+               for(const mail of formObject.ReviewersEmail)
+               {
+                   CC.push(mail);
+               }
+               emaildetails ={toemail:this.state.EmployeeEmail,ccemail:CC,subject:sub,bodyString:sub,body:'' };
+               emaildetails['body'] = this.emailBodyPreparation(this.siteURL+'/SitePages/TimeSheet.aspx#/WeeklyTimesheet/'+this.state.ItemID,tableContent,emaildetails['bodyString'],this.props.spContext.userDisplayName);
+               this.sendemail(emaildetails);
+            }
                else if(StatusType.Approved==formdata.Status)
                {
                     sub="Weekly Time Sheet has been approved by Manager."
@@ -1198,9 +1244,9 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                     emaildetails['body'] = this.emailBodyPreparation(this.siteURL+'/SitePages/TimeSheet.aspx#/WeeklyTimesheet/'+this.state.ItemID,tableContent,emaildetails['bodyString'],this.props.spContext.userDisplayName);
                     this.sendemail(emaildetails);
                }
-               else if(StatusType.Reject==formdata.Status)
+               else if([StatusType.ManagerReject,StatusType.ReviewerReject].includes(formdata.Status))
                {
-                sub="Weekly Time Sheet has been Rejected By "+this.state.userRole+". Please re-submit with necessary details."
+                sub="Weekly Time Sheet has been "+formdata.Status+". Please re-submit with necessary details."
                         CC=this.state.EmployeeEmail;
                         if(formObject.IsClientApprovalNeeded)
                         {
@@ -1322,6 +1368,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                 trFormdata.CommentsHistoryData=JSON.parse(ExistRecordData[0].CommentsHistory);
                 trFormdata.SuperviserNames=JSON.parse(ExistRecordData[0].SuperviserName);
                 trFormdata.Pendingwith=ExistRecordData[0].PendingWith;
+                trFormdata.IsClientApprovalNeeded=ExistRecordData[0].IsClientApprovalNeed;
                 let EmpEmail=[];
                 let RMEmail=[];
                 let ReviewEmail=[];
@@ -1340,7 +1387,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                 trFormdata.ReviewersEmail=ReviewEmail;
                 trFormdata.NotifiersEmail=NotifyEmail;
                 this.setState({ trFormdata:trFormdata,currentWeeklyRowsCount:trFormdata.WeeklyItemsData.length,currentOTRowsCount: trFormdata.OTItemsData.length,ItemID:ExistRecordData[0].ID,EmployeeEmail:EmpEmail,errorMessage:''});
-                // if(ExistRecordData[0].ClientName =='Synergy-HQ'){
+                // if(ExistRecordData[0].ClientName =='synergy'){
                 //     this.setState({showBillable : true, showNonBillable: false})
                 // }
                 // else{
@@ -1416,6 +1463,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                 trFormdata.ReportingManagersEmail=[];
                 trFormdata.ReviewersEmail=[];
                 trFormdata.NotifiersEmail=[];
+                trFormdata.IsClientApprovalNeeded=false;
                 for( var item of this.state.Clients_DateOfJoinings)
                 {
                     if(item.ClientName.toLowerCase()==trFormdata.ClientName.toLowerCase())
@@ -1633,7 +1681,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                 return isValid;
             }
            }
-           if(formdata.ClientName.toLowerCase()=="synergy-hq")
+           if(formdata.ClientName.toLowerCase()=="synergy")
            {
                if(formdata.SynergyOfficeHrs[0].Description.trim()=="" && formdata.IsDescriptionMandatory)
                 {
@@ -1652,7 +1700,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                     return isValid;
                 }
            }
-           else if(formdata.ClientName.toLowerCase()!="synergy-hq")
+           else if(formdata.ClientName.toLowerCase()!="synergy")
            {
                  for(let i in formdata.WeeklyItemsData)
                  { 
@@ -1699,7 +1747,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                  }
            }
         //is isValid true remove all 'mandatory-FormContent-focus' classes
-        if (formdata.ClientName.toLowerCase() != "synergy-hq") {
+        if (formdata.ClientName.toLowerCase() != "synergy") {
             for (let i in formdata.WeeklyItemsData) {
                 document.getElementById(i + "_Description_weekrow").classList.remove('mandatory-FormContent-focus');
                 document.getElementById(i + "_ProjectCode_weekrow").classList.remove('mandatory-FormContent-focus');
@@ -1945,7 +1993,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                                         </tr>
                                         </thead>
                             <tbody>
-                                {this.state.trFormdata.ClientName.toLowerCase()=="synergy-hq"||this.state.trFormdata.ClientName.toLowerCase()==""?"":
+                                {this.state.trFormdata.ClientName.toLowerCase()=="synergy"||this.state.trFormdata.ClientName.toLowerCase()==""?"":
                                 <tr id="rowPRJ1"  >
                                     <td className=" text-start"> 
                                         <div className="p-2">
@@ -1991,7 +2039,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                                     </td>
                                 </tr>}
                                 {this.dynamicFieldsRow("weekrow")}
-                                {this.state.trFormdata.ClientName.toLowerCase()=="synergy-hq"||this.state.trFormdata.ClientName.toLowerCase()==""?"":
+                                {this.state.trFormdata.ClientName.toLowerCase()=="synergy"||this.state.trFormdata.ClientName.toLowerCase()==""?"":
                                 <tr id="rowOVR1" className="font-td-bold"  >
                                     <td className=" text-start"> 
                                         <div className="p-2">
@@ -2040,7 +2088,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                                 {/* <tr className='nonBillableHours'>
                                     <td colSpan={13} className="text-start greyBackground"><h4 className="my-2">Non-Billable Hours</h4></td>
                                 </tr> */}
-                                 {this.state.trFormdata.ClientName.toLowerCase()!="synergy-hq"?"":
+                                 {this.state.trFormdata.ClientName.toLowerCase()!="synergy"?"":
                                 <tr id="SynergyOfficeHrs">
                                     <td className="text-start"><div className="p-2">Office Hours</div></td>
                                     <td><textarea className="form-control textareaBorder time"  value={this.state.trFormdata.SynergyOfficeHrs[0].Description} onChange={this.changeTime} id="0_Description_SynOffcHrs"  disabled={this.state.isSubmitted || this.state.showNonBillable} ></textarea></td>
@@ -2057,16 +2105,16 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                                     <td></td>
                                 </tr>}
                                 <tr id="SynergyHolidayHrs">
-                                    <td className="text-start"><div className="p-2">Holiday</div></td>
+                                    <td className="text-start"><div className="p-2">Client Holiday</div></td>
                                     <td><textarea className="form-control textareaBorder time"  value={this.state.trFormdata.SynergyHolidayHrs[0].Description} onChange={this.changeTime} id="0_Description_SynHldHrs"  disabled={this.state.isSubmitted || this.state.showNonBillable} ></textarea></td>
                                     <td><input className="form-control time" value={this.state.trFormdata.SynergyHolidayHrs[0].ProjectCode} onChange={this.changeTime} id="0_ProjectCode_SynHldHrs"   disabled={this.state.isSubmitted || this.state.showNonBillable} ></input></td>
-                                    <td><input className={"form-control time "+(this.WeekNames[0].day1)} value={this.state.trFormdata.SynergyHolidayHrs[0].Mon} onChange={this.changeTime} id="0_Mon_SynHldHrs"  disabled={this.state.isSubmitted || this.state.showNonBillable || this.WeekHeadings[0].IsMonJoined} type="time"></input></td>
-                                    <td><input className={"form-control time "+(this.WeekNames[0].day2)} value={this.state.trFormdata.SynergyHolidayHrs[0].Tue} onChange={this.changeTime} id="0_Tue_SynHldHrs"  disabled={this.state.isSubmitted || this.state.showNonBillable || this.WeekHeadings[0].IsTueJoined} type="time"></input></td>
-                                    <td><input className={"form-control time "+(this.WeekNames[0].day3)} value={this.state.trFormdata.SynergyHolidayHrs[0].Wed} onChange={this.changeTime} id="0_Wed_SynHldHrs"  disabled={this.state.isSubmitted || this.state.showNonBillable || this.WeekHeadings[0].IsWedJoined} type="time"></input></td>
-                                    <td><input className={"form-control time "+(this.WeekNames[0].day4)} value={this.state.trFormdata.SynergyHolidayHrs[0].Thu} onChange={this.changeTime} id="0_Thu_SynHldHrs"  disabled={this.state.isSubmitted || this.state.showNonBillable || this.WeekHeadings[0].IsThuJoined} type="time"></input></td>
-                                    <td><input className={"form-control time "+(this.WeekNames[0].day5)} value={this.state.trFormdata.SynergyHolidayHrs[0].Fri} onChange={this.changeTime} id="0_Fri_SynHldHrs"  disabled={this.state.isSubmitted || this.state.showNonBillable || this.WeekHeadings[0].IsFriJoined} type="time"></input></td>
-                                    <td><input className={"form-control time "+(this.WeekNames[0].day6)} value={this.state.trFormdata.SynergyHolidayHrs[0].Sat} onChange={this.changeTime} id="0_Sat_SynHldHrs"  disabled={this.state.isSubmitted || this.state.showNonBillable || this.WeekHeadings[0].IsSatJoined} type="time"></input></td>
-                                    <td><input className={"form-control time "+(this.WeekNames[0].day7)} value={this.state.trFormdata.SynergyHolidayHrs[0].Sun} onChange={this.changeTime} id="0_Sun_SynHldHrs"  disabled={this.state.isSubmitted || this.state.showNonBillable || this.WeekHeadings[0].IsSunJoined} type="time"></input></td>
+                                    <td>{(this.WeekHeadings[0].IsDay1Holiday.isHoliday?this.WeekHeadings[0].IsDay1Holiday.HolidayName:"")}<input className={"form-control time "+(this.WeekNames[0].day1)+(this.WeekHeadings[0].IsDay1Holiday.isHoliday?" ClientHoliday":"")} value={this.state.trFormdata.SynergyHolidayHrs[0].Mon} onChange={this.changeTime} id="0_Mon_SynHldHrs"  disabled={this.state.isSubmitted || this.state.showNonBillable || this.WeekHeadings[0].IsMonJoined} type="time"></input></td>
+                                    <td>{(this.WeekHeadings[0].IsDay2Holiday.isHoliday?this.WeekHeadings[0].IsDay2Holiday.HolidayName:"")}<input className={"form-control time "+(this.WeekNames[0].day2)+(this.WeekHeadings[0].IsDay2Holiday.isHoliday?" ClientHoliday":"")} value={this.state.trFormdata.SynergyHolidayHrs[0].Tue} onChange={this.changeTime} id="0_Tue_SynHldHrs"  disabled={this.state.isSubmitted || this.state.showNonBillable || this.WeekHeadings[0].IsTueJoined} type="time"></input></td>
+                                    <td>{(this.WeekHeadings[0].IsDay3Holiday.isHoliday?this.WeekHeadings[0].IsDay3Holiday.HolidayName:"")}<input className={"form-control time "+(this.WeekNames[0].day3)+(this.WeekHeadings[0].IsDay3Holiday.isHoliday?" ClientHoliday":"")} value={this.state.trFormdata.SynergyHolidayHrs[0].Wed} onChange={this.changeTime} id="0_Wed_SynHldHrs"  disabled={this.state.isSubmitted || this.state.showNonBillable || this.WeekHeadings[0].IsWedJoined} type="time"></input></td>
+                                    <td>{(this.WeekHeadings[0].IsDay4Holiday.isHoliday?this.WeekHeadings[0].IsDay4Holiday.HolidayName:"")}<input className={"form-control time "+(this.WeekNames[0].day4)+(this.WeekHeadings[0].IsDay4Holiday.isHoliday?" ClientHoliday":"")} value={this.state.trFormdata.SynergyHolidayHrs[0].Thu} onChange={this.changeTime} id="0_Thu_SynHldHrs"  disabled={this.state.isSubmitted || this.state.showNonBillable || this.WeekHeadings[0].IsThuJoined} type="time"></input></td>
+                                    <td>{(this.WeekHeadings[0].IsDay5Holiday.isHoliday?this.WeekHeadings[0].IsDay5Holiday.HolidayName:"")}<input className={"form-control time "+(this.WeekNames[0].day5)+(this.WeekHeadings[0].IsDay5Holiday.isHoliday?" ClientHoliday":"")} value={this.state.trFormdata.SynergyHolidayHrs[0].Fri} onChange={this.changeTime} id="0_Fri_SynHldHrs"  disabled={this.state.isSubmitted || this.state.showNonBillable || this.WeekHeadings[0].IsFriJoined} type="time"></input></td>
+                                    <td>{(this.WeekHeadings[0].IsDay6Holiday.isHoliday?this.WeekHeadings[0].IsDay6Holiday.HolidayName:"")}<input className={"form-control time "+(this.WeekNames[0].day6)+(this.WeekHeadings[0].IsDay6Holiday.isHoliday?" ClientHoliday":"")} value={this.state.trFormdata.SynergyHolidayHrs[0].Sat} onChange={this.changeTime} id="0_Sat_SynHldHrs"  disabled={this.state.isSubmitted || this.state.showNonBillable || this.WeekHeadings[0].IsSatJoined} type="time"></input></td>
+                                    <td>{(this.WeekHeadings[0].IsDay7Holiday.isHoliday?this.WeekHeadings[0].IsDay7Holiday.HolidayName:"")}<input className={"form-control time "+(this.WeekNames[0].day7)+(this.WeekHeadings[0].IsDay7Holiday.isHoliday?" ClientHoliday":"")} value={this.state.trFormdata.SynergyHolidayHrs[0].Sun} onChange={this.changeTime} id="0_Sun_SynHldHrs"  disabled={this.state.isSubmitted || this.state.showNonBillable || this.WeekHeadings[0].IsSunJoined} type="time"></input></td>
                                     <td><span className="c-badge">H</span></td>
                                     <td><input className="form-control time WeekTotal" value={this.state.trFormdata.SynergyHolidayHrs[0].Total} onChange={this.changeTime} id="0_Total_SynHldHrs" type="text" readOnly></input></td>
                                     <td></td>
@@ -2124,11 +2172,11 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                                         
                                     </td>
                                 </tr> */}
-                                 {this.state.trFormdata.ClientName.toLowerCase()=="synergy-hq"||this.state.trFormdata.ClientName.toLowerCase()==""?"":
+                                 {this.state.trFormdata.ClientName.toLowerCase()=="synergy"||this.state.trFormdata.ClientName.toLowerCase()==""?"":
                                  <tr className="font-td-bold" id="BillableTotal">
                                     <td className="fw-bold text-start">
                                         <div className="p-2">
-                                            <i className="fas fa-business-time color-gray"></i> Billable Subtotal
+                                            <i className="fas fa-business-time color-gray"></i> Billable Total
                                         </div>
                                     </td>
                                      <td colSpan={2}>
