@@ -452,8 +452,8 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
         const Formdata = { ...this.state.trFormdata };
             Formdata.WeekStartDate=date;
             this.GetHolidayMasterDataByClientName(date,Formdata.HolidayType);
-            this.validateDuplicateRecord(date,Formdata.ClientName);
-        this.setState({trFormdata:Formdata});
+            this.validateDuplicateRecord(date,Formdata.ClientName,Formdata);
+        //this.setState({trFormdata:Formdata});
         console.log(this.state);
        
     }
@@ -524,9 +524,9 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                 break;
             }
         }
-        this.setState({trFormdata:Formdata});
         Formdata.WeekStartDate=null;  //For restricting  of incorrect WeekstarDay binding in DatePicker
-       this.validateDuplicateRecord(Formdata.WeekStartDate,clientVal);
+        //this.setState({trFormdata:Formdata});
+       this.validateDuplicateRecord(Formdata.WeekStartDate,clientVal,Formdata);
      }
     private handleChange = (event) => {
         const formData = { ...this.state.trFormdata };
@@ -1336,7 +1336,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
             console.log(i)
           });  
     }
-    private async validateDuplicateRecord(date,ClientName) {
+    private async validateDuplicateRecord(date,ClientName,trFormdata) {
 
         let filterQuery = '';
         let ExistRecordData = [];
@@ -1352,7 +1352,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
           ExistRecordData = await sp.web.lists.getByTitle('WeeklyTimeSheet').items.filter(filterQuery).select(selectQuery).expand('Initiator,Reviewers,ReportingManager,Notifiers').get();
          console.log(ExistRecordData);
         }
-        const trFormdata= this.state.trFormdata;
+        //const trFormdata= this.state.trFormdata;
             if(ExistRecordData.length>=1)
             {
                 trFormdata.ClientName=ExistRecordData[0].ClientName;
@@ -1399,20 +1399,20 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                 {
                     this.setState({isSubmitted:true});
                 }
-                else if([StatusType.Reject,StatusType.Save].includes(ExistRecordData[0].Status))
+                else if([StatusType.ManagerReject,StatusType.ReviewerReject,StatusType.Save].includes(ExistRecordData[0].Status))
                 {
                     this.setState({isSubmitted:false});
                 }
                
                  //For getting Dateofjoining of selected client
-                for( var item of this.state.Clients_DateOfJoinings)
-                {
-                    if(item.ClientName.toLowerCase()==ExistRecordData[0].ClientName.toLowerCase())
-                    {
-                        trFormdata.DateOfJoining=new Date(item.DOJ);
-                        break;
-                    }
-                }
+                // for( var item of this.state.Clients_DateOfJoinings)
+                // {
+                //     if(item.ClientName.toLowerCase()==ExistRecordData[0].ClientName.toLowerCase())
+                //     {
+                //         trFormdata.DateOfJoining=new Date(item.DOJ);
+                //         break;
+                //     }
+                // }
                 let WeekStartDate=new Date(ExistRecordData[0].WeekStartDate);
                 this.WeekHeadings=[];
                 this.WeekHeadings.push({"Mon":(new Date(WeekStartDate).getDate().toString().length == 1 ? "0" +WeekStartDate.getDate() :WeekStartDate.getDate()),
@@ -1439,9 +1439,9 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                 })
             }
             else{
-                trFormdata.ClientName=this.state.trFormdata.ClientName;
-                trFormdata.Name=this.state.trFormdata.Name;
-                trFormdata.WeekStartDate=this.state.trFormdata.WeekStartDate;
+                trFormdata.ClientName=trFormdata.ClientName;
+                trFormdata.Name=trFormdata.Name;
+                trFormdata.WeekStartDate=trFormdata.WeekStartDate;
                 trFormdata.WeeklyItemsData=[];
                 trFormdata.OTItemsData=[];
                 trFormdata.BillableSubTotal=[];
@@ -1466,14 +1466,14 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                 trFormdata.ReviewersEmail=[];
                 trFormdata.NotifiersEmail=[];
                 trFormdata.IsClientApprovalNeeded=false;
-                for( var item of this.state.Clients_DateOfJoinings)
-                {
-                    if(item.ClientName.toLowerCase()==trFormdata.ClientName.toLowerCase())
-                    {
-                        trFormdata.DateOfJoining=new Date(item.DOJ);
-                        break;
-                    }
-                }
+                // for( var item of this.state.Clients_DateOfJoinings)
+                // {
+                //     if(item.ClientName.toLowerCase()==trFormdata.ClientName.toLowerCase())
+                //     {
+                //         trFormdata.DateOfJoining=new Date(item.DOJ);
+                //         break;
+                //     }
+                // }
                 let WeekStartDate=new Date(trFormdata.WeekStartDate);
                 this.WeekHeadings=[];
               
