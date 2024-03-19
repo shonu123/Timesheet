@@ -469,7 +469,6 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
             let ReviewEmail=[];
             let NotifyEmail=[];
         console.log(this.state);
-
         // if(clientVal == 'synergy')
         // {
         //     this.setState({showBillable : true, showNonBillable: false})
@@ -525,9 +524,9 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                 break;
             }
         }
+        this.setState({trFormdata:Formdata});
         Formdata.WeekStartDate=null;  //For restricting  of incorrect WeekstarDay binding in DatePicker
        this.validateDuplicateRecord(Formdata.WeekStartDate,clientVal);
-        this.setState({trFormdata:Formdata});
      }
     private handleChange = (event) => {
         const formData = { ...this.state.trFormdata };
@@ -1338,18 +1337,21 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
           });  
     }
     private async validateDuplicateRecord(date,ClientName) {
+
+        let filterQuery = '';
+        let ExistRecordData = [];
+        if(![null,"",undefined].includes(date)){
         let prevDate = addDays(new Date(date), -1);
         let nextDate = addDays(new Date(date), 1);
         let prev = `${prevDate.getMonth() + 1}/${prevDate.getDate()}/${prevDate.getFullYear()}`
         let next = `${nextDate.getMonth() + 1}/${nextDate.getDate()}/${nextDate.getFullYear()}`
-
-        let filterQuery = "WeekStartDate gt '" + prev + "' and WeekStartDate lt '" + next + "'"
-
-        let selectQuery = "Initiator/ID,Initiator/EMail,Reviewers/EMail,ReportingManager/EMail,Notifiers/EMail,*"
-        let filterQuery2 = " and ClientName eq '" + ClientName + "'and Initiator/ID eq '" + this.props.spContext.userId + "'"
-        filterQuery += filterQuery2;
-        let ExistRecordData = await sp.web.lists.getByTitle('WeeklyTimeSheet').items.filter(filterQuery).select(selectQuery).expand('Initiator,Reviewers,ReportingManager,Notifiers').get();
-        console.log(ExistRecordData);
+         filterQuery = "WeekStartDate gt '" + prev + "' and WeekStartDate lt '" + next + "'"
+         let selectQuery = "Initiator/ID,Initiator/EMail,Reviewers/EMail,ReportingManager/EMail,Notifiers/EMail,*"
+         let filterQuery2 = " and ClientName eq '" + ClientName + "'and Initiator/ID eq '" + this.props.spContext.userId + "'"
+         filterQuery += filterQuery2;
+          ExistRecordData = await sp.web.lists.getByTitle('WeeklyTimeSheet').items.filter(filterQuery).select(selectQuery).expand('Initiator,Reviewers,ReportingManager,Notifiers').get();
+         console.log(ExistRecordData);
+        }
         const trFormdata= this.state.trFormdata;
             if(ExistRecordData.length>=1)
             {
@@ -1526,7 +1528,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                 }
                 this.setState({ trFormdata:trFormdata,currentWeeklyRowsCount:trFormdata.WeeklyItemsData.length,currentOTRowsCount: trFormdata.OTItemsData.length,ItemID:0,EmployeeEmail:this.state.EmployeeEmail,isSubmitted:false,errorMessage:''});
             }
-            this.hideApproveAndRejectButton()  
+            this.hideApproveAndRejectButton()
     }
     private handlefullClose = () => {
 

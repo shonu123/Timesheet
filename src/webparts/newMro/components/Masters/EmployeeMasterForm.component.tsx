@@ -595,7 +595,7 @@ else {
                                                             <select className="form-control"  name="weekStartDay" title="WeekStartDay" id='WeekStartDay' ref={this.WeekStartDay} onChange={this.handleChangeEvents} value={this.state.weekStartDay}>
                                                                 <option value='Monday'>Monday</option>
                                                                 <option value='Tuesday'>Tuesday</option>
-                                                                <option value='Wednessday'>Wednesday</option>
+                                                                <option value='Wednesday'>Wednesday</option>
                                                                 <option value='Thursday'>Thursday</option>
                                                                 <option value='Friday'>Friday</option>
                                                                 <option value='Saturday'>Saturday</option>
