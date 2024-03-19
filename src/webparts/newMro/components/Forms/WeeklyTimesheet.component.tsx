@@ -1151,12 +1151,12 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
             formdata=this.Calculte_Indvidual_OT_Weekly_TotalTime(formdata);
             formdata=this.GetRequiredEmails(formdata.ClientName,formdata);
             var postObject={};
-            if(formdata.Status=StatusType.Submit)
+            if(formdata.Status==StatusType.Submit)
             {
                 formdata.CommentsHistoryData.push({"Action":StatusType.ManagerReject,"Role":this.state.userRole,"User":this.currentUser,"Comments":this.state.trFormdata.Comments,"Date":new Date()})
                 postObject['Status']=StatusType.ManagerReject;
             }
-            else if(formdata.Status=StatusType.Approved){
+            else if(formdata.Status==StatusType.Approved){
                 formdata.CommentsHistoryData.push({"Action":StatusType.ReviewerReject,"Role":this.state.userRole,"User":this.currentUser,"Comments":this.state.trFormdata.Comments,"Date":new Date()})
                 postObject['Status']=StatusType.ReviewerReject;
             }
