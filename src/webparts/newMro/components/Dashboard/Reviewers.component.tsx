@@ -157,16 +157,16 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
                 // this.setState({ModalHeader:'modal-header-Approve'})
             }
             else{
-                sub = "Weekly Time Sheet has been"+StatusType.ReviewerReject+". Please re-submit with necessary details."
+                sub = "Weekly Time Sheet has been "+StatusType.ReviewerReject+". Please re-submit with necessary details."
             }
 
             let emaildetails ={toemail:To,ccemail:CC,subject:sub,bodyString:sub,body:'' };
              let table = tableContent;
              emaildetails.body = this.emailBodyPreparation(this.state.siteURL+'/SitePages/TimeSheet.aspx#/WeeklyTimesheet/'+this.state.ItemID,table,emaildetails.bodyString,this.props.spContext.userDisplayName);
              if(Status == StatusType.Approved)
-             this.sendemail(emaildetails,'Record approved successfully','')
+             this.sendemail(emaildetails,'Success message','Record approved successfully')
             else
-            this.sendemail(emaildetails,'Record rejected successfully','')
+            this.sendemail(emaildetails,'Success message','Record rejected successfully')
             // <Navigate to={'/'} />
             // this.setState({redirect:true})
         });
