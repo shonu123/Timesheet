@@ -359,7 +359,7 @@ private async validateDuplicateRecord () {
             sp.web.lists.getByTitle(this.listName).items.getById(this.state.ItemID).update(formdata).then((res) => {
                 this.setState({ loading: false});
                 // alert('Data updated sucessfully');
-                this.setState({showHideModal : true,modalTitle: 'Employee configuration updated sucessfully'});
+                this.setState({showHideModal : true,modalTitle: 'Employee configuration updated successfully'});
             }, (error) => {
                 console.log(error);
             });
