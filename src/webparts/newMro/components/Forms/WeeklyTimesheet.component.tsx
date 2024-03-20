@@ -383,7 +383,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                 this.WeekNames.push({"day1":"Sun","day2":"Mon","day3":"Tue","day4":"Wed","day5":"Thu","day6":"Fri","day7":"Sat","dayCode":"Sunday"});
                 break;
         }
-    
+       
         this.setState({ trFormdata:trFormdata,currentWeeklyRowsCount:trFormdata.WeeklyItemsData.length,currentOTRowsCount: trFormdata.OTItemsData.length,EmployeeEmail:EmpEmail,loading:false});
         // if(data[0].ClientName =='synergy'){
         //     this.setState({showBillable : true, showNonBillable: false})
@@ -415,10 +415,12 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                   trFormdata.IsDescriptionMandatory=item.IsDescriptionMandatory;
                   trFormdata.IsProjectCodeMandatory=item.IsProjectCodeMandatory;
                   trFormdata.WeekStartDay=item.WeekStartDay;
+                  trFormdata.HolidayType=item.HolidayType;
                   break;
               }
           }
-          
+          this.GetHolidayMasterDataByClientName( trFormdata.WeekStartDate,trFormdata.HolidayType,trFormdata);
+          this.GetHolidayMasterDataByClientName( trFormdata.WeekStartDate,"Synergy",trFormdata);
         let WeekStartDate=new Date(new Date(data[0].WeekStartDate).getMonth()+1+"/"+new Date(data[0].WeekStartDate).getDate()+"/"+new Date(data[0].WeekStartDate).getFullYear());
         let DateOfjoining=new Date(trFormdata.DateOfJoining.getMonth()+1+"/"+trFormdata.DateOfJoining.getDate()+"/"+trFormdata.DateOfJoining.getFullYear());
         this.WeekHeadings=[];
@@ -479,8 +481,8 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
         //let WeekStartDate=new Date(date);
         const Formdata = { ...this.state.trFormdata };
             Formdata.WeekStartDate=date;
-            this.GetHolidayMasterDataByClientName(date,Formdata.HolidayType);
-            this.GetHolidayMasterDataByClientName(date,"Synergy");
+            this.GetHolidayMasterDataByClientName(date,Formdata.HolidayType,Formdata);
+            this.GetHolidayMasterDataByClientName(date,"Synergy",Formdata);
             this.validateDuplicateRecord(date,Formdata.ClientName,Formdata);
         //this.setState({trFormdata:Formdata});
         console.log(this.state);
@@ -1889,7 +1891,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
            return isValid;
     }
     //Functions related to HolidayMaster
-    private GetHolidayMasterDataByClientName= async (WeekStartDate,selectedClientName)=>
+    private GetHolidayMasterDataByClientName= async (WeekStartDate,selectedClientName,trFormdata)=>
     {
         let Start = addDays(new Date(WeekStartDate), -1);
         let End = addDays(new Date(WeekStartDate), 7);
