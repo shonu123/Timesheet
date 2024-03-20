@@ -9,7 +9,7 @@ function validate(data){
         let value = data[key].val;
         let type =data[key].Type;
         let isrequired =data[key].required;
-        if([undefined,null,''].includes(value) && propertieTypes.People!=type && propertieTypes.Date!=type && isrequired)
+        if([undefined,null,'',-1].includes(value) && propertieTypes.People!=type && propertieTypes.Date!=type && isrequired)
         {
             let prpel =data[key].Focusid;
             message =data[key].Name+" cannot be blank.";
