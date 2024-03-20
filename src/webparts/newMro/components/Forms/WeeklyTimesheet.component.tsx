@@ -399,28 +399,29 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
               }
           }
           
-        let WeekStartDate=new Date(data[0].WeekStartDate);
+        let WeekStartDate=new Date(new Date(data[0].WeekStartDate).getMonth()+1+"/"+new Date(data[0].WeekStartDate).getDate()+"/"+new Date(data[0].WeekStartDate).getFullYear());
+        let DateOfjoining=new Date(trFormdata.DateOfJoining.getMonth()+1+"/"+trFormdata.DateOfJoining.getDate()+"/"+trFormdata.DateOfJoining.getFullYear());
         this.WeekHeadings=[];
         this.WeekHeadings.push({"Mon":(new Date(WeekStartDate).getDate().toString().length == 1 ? "0" +WeekStartDate.getDate() :WeekStartDate.getDate()),
-        "IsMonJoined":WeekStartDate<trFormdata.DateOfJoining,
+        "IsMonJoined":WeekStartDate<DateOfjoining,
         "IsDay1Holiday":this.IsHoliday(WeekStartDate),
         "Tue":(new Date(WeekStartDate.setDate(WeekStartDate.getDate()+1)).getDate().toString().length == 1 ? "0" +WeekStartDate.getDate() :WeekStartDate.getDate()),
-        "IsTueJoined":WeekStartDate<trFormdata.DateOfJoining,
+        "IsTueJoined":WeekStartDate<DateOfjoining,
         "IsDay2Holiday":this.IsHoliday(WeekStartDate),
         "Wed":(new Date(WeekStartDate.setDate(WeekStartDate.getDate()+1)).getDate().toString().length == 1 ? "0" +WeekStartDate.getDate() :WeekStartDate.getDate()),
-        "IsWedJoined":WeekStartDate<trFormdata.DateOfJoining,
+        "IsWedJoined":WeekStartDate<DateOfjoining,
         "IsDay3Holiday":this.IsHoliday(WeekStartDate),
         "Thu":(new Date(WeekStartDate.setDate(WeekStartDate.getDate()+1)).getDate().toString().length == 1 ? "0" +WeekStartDate.getDate() :WeekStartDate.getDate()),
-        "IsThuJoined":WeekStartDate<trFormdata.DateOfJoining,
+        "IsThuJoined":WeekStartDate<DateOfjoining,
         "IsDay4Holiday":this.IsHoliday(WeekStartDate),
         "Fri":(new Date(WeekStartDate.setDate(WeekStartDate.getDate()+1)).getDate().toString().length == 1 ? "0" +WeekStartDate.getDate() :WeekStartDate.getDate()),
-        "IsFriJoined":WeekStartDate<trFormdata.DateOfJoining,
+        "IsFriJoined":WeekStartDate<DateOfjoining,
         "IsDay5Holiday":this.IsHoliday(WeekStartDate),
         "Sat":(new Date(WeekStartDate.setDate(WeekStartDate.getDate()+1)).getDate().toString().length == 1 ? "0" +WeekStartDate.getDate() :WeekStartDate.getDate()),
-        "IsSatJoined":WeekStartDate<trFormdata.DateOfJoining,
+        "IsSatJoined":WeekStartDate<DateOfjoining,
         "IsDay6Holiday":this.IsHoliday(WeekStartDate),
         "Sun":(new Date(WeekStartDate.setDate(WeekStartDate.getDate()+1)).getDate().toString().length == 1 ? "0" +WeekStartDate.getDate() :WeekStartDate.getDate()),
-        "IsSunJoined":WeekStartDate<trFormdata.DateOfJoining,
+        "IsSunJoined":WeekStartDate<DateOfjoining,
         "IsDay7Holiday":this.IsHoliday(WeekStartDate),
         })
         let groups = await sp.web.currentUser.groups();
@@ -465,9 +466,6 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
             Formdata.SuperviserIds=[];
             Formdata.ReviewerIds=[];
             Formdata.NotifierIds=[];
-            let RMEmail=[];
-            let ReviewEmail=[];
-            let NotifyEmail=[];
         console.log(this.state);
         // if(clientVal == 'synergy')
         // {
@@ -1413,28 +1411,29 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                 //         break;
                 //     }
                 // }
-                let WeekStartDate=new Date(ExistRecordData[0].WeekStartDate);
+                let WeekStartDate=new Date(new Date(ExistRecordData[0].WeekStartDate).getMonth()+1+"/"+new Date(ExistRecordData[0].WeekStartDate).getDate()+"/"+new Date(ExistRecordData[0].WeekStartDate).getFullYear());
+                let DateOfjoining=new Date(trFormdata.DateOfJoining.getMonth()+1+"/"+trFormdata.DateOfJoining.getDate()+"/"+trFormdata.DateOfJoining.getFullYear());
                 this.WeekHeadings=[];
                 this.WeekHeadings.push({"Mon":(new Date(WeekStartDate).getDate().toString().length == 1 ? "0" +WeekStartDate.getDate() :WeekStartDate.getDate()),
-                "IsMonJoined":WeekStartDate<trFormdata.DateOfJoining,
+                "IsMonJoined":WeekStartDate<DateOfjoining,
                 "IsDay1Holiday":this.IsHoliday(WeekStartDate),
                 "Tue":(new Date(WeekStartDate.setDate(WeekStartDate.getDate()+1)).getDate().toString().length == 1 ? "0" +WeekStartDate.getDate() :WeekStartDate.getDate()),
-                "IsTueJoined":WeekStartDate<trFormdata.DateOfJoining,
+                "IsTueJoined":WeekStartDate<DateOfjoining,
                 "IsDay2Holiday":this.IsHoliday(WeekStartDate),
                 "Wed":(new Date(WeekStartDate.setDate(WeekStartDate.getDate()+1)).getDate().toString().length == 1 ? "0" +WeekStartDate.getDate() :WeekStartDate.getDate()),
-                "IsWedJoined":WeekStartDate<trFormdata.DateOfJoining,
+                "IsWedJoined":WeekStartDate<DateOfjoining,
                 "IsDay3Holiday":this.IsHoliday(WeekStartDate),
                 "Thu":(new Date(WeekStartDate.setDate(WeekStartDate.getDate()+1)).getDate().toString().length == 1 ? "0" +WeekStartDate.getDate() :WeekStartDate.getDate()),
-                "IsThuJoined":WeekStartDate<trFormdata.DateOfJoining,
+                "IsThuJoined":WeekStartDate<DateOfjoining,
                 "IsDay4Holiday":this.IsHoliday(WeekStartDate),
                 "Fri":(new Date(WeekStartDate.setDate(WeekStartDate.getDate()+1)).getDate().toString().length == 1 ? "0" +WeekStartDate.getDate() :WeekStartDate.getDate()),
-                "IsFriJoined":WeekStartDate<trFormdata.DateOfJoining,
+                "IsFriJoined":WeekStartDate<DateOfjoining,
                 "IsDay5Holiday":this.IsHoliday(WeekStartDate),
                 "Sat":(new Date(WeekStartDate.setDate(WeekStartDate.getDate()+1)).getDate().toString().length == 1 ? "0" +WeekStartDate.getDate() :WeekStartDate.getDate()),
-                "IsSatJoined":WeekStartDate<trFormdata.DateOfJoining,
+                "IsSatJoined":WeekStartDate<DateOfjoining,
                 "IsDay6Holiday":this.IsHoliday(WeekStartDate),
                 "Sun":(new Date(WeekStartDate.setDate(WeekStartDate.getDate()+1)).getDate().toString().length == 1 ? "0" +WeekStartDate.getDate() :WeekStartDate.getDate()),
-                "IsSunJoined":WeekStartDate<trFormdata.DateOfJoining,
+                "IsSunJoined":WeekStartDate<DateOfjoining,
                 "IsDay7Holiday":this.IsHoliday(WeekStartDate),
                 })
             }
@@ -1474,7 +1473,8 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                 //         break;
                 //     }
                 // }
-                let WeekStartDate=new Date(trFormdata.WeekStartDate);
+                let WeekStartDate=([null,undefined,''].includes(trFormdata.WeekStartDate)?new Date():new Date(trFormdata.WeekStartDate.getMonth()+1+"/"+trFormdata.WeekStartDate.getDate()+"/"+trFormdata.WeekStartDate.getFullYear()));
+                let DateOfjoining=new Date(trFormdata.DateOfJoining.getMonth()+1+"/"+trFormdata.DateOfJoining.getDate()+"/"+trFormdata.DateOfJoining.getFullYear());
                 this.WeekHeadings=[];
               
                 if(trFormdata.WeekStartDate==null)
@@ -1504,25 +1504,25 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                 }
                 else{
                     this.WeekHeadings.push({"Mon":(new Date(WeekStartDate).getDate().toString().length == 1 ? "0" +WeekStartDate.getDate() :WeekStartDate.getDate()),
-                    "IsMonJoined":WeekStartDate<trFormdata.DateOfJoining,
+                    "IsMonJoined":WeekStartDate<DateOfjoining,
                     "IsDay1Holiday":this.IsHoliday(WeekStartDate),
                     "Tue":(new Date(WeekStartDate.setDate(WeekStartDate.getDate()+1)).getDate().toString().length == 1 ? "0" +WeekStartDate.getDate() :WeekStartDate.getDate()),
-                    "IsTueJoined":WeekStartDate<trFormdata.DateOfJoining,
+                    "IsTueJoined":WeekStartDate<DateOfjoining,
                     "IsDay2Holiday":this.IsHoliday(WeekStartDate),
                     "Wed":(new Date(WeekStartDate.setDate(WeekStartDate.getDate()+1)).getDate().toString().length == 1 ? "0" +WeekStartDate.getDate() :WeekStartDate.getDate()),
-                    "IsWedJoined":WeekStartDate<trFormdata.DateOfJoining,
+                    "IsWedJoined":WeekStartDate<DateOfjoining,
                     "IsDay3Holiday":this.IsHoliday(WeekStartDate),
                     "Thu":(new Date(WeekStartDate.setDate(WeekStartDate.getDate()+1)).getDate().toString().length == 1 ? "0" +WeekStartDate.getDate() :WeekStartDate.getDate()),
-                    "IsThuJoined":WeekStartDate<trFormdata.DateOfJoining,
+                    "IsThuJoined":WeekStartDate<DateOfjoining,
                     "IsDay4Holiday":this.IsHoliday(WeekStartDate),
                     "Fri":(new Date(WeekStartDate.setDate(WeekStartDate.getDate()+1)).getDate().toString().length == 1 ? "0" +WeekStartDate.getDate() :WeekStartDate.getDate()),
-                    "IsFriJoined":WeekStartDate<trFormdata.DateOfJoining,
+                    "IsFriJoined":WeekStartDate<DateOfjoining,
                     "IsDay5Holiday":this.IsHoliday(WeekStartDate),
                     "Sat":(new Date(WeekStartDate.setDate(WeekStartDate.getDate()+1)).getDate().toString().length == 1 ? "0" +WeekStartDate.getDate() :WeekStartDate.getDate()),
-                    "IsSatJoined":WeekStartDate<trFormdata.DateOfJoining,
+                    "IsSatJoined":WeekStartDate<DateOfjoining,
                     "IsDay6Holiday":this.IsHoliday(WeekStartDate),
                     "Sun":(new Date(WeekStartDate.setDate(WeekStartDate.getDate()+1)).getDate().toString().length == 1 ? "0" +WeekStartDate.getDate() :WeekStartDate.getDate()),
-                    "IsSunJoined":WeekStartDate<trFormdata.DateOfJoining,
+                    "IsSunJoined":WeekStartDate<DateOfjoining,
                     "IsDay7Holiday":this.IsHoliday(WeekStartDate),
                     })
                 }
