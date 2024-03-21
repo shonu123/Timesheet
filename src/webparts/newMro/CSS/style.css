@@ -689,7 +689,7 @@ a{
   left: 6px;
   padding: 0 5px;
   background-color: white;
-  z-index: 1;
+  z-index: 0;
   font-size: 14px;
 }
 /* #chkIsActive{
@@ -1227,7 +1227,7 @@ input.ms-BasePicker-input::after{
     min-width: inherit;
     min-height: inherit;
     border: none;
-    overflow-y: auto;
+    overflow-y: inherit;
     max-height: 199px;
 }
 .link-btn:hover{
@@ -2027,6 +2027,9 @@ top: 43.5%;
   line-height: 1.5;
   color: #495057;
   border: 0;
+  height: inherit;
+  position: relative;
+  top: -3.55px;
   /* background-color: #fff;
   background-clip: padding-box; */
 /*    border: 1px solid #ced4da;
@@ -2039,6 +2042,9 @@ top: 43.5%;
 }
 .ms-BasePicker-text{
   padding-top: 7px;
+}
+.ms-BasePicker-text::after{
+  border: none !important;
 }
 
 
@@ -2379,6 +2385,12 @@ li {
 .fa-xmark{
   position: relative;
   z-index: 0;
+}
+.cLrkOt{
+overflow:inherit !important;
+}
+.kcxRMj{
+  line-height: 1.5 !important;
 }
   /* .tabsBackground{
     background-color: #0D2F4B !important;

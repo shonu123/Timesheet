@@ -225,9 +225,9 @@ class Clients extends Component<ClientProps, ClientState> {
                     showLabel: false,
                     // loading: false
                 });
-                setTimeout(() => {
-                    this.setState({loading: false})
-                  }, 100);
+                // setTimeout(() => {
+                //     this.setState({loading: false})
+                //   }, 100);
             }).catch(err => {
                 console.log('Failed to fetch data.');
                 this.setState({
