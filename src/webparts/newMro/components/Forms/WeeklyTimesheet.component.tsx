@@ -495,6 +495,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
     }
     //functions related to calculation
     private WeekStartDateChange = (dateprops) => {
+        this.setState({loading: true})
         let date  = new Date()
         if(dateprops==null){
             //date = this.GetCurrentWeekMonday(new Date())
@@ -568,6 +569,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
     }
 
     private handleClientChange=(event)=>{
+        this.setState({loading:true})
         let clientVal=event.target.value;
         const Formdata = { ...this.state.trFormdata };
             Formdata.ClientName=clientVal;
@@ -1545,13 +1547,13 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                 trFormdata.ReportingManagersEmail=RMEmail;
                 trFormdata.ReviewersEmail=ReviewEmail;
                 trFormdata.NotifiersEmail=NotifyEmail;
-                this.setState({ trFormdata:trFormdata,currentWeeklyRowsCount:trFormdata.WeeklyItemsData.length,currentOTRowsCount: trFormdata.OTItemsData.length,ItemID:ExistRecordData[0].ID,EmployeeEmail:EmpEmail,errorMessage:''});
+                this.setState({ trFormdata:trFormdata,currentWeeklyRowsCount:trFormdata.WeeklyItemsData.length,currentOTRowsCount: trFormdata.OTItemsData.length,ItemID:ExistRecordData[0].ID,EmployeeEmail:EmpEmail,errorMessage:'',loading:false,showBillable : false, showNonBillable: false});
                 // if(ExistRecordData[0].ClientName =='synergy'){
                 //     this.setState({showBillable : true, showNonBillable: false})
                 // }
                 // else{
     
-                     this.setState({showBillable : false, showNonBillable: false})
+                    //  this.setState({showBillable : false, showNonBillable: false})
                 // }
                 if([StatusType.Submit,StatusType.Approved,StatusType.InProgress].includes(ExistRecordData[0].Status))
                 {
@@ -1715,7 +1717,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                     "IsDay7SynergyHoliday":this.IsHoliday(WeekStartDate,"synergy"),
                     })
                 }
-                this.setState({ trFormdata:trFormdata,currentWeeklyRowsCount:trFormdata.WeeklyItemsData.length,currentOTRowsCount: trFormdata.OTItemsData.length,ItemID:0,EmployeeEmail:this.state.EmployeeEmail,isSubmitted:false,errorMessage:'',showBillable:false});
+                this.setState({ trFormdata:trFormdata,currentWeeklyRowsCount:trFormdata.WeeklyItemsData.length,currentOTRowsCount: trFormdata.OTItemsData.length,ItemID:0,EmployeeEmail:this.state.EmployeeEmail,isSubmitted:false,errorMessage:'',showBillable:false,loading:false});
             }
             this.hideApproveAndRejectButton()
     }

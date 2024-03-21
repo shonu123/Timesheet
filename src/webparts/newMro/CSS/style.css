@@ -2026,6 +2026,7 @@ top: 43.5%;
   font-weight: 400;
   line-height: 1.5;
   color: #495057;
+  border: 0;
   /* background-color: #fff;
   background-clip: padding-box; */
 /*    border: 1px solid #ced4da;
@@ -2258,9 +2259,7 @@ li {
 .text-150::after{
   border: none!important;
 }
-.ms-BasePicker-text{
-  padding-top: 11px;
-}
+
 .ms-BasePicker-itemsWrapper{
   width: 100%;
 }
