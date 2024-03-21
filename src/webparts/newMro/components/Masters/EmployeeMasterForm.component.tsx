@@ -95,6 +95,7 @@ class EmployeeMasterForm extends React.Component<EmployeeMasterFormProps, Employ
         isPageAccessable: true,
         showHideModal: false,
         modalTitle:'',
+        modalText:'',
     }
 
     public componentDidMount() {
@@ -359,7 +360,7 @@ private async validateDuplicateRecord () {
             sp.web.lists.getByTitle(this.listName).items.getById(this.state.ItemID).update(formdata).then((res) => {
                 this.setState({ loading: false});
                 // alert('Data updated sucessfully');
-                this.setState({showHideModal : true,modalTitle: 'Employee configuration updated successfully'});
+                this.setState({showHideModal : true,modalText: 'Employee configuration updated successfully',modalTitle:'Success'});
             }, (error) => {
                 console.log(error);
             });
@@ -371,7 +372,7 @@ private async validateDuplicateRecord () {
                     this.setState({ loading: false});
                     // alert('Data inserted sucessfully')
                     
-                    this.setState({showHideModal : true,modalTitle: 'Employee configured added sucessfully'});
+                    this.setState({showHideModal : true,modalText: 'Employee configuration updated successfully',modalTitle:'Success'});
                 }, (error) => {
                     console.log(error);
                 });
@@ -414,7 +415,7 @@ private async validateDuplicateRecord () {
 else {
             return (
                 <React.Fragment>
-                <ModalPopUp title={this.state.modalTitle} modalText={''} isVisible={this.state.showHideModal} onClose={this.handleClose} isSuccess={true}></ModalPopUp>
+                <ModalPopUp title={this.state.modalTitle} modalText={this.state.modalText} isVisible={this.state.showHideModal} onClose={this.handleClose} isSuccess={true}></ModalPopUp>
                     <div id="content" className="content p-2 pt-2">
                         <div id="clickMenu" className="menu-icon-outer">
                             <div className="menu-icon">
