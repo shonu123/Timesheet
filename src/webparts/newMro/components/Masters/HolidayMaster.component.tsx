@@ -281,7 +281,7 @@ class HolidaysList extends Component<HolidaysListProps, HolidaysListState> {
                     })),
                     SaveUpdateText: 'Submit',
                     showLabel: false,
-                    // loading: false
+                    loading: false
                 });
                 // setTimeout(() => {
                 //     this.setState({loading: false})

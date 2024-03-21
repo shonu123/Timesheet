@@ -223,10 +223,10 @@ class Clients extends Component<ClientProps, ClientState> {
                     })),
                     SaveUpdateText: 'Submit',
                     showLabel: false,
-                    // loading: false
+                    loading: false
                 });
                 // setTimeout(() => {
-                //     this.setState({loading: false})
+                    // this.setState({loading: false})
                 //   }, 100);
             }).catch(err => {
                 console.log('Failed to fetch data.');

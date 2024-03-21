@@ -841,7 +841,7 @@ input.c-input-readonly {
     color: #a6a6a6;
     border-color: #eaeaea;
 }
-.Totals.form-control[readonly] {
+.WeekTotal.form-control[readonly],.DayTotal.form-control[readonly] {
   color: #000;
   font-weight: bold;
 }
@@ -1899,6 +1899,7 @@ div[id^="_TopSpan_NotificationSpan"]{
 z-index: 9;
 width: 60px;
 height: 60px;
+border: none !important;
 /* border: 3px solid rgb(223,43,42); */
 border-left-color: transparent;
 border-right-color: transparent;
@@ -1908,6 +1909,11 @@ border-radius: 50%;
 position: fixed;
 left: 47.5%;
 top: 43.5%;
+}
+.SynergyLogo{
+  height: 60px;
+  width: 60px;
+  border-radius: 50%;
 }
 .bc-dblue {
   background-color: #0D2F4B!important;
