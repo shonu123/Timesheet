@@ -841,6 +841,10 @@ input.c-input-readonly {
     color: #a6a6a6;
     border-color: #eaeaea;
 }
+.Totals.form-control[readonly] {
+  color: #000;
+  font-weight: bold;
+}
 .attachment-list .fa-window-close{
   position: absolute;
   top: 9px;
@@ -950,7 +954,10 @@ a:active {
   border-color: #eaeaea!important;
 } 
 .form-control:disabled{
-  background-color:#f8f8f8!important;
+  background-color:#fff !important;
+}
+.form-control:disabled:hover{
+  cursor: not-allowed;
 }
 .custom-control-input:disabled~.custom-control-label:before{
   opacity: .5;
@@ -2070,41 +2077,41 @@ li {
 	.v-table{
 		width: 75vw!important;
 	}
-  .c-v-table{
+  /* .c-v-table{
 		width: 77vw!important;
-	}
+	} */
 }
 @media only screen and (max-width: 1356px) {
 	.v-table{
 		width: 72vw!important;
 	}
-  .c-v-table{
+  /* .c-v-table{
 		width: 75vw!important;
-	}
+	} */
 }
 @media only screen and (max-width: 1304px) {
 	/* .v-table{
 		width: 71vw!important;
 	} */
-  .c-v-table{
+  /* .c-v-table{
 		width: 74vw!important;
-	}
+	} */
 }
 @media only screen and (max-width: 1211px) {
 	/* .v-table{
 		width: 68vw!important;
 	} */
-  .c-v-table{
+  /* .c-v-table{
 		width: 70vw!important;
-	}
+	} */
 }
 @media only screen and (max-width: 1096px) {
 	/* .v-table{
 		width: 67vw!important;
 	} */
-  .c-v-table{
+  /* .c-v-table{
 		width: 67vw!important;
-	}
+	} */
 }
 @media print {
   .FormContent{

@@ -104,6 +104,11 @@ export interface WeeklyTimesheetState {
     showConfirmDeletePopup:boolean;
     RowType:string;
     rowCount:string;
+    // new changes by Sri
+    isAdmin:boolean,
+    onBehalf:boolean;
+    currentUserId:number;
+    EmployeesObj:any;
 
 }
 
@@ -114,6 +119,9 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
     private currentUserId:number;
     private listName = 'WeeklyTimeSheet';
     private Client;
+    // new changes
+    private EmployeeDropdown;
+    //end
     private Comments;
     private WeekHeadings=[];
     private WeekNames=[];
@@ -129,6 +137,10 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
         this.Client=React.createRef();
         this.Comments=React.createRef();
         this.weekStartDate=React.createRef();
+        //new
+        this.EmployeeDropdown = React.createRef();
+        //end
+
         this.state = {
           
             trFormdata: {
@@ -200,6 +212,11 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
             showConfirmDeletePopup:false,
             RowType:"",
             rowCount:"",
+            // new changes by Sri
+            onBehalf: false,
+            currentUserId: this.props.spContext.userId,
+            EmployeesObj: [],
+            isAdmin: false,
         };
         this.oweb = Web(this.props.spContext.siteAbsoluteUrl);
          // for first row of weekly and OT hrs
@@ -249,11 +266,11 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
     public componentDidMount() {
         highlightCurrentNav("weeklytimesheet");
          this.setState({ loading: true });
-         this.loadWeeklyTimeSheetData();
+         this.loadWeeklyTimeSheetData(this.state.currentUserId);
     
     }
     //functions related to  initial loading
-     private async loadWeeklyTimeSheetData() {
+     private async loadWeeklyTimeSheetData(currentUserId) {
         var ClientNames: any;
 
          if(this.props.match.params.id!=undefined){
@@ -263,7 +280,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
          }
          else
          {
-             ClientNames = await this.oweb.lists.getByTitle('EmployeeMaster').items.filter(" Employee/Id eq "+this.currentUserId+"and IsActive eq 1").select("ClientName ,DateOfJoining,Employee/Title,Employee/Id,Employee/EMail,ReportingManager/Id,Reviewers/Id,Notifiers/Id,ReportingManager/Title,Reviewers/Title,Notifiers/Title,ReportingManager/EMail,Reviewers/EMail,Notifiers/EMail,*").orderBy("Employee/Title").expand("Employee,ReportingManager,Reviewers,Notifiers").getAll();
+             ClientNames = await this.oweb.lists.getByTitle('EmployeeMaster').items.filter(" Employee/Id eq "+currentUserId+"and IsActive eq 1").select("ClientName ,DateOfJoining,Employee/Title,Employee/Id,Employee/EMail,ReportingManager/Id,Reviewers/Id,Notifiers/Id,ReportingManager/Title,Reviewers/Title,Notifiers/Title,ReportingManager/EMail,Reviewers/EMail,Notifiers/EMail,*").orderBy("Employee/Title").expand("Employee,ReportingManager,Reviewers,Notifiers").getAll();
          }
         console.log(ClientNames);
         if(ClientNames.length<1){
@@ -291,20 +308,28 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
         for (const grp of groups) {
             userGroups.push(grp.Title)
         }
-        this.setState({UserGoups:userGroups})
+        let trFormdata = this.state.trFormdata
+        trFormdata['Name'] = this.currentUser
+        this.setState({UserGoups:userGroups,trFormdata,ClientNames: this.state.ClientNames,EmployeeEmail:this.state.EmployeeEmail})
         // ---new -------
-        let userGroup = groups[0].Title
-        let user = userGroup=='Timesheet Initiators' ?'Initiator': userGroup=='Timesheet Approvers'?'Approver':userGroup=='Timesheet Reviewers'?'Reviewer':'Administrator'
-        console.log('You are :'+user)
-        this.setState({ClientNames: this.state.ClientNames,userRole : user,EmployeeEmail:this.state.EmployeeEmail})
+        // let userGroup = groups[0].Title
+        // let user = userGroup=='Timesheet Initiators' ?'Initiator': userGroup=='Timesheet Approvers'?'Approver':userGroup=='Timesheet Reviewers'?'Reviewer':'Administrator'
+        // console.log('You are :'+user)
+        // this.setState({ClientNames: this.state.ClientNames,EmployeeEmail:this.state.EmployeeEmail})
         if(this.props.match.params.id != undefined){
             console.log(this.props.match.params.id)
             this.setState({ItemID : this.props.match.params.id})
             this.getItemData(this.state.ItemID);
         }
         else {
-            if(this.state.userRole != 'Initiator'){
+            if(userGroups.includes('Timesheet Owners') || userGroups.includes('Timesheet Members') || userGroups.includes('Timesheet Initiators')){
+                this.setState({isSubmitted : false,loading:false});
+            }
+            else{
                 this.setState({isSubmitted : true,loading:false});
+            }
+            if(userGroups.includes('Timesheet Owners') || userGroups.includes('Timesheet Members') ){
+                this.setState({isAdmin:true,isSubmitted: true})
             }
         }
 
@@ -488,7 +513,61 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
         console.log(this.state);
        
     }
-     private handleClientChange=(event)=>{
+
+    // new changes
+    private async getAllEmployees(){
+        let selectQuery = "Employee/ID,Employee/Title"
+
+        let employees =  await  sp.web.lists.getByTitle('EmployeeMaster').items.expand('Employee').select(selectQuery).orderBy('Employee/Title',true).getAll()
+        let EmpNames = []
+        let EmpObj= []
+        for (const name of employees){
+            if(!EmpNames.includes(name.Employee.Title)){
+                EmpNames.push(name.Employee.Title)
+                EmpObj.push({ID:name.Employee.ID,Title:name.Employee.Title})
+            }
+        }
+        this.setState({EmployeesObj: EmpObj,loading:false,ClientNames:[]})
+
+    }
+    private handleApplyingfor = (e)=>{
+        let value = e.target.value;
+        const {name} = e.target;
+        if(name == 'Applying'){
+            if(value=='Self'){
+                this.currentUser = this.props.spContext.userDisplayName;;
+                let trFormdata = {...this.state.trFormdata}
+                trFormdata['ClientName'] = ''
+                trFormdata['Name'] = this.currentUser
+                this.setState({onBehalf: false,ClientNames:[],loading:true,trFormdata})
+                this.loadWeeklyTimeSheetData(this.props.spContext.userId)
+            }
+            else{
+                this.setState({onBehalf: true,isSubmitted:true,ClientNames:[],currentUserId:-1,loading:true});
+                this.getAllEmployees()
+            }
+            
+        }
+        else{
+            // this.currentUserId = parseInt(value)
+            this.setState({loading:true})
+            if(value == '-1'){
+
+                this.setState({currentUserId: -1,isSubmitted:true,ClientNames:[],loading:false})
+                this.currentUser = this.props.spContext.userDisplayName;
+            }
+            else{
+                let trFormdata = {...this.state.trFormdata}
+                trFormdata['ClientName'] = ''
+                trFormdata['Name'] = e.target.selectedOptions[0].label
+                this.currentUser = e.target.selectedOptions[0].label;
+                this.setState({currentUserId: parseInt(value),ClientNames:[],trFormdata})
+                this.loadWeeklyTimeSheetData(parseInt(value))
+            }
+        }
+    }
+
+    private handleClientChange=(event)=>{
         let clientVal=event.target.value;
         const Formdata = { ...this.state.trFormdata };
             Formdata.ClientName=clientVal;
@@ -555,7 +634,8 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
         Formdata.WeekStartDate=null;  //For restricting  of incorrect WeekstarDay binding in DatePicker
         //this.setState({trFormdata:Formdata});
        this.validateDuplicateRecord(Formdata.WeekStartDate,clientVal,Formdata);
-     }
+    
+    }
     private handleChange = (event) => {
         const formData = { ...this.state.trFormdata };
         const { name } = event.target;
@@ -1004,6 +1084,9 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
             ClientName:{val:this.state.trFormdata.ClientName,required:true, Name: 'Client Name', Type: ControlType.string, Focusid: this.Client},
             WeeklyStartDate:{val: this.state.trFormdata.WeekStartDate, required:true, Name: 'Weekly Start Date', Type: ControlType.date, Focusid:"divWeekStartDate"}
         };
+        // new onbehalf changes
+        {this.state.onBehalf?data['Employee'] = {val:this.state.currentUserId,required:true, Name: 'Employee', Type: ControlType.number, Focusid: this.EmployeeDropdown}:''}
+
         var formdata = { ...this.state.trFormdata };
         const id = this.props.match.params.id ? this.props.match.params.id : 0;
 
@@ -1050,12 +1133,18 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                     postObject['PendingWith']="NA";
                     break;
                 case "btnsubmit":
-                    if(this.state.ItemID==0 && formdata.Status=="")
-                    formdata.CommentsHistoryData.push({"Action":StatusType.Submit,"Role":"Initiator","User":this.currentUser,"Comments":this.state.trFormdata.Comments,"Date":new Date()})
-                    if(this.state.ItemID!=0 && formdata.Status==StatusType.Save)
-                    formdata.CommentsHistoryData.push({"Action":StatusType.Submit,"Role":"Initiator","User":this.currentUser,"Comments":this.state.trFormdata.Comments,"Date":new Date()})
-                    else
-                    formdata.CommentsHistoryData.push({"Action":"Re-Submitted","Role":"Initiator","User":this.currentUser,"Comments":this.state.trFormdata.Comments,"Date":new Date()})
+                    if(this.state.ItemID==0 && formdata.Status==StatusType.Save)
+                    {
+                        let user = "Initiator"
+                        user = this.state.onBehalf?"Administrator":user
+                        formdata.CommentsHistoryData.push({"Action":StatusType.Submit,"Role":user,"User":this.props.spContext.userDisplayName,"Comments":this.state.trFormdata.Comments,"Date":new Date()})
+                    }
+                    else if(this.state.ItemID!=0 && formdata.Status==StatusType.Save){
+                        formdata.CommentsHistoryData.push({"Action":StatusType.Submit,"Role":"Initiator","User":this.props.spContext.userDisplayName,"Comments":this.state.trFormdata.Comments,"Date":new Date()})
+                    }
+                    else{
+                        formdata.CommentsHistoryData.push({"Action":"Re-Submitted","Role":"Initiator","User":this.props.spContext.userDisplayName,"Comments":this.state.trFormdata.Comments,"Date":new Date()})
+                    }
 
                    if(this.state.ItemID==0)
                    {
@@ -1369,7 +1458,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
     }
     private emailBodyPreparation(redirectURL, tableContent, bodyString, userName) {
         var emailLink = "Please <a href=" + redirectURL + ">click here</a> to review the details.";
-        var emailBody = '<table id="email-container" border="0" cellpadding="0" cellspacing="0" style="margin: 0; padding: 0; text-align: left;" width="100%">' +
+        var emailBody = '<table id="email-container" border="0" cellpadding="0" cellspacing="0" style="margin: 0; padding: 0; text-align: left;" width="600px">' +
             '<tr valign="top"><td colspan="2"><div id="email-to">Dear Sir/Madam,</br></div></td></tr>';
         emailBody += '<tr valign="top"><td colspan="2" style="padding-top: 10px;">' + bodyString + '</td></tr>';
         var i = 0;
@@ -1377,7 +1466,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
             if (i === 0)
                 emailBody += "<tr><td></br></td></tr>";
             var tdValue = tableContent[key];
-            emailBody += '<tr valign="top"> <td>' + key + '</td><td>: ' + tdValue + '</td></tr>';
+            emailBody += '<tr valign="top"> <td style="width:200px">' + key + '</td><td>: ' + tdValue + '</td></tr>';
             i++;
         }
         emailBody += '<tr valign="top"> <td colspan="2" style="padding-top: 10px;"></br>' + emailLink + '</td></tr>';
@@ -1414,7 +1503,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
         let next = `${nextDate.getMonth() + 1}/${nextDate.getDate()}/${nextDate.getFullYear()}`
          filterQuery = "WeekStartDate gt '" + prev + "' and WeekStartDate lt '" + next + "'"
          let selectQuery = "Initiator/ID,Initiator/EMail,Reviewers/EMail,ReportingManager/EMail,Notifiers/EMail,*"
-         let filterQuery2 = " and ClientName eq '" + ClientName + "' and Initiator/ID eq '" + this.props.spContext.userId + "'"
+         let filterQuery2 = " and ClientName eq '" + ClientName + "' and Initiator/ID eq '" + this.state.currentUserId + "'"
          filterQuery += filterQuery2;
           ExistRecordData = await sp.web.lists.getByTitle('WeeklyTimeSheet').items.filter(filterQuery).select(selectQuery).expand('Initiator,Reviewers,ReportingManager,Notifiers').get();
          console.log(ExistRecordData);
@@ -1653,6 +1742,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
     //functions related to approval process
     private hideApproveAndRejectButton() {
         let value = this.state.trFormdata.Status != StatusType.Save ? true : false;
+        if(value){
         let userGroups = this.state.UserGoups
         let RMEmails = this.state.trFormdata.ReportingManagersEmail
         let RevEmails = this.state.trFormdata.ReviewersEmail
@@ -1689,6 +1779,10 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
         }
         // value = value?this.state.trFormdata.Pendingwith == "Approver"?this.state.userRole == 'Approver'?true:false:this.state.trFormdata.Pendingwith == "Reviewer"?this.state.userRole == 'Reviewer'?true:false:false:false
         this.setState({ showApproveRejectbtn: value,IsReviewer:false  })
+    }
+    else{
+        this.setState({ showApproveRejectbtn: value,IsReviewer:false  })  
+    }
     }
      private userAccessableRecord(){
         let currentUserEmail = this.props.spContext.userEmail;
@@ -1911,6 +2005,38 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
             this.setState({SynergyHolidaysList:HolidayData})
             else
             this.setState({HolidaysList:HolidayData})
+            let WeekStartDate=new Date(new Date(trFormdata.WeekStartDate).getMonth()+1+"/"+new Date(trFormdata.WeekStartDate).getDate()+"/"+new Date(trFormdata.WeekStartDate).getFullYear());
+            let DateOfjoining=new Date(trFormdata.DateOfJoining.getMonth()+1+"/"+trFormdata.DateOfJoining.getDate()+"/"+trFormdata.DateOfJoining.getFullYear());
+            this.WeekHeadings=[];
+            this.WeekHeadings.push({"Mon":(new Date(WeekStartDate).getDate().toString().length == 1 ? "0" +WeekStartDate.getDate() :WeekStartDate.getDate()),
+            "IsMonJoined":WeekStartDate<DateOfjoining,
+            "IsDay1Holiday":this.IsHoliday(WeekStartDate,trFormdata.ClientName),
+            "IsDay1SynergyHoliday":this.IsHoliday(WeekStartDate,"synergy"),
+            "Tue":(new Date(WeekStartDate.setDate(WeekStartDate.getDate()+1)).getDate().toString().length == 1 ? "0" +WeekStartDate.getDate() :WeekStartDate.getDate()),
+            "IsTueJoined":WeekStartDate<DateOfjoining,
+            "IsDay2Holiday":this.IsHoliday(WeekStartDate,trFormdata.ClientName),
+            "IsDay2SynergyHoliday":this.IsHoliday(WeekStartDate,"synergy"),
+            "Wed":(new Date(WeekStartDate.setDate(WeekStartDate.getDate()+1)).getDate().toString().length == 1 ? "0" +WeekStartDate.getDate() :WeekStartDate.getDate()),
+            "IsWedJoined":WeekStartDate<DateOfjoining,
+            "IsDay3Holiday":this.IsHoliday(WeekStartDate,trFormdata.ClientName),
+            "IsDay3SynergyHoliday":this.IsHoliday(WeekStartDate,"synergy"),
+            "Thu":(new Date(WeekStartDate.setDate(WeekStartDate.getDate()+1)).getDate().toString().length == 1 ? "0" +WeekStartDate.getDate() :WeekStartDate.getDate()),
+            "IsThuJoined":WeekStartDate<DateOfjoining,
+            "IsDay4Holiday":this.IsHoliday(WeekStartDate,trFormdata.ClientName),
+            "IsDay4SynergyHoliday":this.IsHoliday(WeekStartDate,"synergy"),
+            "Fri":(new Date(WeekStartDate.setDate(WeekStartDate.getDate()+1)).getDate().toString().length == 1 ? "0" +WeekStartDate.getDate() :WeekStartDate.getDate()),
+            "IsFriJoined":WeekStartDate<DateOfjoining,
+            "IsDay5Holiday":this.IsHoliday(WeekStartDate,trFormdata.ClientName),
+            "IsDay5SynergyHoliday":this.IsHoliday(WeekStartDate,"synergy"),
+            "Sat":(new Date(WeekStartDate.setDate(WeekStartDate.getDate()+1)).getDate().toString().length == 1 ? "0" +WeekStartDate.getDate() :WeekStartDate.getDate()),
+            "IsSatJoined":WeekStartDate<DateOfjoining,
+            "IsDay6Holiday":this.IsHoliday(WeekStartDate,trFormdata.ClientName),
+            "IsDay6SynergyHoliday":this.IsHoliday(WeekStartDate,"synergy"),
+            "Sun":(new Date(WeekStartDate.setDate(WeekStartDate.getDate()+1)).getDate().toString().length == 1 ? "0" +WeekStartDate.getDate() :WeekStartDate.getDate()),
+            "IsSunJoined":WeekStartDate<DateOfjoining,
+            "IsDay7Holiday":this.IsHoliday(WeekStartDate,trFormdata.ClientName),
+            "IsDay7SynergyHoliday":this.IsHoliday(WeekStartDate,"synergy"),
+            })
         }
     }
     private  IsHoliday=(CurrentWeekDay,ClientName)=>{
@@ -2053,6 +2179,69 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
         }
        return body;
     }
+// new function by ganesh
+    private getClientNames=()=>
+    {
+        var Formdata=this.state.trFormdata;
+        let section=[];
+       if(this.state.ClientNames.length==1)
+       {
+           Formdata.ClientName= this.state.ClientNames[0];
+           this.state.ClientNames.map((option) => (
+               section.push(
+                   <><option value={option} selected={Formdata.ClientName == option} disabled>{option}</option></>
+           )))
+           //For getting Dateofjoining of selected client
+         for( var item of this.state.Clients_DateOfJoinings)
+         {
+             if(item.ClientName.toLowerCase()== Formdata.ClientName.toLowerCase())
+             {
+                 Formdata.DateOfJoining=new Date(item.DOJ);
+                 Formdata.IsDescriptionMandatory=item.IsDescriptionMandatory;
+                 Formdata.IsProjectCodeMandatory=item.IsProjectCodeMandatory;
+                 Formdata.WeekStartDay=item.WeekStartDay;
+                 Formdata.HolidayType=item.HolidayType;
+                 this.WeekNames=[];
+                 switch(Formdata.WeekStartDay)
+                 {
+                     case "Monday":
+                         this.WeekNames.push({"day1":"Mon","day2":"Tue","day3":"Wed","day4":"Thu","day5":"Fri","day6":"Sat","day7":"Sun","dayCode":"Monday"});
+                         break;
+                     case "Tuesday":
+                         this.WeekNames.push({"day1":"Tue","day2":"Wed","day3":"Thu","day4":"Fri","day5":"Sat","day6":"Sun","day7":"Mon","dayCode":"Tuesday"});
+                         break;
+                     case "Wednesday":
+                         this.WeekNames.push({"day1":"Wed","day2":"Thu","day3":"Fri","day4":"Sat","day5":"Sun","day6":"Mon","day7":"Tue","dayCode":"Wednesday"});
+                         break;
+                     case "Thursday":
+                         this.WeekNames.push({"day1":"Thu","day2":"Fri","day3":"Sat","day4":"Sun","day5":"Mon","day6":"Tue","day7":"Wed","dayCode":"Thursday"});
+                         break;
+                     case "Friday":
+                         this.WeekNames.push({"day1":"Fri","day2":"Sat","day3":"Sun","day4":"Mon","day5":"Tue","day6":"Wed","day7":"Thu","dayCode":"Friday"});
+                         break;
+                     case "Saturday":
+                         this.WeekNames.push({"day1":"Sat","day2":"Sun","day3":"Mon","day4":"Tue","day5":"Wed","day6":"Thu","day7":"Fri","dayCode":"Saturday"});
+                         break;
+                     case "Sunday":
+                         this.WeekNames.push({"day1":"Sun","day2":"Mon","day3":"Tue","day4":"Wed","day5":"Thu","day6":"Fri","day7":"Sat","dayCode":"Sunday"});
+                         break;
+                 }
+                 break;
+             }
+         }
+       }
+    else if(this.state.ClientNames.length>1){
+           section.push(<option value=''>None</option>)
+               this.state.ClientNames.map((option) => (
+                   section.push(
+                       <><option value={option} selected={this.state.trFormdata.ClientName == option}>{option}</option></>
+               )))
+       }
+       //this.setState({trFormdata:Formdata})
+        return section;
+    }
+
+
     public render() {
 
         if (!this.state.isRecordAcessable) {
@@ -2087,27 +2276,52 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                     <p id='fax'>248.723.5100    Fax: 248.723.5372</p>
                     </div>
                     <div className="row pt-2 px-2 weeklysection1">
+                    {/* new changes start */}
+                    {this.state.isAdmin &&
+                    <div className="col-md-3">
+                                <div className="light-text clientName">
+                                    <label>Applying for<span className="mandatoryhastrick">*</span></label>
+                                    <select className="ddlApplying ddlClient"  name="Applying" title="Applying for" onChange={this.handleApplyingfor}>
+                                            <option value='Self'>Self</option>
+                                            <option value='onBehalf'>On Behalf</option>
+                                    </select>
+                                </div>
+                    </div>}
 
-                    <div className="col-md-4">
+                    
+                    {this.state.onBehalf?
+                    <div className={this.state.isAdmin?"col-md-3":"col-md-4"}>
+                                <div className="light-text ">
+                                    <label>Employee<span className="mandatoryhastrick">*</span></label>
+                                    <select className="ddlEmployee ddlClient" required={true}  name="Employee" title="Employee" onChange={this.handleApplyingfor} ref={this.EmployeeDropdown}>
+                                                <option value='-1'>None</option>
+                                                {this.state.EmployeesObj.map((option) => (
+                                                    <option value={option.ID} selected={this.state.currentUserId==option.ID}>{option.Title}</option>
+                                                ))}
+                                    </select>
+                                </div>
+                        </div>:
+                    <div className={this.state.isAdmin?"col-md-3":"col-md-4"}>
                                 <div className="light-text">
                                     <label>Name</label>
                                     <input className="txtEmployeeName" required={true}  name="Name" title="Name" value={this.state.trFormdata.Name} readOnly />
                                 </div>
                         </div>
-
-                        <div className="col-md-4">
+                    }
+                        <div className={this.state.isAdmin?"col-md-3":"col-md-4"}>
                                 <div className="light-text clientName">
                                     <label>Client Name <span className="mandatoryhastrick">*</span></label>
-                                    <select className="ddlClient" required={true}  name="ClientName" title="Client Name" onChange={this.handleClientChange} ref={this.Client} disabled={(this.currentUser==this.state.trFormdata.Name?false: this.state.isSubmitted)}>
-                                                <option value=''>None</option>
+                                    <select className="ddlClient" required={true}  name="ClientName" title="Client Name" onChange={this.handleClientChange} ref={this.Client} disabled={(this.state.ClientNames.length==1?true:this.currentUser==this.state.trFormdata.Name?false: this.state.isSubmitted)}>
+                                                {/* <option value=''>None</option>
                                                 {this.state.ClientNames.map((option) => (
                                                     <option value={option} selected={this.state.trFormdata.ClientName==option}>{option}</option>
-                                                ))}
+                                                ))} */}
+                                                {this.getClientNames()}
                                     </select>
                                 </div>
                         </div>
 
-                        <div className="col-md-4 divWeeklyStartDate">
+                        <div className={this.state.isAdmin?"col-md-3 divWeeklyStartDate":"col-md-4 divWeeklyStartDate"}>
                                 <div className="light-text div-readonly">
                                             {/* <label className="z-in-9">Weekly Start Date</label> */}
                                             <div className="custom-datepicker" id="divWeekStartDate">
@@ -2126,7 +2340,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                     </div>
                     <div className="border-box-shadow light-box table-responsive dataTables_wrapper-overflow p-2">
                         {/* <h4>Billable Hours</h4> */}
-                        <table className="table table-bordered m-0 timetable text-center">
+                        <table className="table table-bordered m-0 timetable">
                                         <thead style={{ borderBottom: "4px solid #444444" }}>
                                         <tr>
                                         <th className="" ><div className="have-h"></div></th>
@@ -2414,7 +2628,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                                     </td>
                                     <td><span className="c-badge">T</span></td>
                                     <td>
-                                        <input className="form-control time GrandTotal" id="GrandTotal" value={this.state.trFormdata.Total[0].Total} type="text" readOnly></input>
+                                        <input className="form-control time  GrandTotal" id="GrandTotal" value={this.state.trFormdata.Total[0].Total} type="text" readOnly></input>
                                     </td>
                                     <td>
                                         
@@ -2465,8 +2679,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                     
                                       
                     <div className="row">
-                        <div className="col-md-12"><hr></hr></div>
-                        <div className="col-md-12 text-center mt-3">
+                        <div className="col-md-12 text-center ">
                             {/* Error Message */}
                         <div className='row'>
                         <span className='text-validator'> {this.state.errorMessage}</span>
