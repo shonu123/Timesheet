@@ -2008,7 +2008,7 @@ top: 43.5%;
   font-size: 8px!important;
 } */
 
-.custom-peoplepicker input{
+/* .custom-peoplepicker input{
   padding: .375rem .75rem;
     font-size: 1rem;
     font-weight: 400;
@@ -2018,7 +2018,29 @@ top: 43.5%;
     background-clip: padding-box;
     border: 1px solid #ced4da;
     border-radius: .25rem;
+} */
+
+.custom-peoplepicker input{
+  padding: 0.375rem 0.75rem;
+  font-size: 1rem;
+  font-weight: 400;
+  line-height: 1.5;
+  color: #495057;
+  /* background-color: #fff;
+  background-clip: padding-box; */
+/*    border: 1px solid #ced4da;
+  border-radius: 0.25rem;*/
 }
+
+.custom-peoplepicker{
+  border: 1px solid #ced4da;
+  border-radius: 0.25rem;    
+}
+.ms-BasePicker-text{
+  padding-top: 7px;
+}
+
+
 .custom-datepicker{
 position: relative;
 }
