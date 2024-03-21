@@ -260,7 +260,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
         "IsDay7Holiday":this.IsHoliday(trFormdata.WeekStartDate,trFormdata.ClientName),
         "IsDay7SynergyHoliday":this.IsHoliday(trFormdata.WeekStartDate,"synergy"),
         })
-        this.WeekNames.push({"day1":"Mon","day2":"Tue","day3":"Wed","day4":"Thu","day5":"Fri","day6":"Sat","day7":"Sun","dayCode":1});
+        this.WeekNames.push({"day1":"Mon","day2":"Tue","day3":"Wed","day4":"Thu","day5":"Fri","day6":"Sat","day7":"Sun","dayCode":"Monday"});
         this.setState({ trFormdata});
     }
     public componentDidMount() {
