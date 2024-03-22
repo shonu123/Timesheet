@@ -1116,7 +1116,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                 NonBillableSubTotalHrs:JSON.stringify(formdata.NonBillableSubTotal),
                 TotalHrs:JSON.stringify(formdata.Total),
                 SuperviserName:JSON.stringify(formdata.SuperviserNames),
-                InitiatorId:this.currentUserId,
+                InitiatorId:this.state.currentUserId,
                 BillableTotalHrs:formdata.BillableSubTotal[0].Total,
                 NonBillableTotalHrs:formdata.NonBillableSubTotal[0].Total,
                 GrandTotal:formdata.Total[0].Total,
