@@ -59,10 +59,10 @@ class AllRequests extends React.Component<AllRequestsProps,AllRequestsState> {
         dateFilter.setDate(new Date().getDate()-31);
         let date = `${dateFilter.getMonth() + 1}/${dateFilter.getDate()}/${dateFilter.getFullYear()}`
         // var filterString = "Approvers/Id eq '"+userId+"' and PendingWith eq 'Approver' and Status eq '"+StatusType.Submit+"'"
-        var filterString = "WeekStartDate ge '"+date+"' and Status ne 'In-Draft'"
+        var filterString = "WeekStartDate ge '"+date+"'"
 
 
-        sp.web.lists.getByTitle('WeeklyTimeSheet').items.top(2000).filter(filterString).expand("ReportingManager").select('ReportingManager/Title','*').orderBy('WeekStartDate,DateSubmitted', false).getAll()
+        sp.web.lists.getByTitle('WeeklyTimeSheet').items.top(5000).filter(filterString).expand("ReportingManager").select('ReportingManager/Title','*').orderBy('WeekStartDate,DateSubmitted', false).getAll()
             .then((response) => {
                 console.log(response)
                 let Data = [];
