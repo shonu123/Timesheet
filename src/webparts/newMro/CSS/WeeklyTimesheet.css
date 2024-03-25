@@ -82,6 +82,7 @@
     }
     .weekDay{
         width: 100px !important;
+        text-align: center;
     }
     .projectCode{
         width: 130px !important;
@@ -153,6 +154,7 @@
     .bc-e1f2ff{
         /* background-color: #e1f2ff!important; */
         width: 150px !important;
+        text-align: center;
     }
     .color-2cbdff{
         color: #2cbdff
