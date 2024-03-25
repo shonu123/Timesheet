@@ -2415,3 +2415,12 @@ top: 3px;
     left: -10px;
     top: 10px;  
   } */
+  .infoPlaceholder::-webkit-input-placeholder {
+    font-weight: lighter;
+    color:#000;
+    }
+    .infoPlaceholder::-moz-placeholder {
+    font-weight: lighter;
+    color:#000;
+    }
+    
