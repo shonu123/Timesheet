@@ -1931,53 +1931,61 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
            }
            if(formdata.ClientName.toLowerCase()!="")
            {
-            if(formdata.SynergyHolidayHrs[0].Description.trim()=="" && formdata.IsDescriptionMandatory)
+            if(formdata.SynergyHolidayHrs[0].Total!='00:00')
             {
-                isValid.message="Description can not be blank";
-                isValid.status=false;
-                document.getElementById("0_Description_SynHldHrs").focus();
-                document.getElementById("0_Description_SynHldHrs").classList.add('mandatory-FormContent-focus');
-                return isValid;
+                if(formdata.SynergyHolidayHrs[0].Description.trim()=="" && formdata.IsDescriptionMandatory)
+                {
+                    isValid.message="Description can not be blank";
+                    isValid.status=false;
+                    document.getElementById("0_Description_SynHldHrs").focus();
+                    document.getElementById("0_Description_SynHldHrs").classList.add('mandatory-FormContent-focus');
+                    return isValid;
+                }
+                else if(formdata.SynergyHolidayHrs[0].ProjectCode.trim()=="" && formdata.IsProjectCodeMandatory)
+                {
+                    isValid.message="ProjectCode can not be blank";
+                    isValid.status=false;
+                    document.getElementById("0_ProjectCode_SynHldHrs").focus();
+                    document.getElementById("0_ProjectCode_SynHldHrs").classList.add('mandatory-FormContent-focus');
+                    return isValid;
+                }
             }
-            else if(formdata.SynergyHolidayHrs[0].ProjectCode.trim()=="" && formdata.IsProjectCodeMandatory)
+            if(formdata.ClientHolidayHrs[0].Total!='00:00')
             {
-                isValid.message="ProjectCode can not be blank";
-                isValid.status=false;
-                document.getElementById("0_ProjectCode_SynHldHrs").focus();
-                document.getElementById("0_ProjectCode_SynHldHrs").classList.add('mandatory-FormContent-focus');
-                return isValid;
+                if(formdata.ClientHolidayHrs[0].Description.trim()=="" && formdata.IsDescriptionMandatory)
+                {
+                    isValid.message="Description can not be blank";
+                    isValid.status=false;
+                    document.getElementById("0_Description_ClientHldHrs").focus();
+                    document.getElementById("0_Description_ClientHldHrs").classList.add('mandatory-FormContent-focus');
+                    return isValid;
+                }
+                else if(formdata.ClientHolidayHrs[0].ProjectCode.trim()=="" && formdata.IsProjectCodeMandatory)
+                {
+                    isValid.message="ProjectCode can not be blank";
+                    isValid.status=false;
+                    document.getElementById("0_ProjectCode_ClientHldHrs").focus();
+                    document.getElementById("0_ProjectCode_ClientHldHrs").classList.add('mandatory-FormContent-focus');
+                    return isValid;
+                }
             }
-            if(formdata.ClientHolidayHrs[0].Description.trim()=="" && formdata.IsDescriptionMandatory)
-            {
-                isValid.message="Description can not be blank";
-                isValid.status=false;
-                document.getElementById("0_Description_ClientHldHrs").focus();
-                document.getElementById("0_Description_ClientHldHrs").classList.add('mandatory-FormContent-focus');
-                return isValid;
-            }
-            else if(formdata.ClientHolidayHrs[0].ProjectCode.trim()=="" && formdata.IsProjectCodeMandatory)
-            {
-                isValid.message="ProjectCode can not be blank";
-                isValid.status=false;
-                document.getElementById("0_ProjectCode_ClientHldHrs").focus();
-                document.getElementById("0_ProjectCode_ClientHldHrs").classList.add('mandatory-FormContent-focus');
-                return isValid;
-            }
-            else if(formdata.PTOHrs[0].Description.trim()=="" && formdata.IsDescriptionMandatory)
-            {
-                isValid.message="Description can not be blank";
-                isValid.status=false;
-                document.getElementById("0_Description_PTOHrs").focus();
-                document.getElementById("0_Description_PTOHrs").classList.add('mandatory-FormContent-focus');
-                return isValid;
-            }
-            else if(formdata.PTOHrs[0].ProjectCode.trim()=="" && formdata.IsProjectCodeMandatory)
-            {
-                isValid.message="ProjectCode can not be blank";
-                isValid.status=false;
-                document.getElementById("0_ProjectCode_PTOHrs").focus();
-                document.getElementById("0_ProjectCode_PTOHrs").classList.add('mandatory-FormContent-focus');
-                return isValid;
+            if(formdata.PTOHrs[0].Total!='00:00'){
+                if(formdata.PTOHrs[0].Description.trim()=="" && formdata.IsDescriptionMandatory)
+                {
+                    isValid.message="Description can not be blank";
+                    isValid.status=false;
+                    document.getElementById("0_Description_PTOHrs").focus();
+                    document.getElementById("0_Description_PTOHrs").classList.add('mandatory-FormContent-focus');
+                    return isValid;
+                }
+                else if(formdata.PTOHrs[0].ProjectCode.trim()=="" && formdata.IsProjectCodeMandatory)
+                {
+                    isValid.message="ProjectCode can not be blank";
+                    isValid.status=false;
+                    document.getElementById("0_ProjectCode_PTOHrs").focus();
+                    document.getElementById("0_ProjectCode_PTOHrs").classList.add('mandatory-FormContent-focus');
+                    return isValid;
+                }
             }
            }
         //is isValid true remove all 'mandatory-FormContent-focus' classes
