@@ -49,11 +49,11 @@ class AllRequests extends React.Component<AllRequestsProps,AllRequestsState> {
 
     public componentDidMount() {
         //console.log(this.props);
+        this.setState({ loading: true });
         this.AllRequests();
     }
 
     private AllRequests = async () => {
-        this.setState({ loading: true });
         const userId = this.props.spContext.userId;
         let dateFilter = new Date()
         dateFilter.setDate(new Date().getDate()-31);
@@ -95,7 +95,7 @@ class AllRequests extends React.Component<AllRequestsProps,AllRequestsState> {
                 }
                 console.log(Data);
                 this.setState({ AllRequests: Data,loading:false });
-                this.setState({ loading: false });
+                // this.setState({ loading: false });
             }).catch(err => {
                 console.log('Failed to fetch data.', err);
             });

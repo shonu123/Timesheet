@@ -14,7 +14,7 @@ const Loading = () => {
                 
                 {/* <FadeLoader height={15} width={5} radius={2} margin={2} color={"rgb(51 220 186)"}></FadeLoader> */}
             </div>
-            Loading...
+            {/* <span color='#000'>Loading...</span> */}
         </div>
     );
 };

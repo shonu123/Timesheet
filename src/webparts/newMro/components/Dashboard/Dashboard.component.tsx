@@ -18,6 +18,7 @@ import AllRequests from './AllRequests.components';
 import EmployeeMasterForm from '../Masters/EmployeeMasterForm.component';
 import EmployeeMasterView from '../Masters/EmployeeMasterView.component';
 import App from '../Forms/CustomeDatePicker.component';
+import Loader from '../Shared/Loader';
 export interface DashboardProps {
     match: any;
     spContext: any;
@@ -50,6 +51,7 @@ export interface DashboardState {
     showMyApprovalsTab: boolean;
     showMyReviewersTab: boolean;
     showAllRequestsTab:boolean;
+    loading:boolean;
 }
 
 class Dashboard extends React.Component<DashboardProps, DashboardState> {
@@ -81,11 +83,13 @@ class Dashboard extends React.Component<DashboardProps, DashboardState> {
             showRequestTab :false,
             showMyApprovalsTab:false,
             showMyReviewersTab: false,
-            showAllRequestsTab: false
+            showAllRequestsTab: false,
+            loading:false,
         };
     }
     public componentDidMount() {
         // this.getUserGroups();
+        this.setState({ loading: true });
         this.getUserGroups();
     }
 
@@ -145,7 +149,7 @@ class Dashboard extends React.Component<DashboardProps, DashboardState> {
             this.setState({ showAllRequestsTab: true});
             this.onHandleClick('AllRequests')
         }
-
+        this.setState({loading:false})
     }
 
 
@@ -266,6 +270,7 @@ class Dashboard extends React.Component<DashboardProps, DashboardState> {
     }
     public render() {
         return (
+            <React.Fragment>
             <div id="content" className="content p-2 pt-2">
                 <div id="clickMenu" className="menu-icon-outer" onClick={(event) => this.onMenuItemClick(event)}>
                     <div className="menu-icon">
@@ -338,7 +343,10 @@ class Dashboard extends React.Component<DashboardProps, DashboardState> {
                     </div>
                 </div>
              </div>
-        </div>
+            </div>
+        {this.state.loading && <Loader />}
+                </React.Fragment>
+
         );
            
     }

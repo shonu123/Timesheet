@@ -441,7 +441,7 @@ else {
                                                 <div className="col-md-3">
                                                     
                                                     <div className="light-text">
-                                                        <label>Employee <span className="mandatoryhastrick">*</span></label>
+                                                        <label className='lblPeoplepicker'>Employee <span className="mandatoryhastrick">*</span></label>
                                                         <div className="custom-peoplepicker" id="divEmployee">
                                                                 <PeoplePicker
                                                                     context={this.props.context}
@@ -500,7 +500,7 @@ else {
 
                                             <div className="col-md-3">
                                                     <div className="light-text">
-                                                        <label>Manager <span className="mandatoryhastrick">*</span></label>
+                                                        <label className='lblPeoplepicker'>Manager <span className="mandatoryhastrick">*</span></label>
                                                         <div className="custom-peoplepicker" id="divReportingManager">
                                                                 <PeoplePicker
                                                                     context={this.props.context}
@@ -512,7 +512,7 @@ else {
                                                                     onChange={(e) => this._getPeoplePickerItems(e, 'ReportingManagerId')}    
                                                                     ensureUser={true}
                                                                     required={true}        
-                                                                    principalTypes={[PrincipalType.User]} placeholder="Reporting Manager"
+                                                                    principalTypes={[PrincipalType.User]} placeholder="Manager"
                                                                     resolveDelay={1000} peoplePickerCntrlclassName={"input-peoplePicker-custom"} />
                                                         </div>
                                                     </div>
@@ -520,7 +520,7 @@ else {
 
                                             <div className="col-md-3">
                                                     <div className="light-text">
-                                                        <label>Reviewer <span className="mandatoryhastrick">*</span></label>
+                                                        <label className='lblPeoplepicker'>Reviewer <span className="mandatoryhastrick">*</span></label>
                                                         <div className="custom-peoplepicker" id="divReviewer">
                                                                 <PeoplePicker
                                                                     context={this.props.context}

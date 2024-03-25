@@ -2398,6 +2398,9 @@ overflow:inherit !important;
 .kcxRMj{
   line-height: 1.5 !important;
 }
+.lblPeoplepicker,.lblClient{
+z-index: 1 !important;
+}
   /* .tabsBackground{
     background-color: #0D2F4B !important;
     color: #ffff !important;

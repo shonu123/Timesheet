@@ -645,10 +645,38 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
         formData[name] = value != 'None' ? value : null;
         this.setState({trFormdata:formData});
     }
+    // private isvalid=(value)=>{
+    //     var u = !0
+    //     , e = value.split(":").join("").split("")
+    //     , n = /^\d{0,2}?\:?\d{0,2}$/
+    //     , r = [];
+    //     if(value.length==2){
+    //     if(value.charAt(1)==':')
+    //         return false
+    //     }
+    //     return n.test(value) || (u = !1),
+    //                     e[0] && (parseInt(e[0], 10) < 0 || parseInt(e[0], 10) > 2) && (u = !1),
+    //                     e[2] && (parseInt(e[2], 10) < 0 || parseInt(e[2], 10) > 5) && (u = !1),
+    //                     r.indexOf(":") ? r = value.split(":") : r.push(value),
+    //                     r[0] && r[0].length && (parseInt(r[0], 10) < 0 || parseInt(r[0], 10) > 23) && (u = !1),
+    //                     r[1] && r[1].length && (parseInt(r[1], 10) < 0 || parseInt(r[1], 10) > 59) && (u = !1),
+    //                     u
+    // }
     private changeTime=(event)=>{
         const trFormdata = { ...this.state.trFormdata };
         let value=event.target.value;
-        
+        // let lastVal = value;
+        // if(value == ":"){
+        //     value = ""
+        // }
+        // let isValidValue = this.isvalid(value);
+        // if(isValidValue){
+        //     if (2 === value.length && 3 !== lastVal.length && (value += ":"),
+        //     2 === value.length && 3 === lastVal.length && (value = value.slice(0, 1)))
+        //         return !1;
+        // }
+
+        // value = isValidValue?value:''
         let index=parseInt(event.target.id.split("_")[0]);
         let prop=event.target.id.split("_")[1];
         let rowType=event.target.id.split("_")[2];
@@ -1142,10 +1170,14 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                         formdata.CommentsHistoryData.push({"Action":StatusType.Submit,"Role":user,"User":this.props.spContext.userDisplayName,"Comments":this.state.trFormdata.Comments,"Date":new Date()})
                     }
                     else if(this.state.ItemID!=0 && formdata.Status==StatusType.Save){
-                        formdata.CommentsHistoryData.push({"Action":StatusType.Submit,"Role":"Initiator","User":this.props.spContext.userDisplayName,"Comments":this.state.trFormdata.Comments,"Date":new Date()})
+                        let user = "Initiator";
+                        user = this.state.EmployeeEmail!=this.props.spContext.userEmail?"Administator":user
+                        formdata.CommentsHistoryData.push({"Action":StatusType.Submit,"Role":user,"User":this.props.spContext.userDisplayName,"Comments":this.state.trFormdata.Comments,"Date":new Date()})
                     }
                     else{
-                        formdata.CommentsHistoryData.push({"Action":"Re-Submitted","Role":"Initiator","User":this.props.spContext.userDisplayName,"Comments":this.state.trFormdata.Comments,"Date":new Date()})
+                        let user = "Initiator";
+                        user = this.state.EmployeeEmail!=this.props.spContext.userEmail?"Administator":user
+                        formdata.CommentsHistoryData.push({"Action":"Re-Submitted","Role":user,"User":this.props.spContext.userDisplayName,"Comments":this.state.trFormdata.Comments,"Date":new Date()})
                     }
 
                    if(this.state.ItemID==0)
@@ -1460,7 +1492,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
     }
     private emailBodyPreparation(redirectURL, tableContent, bodyString, userName) {
         var emailLink = "Please <a href=" + redirectURL + ">click here</a> to review the details.";
-        var emailBody = '<table id="email-container" border="0" cellpadding="0" cellspacing="0" style="margin: 0; padding: 0; text-align: left;" width="600px">' +
+        var emailBody = '<table id="email-container" border="0" cellpadding="0" cellspacing="0" style="margin: 0; padding: 0; text-align: left;"width="600px">' +
             '<tr valign="top"><td colspan="2"><div id="email-to">Dear Sir/Madam,</br></div></td></tr>';
         emailBody += '<tr valign="top"><td colspan="2" style="padding-top: 10px;">' + bodyString + '</td></tr>';
         var i = 0;
@@ -2327,7 +2359,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                     }
                         <div className={this.state.isAdmin?"col-md-3":"col-md-4"}>
                                 <div className="light-text clientName">
-                                    <label>Client Name <span className="mandatoryhastrick">*</span></label>
+                                    <label className='lblClient'>Client Name <span className="mandatoryhastrick">*</span></label>
                                     <select className="ddlClient" required={true}  name="ClientName" title="Client Name" onChange={this.handleClientChange} ref={this.Client} disabled={(this.state.ClientNames.length==1?true:this.currentUser==this.state.trFormdata.Name?false: this.state.isSubmitted)}>
                                                 {/* <option value=''>None</option>
                                                 {this.state.ClientNames.map((option) => (
@@ -2390,7 +2422,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                                         <input className="form-control" value={this.state.trFormdata.WeeklyItemsData[0].ProjectCode}  id="0_ProjectCode_weekrow" onChange={this.changeTime}  disabled={this.state.isSubmitted || this.state.showBillable} ></input>
                                     </td>
                                     <td>
-                                        <input className={"form-control time "+(this.WeekNames[0].day1)}  value={this.state.trFormdata.WeeklyItemsData[0].Mon} id="0_Mon_weekrow"  onChange={this.changeTime}  disabled={this.state.isSubmitted || this.state.showBillable || this.WeekHeadings[0].IsMonJoined} type="time"></input>
+                                        <input className={"form-control time "+(this.WeekNames[0].day1)}  value={this.state.trFormdata.WeeklyItemsData[0].Mon} id="0_Mon_weekrow"  onChange={this.changeTime}  disabled={this.state.isSubmitted || this.state.showBillable || this.WeekHeadings[0].IsMonJoined} type="time" maxLength={5}></input>
                                     </td>
                                     <td>
                                         <input className={"form-control time "+(this.WeekNames[0].day2)} value={this.state.trFormdata.WeeklyItemsData[0].Tue} id="0_Tue_weekrow"  onChange={this.changeTime}  disabled={this.state.isSubmitted || this.state.showBillable || this.WeekHeadings[0].IsTueJoined} type="time"></input>
