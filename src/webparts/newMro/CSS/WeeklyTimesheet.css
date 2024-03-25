@@ -228,4 +228,8 @@
      border: none !important;
      width: 100px !important;
     }
+    fieldset{
+        border:none !important;
+        width: 100px !important;
+    }
 

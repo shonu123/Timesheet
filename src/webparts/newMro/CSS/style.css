@@ -2420,10 +2420,10 @@ top: 3px;
   } */
   .infoPlaceholder::-webkit-input-placeholder {
     font-weight: lighter;
-    color:#000;
+    color: #d9d4d4;
     }
     .infoPlaceholder::-moz-placeholder {
     font-weight: lighter;
-    color:#000;
+    color: #d9d4d4;
     }
     
