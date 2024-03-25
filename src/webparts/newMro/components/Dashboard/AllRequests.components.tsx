@@ -261,12 +261,16 @@ class AllRequests extends React.Component<AllRequestsProps,AllRequestsState> {
         return (
             <React.Fragment>
             {/* <h1>Approver Screen</h1> */}
-            <div>
-                <div style={{ paddingLeft: '10px' }} className="px-1 text-right" id='divNewWeeklyTimeSheet'>
+            <div className="col-12 col-md-12 col-lg-12">
+                {/* <div style={{ paddingLeft: '10px' }} className="px-1 text-right" id='divNewWeeklyTimeSheet'>
                     <NavLink title="New Weekly Timesheet"  className="csrLink ms-draggable" to={`/WeeklyTimesheet`}>
                         <span className='SubmitButtons' id='newWeeklyTimeSheet'><FontAwesomeIcon icon={faPlus}></FontAwesomeIcon> New</span>
                     </NavLink>
-                </div>  
+                </div> */}
+                <div className="mx-2"><div className="text-right pt-2"><button type="button" id="btnSubmit" className="SubmitButtons btn"><NavLink title="New Weekly Timesheet"  className="csrLink ms-draggable" to={`/WeeklyTimesheet`}>
+                        <span className='' id=''><FontAwesomeIcon icon={faPlus}></FontAwesomeIcon> New</span>
+                    </NavLink>
+                </button></div></div>
                 <div className='table-head-1st-td'>
                     <TableGenerator columns={columns} data={this.state.AllRequests} fileName={'All Requests'} showExportExcel={true} ExportExcelCustomisedColumns={Exportcolumns} ></TableGenerator>
                 </div>
