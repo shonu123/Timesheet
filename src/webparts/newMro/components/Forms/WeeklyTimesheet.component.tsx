@@ -2319,7 +2319,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                     <h6>Bingham Farms, MI  48025</h6>
                     <p id='fax'>248.723.5100    Fax: 248.723.5372</p>
                     </div>
-                    <div className="row pt-2 px-2 weeklysection1">
+                    <div className="row pt-2 px-4 weeklysection1">
                     {/* new changes start */}
                     {this.state.isAdmin &&
                     <div className="col-md-3">
@@ -2384,6 +2384,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                     </div>
                     <div className="border-box-shadow light-box table-responsive dataTables_wrapper-overflow p-2">
                         {/* <h4>Billable Hours</h4> */}
+                        <div className='table-outer'></div>
                         <table className="table table-bordered m-0 timetable">
                                         <thead style={{ borderBottom: "4px solid #444444" }}>
                                         <tr>
@@ -2398,7 +2399,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
             <th className={"weekDay "+(this.WeekNames[0].day6=="Sat"||this.WeekNames[0].day6=="Sun"?"color-FF9800":"")}>{this.WeekNames[0].day6} <span className={"day "+(this.WeekNames[0].day6=="Sat"||this.WeekNames[0].day6=="Sun"?"color-FF9800":"")}>{this.WeekHeadings[0].Sat}</span></th>
             <th className={"weekDay "+(this.WeekNames[0].day7=="Sat"||this.WeekNames[0].day7=="Sun"?"color-FF9800":"")}>{this.WeekNames[0].day7} <span className={"day "+(this.WeekNames[0].day7=="Sat"||this.WeekNames[0].day7=="Sun"?"color-FF9800":"")}>{this.WeekHeadings[0].Sun}</span></th>
                                         <th><div className="px-2"></div></th>
-                                        <th className="bc-e1f2ff">Total</th>
+                                        <th className="bc-e1f2ff"><div className='th-total'>Total</div></th>
                                         <th className=""><div className="px-3"></div></th>
                                         </tr>
                                         </thead>
@@ -2820,6 +2821,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                                 </tr>
                             </tbody>
                         </table>
+                        </div>
                         <div className="light-box border-box-shadow m-1 p-2 pt-3">
                                                     <div className="media-px-12,col-md-9">
                                                         <div className="light-text height-auto">
@@ -2902,7 +2904,6 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                      
                 </div>
             </div>
-        </div>
         </div>
             {this.state.loading && <Loader />}
                 </React.Fragment>

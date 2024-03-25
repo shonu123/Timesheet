@@ -183,6 +183,7 @@ class EmployeeMasterView extends React.Component<EmployeeMasterViewProps, Employ
             <div className='container-fluid'>
                             <div className='FormContent'>
                                 <div className="title">Approval Matrix</div>
+                                <div className="after-title"></div>
             {/* <h1 className='title'>Approval Matrix</h1> */}
 
                 {/* <div style={{ paddingLeft: '10px' }} className="px-1 text-right Billable" id='divAddNewEmployeeMaster'>
@@ -193,7 +194,7 @@ class EmployeeMasterView extends React.Component<EmployeeMasterViewProps, Employ
             <div>
                 <div className='table-head-1st-td'>
                     <TableGenerator columns={columns} data={this.state.Details} fileName={'My Details'} showExportExcel={false}
-                    showAddButton={true} customBtnClass='px-1 text-right Billable' btnDivID='divAddNewEmployeeMaster' navigateOnBtnClick={`/EmployeeMasterForm`} btnSpanID='newEmployeeMasterForm' btnCaption=' New' btnTitle='New Approval Matrix' searchBoxLeft={false}></TableGenerator>
+                    showAddButton={true} customBtnClass='px-1 text-right mt-2' btnDivID='divAddNewEmployeeMaster' navigateOnBtnClick={`/EmployeeMasterForm`} btnSpanID='newEmployeeMasterForm' btnCaption=' New' btnTitle='New Approval Matrix' searchBoxLeft={false}></TableGenerator>
                 </div>
             </div>
             </div>

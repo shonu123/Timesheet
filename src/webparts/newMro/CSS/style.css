@@ -2426,4 +2426,20 @@ top: 3px;
     font-weight: lighter;
     color: #d9d4d4;
     }
-    
+    .ddlEmployee{
+      width: auto !important;
+    }
+    .th-total{
+      width: 70px;
+    margin: auto;
+    text-align: center;
+    }
+    .table-outer{
+      overflow-x: auto;
+    }
+    .fxdyfQ{
+      min-height: 45px!important;
+    }
+    .bHQcOt{
+      min-height: 45px!important;
+    }

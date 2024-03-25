@@ -232,4 +232,13 @@
         border:none !important;
         width: 100px !important;
     }
-
+    /* @media only screen and (max-width: 1364px) {
+        .table-outer{
+          overflow-x: auto;
+          width: 100%;
+          margin: auto;
+        }
+      } */
+      /* #s4-workspace{
+        overflow-x: hidden!important;
+    } */
