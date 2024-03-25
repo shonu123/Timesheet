@@ -268,7 +268,7 @@ class AllRequests extends React.Component<AllRequestsProps,AllRequestsState> {
                     </NavLink>
                 </div> */}
                 <div className="mx-2"><div className="text-right pt-2"><button type="button" id="btnSubmit" className="SubmitButtons btn"><NavLink title="New Weekly Timesheet"  className="csrLink ms-draggable" to={`/WeeklyTimesheet`}>
-                        <span className='' id=''><FontAwesomeIcon icon={faPlus}></FontAwesomeIcon> New</span>
+                        <span className='' id='WeeklyTimeSheet'><FontAwesomeIcon icon={faPlus}></FontAwesomeIcon> New</span>
                     </NavLink>
                 </button></div></div>
                 <div className='table-head-1st-td'>
