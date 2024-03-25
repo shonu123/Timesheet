@@ -232,6 +232,9 @@
         border:none !important;
         width: 100px !important;
     }
+    fieldset:disabled:hover{
+        cursor: not-allowed;
+      }
     /* @media only screen and (max-width: 1364px) {
         .table-outer{
           overflow-x: auto;

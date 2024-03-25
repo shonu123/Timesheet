@@ -2,7 +2,7 @@ import * as React from 'react';
 import { NavLink } from 'react-router-dom';
 import TableGenerator from '../Shared/TableGenerator';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faXmark, faEdit, faCheck, faEye } from '@fortawesome/free-solid-svg-icons';
+import { faXmark, faEdit, faCheck,faPlus, faEye } from '@fortawesome/free-solid-svg-icons';
 import { SPHttpClient} from '@microsoft/sp-http';
 import ModalApprovePopUp from '../Shared/ModalApprovePopUp';
 import { WebPartContext } from '@microsoft/sp-webpart-base';
@@ -262,6 +262,11 @@ class AllRequests extends React.Component<AllRequestsProps,AllRequestsState> {
             <React.Fragment>
             {/* <h1>Approver Screen</h1> */}
             <div>
+                <div style={{ paddingLeft: '10px' }} className="px-1 text-right" id='divNewWeeklyTimeSheet'>
+                    <NavLink title="New Weekly Timesheet"  className="csrLink ms-draggable" to={`/WeeklyTimesheet`}>
+                        <span className='SubmitButtons' id='newWeeklyTimeSheet'><FontAwesomeIcon icon={faPlus}></FontAwesomeIcon> New</span>
+                    </NavLink>
+                </div>  
                 <div className='table-head-1st-td'>
                     <TableGenerator columns={columns} data={this.state.AllRequests} fileName={'All Requests'} showExportExcel={true} ExportExcelCustomisedColumns={Exportcolumns} ></TableGenerator>
                 </div>

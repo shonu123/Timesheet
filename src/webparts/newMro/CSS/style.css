@@ -2249,7 +2249,7 @@ li {
   display: none;
 }
 
-#divAddNewWeeklyTimeSheet,#divAddNewEmployeeMaster{
+#divAddNewWeeklyTimeSheet,#divAddNewEmployeeMaster,#divNewWeeklyTimeSheet{
   position: relative;
 }
 /* #newWeeklyTimeSheet{
