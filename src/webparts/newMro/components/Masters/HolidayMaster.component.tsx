@@ -620,7 +620,7 @@ class HolidaysList extends Component<HolidaysListProps, HolidaysListState> {
                         </div> */}
                         <div className='container-fluid'>
                             <div className='FormContent'>
-                                <div className='title'>Holiday Master
+                                <div className='title'>Holidays
                                     {this.state.addNewClient &&
                                         <div className='mandatory-note'>
                                             <span className='mandatoryhastrick'>*</span> indicates a required field
@@ -643,7 +643,7 @@ class HolidaysList extends Component<HolidaysListProps, HolidaysListState> {
                                                 <button type="button" id="btnSubmit" className="SubmitButtons btn" onClick={this.addNewHolidayMaster}>Add</button>
                                             </div>
                                         </div>
-                                        <div className="c-v-table">
+                                        <div className="c-v-table holiadyForm">
                                             <div className="light-box border-box-shadow mx-2">
                                                 <div className={this.state.addNewClient ? '' : 'activediv'}>
                                                     <div className="my-2">

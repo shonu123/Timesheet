@@ -1549,7 +1549,7 @@ div[id^="_TopSpan_NotificationSpan"]{
       /* margin-top: 80px !important; */
   }
   .c-v-table{
-    width: 82vw;
+    /* width: 82vw; */
     margin: auto;
 }
   .dataTable-table td , th{
@@ -2400,6 +2400,10 @@ overflow:inherit !important;
 }
 .lblPeoplepicker,.lblClient{
 z-index: 1 !important;
+}
+.holiadyForm,.clientForm{
+position: relative;
+top: 3px;
 }
   /* .tabsBackground{
     background-color: #0D2F4B !important;

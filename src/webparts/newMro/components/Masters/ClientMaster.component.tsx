@@ -360,7 +360,7 @@ class Clients extends Component<ClientProps, ClientState> {
                         </div> */}
                         <div className='container-fluid'>
                             <div className='FormContent'>
-                                <div className='title'>Client Master
+                                <div className='title'>Clients
                                     {this.state.addNewClient &&
                                         <div className='mandatory-note'>
                                             <span className='mandatoryhastrick'>*</span> indicates a required field
@@ -381,7 +381,7 @@ class Clients extends Component<ClientProps, ClientState> {
                                                 <button type="button" id="btnSubmit" className="SubmitButtons btn" onClick={this.addNewClientMaster}>Add</button>
                                             </div>
                                         </div>
-                                        <div className="c-v-table">
+                                        <div className="c-v-table clientForm">
                                             <div className="light-box border-box-shadow mx-2">
                                                 <div className={this.state.addNewClient ? '' : 'activediv'}>
                                                     <div className="my-2">
