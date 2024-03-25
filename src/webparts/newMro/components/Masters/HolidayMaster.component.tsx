@@ -6,7 +6,7 @@ import Formvalidator from '../../Utilities/Formvalidator';
 import { ControlType } from '../../Constants/Constants';
 import TableGenerator from '../Shared/TableGenerator';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faEdit } from '@fortawesome/free-solid-svg-icons';
+// import { faEdit } from '@fortawesome/free-solid-svg-icons';
 import { NavLink, Navigate,redirect } from 'react-router-dom';
 import { SPHttpClient } from '@microsoft/sp-http';
 import { WebPartContext } from '@microsoft/sp-webpart-base';
@@ -22,7 +22,7 @@ import "../Shared/Menuhandler";
 import ImportExcel from '../Shared/ImportExcel';
 import DatePicker from "../Shared/DatePickerField";
 import { addDays } from 'office-ui-fabric-react';
-
+import { faXmark, faEdit, faCheck, faPlus } from '@fortawesome/free-solid-svg-icons';
 interface HolidaysListProps {
     match: any;
     spContext: any;
@@ -640,7 +640,10 @@ class HolidaysList extends Component<HolidaysListProps, HolidaysListState> {
                                             <div className="text-right pt-2">
                                                 <ImportExcel ErrorFileSelect={this.ErrorFileSelect} columns={["Client Name", "Holiday Name", "Holiday Date"]} filename="Holidays List" onDataFetch={this.fetchImportedExcelData} submitData={this.submitImportedExcelData}></ImportExcel>
 
-                                                <button type="button" id="btnSubmit" className="SubmitButtons btn" onClick={this.addNewHolidayMaster}>Add</button>
+                                                {/* <button type="button" id="btnSubmit" className="add-button btn" onClick={this.addNewHolidayMaster}> */}
+                                                <button type="button" id="btnSubmit" className="SubmitButtons btn" onClick={this.addNewHolidayMaster}>
+                                                    <span className='' id='addHoliday'><FontAwesomeIcon icon={faPlus}></FontAwesomeIcon> Add</span>
+                                                </button>
                                             </div>
                                         </div>
                                         <div className="c-v-table holiadyForm">

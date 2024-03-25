@@ -467,7 +467,9 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
                 <ModalApprovePopUp message={this.state.message} title={this.state.title} isVisible={this.state.showHideModal} isSuccess={this.state.isSuccess} onConfirm={this.handleAction} onCancel={this.handlefullClose} comments={this.handleComments} errorMessage={this.state.errorMessage} commentsValue={this.state.comments} modalHeader={this.state.ModalHeader} IsClientApprovalNeed= {this.state.IsClientApprovalNeed}></ModalApprovePopUp>
                 <div>
                     <div className='table-head-1st-td'>
-                        <TableGenerator columns={columns} data={this.state.Reviewers} fileName={'My Approvals'} showExportExcel={false}></TableGenerator>
+                        {/* <TableGenerator columns={columns} data={this.state.Reviewers} fileName={'My Reviews'} showExportExcel={false} searchBoxLeft={true} showAddButton={false}></TableGenerator> */}
+
+                        <TableGenerator columns={columns} data={this.state.Reviewers} fileName={'My Reviews'} showExportExcel={false} showAddButton={false} searchBoxLeft={true}></TableGenerator>
                     </div>
                 </div>
                 {this.state.loading && <Loader />}

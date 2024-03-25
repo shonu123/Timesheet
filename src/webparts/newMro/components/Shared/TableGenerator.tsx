@@ -2,6 +2,9 @@ import React, { useState, useEffect } from 'react';
 import DataTable from 'react-data-table-component';
 import ExportExcel from './ExportExcel';
 import Search from './Search';
+import { NavLink } from 'react-router-dom';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faPlus } from '@fortawesome/free-solid-svg-icons';
 
 const customStyles = {
   rows: {
@@ -42,9 +45,17 @@ interface TableGeneratorProps {
   onChange?:any;
   onSortChange?:any;
   onSortDirection?:any;
+  showAddButton?:boolean;
+  btnSpanID?:string;
+  btnDivID?:string
+  btnTitle?:string;
+  navigateOnBtnClick?:string;
+  btnCaption?:string;
+  customBtnClass?:string;
+  searchBoxLeft?:boolean;
 }
 
-const TableGenerator = ({ columns, data, fileName,showExportExcel, ExportExcelCustomisedColumns,ExportExcelCustomisedData, prvPageNumber,prvSort,prvDirection,onChange,onSortChange,onSortDirection }: TableGeneratorProps) => {
+const TableGenerator = ({ columns, data, fileName,showExportExcel, ExportExcelCustomisedColumns,ExportExcelCustomisedData, prvPageNumber,prvSort,prvDirection,onChange,onSortChange,onSortDirection,showAddButton,btnSpanID,btnTitle,navigateOnBtnClick,btnCaption,customBtnClass,btnDivID,searchBoxLeft}: TableGeneratorProps) => {
   //let lsMyrequests = localStorage.getItem('PrvData');
  // const tableData = { columns, data };
   const [totalData, setData] = useState([]);
@@ -73,13 +84,20 @@ const TableGenerator = ({ columns, data, fileName,showExportExcel, ExportExcelCu
 
   return (
     <div className="py-2 m-2 border">
-      <div className={showExportExcel ? 'row' : 'row justify-content-end-sp'}>
+      <div className={showExportExcel||showAddButton || searchBoxLeft ? 'row' : 'row justify-content-end-sp'}>
         <div className="col-6 text-right-col-6">
           <Search onSearch={value => {
             setSearchText(value);
           }} ></Search>
         </div>
-
+        {showAddButton&&
+              <div className="col-6 text-right">
+                  <div style={{ paddingLeft: '10px' }} className={customBtnClass} id={""+btnDivID}>
+                    <NavLink title={btnTitle}  className="csrLink ms-draggable" to={navigateOnBtnClick}>
+                        <span className='SubmitButtons' id={""+btnSpanID}><FontAwesomeIcon icon={faPlus}></FontAwesomeIcon>{btnCaption}</span>
+                    </NavLink>
+                    </div> 
+        </div>}
         {showExportExcel &&
           <div className="col-6 text-right">
             <ExportExcel tableData={ExportExcelCustomisedData ? ExportExcelCustomisedData : data} filename={fileName} columns={ExportExcelCustomisedColumns ? ExportExcelCustomisedColumns : columns}></ExportExcel>

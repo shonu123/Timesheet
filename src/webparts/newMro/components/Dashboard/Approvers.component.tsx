@@ -162,7 +162,10 @@ class ApproversApprovals extends React.Component<ApproversProps, ApproversState>
             {/* <h1>Approver Screen</h1> */}
             <div>
                 <div className='table-head-1st-td'>
-                    <TableGenerator columns={columns} data={this.state.ReportingManager} fileName={'My Approvals'} showExportExcel={false}></TableGenerator>
+                    {/* <TableGenerator columns={columns} data={this.state.ReportingManager} fileName={'My Approvals'} showExportExcel={false} searchBoxLeft={true} showAddButton={false}></TableGenerator> */}
+
+                    <TableGenerator columns={columns} data={this.state.ReportingManager} fileName={'My Approvals'} showExportExcel={false}
+                    showAddButton={false} customBtnClass='' btnDivID='' navigateOnBtnClick='' btnSpanID='newEmployeeMasterForm' btnCaption='' btnTitle='' searchBoxLeft={true}></TableGenerator>
                 </div>
             </div>
             </React.Fragment> 

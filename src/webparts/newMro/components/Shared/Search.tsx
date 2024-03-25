@@ -8,7 +8,7 @@ const Search = ({ onSearch }) => {
         onSearch(value);
     };
     return (
-        <div className="">
+        <div className="divTableSearch">
             {/* <label>Search : </label> */}
             <input
                 type="text"

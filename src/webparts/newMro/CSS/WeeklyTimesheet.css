@@ -219,11 +219,13 @@
         left: 40px !important;
         width: 150px !important;
     }
-    .ClientHoliday
+    .ClientHoliday .TimeInput-input
     {
         color:hwb(263 9% 9%);
     }
     .TimeInput-input{
      text-align: center !important;
+     border: none !important;
+     width: 100px !important;
     }
 

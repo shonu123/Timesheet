@@ -6,7 +6,7 @@ import Formvalidator from '../../Utilities/Formvalidator';
 import { ControlType } from '../../Constants/Constants';
 import TableGenerator from '../Shared/TableGenerator';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faEdit } from '@fortawesome/free-solid-svg-icons';
+import { faEdit,faPlus } from '@fortawesome/free-solid-svg-icons';
 import { NavLink, Navigate,redirect } from 'react-router-dom';
 import { SPHttpClient } from '@microsoft/sp-http';
 import { WebPartContext } from '@microsoft/sp-webpart-base';
@@ -288,16 +288,13 @@ class Clients extends Component<ClientProps, ClientState> {
     public render() {
         let ExportExcelreportColumns = [
             {
-                name: "Edit",
-                selector: "Id",
-            },
-            {
                 name: "Client Name",
                 selector: "ClientName",
             },
             {
                 name: "Is Active",
-                selector: "IsActive",
+                // selector: "IsActive",
+                selector: (row, i) => row.IsActive?"Active":"In-Active",
             },
         ];
         const columns = [
@@ -378,7 +375,9 @@ class Clients extends Component<ClientProps, ClientState> {
 
                                         <div className={this.state.addNewClient ? 'mx-2 activediv' : 'mx-2'}>
                                             <div className="text-right pt-2">
-                                                <button type="button" id="btnSubmit" className="SubmitButtons btn" onClick={this.addNewClientMaster}>Add</button>
+                                                <button type="button" id="btnSubmit" className="SubmitButtons btn" onClick={this.addNewClientMaster}>
+                                                <span className='' id='addClient'><FontAwesomeIcon icon={faPlus}></FontAwesomeIcon> Add</span>
+                                                </button>
                                             </div>
                                         </div>
                                         <div className="c-v-table clientForm">
@@ -435,7 +434,7 @@ class Clients extends Component<ClientProps, ClientState> {
                                         </div>
 
                                         <div className="c-v-table table-head-1st-td">
-                                            <TableGenerator columns={columns} data={this.state.ClientsObj} fileName={'Clients'}showExportExcel={false} ExportExcelCustomisedColumns={ExportExcelreportColumns} ></TableGenerator>
+                                            <TableGenerator columns={columns} data={this.state.ClientsObj} fileName={'Clients'}showExportExcel={true} ExportExcelCustomisedColumns={ExportExcelreportColumns}></TableGenerator>
                                         </div>
                                     </div>
                                 </div>

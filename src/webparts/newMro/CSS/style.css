@@ -841,7 +841,7 @@ input.c-input-readonly {
     color: #a6a6a6;
     border-color: #eaeaea;
 }
-.WeekTotal.form-control[readonly],.DayTotal.form-control[readonly] {
+.WeekTotal.form-control[readonly],.DayTotal.form-control[readonly],.BillableSubTotal.form-control[readonly],.GrandTotal.form-control[readonly] {
   color: #000;
   font-weight: bold;
 }
@@ -2379,7 +2379,7 @@ li {
   font-size: 12px !important;
 }
 
-.Sun,.Sat{
+.Sun .TimeInput-input,.Sat .TimeInput-input{
   color: rgb(241, 94, 94);
 }
 #s4-workspace{
@@ -2392,8 +2392,11 @@ li {
   position: relative;
   z-index: 0;
 }
-.cLrkOt,.hlXCTj{
+.cLrkOt,.hlXCTj,.hbotQl{
 overflow:inherit !important;
+}
+.hbotQl{
+  overflow: initial !important;
 }
 .kcxRMj{
   line-height: 1.5 !important;

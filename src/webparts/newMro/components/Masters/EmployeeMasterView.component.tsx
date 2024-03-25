@@ -185,14 +185,15 @@ class EmployeeMasterView extends React.Component<EmployeeMasterViewProps, Employ
                                 <div className="title">Approval Matrix</div>
             {/* <h1 className='title'>Approval Matrix</h1> */}
 
-                <div style={{ paddingLeft: '10px' }} className="px-1 text-right Billable" id='divAddNewEmployeeMaster'>
+                {/* <div style={{ paddingLeft: '10px' }} className="px-1 text-right Billable" id='divAddNewEmployeeMaster'>
                     <NavLink title="New Approval Matrix"  className="csrLink ms-draggable" to={`/EmployeeMasterForm`}>
                         <span className='add-button' id='newEmployeeMasterForm'><FontAwesomeIcon icon={faPlus}></FontAwesomeIcon> New</span>
                     </NavLink>
-                </div>
+                </div> */}
             <div>
                 <div className='table-head-1st-td'>
-                    <TableGenerator columns={columns} data={this.state.Details} fileName={'My Details'} showExportExcel={false}></TableGenerator>
+                    <TableGenerator columns={columns} data={this.state.Details} fileName={'My Details'} showExportExcel={false}
+                    showAddButton={true} customBtnClass='px-1 text-right Billable' btnDivID='divAddNewEmployeeMaster' navigateOnBtnClick={`/EmployeeMasterForm`} btnSpanID='newEmployeeMasterForm' btnCaption=' New' btnTitle='New Approval Matrix' searchBoxLeft={false}></TableGenerator>
                 </div>
             </div>
             </div>
