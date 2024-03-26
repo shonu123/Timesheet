@@ -44,21 +44,22 @@ color: #666666!important;
 }
 .ul-leftnav li{
   list-style-type: none;
-  padding: 4px 6px;
+  padding: 0 7px;
   display: inline-block;
-  font-size: 1rem;
   color: #444;
-  font-weight: bold;
 }
 .ul-leftnav li a{
   color: #444 !important;
   text-decoration-line: none !important;
-  font-size: 1rem !important;
-  font-weight: bold !important;
+  font-size: 14px !important;
 }
-.ul-leftnav li a:hover{
-  background-color: rgba(197,233,234,.5);
+.ul-leftnav li:hover{
+  border-bottom: 2px solid rgb(13 47 75);
   text-decoration: none;
+}
+.nav-click{
+  background-color: #f1f1f1 !important;
+  border-bottom: 2px solid rgb(13 47 75);
 }
 #sidebar .h6 {
   color: #fff;

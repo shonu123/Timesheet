@@ -684,13 +684,13 @@ a{
 }
 .light-text label{
   position: absolute;
-  /* top: -2px; */
   top: -12px;
-  left: 6px;
+  left: 5px;
   padding: 0 5px;
-  background-color: white;
+  background-color: #fff;
   z-index: 0;
   font-size: 14px;
+  font-weight: bold;
 }
 /* #chkIsActive{
   position: absolute;
@@ -738,8 +738,16 @@ input.c-input-readonly {
   width: 100%;
   z-index: 0;
   /* padding: .575rem .75rem; */
-  
 }
+.light-text input{
+  padding-left: 7px;
+  padding-top: 4px;
+}
+.light-text select{
+  padding-left: 3px;
+  padding-top: 4px;
+}
+
 /* .light-text .form-control:focus,.form-select:focus{
   box-shadow: 0 0 0 0.1rem rgba(13,110,253,.25);
 } */
@@ -1711,6 +1719,30 @@ div[id^="_TopSpan_NotificationSpan"]{
           display: none;
       }
   }
+
+
+
+@media only screen and (max-width: 1406px) {
+  .dataTables_wrapper-overflow{
+      overflow-x: auto;
+      margin: auto;
+      width: 92vw;
+  }
+}
+@media only screen and (max-width: 1100px) {
+  .dataTables_wrapper-overflow{
+      width: 90vw;
+  }
+}
+@media only screen and (max-width: 800px) {
+  .dataTables_wrapper-overflow{
+      width: 88vw;
+  }
+}
+
+
+
+
   @media only screen and (max-width: 930px) {
       .dataTables_wrapper-overflow{
           overflow-x: auto;
@@ -2429,6 +2461,13 @@ top: 3px;
     .ddlEmployee{
       width: auto !important;
     }
+    .th-description{
+      width: 134px;
+    }
+    .th-Project-Code{
+      width: 134px;
+    text-align: center;
+    }
     .th-total{
       width: 70px;
     margin: auto;
@@ -2449,3 +2488,4 @@ color: #fff;
 .table-td-p-0 td{
 padding: 0 4px!important;
 }
+
