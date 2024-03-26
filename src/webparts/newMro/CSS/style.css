@@ -742,10 +742,12 @@ input.c-input-readonly {
 .light-text input{
   padding-left: 7px;
   padding-top: 4px;
+  border-radius: .25rem;
 }
 .light-text select{
   padding-left: 3px;
   padding-top: 4px;
+  border-radius: .25rem;
 }
 
 /* .light-text .form-control:focus,.form-select:focus{
@@ -1792,6 +1794,9 @@ div[id^="_TopSpan_NotificationSpan"]{
   }
   .justify-content-end-sp .sp-d-inline{
     display: inline;
+  }
+  .dataTables_wrapper-overflow{
+    margin: auto;
   }
   @media only screen and (max-width: 670px) {
       /*SiteApproval attachment-area*/

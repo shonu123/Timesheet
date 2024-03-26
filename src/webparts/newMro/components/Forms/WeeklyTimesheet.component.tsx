@@ -2850,7 +2850,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                             </tbody>
                         </table>
                         </div>
-                        <div className="light-box border-box-shadow m-1 p-2 pt-3">
+                        <div className="light-box m-1 p-2 pt-3">
                                                     <div className="media-px-12,col-md-9">
                                                         <div className="light-text height-auto">
                                                             <label className="floatingTextarea2 top-11">Comments{this.state.IsReviewer?<span className="mandatoryhastrick">*</span>:""} </label>
