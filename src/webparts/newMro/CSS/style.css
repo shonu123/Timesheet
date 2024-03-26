@@ -2446,3 +2446,6 @@ top: 3px;
     #WeeklyTimeSheet{
 color: #fff;
     }
+.table-td-p-0 td{
+padding: 0 4px!important;
+}

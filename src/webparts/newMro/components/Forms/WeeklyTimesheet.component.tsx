@@ -2346,9 +2346,6 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                                     </div>
                     <div className="col-md-4 SynergyAddress">
                     <h4>Synergy Computer Solutions, Inc.</h4>
-                    <h6>30700 Telegraph Rd.  Suite 2615</h6>
-                    <h6>Bingham Farms, MI  48025</h6>
-                    <p id='fax'>248.723.5100    Fax: 248.723.5372</p>
                     </div>
                     <div className="row pt-2 px-4 weeklysection1">
                     {/* new changes start */}
@@ -2416,7 +2413,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                     <div className="border-box-shadow light-box table-responsive dataTables_wrapper-overflow p-2">
                         {/* <h4>Billable Hours</h4> */}
                         <div className='table-outer'></div>
-                        <table className="table table-bordered m-0 timetable">
+                        <table className="table table-bordered m-0 timetable table-td-p-0">
                                         <thead style={{ borderBottom: "4px solid #444444" }}>
                                         <tr>
                                         <th className="" ><div className="have-h"></div></th>
@@ -2438,7 +2435,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                                 {this.state.trFormdata.ClientName.toLowerCase()=="synergy"||this.state.trFormdata.ClientName.toLowerCase()==""?"":
                                 <tr id="rowPRJ1"  >
                                     <td className=" text-start"> 
-                                        <div className="p-2">
+                                        <div className="p-1">
                                             <strong>Billable Hours</strong>
                                         </div>
                                     </td>
@@ -2498,12 +2495,12 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                                 {this.state.trFormdata.ClientName.toLowerCase()=="synergy"||this.state.trFormdata.ClientName.toLowerCase()==""?"":
                                 <tr id="rowOVR1" className="font-td-bold"  >
                                     <td className=" text-start"> 
-                                        <div className="p-2">
+                                        <div className="p-1">
                                             <i className="fas fa-user-clock color-gray"></i> Overtime
                                         </div>
                                     </td>
                                     <td>
-                                        <textarea className="form-control textareaBorder time" value={this.state.trFormdata.OTItemsData[0].Description} id="0_Description_otrow" onChange={this.changeTime}  disabled={this.state.isSubmitted || this.state.showBillable} ></textarea>
+                                        <textarea className="form-control textareaBorder time" rows={1} value={this.state.trFormdata.OTItemsData[0].Description} id="0_Description_otrow" onChange={this.changeTime}  disabled={this.state.isSubmitted || this.state.showBillable} ></textarea>
                                     </td>
                                     <td>
                                         <input className="form-control" value={this.state.trFormdata.OTItemsData[0].ProjectCode}   id="0_ProjectCode_otrow"  onChange={this.changeTime}  disabled={this.state.isSubmitted || this.state.showBillable} ></input>
@@ -2560,8 +2557,8 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                                 </tr> */}
                                  {this.state.trFormdata.ClientName.toLowerCase()!="synergy"?"":
                                 <tr id="SynergyOfficeHrs">
-                                    <td className="text-start"><div className="p-2">Office Hours</div></td>
-                                    <td><textarea className="form-control textareaBorder time"  value={this.state.trFormdata.SynergyOfficeHrs[0].Description} onChange={this.changeTime} id="0_Description_SynOffcHrs"  disabled={this.state.isSubmitted || this.state.showNonBillable} ></textarea></td>
+                                    <td className="text-start"><div className="p-1">Office Hours</div></td>
+                                    <td><textarea className="form-control textareaBorder time" rows={1} value={this.state.trFormdata.SynergyOfficeHrs[0].Description} onChange={this.changeTime} id="0_Description_SynOffcHrs"  disabled={this.state.isSubmitted || this.state.showNonBillable} ></textarea></td>
                                     <td><input className="form-control" value={this.state.trFormdata.SynergyOfficeHrs[0].ProjectCode} onChange={this.changeTime} id="0_ProjectCode_SynOffcHrs"   disabled={this.state.isSubmitted || this.state.showNonBillable} ></input></td>
                                     <td>
                                         <fieldset disabled={this.state.isSubmitted || this.state.showNonBillable || this.WeekHeadings[0].IsMonJoined} >
@@ -2603,8 +2600,8 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                                     <td></td>
                                 </tr>}
                                 <tr id="SynergyHolidayHrs">
-                                    <td className="text-start"><div className="p-2">Synergy Holiday</div></td>
-                                    <td><textarea className="form-control textareaBorder time"  value={this.state.trFormdata.SynergyHolidayHrs[0].Description} onChange={this.changeTime} id="0_Description_SynHldHrs"  disabled={this.state.isSubmitted || this.state.showNonBillable} ></textarea></td>
+                                    <td className="text-start"><div className="p-1">Synergy Holiday</div></td>
+                                    <td><textarea className="form-control textareaBorder time" rows={1} value={this.state.trFormdata.SynergyHolidayHrs[0].Description} onChange={this.changeTime} id="0_Description_SynHldHrs"  disabled={this.state.isSubmitted || this.state.showNonBillable} ></textarea></td>
                                     <td><input className="form-control" value={this.state.trFormdata.SynergyHolidayHrs[0].ProjectCode} onChange={this.changeTime} id="0_ProjectCode_SynHldHrs"   disabled={this.state.isSubmitted || this.state.showNonBillable} ></input></td>
                                     <td>
                                         <fieldset disabled={this.state.isSubmitted || this.state.showNonBillable || this.WeekHeadings[0].IsMonJoined||!this.WeekHeadings[0].IsDay1SynergyHoliday.isHoliday}>
@@ -2647,8 +2644,8 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                                 </tr>
                                 {this.state.trFormdata.ClientName.toLowerCase()=="synergy"?"":
                                 <tr id="ClientHoliday">
-                                    <td className="text-start"><div className="p-2">Holiday</div></td>
-                                    <td><textarea className="form-control textareaBorder time"  value={this.state.trFormdata.ClientHolidayHrs[0].Description} onChange={this.changeTime} id="0_Description_ClientHldHrs"  disabled={this.state.isSubmitted || this.state.showNonBillable} ></textarea></td>
+                                    <td className="text-start"><div className="p-1">Holiday</div></td>
+                                    <td><textarea className="form-control textareaBorder time" rows={1} value={this.state.trFormdata.ClientHolidayHrs[0].Description} onChange={this.changeTime} id="0_Description_ClientHldHrs"  disabled={this.state.isSubmitted || this.state.showNonBillable} ></textarea></td>
                                     <td><input className="form-control" value={this.state.trFormdata.ClientHolidayHrs[0].ProjectCode} onChange={this.changeTime} id="0_ProjectCode_ClientHldHrs"   disabled={this.state.isSubmitted || this.state.showNonBillable} ></input></td>
                                     <td>
                                         <fieldset disabled={this.state.isSubmitted || this.state.showNonBillable || this.WeekHeadings[0].IsMonJoined||!this.WeekHeadings[0].IsDay1Holiday.isHoliday}>
@@ -2690,7 +2687,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                                     <td></td>
                                 </tr>}
                                 <tr id="PTOHrs">
-                                    <td className="text-start"><div className="p-2">PTO (Paid Time Off)</div></td>
+                                    <td className="text-start"><div className="p-1">PTO (Paid Time Off)</div></td>
                                     <td><textarea className="form-control textareaBorder"  value={this.state.trFormdata.PTOHrs[0].Description} onChange={this.changeTime} id="0_Description_PTOHrs"  disabled={this.state.isSubmitted || this.state.showNonBillable}></textarea></td>
                                     <td><input className="form-control" value={this.state.trFormdata.PTOHrs[0].ProjectCode} onChange={this.changeTime} id="0_ProjectCode_PTOHrs"   disabled={this.state.isSubmitted || this.state.showNonBillable} ></input></td>
                                     <td>
