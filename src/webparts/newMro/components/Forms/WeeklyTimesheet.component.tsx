@@ -273,6 +273,8 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
     //functions related to  initial loading
      private async loadWeeklyTimeSheetData(currentUserId) {
         var ClientNames: any;
+        var ClientsFromClientMaster:any;
+        var Client=[];
 
          if(this.props.match.params.id!=undefined){
             this.setState({ItemID : this.props.match.params.id})
@@ -289,9 +291,10 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
             this.setState({loading:false,isSubmitted:true});
             return false;
         }
+        ClientsFromClientMaster = await this.oweb.lists.getByTitle('Client').items.filter("IsActive eq 1").select("Title,*").orderBy("Title",true).getAll();
         this.state.EmployeeEmail.push(ClientNames[0].Employee.EMail);
         ClientNames.filter(item => {
-              this.state.ClientNames.push(item.ClientName);
+              Client.push({"ClientName":item.ClientName});
               this.state.Clients_DateOfJoinings.push({"ClientName":item.ClientName,"DOJ":item.DateOfJoining,"IsDescriptionMandatory":item.MandatoryDescription,"IsProjectCodeMandatory":item.MandatoryProjectCode,"WeekStartDay":item.WeekStartDay,"HolidayType":item.HolidayType})
               if(item.hasOwnProperty("ReportingManager"))
               item.ReportingManager.map(i=>(this.state.SuperviserNames.push({"ClientName":item.ClientName,"ReportingManager":i.Title,"ReportingManagerId":i.Id,"ReportingManagerEmail":i.EMail})));
@@ -301,6 +304,14 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
               item.Notifiers.map(i=>(this.state.Notifiers.push({"ClientName":item.ClientName,"NotifierId":i.Id,"NotifierEmail":i.EMail})));
 
         }); 
+
+        ClientsFromClientMaster.filter(ClientItem=>{
+            Client.filter(employeeItem=>{
+                if(ClientItem.Title.toLowerCase()==employeeItem.ClientName.toLowerCase())
+                this.state.ClientNames.push(employeeItem.ClientName)
+            })
+        })
+        
         let groups = await sp.web.currentUser.groups();
         console.log("current user deatils")
         console.log(this.props.context.pageContext)
