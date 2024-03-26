@@ -453,7 +453,7 @@ else {
                                                                     ensureUser={true}
                                                                     required={true}   
                                                                     defaultSelectedUsers = {[this.state.EmployeeEmail]}
-                                                                    principalTypes={[PrincipalType.User]} placeholder="Employee"
+                                                                    principalTypes={[PrincipalType.User]} placeholder=""
                                                                     resolveDelay={1000} peoplePickerCntrlclassName={"input-peoplePicker-custom"} />
                                                         </div>
                                                     </div>
@@ -500,7 +500,7 @@ else {
 
                                             <div className="col-md-3">
                                                     <div className="light-text">
-                                                        <label className='lblPeoplepicker'>Manager <span className="mandatoryhastrick">*</span></label>
+                                                        <label className='lblPeoplepicker'>Reporting Manager <span className="mandatoryhastrick">*</span></label>
                                                         <div className="custom-peoplepicker" id="divReportingManager">
                                                                 <PeoplePicker
                                                                     context={this.props.context}
@@ -512,7 +512,7 @@ else {
                                                                     onChange={(e) => this._getPeoplePickerItems(e, 'ReportingManagerId')}    
                                                                     ensureUser={true}
                                                                     required={true}        
-                                                                    principalTypes={[PrincipalType.User]} placeholder="Manager"
+                                                                    principalTypes={[PrincipalType.User]} placeholder=""
                                                                     resolveDelay={1000} peoplePickerCntrlclassName={"input-peoplePicker-custom"} />
                                                         </div>
                                                     </div>
@@ -520,7 +520,7 @@ else {
 
                                             <div className="col-md-3">
                                                     <div className="light-text">
-                                                        <label className='lblPeoplepicker'>Reviewer <span className="mandatoryhastrick">*</span></label>
+                                                        <label className='lblPeoplepicker'> Synergy Reviewer <span className="mandatoryhastrick">*</span></label>
                                                         <div className="custom-peoplepicker" id="divReviewer">
                                                                 <PeoplePicker
                                                                     context={this.props.context}
@@ -532,7 +532,7 @@ else {
                                                                     onChange={(e) => this._getPeoplePickerItems(e, 'ReviewerId')}    
                                                                     ensureUser={true}
                                                                     required={true}        
-                                                                    principalTypes={[PrincipalType.User]} placeholder="Reviewer"
+                                                                    principalTypes={[PrincipalType.User]} placeholder=""
                                                                     resolveDelay={1000} peoplePickerCntrlclassName={"input-peoplePicker-custom"} />
                                                         </div>
                                                     </div>
@@ -555,7 +555,7 @@ else {
                                                                     onChange={(e) => this._getPeoplePickerItems(e, 'NotifierId')}    
                                                                     ensureUser={true}
                                                                     required={true}        
-                                                                    principalTypes={[PrincipalType.User]} placeholder="Notifier"
+                                                                    principalTypes={[PrincipalType.User]} placeholder=""
                                                                     resolveDelay={1000} peoplePickerCntrlclassName={"input-peoplePicker-custom"} />
                                                         </div>
                                                     </div>
@@ -637,7 +637,7 @@ else {
                                                                     onChange={(e) => this._getPeoplePickerItems(e, 'ApproverId')}    
                                                                     ensureUser={true}
                                                                     required={true}        
-                                                                    principalTypes={[PrincipalType.User]} placeholder="Approver"
+                                                                    principalTypes={[PrincipalType.User]} placeholder=""
                                                                     resolveDelay={1000} peoplePickerCntrlclassName={"input-peoplePicker-custom"} />
                                                         </div>
                                                     </div>
@@ -691,7 +691,7 @@ else {
                                                                     onChange={(e) => this._getPeoplePickerItems(e, 'ReviewerId')}    
                                                                     ensureUser={true}
                                                                     required={true}        
-                                                                    principalTypes={[PrincipalType.User]} placeholder="Reviewer"
+                                                                    principalTypes={[PrincipalType.User]} placeholder=""
                                                                     resolveDelay={1000} peoplePickerCntrlclassName={"input-peoplePicker-custom"} />
                                                         </div>
                                                     </div>
@@ -710,7 +710,7 @@ else {
                                                                     onChange={(e) => this._getPeoplePickerItems(e, 'NotifierId')}    
                                                                     ensureUser={true}
                                                                     required={true}        
-                                                                    principalTypes={[PrincipalType.User]} placeholder="Notifier"
+                                                                    principalTypes={[PrincipalType.User]} placeholder=""
                                                                     resolveDelay={1000} peoplePickerCntrlclassName={"input-peoplePicker-custom"} />
                                                         </div>
                                                     </div>

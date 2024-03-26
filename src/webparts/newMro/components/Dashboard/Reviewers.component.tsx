@@ -198,7 +198,7 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
         if(commentsObj == null)
         commentsObj = [];
         commentsObj.push({
-            Action : 'Approve',
+            Action : StatusType.Approved,
             Role : 'Reviewer',
             User : this.props.spContext.userDisplayName,
             Comments : this.state.comments,
@@ -250,7 +250,7 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
             console.log(data)
             let commentsObj = JSON.parse(data[0].CommentsHistory)
             commentsObj.push({
-                Action : 'Reject',
+                Action : StatusType.Reject,
                 Role : 'Reviewer',
                 User : this.props.spContext.userDisplayName,
                 Comments : this.state.comments,
@@ -315,7 +315,7 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
         // else
          if(name == 'Reject')
         {
-            this.setState({message : 'Are you sure you want to reject?',title : 'Reject', Action : 'Reject'});
+            this.setState({message : 'Are you sure you want to reject?',title : 'Reject', Action :StatusType.Reject});
             this.setState({showHideModal : true,isSuccess:false,ModalHeader:'modal-header-reject'})
         }
         else{
@@ -325,7 +325,7 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
 
     private handleAction = (e) =>{
         this.setState({loading : true})
-        // if(this.state.Action == 'Approve')
+         //if(this.state.Action == StatusType.Approved)
         // this.handleApprove(e)
         // else
          this.handleReject(e)
