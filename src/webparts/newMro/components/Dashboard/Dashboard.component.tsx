@@ -89,7 +89,7 @@ class Dashboard extends React.Component<DashboardProps, DashboardState> {
     }
     public componentDidMount() {
         // this.getUserGroups();
-        this.setState({ loading: true });
+        // this.setState({ loading: true });
         this.getUserGroups();
     }
 
@@ -149,7 +149,7 @@ class Dashboard extends React.Component<DashboardProps, DashboardState> {
             this.setState({ showAllRequestsTab: true});
             this.onHandleClick('AllRequests')
         }
-        this.setState({loading:false})
+        // this.setState({loading:false})
     }
 
 
