@@ -301,7 +301,7 @@ private async validateDuplicateRecord () {
         // Reviewer: { val: this.state.ReviewerId, required: true, Name: 'Reviewer', Type: ControlType.people,Focusid:'divReviewer' },
         // Notifier : { val: this.state.NotifierId, required: true, Name: 'Notifier', Type: ControlType.people,Focusid:'divNotifier' },
         Client:{ val: this.state.ClientName, required: true, Name: 'Client', Type: ControlType.string,Focusid:this.client },
-        HolidayType:{val: this.state.HolidayType, required: true, Name: 'Holiday Type', Type: ControlType.string,Focusid:this.HolidayType},
+        HolidayType:{val: this.state.HolidayType, required: true, Name: 'Holiday Calender', Type: ControlType.string,Focusid:this.HolidayType},
         DateOfJoining: { val: this.state.DateOfJoining, required: true, Name: 'Date Of Joining', Type: ControlType.date }
         }
         let isValid = Formvalidator.checkValidations(data)

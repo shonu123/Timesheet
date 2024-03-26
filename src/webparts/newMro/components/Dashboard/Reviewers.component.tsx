@@ -104,6 +104,7 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
             //Body of Email  
             Body: emaildetails.body,  
             //Subject of Email  
+            From: this.props.spContext.userEmail,
             Subject: emaildetails.subject,  
             //Array of string for To of Email  
             To: emaildetails.toemail,  
@@ -120,8 +121,8 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
           });  
     }
     
-    private emailBodyPreparation(redirectURL, tableContent, bodyString, userName) {
-        var emailLink = "Please <a href=" + redirectURL + ">click here</a> to review the details.";
+    private emailBodyPreparation(redirectURL, tableContent, bodyString, userName,DashboardURL) {
+        var emailLink = "Please <a href=" + redirectURL + ">click here</a> to review the details or go to <a href="+ DashboardURL+">Dashboard</a>";
         var emailBody = '<table id="email-container" border="0" cellpadding="0" cellspacing="0" style="margin: 0; padding: 0; text-align: left;""width="600px"">' +
             '<tr valign="top"><td colspan="2"><div id="email-to">Dear Sir/Madam,</br></div></td></tr>';
         emailBody += '<tr valign="top"><td colspan="2" style="padding-top: 10px;">' + bodyString + '</td></tr>';
@@ -164,11 +165,12 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
 
             let emaildetails ={toemail:To,ccemail:CC,subject:sub,bodyString:sub,body:'' };
              let table = tableContent;
-             emaildetails.body = this.emailBodyPreparation(this.state.siteURL+'/SitePages/TimeSheet.aspx#/WeeklyTimesheet/'+this.state.ItemID,table,emaildetails.bodyString,this.props.spContext.userDisplayName);
+             var DashboardURl = this.state.siteURL+'/SitePages/TimeSheet.aspx';
+             emaildetails.body = this.emailBodyPreparation(this.state.siteURL+'/SitePages/TimeSheet.aspx#/WeeklyTimesheet/'+this.state.ItemID,table,emaildetails.bodyString,this.props.spContext.userDisplayName,DashboardURl);
              if(Status == StatusType.Approved)
-             this.sendemail(emaildetails,'Success message','Record approved successfully')
+             this.sendemail(emaildetails,'Success','Record approved successfully')
             else
-            this.sendemail(emaildetails,'Success message','Record rejected successfully')
+            this.sendemail(emaildetails,'Success','Record rejected successfully')
             // <Navigate to={'/'} />
             // this.setState({redirect:true})
         });
