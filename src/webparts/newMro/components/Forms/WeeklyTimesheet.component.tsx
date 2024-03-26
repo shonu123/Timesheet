@@ -1293,6 +1293,20 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
             this.setState({errorMessage : '',trFormdata:formdata});
             this.InsertorUpdatedata(postObject,formdata);
     }
+    private handleRevoke=async (event)=>
+    {
+        var formdata = { ...this.state.trFormdata };
+        var postObject={};
+        let user = "Initiator";
+        user = this.state.EmployeeEmail!=this.props.spContext.userEmail?"Administator":user;
+                formdata.CommentsHistoryData.push({"Action":StatusType.Revoke,"Role":user,"User":this.currentUser,"Comments":this.state.trFormdata.Comments,"Date":new Date()})
+                postObject['Status']=StatusType.Save;
+                postObject['PendingWith']="NA";
+           
+             postObject["CommentsHistory"]=JSON.stringify(formdata.CommentsHistoryData),
+            this.setState({errorMessage : '',trFormdata:formdata});
+            this.InsertorUpdatedata(postObject,formdata);
+    }
     private handleReject=async (event)=>
     {
         var formdata = { ...this.state.trFormdata};
@@ -2576,37 +2590,37 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                                     <td><textarea className="form-control textareaBorder time"  value={this.state.trFormdata.SynergyHolidayHrs[0].Description} onChange={this.changeTime} id="0_Description_SynHldHrs"  disabled={this.state.isSubmitted || this.state.showNonBillable} ></textarea></td>
                                     <td><input className="form-control" value={this.state.trFormdata.SynergyHolidayHrs[0].ProjectCode} onChange={this.changeTime} id="0_ProjectCode_SynHldHrs"   disabled={this.state.isSubmitted || this.state.showNonBillable} ></input></td>
                                     <td>
-                                        <fieldset disabled={this.state.isSubmitted || this.state.showNonBillable || this.WeekHeadings[0].IsMonJoined}>
+                                        <fieldset disabled={this.state.isSubmitted || this.state.showNonBillable || this.WeekHeadings[0].IsMonJoined||!this.WeekHeadings[0].IsDay1SynergyHoliday.isHoliday}>
                                             <TimeInput className={"form-control time "+(this.WeekNames[0].day1)+(this.WeekHeadings[0].IsDay1SynergyHoliday.isHoliday?" ClientHoliday":"")} value={this.state.trFormdata.SynergyHolidayHrs[0].Mon} onChange={(newTime)=>{this.changeTime({target:{value:newTime,id:"0_Mon_SynHldHrs"}})}} id="0_Mon_SynHldHrs"  disabled={this.state.isSubmitted || this.state.showNonBillable || this.WeekHeadings[0].IsMonJoined} ></TimeInput>
                                         </fieldset>
                                         </td>
                                     <td>
-                                        <fieldset disabled={this.state.isSubmitted || this.state.showNonBillable || this.WeekHeadings[0].IsTueJoined}>
+                                        <fieldset disabled={this.state.isSubmitted || this.state.showNonBillable || this.WeekHeadings[0].IsTueJoined||!this.WeekHeadings[0].IsDay2SynergyHoliday.isHoliday}>
                                         <TimeInput className={"form-control time "+(this.WeekNames[0].day2)+(this.WeekHeadings[0].IsDay2SynergyHoliday.isHoliday?" ClientHoliday":"")} value={this.state.trFormdata.SynergyHolidayHrs[0].Tue} onChange={(newTime)=>{this.changeTime({target:{value:newTime,id:"0_Tue_SynHldHrs"}})}} id="0_Tue_SynHldHrs"  disabled={this.state.isSubmitted || this.state.showNonBillable || this.WeekHeadings[0].IsTueJoined} ></TimeInput>
                                         </fieldset>
                                         </td>
                                     <td>
-                                    <fieldset disabled={this.state.isSubmitted || this.state.showNonBillable || this.WeekHeadings[0].IsWedJoined}>
+                                    <fieldset disabled={this.state.isSubmitted || this.state.showNonBillable || this.WeekHeadings[0].IsWedJoined||!this.WeekHeadings[0].IsDay3SynergyHoliday.isHoliday}>
                                             <TimeInput className={"form-control time "+(this.WeekNames[0].day3)+(this.WeekHeadings[0].IsDay3SynergyHoliday.isHoliday?" ClientHoliday":"")} value={this.state.trFormdata.SynergyHolidayHrs[0].Wed} onChange={(newTime)=>{this.changeTime({target:{value:newTime,id:"0_Wed_SynHldHrs"}})}} id="0_Wed_SynHldHrs"  disabled={this.state.isSubmitted || this.state.showNonBillable || this.WeekHeadings[0].IsWedJoined} ></TimeInput>
                                             </fieldset>
                                             </td>
                                     <td>
-                                        <fieldset disabled={this.state.isSubmitted || this.state.showNonBillable || this.WeekHeadings[0].IsThuJoined}>
+                                        <fieldset disabled={this.state.isSubmitted || this.state.showNonBillable || this.WeekHeadings[0].IsThuJoined||!this.WeekHeadings[0].IsDay4SynergyHoliday.isHoliday}>
                                         <TimeInput className={"form-control time "+(this.WeekNames[0].day4)+(this.WeekHeadings[0].IsDay4SynergyHoliday.isHoliday?" ClientHoliday":"")} value={this.state.trFormdata.SynergyHolidayHrs[0].Thu} onChange={(newTime)=>{this.changeTime({target:{value:newTime,id:"0_Thu_SynHldHrs"}})}} id="0_Thu_SynHldHrs"  disabled={this.state.isSubmitted || this.state.showNonBillable || this.WeekHeadings[0].IsThuJoined} ></TimeInput>
                                         </fieldset>
                                         </td>
                                     <td>
-                                        <fieldset disabled={this.state.isSubmitted || this.state.showNonBillable || this.WeekHeadings[0].IsFriJoined}>
+                                        <fieldset disabled={this.state.isSubmitted || this.state.showNonBillable || this.WeekHeadings[0].IsFriJoined||!this.WeekHeadings[0].IsDay5SynergyHoliday.isHoliday}>
                                         <TimeInput className={"form-control time "+(this.WeekNames[0].day5)+(this.WeekHeadings[0].IsDay5SynergyHoliday.isHoliday?" ClientHoliday":"")} value={this.state.trFormdata.SynergyHolidayHrs[0].Fri} onChange={(newTime)=>{this.changeTime({target:{value:newTime,id:"0_Fri_SynHldHrs"}})}} id="0_Fri_SynHldHrs"  disabled={this.state.isSubmitted || this.state.showNonBillable || this.WeekHeadings[0].IsFriJoined} ></TimeInput>
                                         </fieldset>
                                         </td>
                                     <td>
-                                    <fieldset disabled={this.state.isSubmitted || this.state.showNonBillable || this.WeekHeadings[0].IsSatJoined}>
+                                    <fieldset disabled={this.state.isSubmitted || this.state.showNonBillable || this.WeekHeadings[0].IsSatJoined||!this.WeekHeadings[0].IsDay6SynergyHoliday.isHoliday}>
                                         <TimeInput className={"form-control time "+(this.WeekNames[0].day6)+(this.WeekHeadings[0].IsDay6SynergyHoliday.isHoliday?" ClientHoliday":"")} value={this.state.trFormdata.SynergyHolidayHrs[0].Sat} onChange={(newTime)=>{this.changeTime({target:{value:newTime,id:"0_Sat_SynHldHrs"}})}} id="0_Sat_SynHldHrs"  disabled={this.state.isSubmitted || this.state.showNonBillable || this.WeekHeadings[0].IsSatJoined} ></TimeInput>
                                     </fieldset>
                                     </td>
                                     <td>
-                                    <fieldset disabled={this.state.isSubmitted || this.state.showNonBillable || this.WeekHeadings[0].IsSunJoined}>
+                                    <fieldset disabled={this.state.isSubmitted || this.state.showNonBillable || this.WeekHeadings[0].IsSunJoined||!this.WeekHeadings[0].IsDay7SynergyHoliday.isHoliday}>
                                         <TimeInput className={"form-control time "+(this.WeekNames[0].day7)+(this.WeekHeadings[0].IsDay7SynergyHoliday.isHoliday?" ClientHoliday":"")} value={this.state.trFormdata.SynergyHolidayHrs[0].Sun} onChange={(newTime)=>{this.changeTime({target:{value:newTime,id:"0_Sun_SynHldHrs"}})}} id="0_Sun_SynHldHrs"  disabled={this.state.isSubmitted || this.state.showNonBillable || this.WeekHeadings[0].IsSunJoined} ></TimeInput>
                                     </fieldset>
                                         </td>
@@ -2620,37 +2634,37 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                                     <td><textarea className="form-control textareaBorder time"  value={this.state.trFormdata.ClientHolidayHrs[0].Description} onChange={this.changeTime} id="0_Description_ClientHldHrs"  disabled={this.state.isSubmitted || this.state.showNonBillable} ></textarea></td>
                                     <td><input className="form-control" value={this.state.trFormdata.ClientHolidayHrs[0].ProjectCode} onChange={this.changeTime} id="0_ProjectCode_ClientHldHrs"   disabled={this.state.isSubmitted || this.state.showNonBillable} ></input></td>
                                     <td>
-                                        <fieldset disabled={this.state.isSubmitted || this.state.showNonBillable || this.WeekHeadings[0].IsMonJoined}>
+                                        <fieldset disabled={this.state.isSubmitted || this.state.showNonBillable || this.WeekHeadings[0].IsMonJoined||!this.WeekHeadings[0].IsDay1Holiday.isHoliday}>
                                         <TimeInput className={"form-control time "+(this.WeekNames[0].day1)+(this.WeekHeadings[0].IsDay1Holiday.isHoliday?" ClientHoliday":"")} value={this.state.trFormdata.ClientHolidayHrs[0].Mon} onChange={(newTime)=>{this.changeTime({target:{value:newTime,id:"0_Mon_ClientHldHrs"}})}} id="0_Mon_ClientHldHrs"  disabled={this.state.isSubmitted || this.state.showNonBillable || this.WeekHeadings[0].IsMonJoined} ></TimeInput>
                                         </fieldset>
                                         </td>
                                     <td>
-                                    <fieldset disabled={this.state.isSubmitted || this.state.showNonBillable || this.WeekHeadings[0].IsTueJoined}>
+                                    <fieldset disabled={this.state.isSubmitted || this.state.showNonBillable || this.WeekHeadings[0].IsTueJoined||!this.WeekHeadings[0].IsDay2Holiday.isHoliday}>
                                         <TimeInput className={"form-control time "+(this.WeekNames[0].day2)+(this.WeekHeadings[0].IsDay2Holiday.isHoliday?" ClientHoliday":"")} value={this.state.trFormdata.ClientHolidayHrs[0].Tue} onChange={(newTime)=>{this.changeTime({target:{value:newTime,id:"0_Tue_ClientHldHrs"}})}} id="0_Tue_ClientHldHrs"  disabled={this.state.isSubmitted || this.state.showNonBillable || this.WeekHeadings[0].IsTueJoined} ></TimeInput>
                                     </fieldset>
                                         </td>
                                     <td>
-                                    <fieldset disabled={this.state.isSubmitted || this.state.showNonBillable || this.WeekHeadings[0].IsWedJoined}>
+                                    <fieldset disabled={this.state.isSubmitted || this.state.showNonBillable || this.WeekHeadings[0].IsWedJoined||!this.WeekHeadings[0].IsDay3Holiday.isHoliday}>
                                         <TimeInput className={"form-control time "+(this.WeekNames[0].day3)+(this.WeekHeadings[0].IsDay3Holiday.isHoliday?" ClientHoliday":"")} value={this.state.trFormdata.ClientHolidayHrs[0].Wed} onChange={(newTime)=>{this.changeTime({target:{value:newTime,id:"0_Wed_ClientHldHrs"}})}} id="0_Wed_ClientHldHrs"  disabled={this.state.isSubmitted || this.state.showNonBillable || this.WeekHeadings[0].IsWedJoined} ></TimeInput>
                                     </fieldset>
                                         </td>
                                     <td>
-                                    <fieldset disabled={this.state.isSubmitted || this.state.showNonBillable || this.WeekHeadings[0].IsThuJoined}>
+                                    <fieldset disabled={this.state.isSubmitted || this.state.showNonBillable || this.WeekHeadings[0].IsThuJoined||!this.WeekHeadings[0].IsDay4Holiday.isHoliday}>
                                         <TimeInput className={"form-control time "+(this.WeekNames[0].day4)+(this.WeekHeadings[0].IsDay4Holiday.isHoliday?" ClientHoliday":"")} value={this.state.trFormdata.ClientHolidayHrs[0].Thu} onChange={(newTime)=>{this.changeTime({target:{value:newTime,id:"0_Thu_ClientHldHrs"}})}} id="0_Thu_ClientHldHrs"  disabled={this.state.isSubmitted || this.state.showNonBillable || this.WeekHeadings[0].IsThuJoined} ></TimeInput>
                                     </fieldset>
                                         </td>
                                     <td>
-                                    <fieldset disabled={this.state.isSubmitted || this.state.showNonBillable || this.WeekHeadings[0].IsFriJoined}>
+                                    <fieldset disabled={this.state.isSubmitted || this.state.showNonBillable || this.WeekHeadings[0].IsFriJoined||!this.WeekHeadings[0].IsDay5Holiday.isHoliday}>
                                         <TimeInput className={"form-control time "+(this.WeekNames[0].day5)+(this.WeekHeadings[0].IsDay5Holiday.isHoliday?" ClientHoliday":"")} value={this.state.trFormdata.ClientHolidayHrs[0].Fri} onChange={(newTime)=>{this.changeTime({target:{value:newTime,id:"0_Fri_ClientHldHrs"}})}} id="0_Fri_ClientHldHrs"  disabled={this.state.isSubmitted || this.state.showNonBillable || this.WeekHeadings[0].IsFriJoined} ></TimeInput>
                                     </fieldset>
                                         </td>
                                     <td>
-                                    <fieldset disabled={this.state.isSubmitted || this.state.showNonBillable || this.WeekHeadings[0].IsSatJoined}>
+                                    <fieldset disabled={this.state.isSubmitted || this.state.showNonBillable || this.WeekHeadings[0].IsSatJoined||!this.WeekHeadings[0].IsDay6Holiday.isHoliday}>
                                         <TimeInput className={"form-control time "+(this.WeekNames[0].day6)+(this.WeekHeadings[0].IsDay6Holiday.isHoliday?" ClientHoliday":"")} value={this.state.trFormdata.ClientHolidayHrs[0].Sat} onChange={(newTime)=>{this.changeTime({target:{value:newTime,id:"0_Sat_ClientHldHrs"}})}} id="0_Sat_ClientHldHrs"  disabled={this.state.isSubmitted || this.state.showNonBillable || this.WeekHeadings[0].IsSatJoined} ></TimeInput>
                                     </fieldset>
                                         </td>
                                     <td>
-                                    <fieldset disabled={this.state.isSubmitted || this.state.showNonBillable || this.WeekHeadings[0].IsSunJoined}>
+                                    <fieldset disabled={this.state.isSubmitted || this.state.showNonBillable || this.WeekHeadings[0].IsSunJoined||!this.WeekHeadings[0].IsDay7Holiday.isHoliday}>
                                         <TimeInput className={"form-control time "+(this.WeekNames[0].day7)+(this.WeekHeadings[0].IsDay7Holiday.isHoliday?" ClientHoliday":"")} value={this.state.trFormdata.ClientHolidayHrs[0].Sun} onChange={(newTime)=>{this.changeTime({target:{value:newTime,id:"0_Sun_ClientHldHrs"}})}} id="0_Sun_ClientHldHrs"  disabled={this.state.isSubmitted || this.state.showNonBillable || this.WeekHeadings[0].IsSunJoined} ></TimeInput>
                                     </fieldset>
                                         </td>
@@ -2875,6 +2889,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                             {this.state.showApproveRejectbtn&&!this.state.IsReviewer?<button type="button" id="btnApprove" onClick={this.handleApprove} className="SubmitButtons btn">Approve</button>:''}
                             {this.state.showApproveRejectbtn?<button type="button" id="btnReject" onClick={this.handleReject}  className="RejectButtons btn">Reject</button>:''}
                             {this.state.isSubmitted?'': <button type="button" id="btnSubmit" onClick={this.handleSubmitorSave} className="SubmitButtons btn">Submit</button>}
+                            {/* {this.state.trFormdata.Status==StatusType.Submit&&!this.state.showApproveRejectbtn?<button type="button" id="btnRevoke" onClick={this.handleRevoke} className="CancelButtons btn">Revoke</button>:''} */}
                             {this.state.isSubmitted?'':  <button type="button" id="btnSave" onClick={this.handleSubmitorSave} className="SaveButtons btn">Save</button>}
                             <button type="button" id="btnCancel" onClick={this.handleCancel} className="CancelButtons btn">Cancel</button>
                         </div>
