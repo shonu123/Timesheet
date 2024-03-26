@@ -44,9 +44,11 @@ color: #666666!important;
 }
 .ul-leftnav li{
   list-style-type: none;
-  padding: 0 7px;
+  padding: 2px 4px;
   display: inline-block;
   color: #444;
+  margin: 0 7px;
+
 }
 .ul-leftnav li a{
   color: #444 !important;

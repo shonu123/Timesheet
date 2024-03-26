@@ -1720,23 +1720,25 @@ div[id^="_TopSpan_NotificationSpan"]{
       }
   }
 
-
+  @media only screen and (max-width: 1525px) {
+    .dataTables_wrapper-overflow{
+        width: 94vw!important;
+    }
+  }
 
 @media only screen and (max-width: 1406px) {
   .dataTables_wrapper-overflow{
-      overflow-x: auto;
-      margin: auto;
-      width: 92vw;
+      width: 92vw!important;
   }
 }
 @media only screen and (max-width: 1100px) {
   .dataTables_wrapper-overflow{
-      width: 90vw;
+      width: 90vw!important;
   }
 }
 @media only screen and (max-width: 800px) {
   .dataTables_wrapper-overflow{
-      width: 88vw;
+      width: 88vw!important;
   }
 }
 
@@ -2404,11 +2406,11 @@ li {
 
 .bRirNn{
   font-size: 13px !important;
+  font-weight: bold;
 }
 
 .lkrJOt{
   font-family: sans-serif !important;
-  font-size: 12px !important;
 }
 
 .Sun .TimeInput-input,.Sat .TimeInput-input{
