@@ -1899,7 +1899,7 @@ div[id^="_TopSpan_NotificationSpan"]{
 z-index: 9;
 width: 60px;
 height: 60px;
-border: none !important;
+border: 2px solid #0D2F4B !important;
 /* border: 3px solid rgb(223,43,42); */
 border-left-color: transparent;
 border-right-color: transparent;

@@ -8,7 +8,7 @@ const Loading = () => {
         //class : cc-loading , class to apply mask
         <div className="loader-bg">
             <div className='loader'>
-                <div><img src={require('../Images/logo.jpg')} alt="" className='SynergyLogo'/></div>
+                {/* <div><img src={require('../Images/logo.jpg')} alt="" className='SynergyLogo'/></div> */}
 
                 {/* <Beatloader size={15} margin={2} color={"rgb(51 220 186)"}></Beatloader> */}
                 
