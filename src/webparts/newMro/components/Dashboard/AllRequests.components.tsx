@@ -32,7 +32,8 @@ export interface AllRequestsState {
     comments :  string;
     Action : string;
     errorMessage: string;
-    ItemID : Number
+    ItemID : Number;
+    ExportExcelData:any;
     // pageNumber:number;
     // sortBy:number;
     // sortOrder:boolean;
@@ -44,7 +45,7 @@ class AllRequests extends React.Component<AllRequestsProps,AllRequestsState> {
         sp.setup({
             spfxContext: this.props.context
         });
-        this.state = {AllRequests: [], loading:false,message:'',title:'',showHideModal:false,isSuccess:true,comments:'',Action:'',errorMessage:'',ItemID:0};
+        this.state = {AllRequests: [], loading:false,message:'',title:'',showHideModal:false,isSuccess:true,comments:'',Action:'',errorMessage:'',ItemID:0,ExportExcelData:[]};
     }
 
     public componentDidMount() {
@@ -66,14 +67,17 @@ class AllRequests extends React.Component<AllRequestsProps,AllRequestsState> {
             .then((response) => {
                 console.log(response)
                 let Data = [];
+                let ExcelData  =[]
                 for (const d of response) {
-                    let Rm = ''
+                    let Rm = '';
+                    let ExcelRm = ''
                     if(d.ReportingManager.length>0)
                     {
                         for(let r of d.ReportingManager){
                             Rm += "<div>"+r.Title+"</div>"
+                            ExcelRm += r.Title+","
                         }
-                        // Rm = Rm.substring(0, Rm.lastIndexOf(","));
+                        ExcelRm = ExcelRm.substring(0, ExcelRm.lastIndexOf(","));
                     }
                     let date = new Date(d.WeekStartDate)
                     Data.push({
@@ -81,7 +85,7 @@ class AllRequests extends React.Component<AllRequestsProps,AllRequestsState> {
                         Date : `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`,
                         EmployeName: d.Name,
                         // Status : d.Status == StatusType.Submit?'Pending With Reporting Manager':d.Status== StatusType.InProgress?'Pending With Reviewer':d.Status,
-                        Status : d.Status,
+                        Status : d.Status=='rejected by Synergy'?'Rejected by Synergy':d.Status=='rejected by Manager'?'Rejected by Manager':d.Status,
                         Client: d.ClientName,
                         PendingWith: d.PendingWith,
                         BillableHours: d.WeeklyTotalHrs,
@@ -91,10 +95,25 @@ class AllRequests extends React.Component<AllRequestsProps,AllRequestsState> {
                         TotalHours: d.GrandTotal,
                         RM : Rm
                     })
+                    ExcelData.push({
+                        Id : d.Id,
+                        Date : `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`,
+                        EmployeName: d.Name,
+                        // Status : d.Status == StatusType.Submit?'Pending With Reporting Manager':d.Status== StatusType.InProgress?'Pending With Reviewer':d.Status,
+                        Status : d.Status=='rejected by Synergy'?'Rejected by Synergy':d.Status=='rejected by Manager'?'Rejected by Manager':d.Status,
+                        Client: d.ClientName,
+                        PendingWith: d.PendingWith,
+                        BillableHours: d.WeeklyTotalHrs,
+                        OTTotalHrs : d.OTTotalHrs,
+                        TotalBillableHrs: d.BillableTotalHrs,
+                        NonBillableTotalHrs: d.NonBillableTotalHrs,
+                        TotalHours: d.GrandTotal,
+                        RM : ExcelRm
+                    })
 
                 }
                 console.log(Data);
-                this.setState({ AllRequests: Data,loading:false });
+                this.setState({ AllRequests: Data,loading:false,ExportExcelData:ExcelData });
                 // this.setState({ loading: false });
             }).catch(err => {
                 console.log('Failed to fetch data.', err);
@@ -192,68 +211,61 @@ class AllRequests extends React.Component<AllRequestsProps,AllRequestsState> {
         const Exportcolumns = [   
             {
                 name: "Date",
-                selector: (row, i) => row.Date,
+                selector: "Date",
                 width: '120px',
                 sortable: true
             },
             {
                 name: "Employee Name",
-                selector: (row, i) => row.EmployeName,
+                selector: "EmployeName",
                 // width: '250px',
                 sortable: true
             },
             {
                 name: "Client",
-                selector: (row, i) => row.Client,
+                selector: "Client",
                 // width: '120px',
                 sortable: true
             },
             {
                 name: "Manager",
-                selector: (row, i) => row.RM,
-                // width: '250px',
-                cell: row => <div dangerouslySetInnerHTML={{ __html: row.RM }} />,
+                selector: "RM",
                 sortable: true
             },
             {
                 name: "Status",
-                selector: (row, i) => row.Status,
-                // width: '250px',
+                selector: "Status",
                 sortable: true
             },
             {
                 name: "Pending With",
-                selector: (row, i) => row.PendingWith,
-                // width: '140px',
+                selector: "PendingWith",
                 sortable: true
             },
             {
                 name: "Billable Hours",
-                selector: (row, i) => row.BillableHours,
+                selector: "BillableHours",
                 sortable: true,
-                // width: '160px'
             },
             {
                 name: "OT Hours",
-                selector: (row, i) => row.OTTotalHrs,
+                selector: "OTTotalHrs",
                 width: '120px',
                 sortable: true,
             },
             {
                 name: "Total Billable Hours",
-                selector: (row, i) => row.TotalBillableHrs,
+                selector: "TotalBillableHrs",
                 sortable: true,
-                // width: '170px'
             },
             {
                 name: "Non-Billable Hours",
-                selector: (row, i) => row.NonBillableTotalHrs,
+                selector: "NonBillableTotalHrs",
                 sortable: true,
-                // width: '185px'
             },
             {
                 name: "Total Hours",
-                selector: (row, i) => row.TotalHours,
+                selector: "TotalHours",
                 width:'140px',
                 sortable: true
             }
@@ -272,7 +284,7 @@ class AllRequests extends React.Component<AllRequestsProps,AllRequestsState> {
                     </NavLink>
                 </button></div></div>
                 <div className='table-head-1st-td'>
-                    <TableGenerator columns={columns} data={this.state.AllRequests} fileName={'All Requests'} showExportExcel={true} ExportExcelCustomisedColumns={Exportcolumns} ></TableGenerator>
+                    <TableGenerator columns={columns} data={this.state.AllRequests} fileName={'All Requests'} showExportExcel={true} ExportExcelCustomisedColumns={Exportcolumns} ExportExcelCustomisedData={this.state.ExportExcelData} ></TableGenerator>
                 </div>
             </div>
             </React.Fragment> 

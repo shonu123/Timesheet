@@ -63,6 +63,7 @@ class Clients extends Component<ClientProps, ClientState> {
         addNewClient: false,
         isNewform: true,
         isRedirect: false,
+        ExportExcelData:[],
     };
 
     public componentDidMount() {
@@ -217,14 +218,23 @@ class Clients extends Component<ClientProps, ClientState> {
         sp.web.lists.getByTitle('Client').items.select('*').orderBy("Title", false).getAll()
             .then((response) => {
                 response.sort((a, b) => b.Id - a.Id);
+                let ExcelData = []
+                for (const d of response) {
+                    ExcelData.push({
+                       ClientName: d.Title,
+                       IsActive: d.IsActive?"Active":"In-Active",
+                    })
+                }
                 this.setState({
                     ClientsObj: response.map(o => ({
                         Id: o.Id, ClientName: o.Title, IsActive: o.IsActive,
                     })),
                     SaveUpdateText: 'Submit',
                     showLabel: false,
-                    loading: false
+                    loading: false,
+                    ExportExcelData : ExcelData,
                 });
+   
                 // setTimeout(() => {
                     // this.setState({loading: false})
                 //   }, 100);
@@ -292,9 +302,8 @@ class Clients extends Component<ClientProps, ClientState> {
                 selector: "ClientName",
             },
             {
-                name: "Is Active",
-                // selector: "IsActive",
-                selector: (row, i) => row.IsActive?"Active":"In-Active",
+                name: "Status",
+                selector: "IsActive",
             },
         ];
         const columns = [
@@ -329,7 +338,7 @@ class Clients extends Component<ClientProps, ClientState> {
                 dataKey: 'ClientName'
             },
             {
-                name: "Is Active",
+                name: "Status",
                 //selector: "Database",
                 selector: (row, i) => row.IsActive?"Active":"In-Active",
                 sortable: true,
@@ -434,7 +443,7 @@ class Clients extends Component<ClientProps, ClientState> {
                                         </div>
 
                                         <div className="c-v-table table-head-1st-td">
-                                            <TableGenerator columns={columns} data={this.state.ClientsObj} fileName={'Clients'}showExportExcel={true} ExportExcelCustomisedColumns={ExportExcelreportColumns}></TableGenerator>
+                                            <TableGenerator columns={columns} data={this.state.ClientsObj} fileName={'Clients'}showExportExcel={true} ExportExcelCustomisedColumns={ExportExcelreportColumns} ExportExcelCustomisedData={this.state.ExportExcelData}></TableGenerator>
                                         </div>
                                     </div>
                                 </div>

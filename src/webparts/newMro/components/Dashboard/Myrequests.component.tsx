@@ -77,7 +77,7 @@ class MyRequests extends React.Component<MyRequestsProps, MyRequestsState> {
                         Date : date,
                         Company: d.ClientName,
                         PendingWith: d.PendingWith,
-                        Status : d.Status,
+                        Status : d.Status=='rejected by Synergy'?'Rejected by Synergy':d.Status=='rejected by Manager'?'Rejected by Manager':d.Status,
                     })
                 }
                 console.log(Data);

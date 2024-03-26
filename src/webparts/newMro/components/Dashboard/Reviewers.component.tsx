@@ -40,6 +40,7 @@ export interface ReviewerApprovalsState {
     successPopUp:boolean;
     ModalHeader: string;
     IsClientApprovalNeed:boolean;
+    ExportExcelData:any;
     // pageNumber:number;
     // sortBy:number;
     // sortOrder:boolean;
@@ -51,7 +52,7 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
         sp.setup({
             spfxContext: this.props.context
         });
-        this.state = {Reviewers: [], loading:false,message:'',title:'',showHideModal:false,isSuccess:false,comments:'',Action:'',errorMessage:'',ItemID:0,siteURL : this.props.spContext.webAbsoluteUrl,redirect:false,modalTitle:'',modalText:'',successPopUp:false,ModalHeader:'modal-header-Approve',IsClientApprovalNeed:false};
+        this.state = {Reviewers: [], loading:false,message:'',title:'',showHideModal:false,isSuccess:false,comments:'',Action:'',errorMessage:'',ItemID:0,siteURL : this.props.spContext.webAbsoluteUrl,redirect:false,modalTitle:'',modalText:'',successPopUp:false,ModalHeader:'modal-header-Approve',IsClientApprovalNeed:false,ExportExcelData:[]};
     }
 
     public componentDidMount() {
@@ -81,7 +82,7 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
                         EmployeName: d.Name,
                         Company : d.ClientName,
                         PendingWith: d.PendingWith,
-                        Status : d.Status,
+                        Status : d.Status=='rejected by Synergy'?'Rejected by Synergy':d.Status=='rejected by Manager'?'Rejected by Manager':d.Status,
                         BillableHrs: d.WeeklyTotalHrs,
                         OTTotalHrs : d.OTTotalHrs,
                         TotalBillableHours: d.BillableTotalHrs,
@@ -89,6 +90,7 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
                         WeeklyTotalHrs: d.GrandTotal
                     })
                 }
+                this.setState({ExportExcelData:Data})
                 console.log(Data);
                 this.setState({ Reviewers: Data,loading:false });
                 //console.log(this.state.approvals);
@@ -469,7 +471,7 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
                     <div className='table-head-1st-td'>
                         {/* <TableGenerator columns={columns} data={this.state.Reviewers} fileName={'My Reviews'} showExportExcel={false} searchBoxLeft={true} showAddButton={false}></TableGenerator> */}
 
-                        <TableGenerator columns={columns} data={this.state.Reviewers} fileName={'My Reviews'} showExportExcel={false} showAddButton={false} searchBoxLeft={true}></TableGenerator>
+                        <TableGenerator columns={columns} data={this.state.Reviewers} fileName={'My Reviews'} showExportExcel={false} showAddButton={false} searchBoxLeft={true} ExportExcelCustomisedData={this.state.ExportExcelData}></TableGenerator>
                     </div>
                 </div>
                 {this.state.loading && <Loader />}

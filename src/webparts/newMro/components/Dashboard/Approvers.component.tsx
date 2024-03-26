@@ -72,7 +72,7 @@ class ApproversApprovals extends React.Component<ApproversProps, ApproversState>
                         Date : `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`,
                         EmployeName: d.Name,
                         PendingWith: d.PendingWith,
-                        Status : d.Status,
+                        Status : d.Status=='rejected by Synergy'?'Rejected by Synergy':d.Status=='rejected by Manager'?'Rejected by Manager':d.Status,
                         BillableTotalHrs: d.WeeklyTotalHrs,
                         OTTotalHrs : d.OTTotalHrs,
                         TotalBillable:d.BillableTotalHrs,
