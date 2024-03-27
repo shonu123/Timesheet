@@ -99,7 +99,7 @@ class NavBar extends React.Component<NavBarProps, NavBarState> {
                         </ul> */}
 
 
-                        <ul className="list-unstyled ul-leftnav components mb-0 mt-3">
+                        <ul className="list-unstyled ul-leftnav components mb-0 mt-2">
                             {
                                 (this.props.currentUserGroups.includes("Timesheet Owners")||this.props.currentUserGroups.includes('Timesheet Members') || this.props.currentUserGroups.includes('Timesheet Administrators'))?
                                     <li className="nav-item" id="employeemaster" onClick={(event) => this.onNavItemClick(event)}>

@@ -3249,7 +3249,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                                         <span className="c-badge">BT</span>
                                     </td>
                                     <td className='fw-bold'>
-                                        <input className="form-control time BillableSubTotal" id="BillableTotal" value={this.state.trFormdata.BillableSubTotal[0].Total}  type="text" readOnly></input>
+                                        <input className="form-control fw-bold time BillableSubTotal" id="BillableTotal" value={this.state.trFormdata.BillableSubTotal[0].Total}  type="text" readOnly></input>
                                     </td>
                                     <td>
                                         

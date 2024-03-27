@@ -148,6 +148,7 @@ class Clients extends Component<ClientProps, ClientState> {
                             sp.web.lists.getByTitle(ClientList).items.getById(id).update(formData).then((res) => {
                                 // this.resetHolidayMasterForm();
                                 toast.success('updated successfully');
+                                this.resetHolidayMasterForm();
                                 this.setState({
                                     modalTitle: 'Success',
                                     modalText: 'Client updated successfully',
@@ -155,6 +156,7 @@ class Clients extends Component<ClientProps, ClientState> {
                                     isSuccess: true,
                                     loading: false,
                                     isRedirect: false,
+                                    addNewClient: false
                                 });
                                 //console.log(res);
                             });
@@ -166,7 +168,7 @@ class Clients extends Component<ClientProps, ClientState> {
                                     .then((res) => {
                                         this.resetHolidayMasterForm();
                                         toast.success('updated successfully');
-                                        this.setState({ showHideModal: false,isRedirect:true,loading:false});
+                                        this.setState({ showHideModal: false,addNewClient: false,loading:false,isRedirect:true});
                                         //  this.setState({
                                         //      modalTitle: 'Success',
                                         //      modalText: 'Client submitted successfully',
@@ -178,7 +180,7 @@ class Clients extends Component<ClientProps, ClientState> {
                                     .catch((err) => {
                                         console.log('Failed to add');
                                         toast.error('Sorry! something went wrong');
-                                        this.setState({ showHideModal: false,isRedirect:true,loading:false});
+                                        this.setState({ showHideModal: false,isRedirect:true,loading:false,addNewClient:false});
                                         // this.setState({
                                         //     loading: false,
                                         //     modalTitle: 'Error',
@@ -359,6 +361,7 @@ class Clients extends Component<ClientProps, ClientState> {
         }
             return (
                 <React.Fragment>
+                    {this.state.loading && <Loader />}
                     <ModalPopUp title={this.state.modalTitle} modalText={this.state.modalText} isVisible={this.state.showHideModal} onClose={this.handleClose} isSuccess={this.state.isSuccess}></ModalPopUp>
                     <div id="content" className="content p-2 pt-2">
                         {/* <div id="clickMenu" className="menu-icon-outer" onClick={(event) => this.onMenuItemClick(event)}>
@@ -383,7 +386,7 @@ class Clients extends Component<ClientProps, ClientState> {
 
                                 <div className="after-title"></div>
 
-                                {this.state.loading && <Loader />}
+                                
 
 
                                 <div className="row justify-content-md-left">
