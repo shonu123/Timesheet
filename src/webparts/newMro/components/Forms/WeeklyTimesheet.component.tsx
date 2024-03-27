@@ -1799,7 +1799,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                 //alert("Weekly Time Sheet updated successfully");
                if(StatusType.Save==formdata.Status)
                {
-                this.setState({loading:false,modalTitle:'Success Message',modalText:' Weekly Timesheet Updated Successfully',isSuccess:true,showHideModal:true});
+                this.setState({loading:false,modalTitle:'Success',modalText:' Weekly Timesheet Updated Successfully',isSuccess:true,showHideModal:true});
                }
                else if(StatusType.Submit==formdata.Status)
                {
@@ -1905,7 +1905,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                     this.props.match.params.id =ItemID;
                     //alert("Weekly Time Sheet Added successfully");
                     if (StatusType.Save == formdata.Status) {
-                        this.setState({loading:false,modalTitle:'Success Message',modalText:' Weekly Timesheet Added Successfully',isSuccess:true,showHideModal:true});
+                        this.setState({loading:false,modalTitle:'Success',modalText:' Weekly Timesheet Added Successfully',isSuccess:true,showHideModal:true});
                     }
                     else if(StatusType.Submit==formdata.Status)
                     {
@@ -1955,7 +1955,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
             CC: emaildetails.ccemail
           }).then((i) => {  
             //alert("Record Updated Successfully");
-            this.setState({loading:false,modalTitle:'Success Message',modalText:' Weekly Timesheet updated Successfully',isSuccess:true,showHideModal:true});
+            this.setState({loading:false,modalTitle:'Success',modalText:' Weekly Timesheet updated Successfully',isSuccess:true,showHideModal:true});
           }).catch((i) => {
             //alert("Error while sending an Email");
             this.setState({showHideModal : false,ItemID:0,errorMessage:'',loading: false,redirect : true});
