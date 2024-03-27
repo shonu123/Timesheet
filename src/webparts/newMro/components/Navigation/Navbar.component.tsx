@@ -20,6 +20,11 @@ class NavBar extends React.Component<NavBarProps, NavBarState> {
                 this.currentUserLinksArr.push(permission.link);
             }
         }
+        if(!this.props.currentUserGroups.includes('Timesheet Administrators')){
+            document.getElementById('O365_SuiteBranding_container').style.display='none';
+            document.getElementById('O365_MainLink_Settings_container').style.display='none';
+            document.getElementById('O365_MainLink_Help_container').style.display='none';
+        }
         this.setState({ currentUserLinks: this.currentUserLinksArr });
     }
     public onNavItemClick(event) {

@@ -23,6 +23,7 @@ import ImportExcel from '../Shared/ImportExcel';
 import DatePicker from "../Shared/DatePickerField";
 import { addDays } from 'office-ui-fabric-react';
 import { faXmark, faEdit, faCheck, faPlus } from '@fortawesome/free-solid-svg-icons';
+import toast, { Toaster } from 'react-hot-toast';
 interface HolidaysListProps {
     match: any;
     spContext: any;
@@ -73,7 +74,6 @@ class HolidaysList extends Component<HolidaysListProps, HolidaysListState> {
             formData: {
                 ClientName : '',
                 HolidayName:'',
-                // HolidayDate: `${new Date().getMonth() + 1}/${new Date().getDate()}/${new Date().getFullYear()}`,
                 HolidayDate: new Date(),
                 Year:'',
             },
@@ -178,9 +178,7 @@ class HolidaysList extends Component<HolidaysListProps, HolidaysListState> {
         let prev = `${prevDate.getMonth() + 1}/${prevDate.getDate()}/${prevDate.getFullYear()}`
         let next = `${nextDate.getMonth() + 1}/${nextDate.getDate()}/${nextDate.getFullYear()}`
 
-        let filterQuery = "HolidayDate gt '" + prev + "' and HolidayDate lt '" + next + "'"
-        // let dateString = `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`
-        //filterString = `ClientName eq '${formData.ClientName}' and HolidayName eq '${formData.HolidayName}' and ${filterQuery}`;
+        let filterQuery = "HolidayDate gt '" + prev + "' and HolidayDate lt '" + next + "'";
 
         try {
             if (id == 0)
@@ -202,13 +200,16 @@ class HolidaysList extends Component<HolidaysListProps, HolidaysListState> {
                             //console.log(this.props);
                             sp.web.lists.getByTitle(HolidaysList).items.getById(id).update(formData).then((res) => {
                                 // this.resetHolidayMasterForm();
-                                this.setState({
-                                    modalTitle: 'Success',
-                                    modalText: 'Holiday updated successfully',
-                                    showHideModal: true,
-                                    isSuccess: true,
-                                    isRedirect: false
-                                });
+                                toast.success('updated successfully');
+                                this.resetHolidayMasterForm();
+                                this.setState({ showHideModal: false,isRedirect:true});
+                                // this.setState({
+                                //     modalTitle: 'Success',
+                                //     modalText: 'Holiday updated successfully',
+                                //     showHideModal: false,
+                                //     isSuccess: true,
+                                //     isRedirect: false
+                                // });
                                 //console.log(res);
                             });
                         }
@@ -218,24 +219,30 @@ class HolidaysList extends Component<HolidaysListProps, HolidaysListState> {
                                 sp.web.lists.getByTitle(HolidaysList).items.add({ ...this.state.formData })
                                     .then((res) => {
                                         this.resetHolidayMasterForm();
-                                        this.setState({
-                                            modalTitle: 'Success',
-                                            modalText: 'HolidaysList submitted successfully',
-                                            showHideModal: true,
-                                            isSuccess: true,
-                                            isRedirect: false
-                                        });
+                                        toast.success('submitted successfully');
+                                        this.resetHolidayMasterForm();
+                                        this.setState({ showHideModal: false,isRedirect:true});
+                                        // this.setState({
+                                        //     modalTitle: 'Success',
+                                        //     modalText: 'HolidaysList submitted successfully',
+                                        //     showHideModal: false,
+                                        //     isSuccess: true,
+                                        //     isRedirect: false
+                                        // });
                                     })
                                     .catch((err) => {
                                         console.log('Failed to add');
-                                        this.setState({
-                                            loading: false,
-                                            modalTitle: 'Error',
-                                            modalText: 'Sorry! something went wrong',
-                                            showHideModal: true,
-                                            isSuccess: false,
-                                            isRedirect: false
-                                        });
+                                        toast.error('Sorry! something went wrong');
+                                        this.resetHolidayMasterForm();
+                                        this.setState({ showHideModal: false,isRedirect:true});
+                                        // this.setState({
+                                        //     loading: false,
+                                        //     modalTitle: 'Error',
+                                        //     modalText: 'Sorry! something went wrong',
+                                        //     showHideModal: true,
+                                        //     isSuccess: false,
+                                        //     isRedirect: false
+                                        // });
                                     });
                             }
                             catch (e) {
@@ -725,11 +732,12 @@ class HolidaysList extends Component<HolidaysListProps, HolidaysListState> {
                                                             <button type="button" id="btnCancel" className="CancelButtons btn" onClick={this.cancelHandler}>Cancel</button>
                                                         </div>
                                                     </div>
+                                                    
 
                                                 </div>
                                             </div>
                                         </div>
-
+                                        <Toaster />             
                                         <div className="c-v-table table-head-1st-td">
                                             <TableGenerator columns={columns} data={this.state.HolidayListObj} fileName={'Holidays List'}showExportExcel={true} ExportExcelCustomisedColumns={ExportExcelreportColumns} ></TableGenerator>
                                         </div>
