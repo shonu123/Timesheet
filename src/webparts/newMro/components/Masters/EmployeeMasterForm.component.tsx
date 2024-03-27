@@ -27,6 +27,7 @@ import { Navigate } from 'react-router-dom';
 import { confirm } from 'react-confirm-box';
 import InputCheckBox from '../Shared/InputCheckBox';
 // import CustomDatePicker from './DatePicker';
+import toast, { Toaster } from 'react-hot-toast';
 
 
 export interface EmployeeMasterFormProps {
@@ -323,7 +324,8 @@ private async validateDuplicateRecord () {
         }
         else if(Rm.includes(this.state.EmployeeId)){
             let errMsg = 'The selected Employee can not be assigned as their own Manager';
-            this.setState({errorMessage : errMsg});
+            // this.setState({errorMessage : errMsg});
+            toast.error(errMsg)
         }
         else{
             console.log(data);
@@ -752,6 +754,7 @@ else {
                             </div>
                         </div>
                     </div>
+                    <Toaster />  
                     {this.state.loading && <Loader />}
                 </React.Fragment >
             );

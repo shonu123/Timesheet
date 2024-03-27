@@ -25,6 +25,7 @@ import CustomDatePicker from "../Forms/DatePicker";
 import { addDays } from 'office-ui-fabric-react';
 import '../../CSS/WeeklyTimesheet.css'
 import ModalPopUpConfirm from '../Shared/ModalPopUpConfirm';
+import toast, { Toaster } from 'react-hot-toast';
 
 
 export interface WeeklyTimesheetProps {
@@ -1453,7 +1454,8 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
             this.setState({ trFormdata, currentWeeklyRowsCount: count ,showLabel: true, errorMessage:""});
         }
         else{
-            this.setState({ showLabel: true, errorMessage: isValid.message});
+            this.setState({ showLabel: true})
+            toast.error(isValid.message)
         }
     }
     private CreateOTHrsRow= () => {
@@ -1484,7 +1486,8 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
           this.setState({ trFormdata, currentOTRowsCount: count,showLabel:false, errorMessage:""});
       }
       else{
-        this.setState({ showLabel: true, errorMessage: isValid.message});
+        this.setState({ showLabel: true});
+        toast.error(isValid.message)
       }
     }
     //functions related to CRUD operations
@@ -1598,7 +1601,8 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
          
         } 
         else {
-            this.setState({ showLabel: true, errorMessage: isValid.message});
+            this.setState({ showLabel: true});
+            toast.error(isValid.message)
         }
     }
     private GetRequiredEmails=(ClentName,formdata)=>{
@@ -1774,7 +1778,9 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
         }
         else
         {
-            this.setState({ showLabel: true, errorMessage: isValid.message });
+            // this.setState({ showLabel: true, errorMessage: isValid.message });
+            this.setState({ showLabel: true});
+            toast.error(isValid.message)
         }
     }
     private handleCancel=async(event)=>
@@ -3373,6 +3379,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                 </div>
             </div>
         </div>
+        <Toaster />  
             {this.state.loading && <Loader />}
                 </React.Fragment>
             );
