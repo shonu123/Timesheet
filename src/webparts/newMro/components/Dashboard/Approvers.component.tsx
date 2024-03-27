@@ -137,25 +137,25 @@ class ApproversApprovals extends React.Component<ApproversProps, ApproversState>
 
             },
             {
-                name: "Billable Hours",
+                name: "Billable",
                 selector: (row, i) => row.BillableTotalHrs,
                 sortable: true,
                 // width: '135px'
             },
             {
-                name: "OT Hours",
+                name: "OT",
                 selector: (row, i) => row.OTTotalHrs,
                 width: '110px',
                 sortable: true,
             },
             {
-                name: "Non-Billable Hours",
+                name: "Non-Billable",
                 selector: (row, i) => row.NonBillableTotalHrs,
                 sortable: true,
                 // width: '200px'
             },
             {
-                name: "Total Hours",
+                name: "Total",
                 selector: (row, i) => row.WeeklyTotalHrs,
                 sortable: true
             }

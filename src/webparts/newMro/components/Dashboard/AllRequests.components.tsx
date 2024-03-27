@@ -181,31 +181,31 @@ class AllRequests extends React.Component<AllRequestsProps,AllRequestsState> {
                 sortable: true
             },
             {
-                name: "Billable Hours",
+                name: "Billable",
                 selector: (row, i) => row.BillableHours,
                 sortable: true,
                 // width: '160px'
             },
             {
-                name: "OT Hours",
+                name: "OT",
                 selector: (row, i) => row.OTTotalHrs,
                 width: '120px',
                 sortable: true,
             },
             {
-                name: "Total Billable Hours",
+                name: "Total Billable",
                 selector: (row, i) => row.TotalBillableHrs,
                 sortable: true,
                 // width: '170px'
             },
             {
-                name: "Non-Billable Hours",
+                name: "Non-Billable",
                 selector: (row, i) => row.NonBillableTotalHrs,
                 sortable: true,
                 // width: '185px'
             },
             {
-                name: "Total Hours",
+                name: "Total",
                 selector: (row, i) => row.TotalHours,
                 width:'140px',
                 sortable: true

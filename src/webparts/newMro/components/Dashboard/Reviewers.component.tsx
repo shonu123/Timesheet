@@ -402,35 +402,35 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
 
                 },
                 {
-                    name: "Billable Hours",
+                    name: "Billable",
                     //selector: "Requisitioner",
                     selector: (row, i) => row.BillableHrs,
                     sortable: true,
                     // width: '135px'
                 },
                 {
-                    name: "OT Hours",
+                    name: "OT",
                     //selector: 'Created',
                     selector: (row, i) => row.OTTotalHrs,
                     width: '130px',
                     sortable: true,
                 },
                 {
-                    name: "Total Billable Hours",
+                    name: "Total Billable",
                     //selector: "Requisitioner",
                     selector: (row, i) => row.TotalBillableHours,
                     sortable: true,
                     // width: '175px'
                 },
                 {
-                    name: "Non-Billable Hours",
+                    name: "Non-Billable",
                     //selector: "TotalAmount",
                     selector: (row, i) => row.NonBillableTotalHrs,
                     sortable: true,
                     // width: '200px'
                 },
                 {
-                    name: "Total Hours",
+                    name: "Total",
                     //selector: "Status",
                     selector: (row, i) => row.WeeklyTotalHrs,
                     // width: '150px',
