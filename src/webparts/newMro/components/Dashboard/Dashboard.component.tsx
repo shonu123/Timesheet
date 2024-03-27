@@ -1,9 +1,9 @@
 import * as React from 'react';
-import Myapprovals from './Myapprovals.component';
+// import Myapprovals from './Myapprovals.component';
 import Myrequests from './Myrequests.component';
 import ReviewerApprovals from './Reviewers.component'
 import Pending from '../Masters/EmployeeMasterView.component';
-import PurchasingManager from './PurchasingManager.component';
+// import PurchasingManager from './PurchasingManager.component';
 import Approved from './Approvers.component';
 import Exported from './Exported.component';
 import { SPHttpClient} from '@microsoft/sp-http';

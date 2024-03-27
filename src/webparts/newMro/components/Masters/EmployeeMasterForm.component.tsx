@@ -96,6 +96,7 @@ class EmployeeMasterForm extends React.Component<EmployeeMasterFormProps, Employ
         showHideModal: false,
         modalTitle:'',
         modalText:'',
+        message:"Success"
     }
 
     public componentDidMount() {
@@ -289,7 +290,7 @@ private async validateDuplicateRecord () {
 }
 
     private handleCancel = async (e)=>{
-        this.setState({Homeredirect : true});
+        this.setState({message:'',Homeredirect : true});
     }
 
 
@@ -360,7 +361,8 @@ private async validateDuplicateRecord () {
             sp.web.lists.getByTitle(this.listName).items.getById(this.state.ItemID).update(formdata).then((res) => {
                 this.setState({ loading: false});
                 // alert('Data updated sucessfully');
-                this.setState({showHideModal : true,modalText: 'Employee configuration updated successfully',modalTitle:'Success'});
+                this.setState({message:'Success-Update',Homeredirect: true})
+                // this.setState({showHideModal : true,modalText: 'Employee configuration updated successfully',modalTitle:'Success'});
             }, (error) => {
                 console.log(error);
             });
@@ -371,14 +373,15 @@ private async validateDuplicateRecord () {
                     console.log(res);
                     this.setState({ loading: false});
                     // alert('Data inserted sucessfully')
-                    
-                    this.setState({showHideModal : true,modalText: 'Employee configuration updated successfully',modalTitle:'Success'});
+                    this.setState({message:'Success-Added',Homeredirect: true})
+                    // this.setState({showHideModal : true,modalText: 'Employee configuration updated successfully',modalTitle:'Success'});
                 }, (error) => {
                     console.log(error);
                 });
             }
             catch (e) {
                 console.log('Failed to add');
+                this.setState({message:'Error'})
                 this.onError();
             }
 
@@ -399,7 +402,7 @@ private async validateDuplicateRecord () {
         // this.setState({ modalTitle: 'Error', modalText: ActionStatus.Error, showHideModal: true, loading: false, isSuccess: false, ItemID: 0 ,showHideModalConfirm:false});
     }
     private handleClose = ()=>{
-        this.setState({loading:false,showHideModal : false,Homeredirect: true})
+        this.setState({loading:false,showHideModal : false,message:'',Homeredirect: true})
     }
    public render() {
     if(!this.state.isPageAccessable){
@@ -408,9 +411,9 @@ private async validateDuplicateRecord () {
         window.location.href = url
     }
     if (this.state.Homeredirect) {
-       
-        let url = `/EmployeeMasterView`
-        return (<Navigate to={url} />);
+       let message = this.state.message
+        let url = `/EmployeeMasterView/${message}`
+        return (<Navigate to={url}/>);
     }
 else {
             return (

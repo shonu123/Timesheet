@@ -87,7 +87,7 @@ class AllRequests extends React.Component<AllRequestsProps,AllRequestsState> {
                         // Status : d.Status == StatusType.Submit?'Pending With Reporting Manager':d.Status== StatusType.InProgress?'Pending With Reviewer':d.Status,
                         Status : d.Status=='rejected by Synergy'?'Rejected by Synergy':d.Status=='rejected by Manager'?'Rejected by Manager':d.Status,
                         Client: d.ClientName,
-                        PendingWith: d.PendingWith,
+                        PendingWith: d.PendingWith == "Approver" ||d.PendingWith == "Manager" ?"Reporting Manager":d.PendingWith,
                         BillableHours: d.WeeklyTotalHrs,
                         OTTotalHrs : d.OTTotalHrs,
                         TotalBillableHrs: d.BillableTotalHrs,
@@ -102,7 +102,7 @@ class AllRequests extends React.Component<AllRequestsProps,AllRequestsState> {
                         // Status : d.Status == StatusType.Submit?'Pending With Reporting Manager':d.Status== StatusType.InProgress?'Pending With Reviewer':d.Status,
                         Status : d.Status=='rejected by Synergy'?'Rejected by Synergy':d.Status=='rejected by Manager'?'Rejected by Manager':d.Status,
                         Client: d.ClientName,
-                        PendingWith: d.PendingWith,
+                        PendingWith: d.PendingWith == "Approver" ||d.PendingWith == "Manager" ?"Reporting Manager":d.PendingWith,
                         BillableHours: d.WeeklyTotalHrs,
                         OTTotalHrs : d.OTTotalHrs,
                         TotalBillableHrs: d.BillableTotalHrs,
@@ -286,7 +286,7 @@ class AllRequests extends React.Component<AllRequestsProps,AllRequestsState> {
                         <span className='' id='WeeklyTimeSheet'><FontAwesomeIcon icon={faPlus}></FontAwesomeIcon> New</span>
                     </NavLink>
                 </button></div></div>
-                <div className='table-head-1st-td'>
+                <div className='c-v-table table-head-1st-td'>
                     <TableGenerator columns={columns} data={this.state.AllRequests} fileName={'All Requests'} showExportExcel={true} ExportExcelCustomisedColumns={Exportcolumns} ExportExcelCustomisedData={this.state.ExportExcelData} ></TableGenerator>
                 </div>
             </div>

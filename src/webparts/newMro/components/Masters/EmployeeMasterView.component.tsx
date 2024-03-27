@@ -12,6 +12,7 @@ import "@pnp/sp/lists";
 import "@pnp/sp/items";
 import Loader from '../Shared/Loader';
 import { StatusType } from '../../Constants/Constants';
+import toast, { Toaster } from 'react-hot-toast';
 
 export interface EmployeeMasterViewProps {
     match: any;
@@ -48,6 +49,20 @@ class EmployeeMasterView extends React.Component<EmployeeMasterViewProps, Employ
 
     public componentDidMount() {
         //console.log(this.props);
+        if(this.props.match.params.message != undefined){
+            let message = this.props.match.params.message
+            
+            if(message == 'Error'){
+                toast.error('Sorry! something went wrong')
+            }
+            else{
+                // if(message!=''||message!=undefined){
+                    let status = message.split('-')[1]
+                    status == "Added"?toast.success('Employee configuration added successfully'):toast.success('Employee configuration updated successfully')
+                // }
+            }
+            //window.location.hash='#/EmployeeMasterView';
+        }
         this.EmployeeMasterData();
     }
 
@@ -203,6 +218,7 @@ class EmployeeMasterView extends React.Component<EmployeeMasterViewProps, Employ
             </div>
             </div>
             </div>
+            <Toaster />  
             </React.Fragment> 
         );
     }
