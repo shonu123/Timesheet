@@ -2119,9 +2119,6 @@ padding: .375rem .75rem;
 .z-in-9{
   z-index: 999!important;
 }
-.nav-click{
-  background-color: #bbb!important;
-}
 li {
   list-style-type: none;
 }
@@ -2380,12 +2377,6 @@ li {
   }
 
   .modal-header-reject {
-    display: -ms-flexbox;
-    display: flex;
-    -ms-flex-align: start;
-    align-items: flex-start;
-    -ms-flex-pack: justify;
-    justify-content: space-between;
     padding: 0.5rem 1rem;
     border-bottom: 1px solid #dee2e6;
     border-top-left-radius: calc(.3rem - 1px);
@@ -2393,14 +2384,10 @@ li {
     background: #ff18022b;
     color: red;
 }
-
+.modal{
+  background: #0000008a;
+}
 .modal-header-Approve {
-  display: -ms-flexbox;
-  display: flex;
-  -ms-flex-align: start;
-  align-items: flex-start;
-  -ms-flex-pack: justify;
-  justify-content: space-between;
   padding: 0.5rem 1rem;
   border-bottom: 1px solid #dee2e6;
   border-top-left-radius: calc(.3rem - 1px);
@@ -2496,6 +2483,12 @@ top: 3px;
 color: #fff;
     }
 .table-td-p-0 td{
-padding: 0 4px!important;
+padding: 3px 4px!important;
 }
-
+.textareaBorder{
+  width: 100% !important;
+  text-align: left !important;
+}
+.GrandTotal, .WeekTotal, .BillableSubTotal{
+  width: 100% !important;
+}

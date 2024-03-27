@@ -320,7 +320,8 @@ private async validateDuplicateRecord () {
             Rm.push(manager)
         }
         if(!isValid.status){
-            this.setState({errorMessage : isValid.message})
+            // this.setState({errorMessage : isValid.message})
+            toast.error(isValid.message)
         }
         else if(Rm.includes(this.state.EmployeeId)){
             let errMsg = 'The selected Employee can not be assigned as their own Manager';
