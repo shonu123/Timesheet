@@ -14,6 +14,7 @@ import RequisitionReport from '../Reports/Requistionreport.component';
 import Myrequests from '../Dashboard/Myrequests.component';
 import EmployeeMasterForm from '../Masters/EmployeeMasterForm.component';
 // import WeeklyTimesheet from '../Forms/WeeklyTimesheet.component'; 
+import WeeklyTimesheet from '../Forms/WeeklyTimesheet.component';
 import HolidaysList from '../Masters/HolidayMaster.component';
 import { SPHttpClient, SPHttpClientResponse, SPHttpClientConfiguration } from '@microsoft/sp-http';
 import sitePermissions from './Routing.module';
@@ -60,7 +61,7 @@ class Routesitems extends Component<RoutesProps, RoutesState> {
           }
           const WrapperWeeklyTimesheet = (props) => {
             let params =useParams();
-            // return <WeeklyTimesheet {...this.context}{...this.props}  {...{...props, match: {params}} } />
+            return <WeeklyTimesheet {...this.context}{...this.props}  {...{...props, match: {params}} } />
           }
           const WrapperMasterView = (props) => {
             let params =useParams();
@@ -78,7 +79,7 @@ class Routesitems extends Component<RoutesProps, RoutesState> {
             <Suspense fallback={<div></div>}>
                 <Routes>
                     <Route path='/' element={<Dashboard {...this.context}{...this.props}  />} />
-                   {/* <Route path='/WeeklyTimesheet/:id?' element ={<WrapperWeeklyTimesheet/>} /> */}
+                   <Route path='/WeeklyTimesheet/:id?' element ={<WrapperWeeklyTimesheet/>} />
                    <Route path='/EmployeeMasterForm/:id?' element ={<WrapperEmployeeMasterForm/>} />
                    <Route path='/EmployeeMasterView/:message?' element ={<WrapperMasterView/>} />
                    <Route path='/HolidayMaster/:id?' element ={<WrapperHolidayMaster/>} />
