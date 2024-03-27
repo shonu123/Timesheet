@@ -19,6 +19,7 @@ import InputText from '../Shared/InputText';
 import InputCheckBox from '../Shared/InputCheckBox';
 import { highlightCurrentNav } from '../../Utilities/HighlightCurrentComponent';
 import "../Shared/Menuhandler";
+import toast, { Toaster } from 'react-hot-toast';
 import ImportExcel from '../Shared/ImportExcel';
 import DatePicker from "../Shared/DatePickerField";
 import { addDays } from 'office-ui-fabric-react';
@@ -146,10 +147,11 @@ class Clients extends Component<ClientProps, ClientState> {
                             //console.log(this.props);
                             sp.web.lists.getByTitle(ClientList).items.getById(id).update(formData).then((res) => {
                                 // this.resetHolidayMasterForm();
+                                toast.success('updated successfully');
                                 this.setState({
                                     modalTitle: 'Success',
                                     modalText: 'Client updated successfully',
-                                    showHideModal: true,
+                                    showHideModal: false,
                                     isSuccess: true,
                                     isRedirect: false
                                 });
@@ -162,24 +164,28 @@ class Clients extends Component<ClientProps, ClientState> {
                                 sp.web.lists.getByTitle(ClientList).items.add({ ...this.state.formData })
                                     .then((res) => {
                                         this.resetHolidayMasterForm();
-                                        this.setState({
-                                            modalTitle: 'Success',
-                                            modalText: 'Client submitted successfully',
-                                            showHideModal: true,
-                                            isSuccess: true,
-                                            isRedirect: false
-                                        });
+                                        toast.success('updated successfully');
+                                        this.setState({ showHideModal: false,isRedirect:true});
+                                        //  this.setState({
+                                        //      modalTitle: 'Success',
+                                        //      modalText: 'Client submitted successfully',
+                                        //     showHideModal: false,
+                                        //     isSuccess: true,
+                                        //      isRedirect: false
+                                        //  });
                                     })
                                     .catch((err) => {
                                         console.log('Failed to add');
-                                        this.setState({
-                                            loading: false,
-                                            modalTitle: 'Error',
-                                            modalText: 'Sorry! something went wrong',
-                                            showHideModal: true,
-                                            isSuccess: false,
-                                            isRedirect: false
-                                        });
+                                        toast.error('Sorry! something went wrong');
+                                        this.setState({ showHideModal: false,isRedirect:true});
+                                        // this.setState({
+                                        //     loading: false,
+                                        //     modalTitle: 'Error',
+                                        //     modalText: 'Sorry! something went wrong',
+                                        //     showHideModal: false,
+                                        //     isSuccess: false,
+                                        //     isRedirect: false
+                                        // });
                                     });
                             }
                             catch (e) {
@@ -244,7 +250,7 @@ class Clients extends Component<ClientProps, ClientState> {
                     loading: false,
                     modalTitle: 'Error',
                     modalText: 'Sorry! something went wrong',
-                    showHideModal: true,
+                    // showHideModal: true,
                     isSuccess: false
                 });
             });
@@ -441,7 +447,7 @@ class Clients extends Component<ClientProps, ClientState> {
                                                 </div>
                                             </div>
                                         </div>
-
+                                        <Toaster />  
                                         <div className="c-v-table table-head-1st-td">
                                             <TableGenerator columns={columns} data={this.state.ClientsObj} fileName={'Clients'}showExportExcel={true} ExportExcelCustomisedColumns={ExportExcelreportColumns} ExportExcelCustomisedData={this.state.ExportExcelData}></TableGenerator>
                                         </div>

@@ -247,14 +247,16 @@ class HolidaysList extends Component<HolidaysListProps, HolidaysListState> {
                             }
                             catch (e) {
                                 console.log(e);
-                                this.setState({
-                                    loading: false,
-                                    modalTitle: 'Error',
-                                    modalText: 'Sorry! something went wrong',
-                                    showHideModal: true,
-                                    isSuccess: false,
-                                    isRedirect: false
-                                });
+                                toast.error('Sorry! something went wrong');
+                                this.setState({ showHideModal: false,isRedirect:true});
+                                // this.setState({
+                                //     loading: false,
+                                //     modalTitle: 'Error',
+                                //     modalText: 'Sorry! something went wrong',
+                                //     showHideModal: true,
+                                //     isSuccess: false,
+                                //     isRedirect: false
+                                // });
                             }
                         }
                     }
@@ -410,11 +412,24 @@ class HolidaysList extends Component<HolidaysListProps, HolidaysListState> {
                 });
             } else if (!excelData.length && !statusChangedRec.length) {
                 this.resetImportField();
+                // toast.error('No new records found')
+                toast('No new records found', {
+                    // duration: 4000,
+                    // position: 'top-center',
+                  
+                    // Styling
+                    style: {color:'#e5a05b'},
+                    // className: '',
+                  
+                    // Custom Icon
+                    icon: '⚠️',
+                })
+                
                 this.setState({
                     loading: false,
-                    modalTitle: 'Alert',
-                    modalText: 'No new records found',
-                    showHideModal: true,
+                    // modalTitle: 'Alert',
+                    // modalText: 'No new records found',
+                    // showHideModal: true,
                     isSuccess: false
                 });
             }
@@ -427,11 +442,12 @@ class HolidaysList extends Component<HolidaysListProps, HolidaysListState> {
         }
         catch (e) {
             console.log(e);
+            toast.error('Sorry! something went wrong')
             this.setState({
                 loading: false,
-                modalTitle: 'Error',
-                modalText: 'Sorry! something went wrong',
-                showHideModal: true,
+                // modalTitle: 'Error',
+                // modalText: 'Sorry! something went wrong',
+                // showHideModal: true,
                 isSuccess: false
             });
         }
@@ -443,10 +459,11 @@ class HolidaysList extends Component<HolidaysListProps, HolidaysListState> {
 
             }).then((res) => {
                 if (!nonDuplicateRec.length) {
+                    toast.success('Holidays updated successfully')
                     this.setState({
-                        modalTitle: 'Success',
-                        modalText: 'Holiday updated successfully',
-                        showHideModal: true,
+                        // modalTitle: 'Success',
+                        // modalText: 'Holiday updated successfully',
+                        // showHideModal: true,
                         isSuccess: true
                     });
                     this.resetImportField();
@@ -485,13 +502,15 @@ class HolidaysList extends Component<HolidaysListProps, HolidaysListState> {
                             .then(response => {
                                 if (response != undefined) {
                                     console.log('Failed to add');
+                                    toast.error('Failed to add');
                                 }
                                 if (index == splitSize - 1) {
                                     this.loadListData();
+                                    toast.success('Holidays uploaded successfully');
                                     this.setState({
-                                        modalTitle: 'Success',
-                                        modalText: 'HolidaysList uploaded successfully',
-                                        showHideModal: true,
+                                        // modalTitle: 'Success',
+                                        // modalText: 'Holidays uploaded successfully',
+                                        // showHideModal: true,
                                         isSuccess: true,
                                     });
                                     this.resetImportField();
@@ -509,11 +528,12 @@ class HolidaysList extends Component<HolidaysListProps, HolidaysListState> {
         }
         catch (e) {
             console.log(e);
+            toast.error('Sorry! something went wrong');
             this.setState({
                 loading: false,
-                modalTitle: 'Alert',
-                modalText: 'Error occured',
-                showHideModal: true,
+                // modalTitle: 'Alert',
+                // modalText: 'Error occured',
+                // showHideModal: true,
                 isSuccess: false
             });
         }
@@ -529,11 +549,12 @@ class HolidaysList extends Component<HolidaysListProps, HolidaysListState> {
     }
     public ErrorFileSelect = () => {
         this.resetImportField();
+        toast.error('Sorry! something went wrong');
         this.setState({
             loading: false,
-            modalTitle: 'Alert',
-            modalText: 'Invalid Holiday List file selected. File name sholud be Holidays List',
-            showHideModal: true,
+            // modalTitle: 'Alert',
+            // modalText: 'Invalid Holiday List file selected. File name sholud be Holidays List',
+            // showHideModal: true,
             isSuccess: false
         });
     }
