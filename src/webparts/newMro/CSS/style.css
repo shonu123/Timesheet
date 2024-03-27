@@ -2418,7 +2418,10 @@ li {
   font-family: sans-serif !important;
 }
 
-.Sun .TimeInput-input,.Sat .TimeInput-input{
+/* .Sun .TimeInput-input,.Sat .TimeInput-input{
+  color: rgb(241, 94, 94);
+} */
+.Sun,.Sat{
   color: rgb(241, 94, 94);
 }
 #s4-workspace{

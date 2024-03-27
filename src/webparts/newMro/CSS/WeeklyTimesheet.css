@@ -219,7 +219,17 @@
         left: 40px !important;
         width: 150px !important;
     }
-    .ClientHoliday .TimeInput-input
+/*CSS modified according to plain Input for time  control*/
+    .ClientHoliday 
+    {
+        color:hwb(263 9% 9%);
+    }
+    .time{
+        text-align: center !important;
+        border: none !important;
+        width: 100px !important;
+       }
+    /*.ClientHoliday .TimeInput-input
     {
         color:hwb(263 9% 9%);
     }
@@ -232,12 +242,12 @@
         border:none !important;
         width: 100px !important;
     }
-    fieldset:disabled:hover{
+     fieldset:disabled:hover{
         cursor: not-allowed;
       }
       fieldset:disabled input:hover{
         cursor: not-allowed;
-      }
+      } */
     /* @media only screen and (max-width: 1364px) {
         .table-outer{
           overflow-x: auto;
