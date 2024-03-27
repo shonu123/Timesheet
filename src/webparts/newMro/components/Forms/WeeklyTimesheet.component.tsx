@@ -3084,7 +3084,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                                         </div>
                                     </td>
                                     <td>
-                                        <textarea className="form-control textareaBorder" rows={1} value={this.state.trFormdata.OTItemsData[0].Description} id="0_Description_otrow" onChange={this.changeTime}  disabled={this.state.isSubmitted || this.state.showBillable} ></textarea>
+                                        <textarea className="form-control textareaBorder fw-normal" rows={1} value={this.state.trFormdata.OTItemsData[0].Description} id="0_Description_otrow" onChange={this.changeTime}  disabled={this.state.isSubmitted || this.state.showBillable} ></textarea>
                                     </td>
                                     <td>
                                         <input className="form-control" value={this.state.trFormdata.OTItemsData[0].ProjectCode}   id="0_ProjectCode_otrow"  onChange={this.changeTime}  disabled={this.state.isSubmitted || this.state.showBillable} ></input>
@@ -3213,7 +3213,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                                 </tr>
         
                                  {this.state.trFormdata.ClientName.toLowerCase()=="synergy"||this.state.trFormdata.ClientName.toLowerCase()==""?"":
-                                 <tr className="" id="BillableTotal">
+                                 <tr className="">
                                     <td className="fw-bold text-start">
                                         <div className="p-2 fw-bold">
                                             <i className="fas fa-business-time color-gray"></i> Billable Total

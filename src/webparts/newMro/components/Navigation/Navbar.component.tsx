@@ -20,7 +20,7 @@ class NavBar extends React.Component<NavBarProps, NavBarState> {
                 this.currentUserLinksArr.push(permission.link);
             }
         }
-        if(!this.props.currentUserGroups.includes('Timesheet Administrators')){
+        if(!this.props.currentUserGroups.includes('Timesheet Administrators') || this.props.currentUserGroups.includes("Timesheet Owners")){
             document.getElementById('O365_SuiteBranding_container').style.display='none';
             document.getElementById('O365_MainLink_Settings_container').style.display='none';
             document.getElementById('O365_MainLink_Help_container').style.display='none';
@@ -34,7 +34,7 @@ class NavBar extends React.Component<NavBarProps, NavBarState> {
                 item.className = 'nav-item';
             });
         }
-        event.currentTarget.className = 'nav-click';
+        event.currentTarget.className = 'nav-item nav-click';
     }
     public render() {
         return (

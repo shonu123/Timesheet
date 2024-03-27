@@ -276,7 +276,7 @@ class AllRequests extends React.Component<AllRequestsProps,AllRequestsState> {
         return (
             <React.Fragment>
             {/* <h1>Approver Screen</h1> */}
-            <div className="col-12 col-md-12 col-lg-12">
+            <div className="">
                 {/* <div style={{ paddingLeft: '10px' }} className="px-1 text-right" id='divNewWeeklyTimeSheet'>
                     <NavLink title="New Weekly Timesheet"  className="csrLink ms-draggable" to={`/WeeklyTimesheet`}>
                         <span className='SubmitButtons' id='newWeeklyTimeSheet'><FontAwesomeIcon icon={faPlus}></FontAwesomeIcon> New</span>

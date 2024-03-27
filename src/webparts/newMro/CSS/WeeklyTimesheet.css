@@ -81,7 +81,7 @@
         font-size: 16px;
     }
     .weekDay{
-        width: 100px !important;
+        width: 66px!important;
         text-align: center;
     }
     .projectCode{
@@ -110,6 +110,7 @@
         border: 0!important;
         appearance: auto;
         text-align: center;
+        width: 100% !important;
     }
     .font-td-bold .form-control{
         font-weight: bold;
@@ -177,6 +178,9 @@
     .w-170 {
         width: 170px!important;
     }
+    .timetable td{
+        font-size: 14px;
+    }
     .timetable td, th {
         padding: 4px!important;
         vertical-align: middle;
@@ -203,7 +207,7 @@
         padding: 6px 18px;
     }
     .have-h {
-        min-width: 170px;
+        min-width: 152px;
     }
     table td input[type=text]{
      text-align: left;

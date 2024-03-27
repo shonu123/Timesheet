@@ -853,7 +853,6 @@ input.c-input-readonly {
 }
 .WeekTotal.form-control[readonly],.DayTotal.form-control[readonly],.BillableSubTotal.form-control[readonly],.GrandTotal.form-control[readonly] {
   color: #000;
-  font-weight: bold;
 }
 .attachment-list .fa-window-close{
   position: absolute;
@@ -2375,7 +2374,12 @@ li {
   .Billable {
     margin-top: 4rem !important;
   }
-
+.modal .btn{
+  font-size: 14px;
+  padding: 5px 8px;
+  min-width: 68px;
+  width: inherit; 
+}
   .modal-header-reject {
     padding: 0.5rem 1rem;
     border-bottom: 1px solid #dee2e6;
@@ -2489,9 +2493,15 @@ padding: 3px 4px!important;
   width: 100% !important;
   text-align: left !important;
 }
+textarea{
+  resize: none!important;
+}
 .GrandTotal, .WeekTotal, .BillableSubTotal{
   width: 100% !important;
 }
 .fw-bold{
   font-weight: bold;
+}
+.fw-normal{
+  font-weight: normal;
 }
