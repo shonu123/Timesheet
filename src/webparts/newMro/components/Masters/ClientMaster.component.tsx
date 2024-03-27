@@ -153,7 +153,8 @@ class Clients extends Component<ClientProps, ClientState> {
                                     modalText: 'Client updated successfully',
                                     showHideModal: false,
                                     isSuccess: true,
-                                    isRedirect: false
+                                    loading: false,
+                                    isRedirect: false,
                                 });
                                 //console.log(res);
                             });
@@ -165,7 +166,7 @@ class Clients extends Component<ClientProps, ClientState> {
                                     .then((res) => {
                                         this.resetHolidayMasterForm();
                                         toast.success('updated successfully');
-                                        this.setState({ showHideModal: false,isRedirect:true});
+                                        this.setState({ showHideModal: false,isRedirect:true,loading:false});
                                         //  this.setState({
                                         //      modalTitle: 'Success',
                                         //      modalText: 'Client submitted successfully',
@@ -177,7 +178,7 @@ class Clients extends Component<ClientProps, ClientState> {
                                     .catch((err) => {
                                         console.log('Failed to add');
                                         toast.error('Sorry! something went wrong');
-                                        this.setState({ showHideModal: false,isRedirect:true});
+                                        this.setState({ showHideModal: false,isRedirect:true,loading:false});
                                         // this.setState({
                                         //     loading: false,
                                         //     modalTitle: 'Error',
