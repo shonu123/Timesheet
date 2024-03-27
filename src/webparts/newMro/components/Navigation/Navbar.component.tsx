@@ -31,7 +31,7 @@ class NavBar extends React.Component<NavBarProps, NavBarState> {
         let navLinks = document.querySelectorAll('.nav-click');
         if(navLinks.length > 0 ){
             navLinks.forEach(item => {
-                item.className = '';
+                item.className = 'nav-item';
             });
         }
         event.currentTarget.className = 'nav-click';

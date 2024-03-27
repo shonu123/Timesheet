@@ -2815,7 +2815,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                 {this.getOTBadge(rowType)}
                 </td>
                 <td>
-                    <input className="form-control textareaBorder time WeekTotal" value={Obj[i].Total} id={i+"_Total_"+rowType} onChange={this.changeTime} type="text" readOnly></input>
+                    <input className="form-control time WeekTotal" value={Obj[i].Total} id={i+"_Total_"+rowType} onChange={this.changeTime} type="text" readOnly></input>
                 </td>
                 <td>
     
@@ -3018,13 +3018,13 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                                         <th className="" ><div className="have-h"></div></th>
                                         <th className=""><div className='th-description'>Description {this.state.trFormdata.IsDescriptionMandatory? <span className="mandatoryhastrick">*</span>:""}</div></th>
                                         <th className="projectCode"><div className='th-Project-Code'>Project Code{this.state.trFormdata.IsProjectCodeMandatory? <span className="mandatoryhastrick">*</span>:""}</div></th>
-            <th className={"weekDay "+(this.WeekNames[0].day1=="Sat"||this.WeekNames[0].day1=="Sun"?"color-FF9800":"")}>{this.WeekNames[0].day1} <span className={"day "+(this.WeekNames[0].day1=="Sat"||this.WeekNames[0].day1=="Sun"?"color-FF9800":"")}>{this.WeekHeadings[0].Mon}</span></th>
-            <th className={"weekDay "+(this.WeekNames[0].day2=="Sat"||this.WeekNames[0].day2=="Sun"?"color-FF9800":"")}>{this.WeekNames[0].day2} <span className={"day "+(this.WeekNames[0].day2=="Sat"||this.WeekNames[0].day2=="Sun"?"color-FF9800":"")}>{this.WeekHeadings[0].Tue}</span></th>
-            <th className={"weekDay "+(this.WeekNames[0].day3=="Sat"||this.WeekNames[0].day3=="Sun"?"color-FF9800":"")}>{this.WeekNames[0].day3} <span className={"day "+(this.WeekNames[0].day3=="Sat"||this.WeekNames[0].day3=="Sun"?"color-FF9800":"")}>{this.WeekHeadings[0].Wed}</span></th>
-            <th className={"weekDay "+(this.WeekNames[0].day4=="Sat"||this.WeekNames[0].day4=="Sun"?"color-FF9800":"")}>{this.WeekNames[0].day4} <span className={"day "+(this.WeekNames[0].day4=="Sat"||this.WeekNames[0].day4=="Sun"?"color-FF9800":"")}>{this.WeekHeadings[0].Thu}</span></th>
-            <th className={"weekDay "+(this.WeekNames[0].day5=="Sat"||this.WeekNames[0].day5=="Sun"?"color-FF9800":"")}>{this.WeekNames[0].day5} <span className={"day "+(this.WeekNames[0].day5=="Sat"||this.WeekNames[0].day5=="Sun"?"color-FF9800":"")}>{this.WeekHeadings[0].Fri}</span></th>
-            <th className={"weekDay "+(this.WeekNames[0].day6=="Sat"||this.WeekNames[0].day6=="Sun"?"color-FF9800":"")}>{this.WeekNames[0].day6} <span className={"day "+(this.WeekNames[0].day6=="Sat"||this.WeekNames[0].day6=="Sun"?"color-FF9800":"")}>{this.WeekHeadings[0].Sat}</span></th>
-            <th className={"weekDay "+(this.WeekNames[0].day7=="Sat"||this.WeekNames[0].day7=="Sun"?"color-FF9800":"")}>{this.WeekNames[0].day7} <span className={"day "+(this.WeekNames[0].day7=="Sat"||this.WeekNames[0].day7=="Sun"?"color-FF9800":"")}>{this.WeekHeadings[0].Sun}</span></th>
+            <th><div className={"weekDay "+(this.WeekNames[0].day1=="Sat"||this.WeekNames[0].day1=="Sun"?"color-FF9800":"")}>{this.WeekNames[0].day1} <span className={"day "+(this.WeekNames[0].day1=="Sat"||this.WeekNames[0].day1=="Sun"?"color-FF9800":"")}>{this.WeekHeadings[0].Mon}</span></div></th>
+            <th><div className={"weekDay "+(this.WeekNames[0].day2=="Sat"||this.WeekNames[0].day2=="Sun"?"color-FF9800":"")}>{this.WeekNames[0].day2} <span className={"day "+(this.WeekNames[0].day2=="Sat"||this.WeekNames[0].day2=="Sun"?"color-FF9800":"")}>{this.WeekHeadings[0].Tue}</span></div></th>
+            <th><div className={"weekDay "+(this.WeekNames[0].day3=="Sat"||this.WeekNames[0].day3=="Sun"?"color-FF9800":"")}>{this.WeekNames[0].day3} <span className={"day "+(this.WeekNames[0].day3=="Sat"||this.WeekNames[0].day3=="Sun"?"color-FF9800":"")}>{this.WeekHeadings[0].Wed}</span></div></th>
+            <th><div className={"weekDay "+(this.WeekNames[0].day4=="Sat"||this.WeekNames[0].day4=="Sun"?"color-FF9800":"")}>{this.WeekNames[0].day4} <span className={"day "+(this.WeekNames[0].day4=="Sat"||this.WeekNames[0].day4=="Sun"?"color-FF9800":"")}>{this.WeekHeadings[0].Thu}</span></div></th>
+            <th><div className={"weekDay "+(this.WeekNames[0].day5=="Sat"||this.WeekNames[0].day5=="Sun"?"color-FF9800":"")}>{this.WeekNames[0].day5} <span className={"day "+(this.WeekNames[0].day5=="Sat"||this.WeekNames[0].day5=="Sun"?"color-FF9800":"")}>{this.WeekHeadings[0].Fri}</span></div></th>
+            <th><div className={"weekDay "+(this.WeekNames[0].day6=="Sat"||this.WeekNames[0].day6=="Sun"?"color-FF9800":"")}>{this.WeekNames[0].day6} <span className={"day "+(this.WeekNames[0].day6=="Sat"||this.WeekNames[0].day6=="Sun"?"color-FF9800":"")}>{this.WeekHeadings[0].Sat}</span></div></th>
+            <th><div className={"weekDay "+(this.WeekNames[0].day7=="Sat"||this.WeekNames[0].day7=="Sun"?"color-FF9800":"")}>{this.WeekNames[0].day7} <span className={"day "+(this.WeekNames[0].day7=="Sat"||this.WeekNames[0].day7=="Sun"?"color-FF9800":"")}>{this.WeekHeadings[0].Sun}</span></div></th>
                                         <th><div className="px-2"></div></th>
                                         <th className="bc-e1f2ff"><div className='th-total'>Total</div></th>
                                         <th className=""><div className="px-3"></div></th>
@@ -3213,9 +3213,9 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                                 </tr>
         
                                  {this.state.trFormdata.ClientName.toLowerCase()=="synergy"||this.state.trFormdata.ClientName.toLowerCase()==""?"":
-                                 <tr className="font-td-bold" id="BillableTotal">
+                                 <tr className="" id="BillableTotal">
                                     <td className="fw-bold text-start">
-                                        <div className="p-2">
+                                        <div className="p-2 fw-bold">
                                             <i className="fas fa-business-time color-gray"></i> Billable Total
                                         </div>
                                     </td>
@@ -3248,16 +3248,16 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                                     <td>
                                         <span className="c-badge">BT</span>
                                     </td>
-                                    <td>
+                                    <td className='fw-bold'>
                                         <input className="form-control time BillableSubTotal" id="BillableTotal" value={this.state.trFormdata.BillableSubTotal[0].Total}  type="text" readOnly></input>
                                     </td>
                                     <td>
                                         
                                     </td>
                                 </tr>}
-                                <tr className="font-td-bold" id="GrandTotalRow">
+                                <tr className="" id="GrandTotalRow">
                                     <td className="fw-bold text-start"> 
-                                        <div className="p-2">
+                                        <div className="p-2 fw-bold">
                                             <i className="fas fa-business-time color-gray"></i> Total
                                         </div>
                                     </td>

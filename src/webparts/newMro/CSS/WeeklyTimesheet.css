@@ -203,7 +203,7 @@
         padding: 6px 18px;
     }
     .have-h {
-        min-width: 200px;
+        min-width: 170px;
     }
     table td input[type=text]{
      text-align: left;
@@ -220,9 +220,9 @@
         width: 150px !important;
     }
 /*CSS modified according to plain Input for time  control*/
-    .ClientHoliday 
-    {
-        color:hwb(263 9% 9%);
+    .ClientHoliday {
+        background-color: #ffebd6 !important;
+        box-shadow: inset 0px 0px 3px #f9a954;
     }
     .time{
         text-align: center !important;

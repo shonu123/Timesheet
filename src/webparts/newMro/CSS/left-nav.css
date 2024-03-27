@@ -53,13 +53,14 @@ color: #666666!important;
   margin: 0 7px;
   display: inline-block;
 }
-.ul-leftnav li:hover{
+.ul-leftnav li a:hover{
   border-bottom: 2px solid rgb(13 47 75);
   text-decoration: none;
 }
 .nav-click a{
   background-color: #f1f1f1 !important;
   border-bottom: 2px solid rgb(13 47 75);
+  font-weight: bold;
 }
 #sidebar .h6 {
   color: #fff;
