@@ -204,7 +204,7 @@ class HolidaysList extends Component<HolidaysListProps, HolidaysListState> {
                                 // this.resetHolidayMasterForm();
                                 this.setState({
                                     modalTitle: 'Success',
-                                    modalText: 'HolidaysList updated successfully',
+                                    modalText: 'Holidays updated successfully',
                                     showHideModal: true,
                                     isSuccess: true,
                                     isRedirect: false
@@ -438,7 +438,7 @@ class HolidaysList extends Component<HolidaysListProps, HolidaysListState> {
                 if (!nonDuplicateRec.length) {
                     this.setState({
                         modalTitle: 'Success',
-                        modalText: 'HolidaysList updated successfully',
+                        modalText: 'Holidays updated successfully',
                         showHideModal: true,
                         isSuccess: true
                     });
