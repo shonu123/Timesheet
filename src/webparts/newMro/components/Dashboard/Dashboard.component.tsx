@@ -262,11 +262,11 @@ class Dashboard extends React.Component<DashboardProps, DashboardState> {
         }
         
         this.setState({ showReviewerComp: showReviewerComp, showApproveComp: showApproveComp, showMyRequestsComp: showMyRequestsComp, showExported: showExported,isAdmin:isAdmin});
-        let lsMyrequests = {'PageNumber':1,"sortOrder":true,"sortBy":1,'tab':'','SearchKey':null};
-        if(url!= undefined) {setTimeout(() => {
-            localStorage.setItem('PrvData', JSON.stringify(lsMyrequests));
-          }, 1000);
-         } 
+        // let lsMyrequests = {'PageNumber':1,"sortOrder":true,"sortBy":1,'tab':'','SearchKey':null};
+        // if(url!= undefined) {setTimeout(() => {
+        //     localStorage.setItem('PrvData', JSON.stringify(lsMyrequests));
+        //   }, 1000);
+        //  } 
     }
     public render() {
         return (

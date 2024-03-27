@@ -97,9 +97,12 @@ class EmployeeMasterView extends React.Component<EmployeeMasterViewProps, Employ
                     })
                 }
                 console.log(Data);
-                this.setState({ Details: Data,loading:false });
+                this.setState({ Details: Data});
+                setTimeout(() => {
+                    this.setState({ loading: false });
+                      }, 1500);
                 // document.getElementById('txtTableSearch').style.display = 'none';
-                this.setState({ loading: false });
+                // this.setState({ loading: false });
             }).catch(err => {
                 console.log('Failed to fetch data.', err);
             });

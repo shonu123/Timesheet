@@ -92,7 +92,10 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
                 }
                 this.setState({ExportExcelData:Data})
                 console.log(Data);
-                this.setState({ Reviewers: Data,loading:false });
+                this.setState({ Reviewers: Data});
+                setTimeout(() => {
+                    this.setState({ loading: false });
+                      }, 1500);
                 //console.log(this.state.approvals);
             }).catch(err => {
                 console.log('Failed to fetch data.', err);

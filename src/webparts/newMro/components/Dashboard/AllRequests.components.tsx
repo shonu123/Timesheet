@@ -113,7 +113,10 @@ class AllRequests extends React.Component<AllRequestsProps,AllRequestsState> {
 
                 }
                 console.log(Data);
-                this.setState({ AllRequests: Data,loading:false,ExportExcelData:ExcelData });
+                this.setState({ AllRequests: Data,ExportExcelData:ExcelData });
+                setTimeout(() => {
+                    this.setState({ loading: false });
+                      }, 1500);
                 // this.setState({ loading: false });
             }).catch(err => {
                 console.log('Failed to fetch data.', err);
@@ -159,7 +162,7 @@ class AllRequests extends React.Component<AllRequestsProps,AllRequestsState> {
                 sortable: true
             },
             {
-                name: "Manager",
+                name: "Reporting Manager",
                 selector: (row, i) => row.RM,
                 // width: '250px',
                 cell: row => <div dangerouslySetInnerHTML={{ __html: row.RM }} />,
@@ -228,7 +231,7 @@ class AllRequests extends React.Component<AllRequestsProps,AllRequestsState> {
                 sortable: true
             },
             {
-                name: "Manager",
+                name: "Reporting Manager",
                 selector: "RM",
                 sortable: true
             },
