@@ -876,7 +876,7 @@ input.c-input-readonly {
   font-family: cursive;
 }
 a:active {
-  color: #007bff!important;
+  color: #0D2F4B!important;
 }
 .gHUUHu button[disabled][disabled]{
   background-color: transparent;
@@ -885,7 +885,7 @@ a:active {
   background-color: transparent!important;
 }
 .geKTIA a {
-  color: #007bff!important;
+  color: #0D2F4B!important;
 }
 .cXcRCo{
   box-shadow: 0 10px 24px 0 rgb(0 0 0 / 9%);
@@ -1132,7 +1132,7 @@ a:active {
   margin-bottom: 25px;
   background: #0D2F4B;
   color: white;
-  border: 1px solid #0D2F4B;
+  border: 1px solid #0D2F4B !important;
   padding: 6px 18px;
   margin-left: inherit;
   font-family: inherit;
@@ -1927,7 +1927,7 @@ div[id^="_TopSpan_NotificationSpan"]{
 }
 .span-link{
   font-weight: 400;
-  color : #007bff;
+  color : #0D2F4B;
   text-decoration: underline;
   padding-right: 15px;
 }

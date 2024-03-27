@@ -13,6 +13,7 @@ import "@pnp/sp/items";
 import Loader from '../Shared/Loader';
 import { StatusType } from '../../Constants/Constants';
 import ModalPopUp from '../Shared/ModalPopUp';
+import toast, { Toaster } from 'react-hot-toast';
 
 export interface ReviewerApprovalsProps {
     match: any;
@@ -114,12 +115,14 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
             CC: emaildetails.ccemail
           }).then((i) => {  
             // alert("Record Updated Sucessfully");
-            this.setState({showHideModal : false,ItemID:0,message:'',title:'',Action:'',loading: false,successPopUp:true,modalTitle:modalTitle});
+            this.setState({showHideModal : false,ItemID:0,message:'',title:'',Action:'',loading: false,successPopUp:false,modalTitle:modalTitle});
+            toast.success('Timesheet rejcted succesfully')
             // this.setState({redirect : true});
             // <Navigate to={'/'} />
           }).catch((i) => {
             // alert("Error while updating the record");
-            this.setState({showHideModal : false,ItemID:0,message:'',title:'',Action:'',loading: false,successPopUp:true,modalTitle:'Email sending failed',modalText:'Something went wrong please try again'});            // this.setState({redirect : true});
+            this.setState({showHideModal : false,ItemID:0,message:'',title:'',Action:'',loading: false,successPopUp:false,modalTitle:'Email sending failed',modalText:'Something went wrong please try again'});        // this.setState({redirect : true});
+            toast.error('Sorry! something went wrong please try again')
             console.log(i)
           });  
     }
@@ -479,6 +482,7 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
                         <TableGenerator columns={columns} data={this.state.Reviewers} fileName={'My Reviews'} showExportExcel={false} showAddButton={false} searchBoxLeft={true} ExportExcelCustomisedData={this.state.ExportExcelData}></TableGenerator>
                     </div>
                 </div>
+                <Toaster />  
                 {this.state.loading && <Loader />}
                 </React.Fragment> 
             );
