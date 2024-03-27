@@ -2394,7 +2394,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
            }
            if(formdata.ClientName.toLowerCase()!="")
            {
-            if(formdata.SynergyHolidayHrs[0].Total!='')
+            if(formdata.SynergyHolidayHrs[0].Total!=0)
             {
                 if(formdata.SynergyHolidayHrs[0].Description.trim()=="" && formdata.IsDescriptionMandatory)
                 {
@@ -2413,7 +2413,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                     return isValid;
                 }
             }
-            if(formdata.ClientHolidayHrs[0].Total!='')
+            if(formdata.ClientHolidayHrs[0].Total!=0)
             {
                 if(formdata.ClientHolidayHrs[0].Description.trim()=="" && formdata.IsDescriptionMandatory)
                 {
@@ -2432,7 +2432,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                     return isValid;
                 }
             }
-            if(formdata.PTOHrs[0].Total!=''){
+            if(formdata.PTOHrs[0].Total!=0){
                 if(formdata.PTOHrs[0].Description.trim()=="" && formdata.IsDescriptionMandatory)
                 {
                     isValid.message="Description can not be blank";
