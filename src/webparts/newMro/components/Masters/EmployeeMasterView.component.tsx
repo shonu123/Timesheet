@@ -13,7 +13,8 @@ import "@pnp/sp/items";
 import Loader from '../Shared/Loader';
 import { StatusType } from '../../Constants/Constants';
 import toast, { Toaster } from 'react-hot-toast';
-
+import { ToasterTypes } from '../../Constants/Constants';
+import customToaster from '../Shared/Toaster.component';
 export interface EmployeeMasterViewProps {
     match: any;
     spContext: any;
@@ -49,21 +50,37 @@ class EmployeeMasterView extends React.Component<EmployeeMasterViewProps, Employ
 
     public componentDidMount() {
         //console.log(this.props);
+        //comment start
+        // if(this.props.match.params.message != undefined){
+        //     let message = this.props.match.params.message
+            
+        //     if(message == 'Error'){
+        //         toast.error('Sorry! something went wrong')
+        //     }
+        //     else{
+        //         // if(message!=''||message!=undefined){
+        //             let status = message.split('-')[1]
+        //             status == "Added"?toast.success('Employee configuration added successfully'):toast.success('Employee configuration updated successfully')
+        //         // }
+        //     }
+        //     //window.location.hash='#/EmployeeMasterView';
+        // }
+        // this.EmployeeMasterData();
+        // comment end
+        this.EmployeeMasterData();
         if(this.props.match.params.message != undefined){
             let message = this.props.match.params.message
-            
+            window.location.hash='#/EmployeeMasterView';
             if(message == 'Error'){
-                toast.error('Sorry! something went wrong')
+                customToaster('',ToasterTypes.Error,'Sorry! something went wrong',4000)
             }
             else{
-                // if(message!=''||message!=undefined){
-                    let status = message.split('-')[1]
-                    status == "Added"?toast.success('Employee configuration added successfully'):toast.success('Employee configuration updated successfully')
-                // }
+                let status = message.split('-')[1]
+                setTimeout(() => {
+                    status == "Added"?customToaster('',ToasterTypes.Success,'Employee configuration added successfully',2000):customToaster('',ToasterTypes.Success,'Employee configuration updated successfully',
+                    2000)}, 0);
             }
-            //window.location.hash='#/EmployeeMasterView';
         }
-        this.EmployeeMasterData();
     }
 
     private EmployeeMasterData = async () => {

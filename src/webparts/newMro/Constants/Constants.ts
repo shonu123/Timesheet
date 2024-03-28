@@ -10,6 +10,11 @@ export enum StatusType {
   Revoke="Revoked"
 }
 
+export enum ToasterTypes {
+  Success = 'Success',
+  Error = 'Error',
+  Warning = 'Warning'
+}
 
 
 

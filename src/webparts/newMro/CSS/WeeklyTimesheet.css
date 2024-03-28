@@ -83,6 +83,8 @@
     .weekDay{
         width: 66px!important;
         text-align: center;
+        /* by sri */
+        margin: auto;
     }
     .projectCode{
         width: 130px !important;
@@ -154,7 +156,8 @@
     }
     .bc-e1f2ff{
         /* background-color: #e1f2ff!important; */
-        width: 150px !important;
+        /* width: 150px !important; commented by sri */
+        width: 95px !important;
         text-align: center;
     }
     .color-2cbdff{

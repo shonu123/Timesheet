@@ -1723,7 +1723,8 @@ div[id^="_TopSpan_NotificationSpan"]{
 
 @media only screen and (max-width: 1406px) {
   .dataTables_wrapper-overflow{
-      width: 92vw!important;
+      /* width: 92vw!important; commented by sri*/
+      width: 94vw!important; 
   }
 }
 @media only screen and (max-width: 1100px) {
@@ -2475,7 +2476,10 @@ li {
   color: rgb(241, 94, 94);
 } */
 .Sun,.Sat{
-  color: rgb(241, 94, 94);
+  /* color: rgb(241, 94, 94);
+   */
+   /* by sri */
+   color: #e5a05b !important;
 }
 #s4-workspace{
   font-family: Verdana, Geneva, Tahoma, sans-serif !important;
@@ -2560,6 +2564,8 @@ textarea{
 }
 .GrandTotal, .WeekTotal, .BillableSubTotal{
   width: 100% !important;
+  /* by sri */
+  background-color:#f35d05 !important;
 }
 .fw-bold{
   font-weight: bold;

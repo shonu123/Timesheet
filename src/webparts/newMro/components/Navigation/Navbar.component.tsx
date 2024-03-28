@@ -34,7 +34,8 @@ class NavBar extends React.Component<NavBarProps, NavBarState> {
                 item.className = 'nav-item';
             });
         }
-        event.currentTarget.className += 'nav-click';
+        // event.currentTarget.className = 'nav-item nav-click';
+        event.currentTarget.classList.add('nav-click')
     }
     public render() {
         return (

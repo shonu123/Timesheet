@@ -28,8 +28,8 @@ import { confirm } from 'react-confirm-box';
 import InputCheckBox from '../Shared/InputCheckBox';
 // import CustomDatePicker from './DatePicker';
 import toast, { Toaster } from 'react-hot-toast';
-
-
+import customToaster from '../Shared/Toaster.component';
+import { ToasterTypes } from '../../Constants/Constants';
 export interface EmployeeMasterFormProps {
     match: any;
     spContext: any;
@@ -321,12 +321,15 @@ private async validateDuplicateRecord () {
         }
         if(!isValid.status){
             // this.setState({errorMessage : isValid.message})
-            toast.error(isValid.message)
+            // toast.error(isValid.message)
+            customToaster('',ToasterTypes.Error,isValid.message,4000)
         }
         else if(Rm.includes(this.state.EmployeeId)){
             let errMsg = 'The selected Employee can not be assigned as their own Manager';
             // this.setState({errorMessage : errMsg});
-            toast.error(errMsg)
+            // toast.error(errMsg)
+            customToaster('',ToasterTypes.Error,errMsg,4000)
+
         }
         else{
             console.log(data);
