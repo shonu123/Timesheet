@@ -70,6 +70,7 @@ export interface WeeklyTimesheetState {
         ReviewersEmail:any,
         NotifiersEmail:any,
         IsClientApprovalNeeded:boolean,
+        Revised:boolean
 
     };
     ClientNames:any;
@@ -179,6 +180,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                 ReviewersEmail:[],
                 NotifiersEmail:[],
                 IsClientApprovalNeeded:false,
+                Revised:false
             },
             ClientNames:[],
             Clients_DateOfJoinings:[],
@@ -370,6 +372,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
         trFormdata.SuperviserNames=JSON.parse(data[0].SuperviserName);
         trFormdata.Pendingwith=data[0].PendingWith;
         trFormdata.IsClientApprovalNeeded=data[0].IsClientApprovalNeed;
+        trFormdata.Revised=data[0].Revised;
         let EmpEmail=[];
         let RMEmail=[];
         let ReviewEmail=[];
@@ -432,7 +435,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
         {
             this.setState({isSubmitted:true});
         }
-        else if([StatusType.ManagerReject,StatusType.ReviewerReject,StatusType.Save].includes(data[0].Status))
+        else if([StatusType.ManagerReject,StatusType.ReviewerReject,StatusType.Save,StatusType.Revoke].includes(data[0].Status))
         {
             this.setState({isSubmitted:false});
         }
@@ -668,7 +671,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
         if(!["Description","ProjectCode","Total"].includes(prop))
         {
             value=value.match(/\d{0,7}(\.\d{0,2})?/)[0];
-            [undefined,null,""].includes(value)? value="0.0" : value.length==1? value=value+".0" : value;
+            [undefined,null,"","."].includes(value)? value="0.0" : value.length==1? value=value+".0" : value;
         }
 
         //FOR ROW WISE CALCULATION
@@ -681,7 +684,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                 this.setState({trFormdata});
               Object.keys(trFormdata.WeeklyItemsData[index]).forEach(key =>{
                 let val=trFormdata.WeeklyItemsData[index][key];
-                [undefined,null,""].includes(val.trim())? val="0.0" : val.length==1?val=val+".0" : val;
+                [undefined,null,"","."].includes(val.trim())? val="0.0" : val.length==1?val=val+".0" : val;
                 if(!["Description","ProjectCode","Total"].includes(key))
                 {
                     TotalRowMins=TotalRowMins+( parseInt(val.split(".")[0])*60 ) + (parseInt(val.split(".")[1])); 
@@ -698,7 +701,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
             this.setState({ trFormdata});
               Object.keys(trFormdata.OTItemsData[index]).forEach(key =>{
                 let val=trFormdata.OTItemsData[index][key];
-                [undefined,null,""].includes(val.trim())? val="0.0" : val.length==1?val=val+".0" : val;
+                [undefined,null,"","."].includes(val.trim())? val="0.0" : val.length==1?val=val+".0" : val;
                 if(!["Description","ProjectCode","Total"].includes(key))
                 {
                     TotalRowMins=TotalRowMins+( parseInt(val.split(".")[0])*60 ) + (parseInt(val.split(".")[1])); 
@@ -715,7 +718,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                 this.setState({ trFormdata});
                   Object.keys(trFormdata.SynergyOfficeHrs[index]).forEach(key =>{
                     let val=trFormdata.SynergyOfficeHrs[index][key];
-                    [undefined,null,""].includes(val.trim())? val="0.0" : val.length==1?val=val+".0" : val;
+                    [undefined,null,"","."].includes(val.trim())? val="0.0" : val.length==1?val=val+".0" : val;
                     if(!["Description","ProjectCode","Total"].includes(key))
                     {
                         TotalRowMins=TotalRowMins+( parseInt(val.split(".")[0])*60 ) + (parseInt(val.split(".")[1])); 
@@ -732,7 +735,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
             this.setState({ trFormdata});
               Object.keys(trFormdata.SynergyHolidayHrs[index]).forEach(key =>{
                 let val=trFormdata.SynergyHolidayHrs[index][key];
-                [undefined,null,""].includes(val.trim())? val="0.0" : val.length==1?val=val+".0" : val;
+                [undefined,null,"","."].includes(val.trim())? val="0.0" : val.length==1?val=val+".0" : val;
                 if(!["Description","ProjectCode","Total"].includes(key))
                 {
                     TotalRowMins=TotalRowMins+( parseInt(val.split(".")[0])*60 ) + (parseInt(val.split(".")[1])); 
@@ -749,7 +752,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
             this.setState({ trFormdata});
               Object.keys(trFormdata.ClientHolidayHrs[index]).forEach(key =>{
                 let val=trFormdata.ClientHolidayHrs[index][key];
-                [undefined,null,""].includes(val.trim())? val="0.0" : val.length==1?val=val+".0" : val;
+                [undefined,null,"","."].includes(val.trim())? val="0.0" : val.length==1?val=val+".0" : val;
                 if(!["Description","ProjectCode","Total"].includes(key))
                 {
                     TotalRowMins=TotalRowMins+( parseInt(val.split(".")[0])*60 ) + (parseInt(val.split(".")[1])); 
@@ -766,7 +769,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
             this.setState({ trFormdata});
               Object.keys(trFormdata.PTOHrs[index]).forEach(key =>{
                 let val=trFormdata.PTOHrs[index][key];
-                [undefined,null,""].includes(val.trim())? val="0.0" : val.length==1?val=val+".0" : val;
+                [undefined,null,"","."].includes(val.trim())? val="0.0" : val.length==1?val=val+".0" : val;
                 if(!["Description","ProjectCode","Total"].includes(key))
                 {
                     TotalRowMins=TotalRowMins+( parseInt(val.split(".")[0])*60 ) + (parseInt(val.split(".")[1])); 
@@ -790,11 +793,11 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
             {
                 //For weekly calculation
                 let val=item[prop]; 
-                [undefined,null,""].includes(val.trim())? val="0.0" : val.length==1?val=val+".0" : val;
+                [undefined,null,"","."].includes(val.trim())? val="0.0" : val.length==1?val=val+".0" : val;
                 WeeklyTotal=WeeklyTotal+( parseInt(val.split(".")[0])*60 ) + (parseInt(val.split(".")[1]));
                  //For total calculation
                 let TotalVal=item.Total;
-                [undefined,null,""].includes(TotalVal.trim())? TotalVal="0.0" : TotalVal.length==1?TotalVal=TotalVal+".0" : TotalVal;
+                [undefined,null,"","."].includes(TotalVal.trim())? TotalVal="0.0" : TotalVal.length==1?TotalVal=TotalVal+".0" : TotalVal;
                 Total= Total+( parseInt(TotalVal.split(".")[0])*60 ) + (parseInt(TotalVal.split(".")[1]));
                 WeekTotal= WeekTotal+( parseInt(TotalVal.split(".")[0])*60 ) + (parseInt(TotalVal.split(".")[1]));
             }
@@ -808,11 +811,11 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
             {
                  //For weekly calculation
                 let val=item[prop];
-                [undefined,null,""].includes(val.trim())? val="0.0" : val.length==1?val=val+".0" : val;
+                [undefined,null,"","."].includes(val.trim())? val="0.0" : val.length==1?val=val+".0" : val;
                 WeeklyTotal=WeeklyTotal+( parseInt(val.split(".")[0])*60 ) + (parseInt(val.split(".")[1])); 
                  //For total calculation
                  let TotalVal=item.Total;
-                [undefined,null,""].includes(TotalVal.trim())? TotalVal="0.0" : TotalVal.length==1?TotalVal=TotalVal+".0" : TotalVal;
+                [undefined,null,"","."].includes(TotalVal.trim())? TotalVal="0.0" : TotalVal.length==1?TotalVal=TotalVal+".0" : TotalVal;
                  Total= Total+( parseInt(TotalVal.split(".")[0])*60 ) + (parseInt(TotalVal.split(".")[1]));
                  OTTotal= OTTotal+( parseInt(TotalVal.split(".")[0])*60 ) + (parseInt(TotalVal.split(".")[1]));
             }
@@ -834,30 +837,30 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
              WeeklyColMins=0;
             [Total,TotalColHrs,TotalColMins]=[0,0,0];
              let NonBillableColValue=trFormdata.SynergyOfficeHrs[0][prop];
-             [undefined,null,""].includes(NonBillableColValue.trim())? NonBillableColValue="0.0" : NonBillableColValue.length==1?NonBillableColValue=NonBillableColValue+".0" : NonBillableColValue;
+             [undefined,null,"","."].includes(NonBillableColValue.trim())? NonBillableColValue="0.0" : NonBillableColValue.length==1?NonBillableColValue=NonBillableColValue+".0" : NonBillableColValue;
              let TotalVal=trFormdata.SynergyOfficeHrs[0]["Total"];
-             [undefined,null,""].includes(TotalVal.trim())? TotalVal="0.0" : TotalVal.length==1?TotalVal=TotalVal+".0" : TotalVal;
+             [undefined,null,"","."].includes(TotalVal.trim())? TotalVal="0.0" : TotalVal.length==1?TotalVal=TotalVal+".0" : TotalVal;
              WeeklyTotal=WeeklyTotal+( parseInt(NonBillableColValue.split(".")[0])*60 ) + (parseInt(NonBillableColValue.split(".")[1])); 
              Total=Total+( parseInt(TotalVal.split(".")[0])*60 ) + (parseInt(TotalVal.split(".")[1])); 
 
              NonBillableColValue=trFormdata.SynergyHolidayHrs[0][prop];
-             [undefined,null,""].includes(NonBillableColValue.trim())? NonBillableColValue="0.0" : NonBillableColValue.length==1?NonBillableColValue=NonBillableColValue+".0" : NonBillableColValue;
+             [undefined,null,"","."].includes(NonBillableColValue.trim())? NonBillableColValue="0.0" : NonBillableColValue.length==1?NonBillableColValue=NonBillableColValue+".0" : NonBillableColValue;
              TotalVal=trFormdata.SynergyHolidayHrs[0]["Total"];
-             [undefined,null,""].includes(TotalVal.trim())? TotalVal="0.0" : TotalVal.length==1?TotalVal=TotalVal+".0" : TotalVal;
+             [undefined,null,"","."].includes(TotalVal.trim())? TotalVal="0.0" : TotalVal.length==1?TotalVal=TotalVal+".0" : TotalVal;
              WeeklyTotal=WeeklyTotal+( parseInt(NonBillableColValue.split(".")[0])*60 ) + (parseInt(NonBillableColValue.split(".")[1]));
              Total=Total+( parseInt(TotalVal.split(".")[0])*60 ) + (parseInt(TotalVal.split(".")[1])); 
              
              NonBillableColValue=trFormdata.ClientHolidayHrs[0][prop];
-             [undefined,null,""].includes(NonBillableColValue.trim())? NonBillableColValue="0.0" : NonBillableColValue.length==1?NonBillableColValue=NonBillableColValue+".0" : NonBillableColValue;
+             [undefined,null,"","."].includes(NonBillableColValue.trim())? NonBillableColValue="0.0" : NonBillableColValue.length==1?NonBillableColValue=NonBillableColValue+".0" : NonBillableColValue;
              TotalVal=trFormdata.ClientHolidayHrs[0]["Total"];
-             [undefined,null,""].includes(TotalVal.trim())? TotalVal="0.0" : TotalVal.length==1?TotalVal=TotalVal+".0" : TotalVal;
+             [undefined,null,"","."].includes(TotalVal.trim())? TotalVal="0.0" : TotalVal.length==1?TotalVal=TotalVal+".0" : TotalVal;
              WeeklyTotal=WeeklyTotal+( parseInt(NonBillableColValue.split(".")[0])*60 ) + (parseInt(NonBillableColValue.split(".")[1]));
              Total=Total+( parseInt(TotalVal.split(".")[0])*60 ) + (parseInt(TotalVal.split(".")[1])); 
 
              NonBillableColValue=trFormdata.PTOHrs[0][prop];
-             [undefined,null,""].includes(NonBillableColValue.trim())? NonBillableColValue="0.0" : NonBillableColValue.length==1?NonBillableColValue=NonBillableColValue+".0" : NonBillableColValue;
+             [undefined,null,"","."].includes(NonBillableColValue.trim())? NonBillableColValue="0.0" : NonBillableColValue.length==1?NonBillableColValue=NonBillableColValue+".0" : NonBillableColValue;
              TotalVal=trFormdata.PTOHrs[0]["Total"];
-             [undefined,null,""].includes(TotalVal.trim())? TotalVal="0.0" : TotalVal.length==1?TotalVal=TotalVal+".0" : TotalVal;
+             [undefined,null,"","."].includes(TotalVal.trim())? TotalVal="0.0" : TotalVal.length==1?TotalVal=TotalVal+".0" : TotalVal;
              WeeklyTotal=WeeklyTotal+( parseInt(NonBillableColValue.split(".")[0])*60 ) + (parseInt(NonBillableColValue.split(".")[1])); 
              Total=Total+( parseInt(TotalVal.split(".")[0])*60 ) + (parseInt(TotalVal.split(".")[1])); 
 
@@ -877,16 +880,16 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
              if(!["Description","ProjectCode"].includes(prop))
              {
              let TotalColVal=trFormdata.BillableSubTotal[0][prop];
-             [undefined,null,""].includes(TotalColVal.trim())? TotalColVal="0.0" : TotalColVal.length==1?TotalColVal=TotalColVal+".0" : TotalColVal;
+             [undefined,null,"","."].includes(TotalColVal.trim())? TotalColVal="0.0" : TotalColVal.length==1?TotalColVal=TotalColVal+".0" : TotalColVal;
             let BillableTotalVal=trFormdata.BillableSubTotal[0]["Total"];
-            [undefined,null,""].includes(BillableTotalVal.trim())? BillableTotalVal="0.0" : BillableTotalVal.length==1?BillableTotalVal=BillableTotalVal+".0" : BillableTotalVal;
+            [undefined,null,"","."].includes(BillableTotalVal.trim())? BillableTotalVal="0.0" : BillableTotalVal.length==1?BillableTotalVal=BillableTotalVal+".0" : BillableTotalVal;
              WeeklyTotal=WeeklyTotal+( parseInt(TotalColVal.split(".")[0])*60 ) + (parseInt(TotalColVal.split(".")[1])); 
              Total=Total+( parseInt(BillableTotalVal.split(".")[0])*60 ) + (parseInt(BillableTotalVal.split(".")[1])); 
 
              TotalColVal=trFormdata.NonBillableSubTotal[0][prop];  
-             [undefined,null,""].includes(TotalColVal.trim())? TotalColVal="0.0" : TotalColVal.length==1?TotalColVal=TotalColVal+".0" : TotalColVal;
+             [undefined,null,"","."].includes(TotalColVal.trim())? TotalColVal="0.0" : TotalColVal.length==1?TotalColVal=TotalColVal+".0" : TotalColVal;
              BillableTotalVal=trFormdata.NonBillableSubTotal[0]["Total"];
-            [undefined,null,""].includes(BillableTotalVal.trim())? BillableTotalVal="0.0" : BillableTotalVal.length==1?BillableTotalVal=BillableTotalVal+".0" : BillableTotalVal;
+            [undefined,null,"","."].includes(BillableTotalVal.trim())? BillableTotalVal="0.0" : BillableTotalVal.length==1?BillableTotalVal=BillableTotalVal+".0" : BillableTotalVal;
              WeeklyTotal=WeeklyTotal+( parseInt(TotalColVal.split(".")[0])*60 ) + (parseInt(TotalColVal.split(".")[1]));
              Total=Total+( parseInt(BillableTotalVal.split(".")[0])*60 ) + (parseInt(BillableTotalVal.split(".")[1])); 
              
@@ -926,11 +929,11 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                         {
                             //For weekly calculation
                             let val=item[prop]; 
-                            [undefined,null,""].includes(val)? val="0.0" : val.length==1? val=val+".0" : val;
+                            [undefined,null,"","."].includes(val)? val="0.0" : val.length==1? val=val+".0" : val;
                             WeeklyTotal=WeeklyTotal+( parseInt(val.split(".")[0])*60 ) + (parseInt(val.split(".")[1]));
                             //For total calculation
                             let TotalVal=item.Total;
-                            [undefined,null,""].includes(TotalVal)? TotalVal="0.0" : TotalVal.length==1? TotalVal=TotalVal+".0" : TotalVal;
+                            [undefined,null,"","."].includes(TotalVal)? TotalVal="0.0" : TotalVal.length==1? TotalVal=TotalVal+".0" : TotalVal;
                             Total= Total+( parseInt(TotalVal.split(".")[0])*60 ) + (parseInt(TotalVal.split(".")[1]));
                            
                         }
@@ -938,11 +941,11 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                         {
                             //For weekly calculation
                             let val=item[prop];
-                            [undefined,null,""].includes(val)? val="0.0" : val.length==1? val=val+".0" : val;
+                            [undefined,null,"","."].includes(val)? val="0.0" : val.length==1? val=val+".0" : val;
                             WeeklyTotal=WeeklyTotal+( parseInt(val.split(".")[0])*60 ) + (parseInt(val.split(".")[1])); 
                             //For total calculation
                             let TotalVal=item.Total;
-                            [undefined,null,""].includes(TotalVal)? TotalVal="0.0" : TotalVal.length==1? TotalVal=TotalVal+".0" : TotalVal;
+                            [undefined,null,"","."].includes(TotalVal)? TotalVal="0.0" : TotalVal.length==1? TotalVal=TotalVal+".0" : TotalVal;
                             Total= Total+( parseInt(TotalVal.split(".")[0])*60 ) + (parseInt(TotalVal.split(".")[1]));
                         }
             }
@@ -954,11 +957,11 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                         {
                             //For weekly calculation
                             let val=item[prop]; 
-                            [undefined,null,""].includes(val)? val="0.0" : val.length==1? val=val+".0" : val;
+                            [undefined,null,"","."].includes(val)? val="0.0" : val.length==1? val=val+".0" : val;
                             WeeklyTotal=WeeklyTotal+( parseInt(val.split(".")[0])*60 ) + (parseInt(val.split(".")[1]));
                             //For total calculation
                             let TotalVal=item.Total;
-                            [undefined,null,""].includes(TotalVal)? TotalVal="0.0" : TotalVal.length==1? TotalVal=TotalVal+".0" : TotalVal;
+                            [undefined,null,"","."].includes(TotalVal)? TotalVal="0.0" : TotalVal.length==1? TotalVal=TotalVal+".0" : TotalVal;
                             Total= Total+( parseInt(TotalVal.split(".")[0])*60 ) + (parseInt(TotalVal.split(".")[1]));
                            
                         }
@@ -967,11 +970,11 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                         {
                             //For weekly calculation
                             let val=item[prop];
-                            [undefined,null,""].includes(val)? val="0.0" : val.length==1? val=val+".0" : val;
+                            [undefined,null,"","."].includes(val)? val="0.0" : val.length==1? val=val+".0" : val;
                             WeeklyTotal=WeeklyTotal+( parseInt(val.split(".")[0])*60 ) + (parseInt(val.split(".")[1])); 
                             //For total calculation
                             let TotalVal=item.Total;
-                            [undefined,null,""].includes(TotalVal)? TotalVal="0.0" : TotalVal.length==1? TotalVal=TotalVal+".0" : TotalVal;
+                            [undefined,null,"","."].includes(TotalVal)? TotalVal="0.0" : TotalVal.length==1? TotalVal=TotalVal+".0" : TotalVal;
                             Total= Total+( parseInt(TotalVal.split(".")[0])*60 ) + (parseInt(TotalVal.split(".")[1]));
                            
                         }
@@ -991,16 +994,16 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                         WeeklyColMins=0;
                         [Total,TotalColHrs,TotalColMins]=[0,0,0];
                         let TotalColVal=trFormdata.BillableSubTotal[0][prop];
-                        [undefined,null,""].includes(TotalColVal)? TotalColVal="0.0" : TotalColVal.length==1? TotalColVal=TotalColVal+".0" : TotalColVal;
+                        [undefined,null,"","."].includes(TotalColVal)? TotalColVal="0.0" : TotalColVal.length==1? TotalColVal=TotalColVal+".0" : TotalColVal;
                         let BillableTotalVal=trFormdata.BillableSubTotal[0]["Total"];
-                        [undefined,null,""].includes(BillableTotalVal)? BillableTotalVal="0.0" : BillableTotalVal.length==1? BillableTotalVal=BillableTotalVal+".0" : BillableTotalVal;
+                        [undefined,null,"","."].includes(BillableTotalVal)? BillableTotalVal="0.0" : BillableTotalVal.length==1? BillableTotalVal=BillableTotalVal+".0" : BillableTotalVal;
                         WeeklyTotal=WeeklyTotal+( parseInt(TotalColVal.split(".")[0])*60 ) + (parseInt(TotalColVal.split(".")[1])); 
                         Total=Total+( parseInt(BillableTotalVal.split(".")[0])*60 ) + (parseInt(BillableTotalVal.split(".")[1])); 
 
                         TotalColVal=trFormdata.NonBillableSubTotal[0][prop];  
-                        [undefined,null,""].includes(TotalColVal)? TotalColVal="0.0" : TotalColVal.length==1? TotalColVal=TotalColVal+".0" : TotalColVal;
+                        [undefined,null,"","."].includes(TotalColVal)? TotalColVal="0.0" : TotalColVal.length==1? TotalColVal=TotalColVal+".0" : TotalColVal;
                         BillableTotalVal=trFormdata.NonBillableSubTotal[0]["Total"];
-                        [undefined,null,""].includes(BillableTotalVal)? BillableTotalVal="0.0" : BillableTotalVal.length==1? BillableTotalVal=BillableTotalVal+".0" : BillableTotalVal;
+                        [undefined,null,"","."].includes(BillableTotalVal)? BillableTotalVal="0.0" : BillableTotalVal.length==1? BillableTotalVal=BillableTotalVal+".0" : BillableTotalVal;
                         WeeklyTotal=WeeklyTotal+( parseInt(TotalColVal.split(".")[0])*60 ) + (parseInt(TotalColVal.split(".")[1]));
                         Total=Total+( parseInt(BillableTotalVal.split(".")[0])*60 ) + (parseInt(BillableTotalVal.split(".")[1])); 
                         
@@ -1026,7 +1029,8 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
         let rowType=event.target.id.split("_")[2];
         if(!["Description","ProjectCode","Total"].includes(prop))
         {
-            value=value.match(/\d{0,5}(\.\d{0,2})?/)[0]
+            value=value.match(/\d{0,5}(\.\d{0,2})?/)[0];
+            //value=="."? value="0" : value;
            //[undefined,null,""].includes(value)? value="0.0" : value.length==1? value=value+".0" : value;
         }
 
@@ -1040,7 +1044,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                 this.setState({trFormdata});
               Object.keys(trFormdata.WeeklyItemsData[index]).forEach(key =>{
                 let val=trFormdata.WeeklyItemsData[index][key].toString();
-                [undefined,null,""].includes(val.trim())? val="0" : val;
+                [undefined,null,"","."].includes(val.trim())? val="0" : val;
                 if(!["Description","ProjectCode","Total"].includes(key))
                 {
                     TotalRowMins=TotalRowMins+(parseFloat(val)); 
@@ -1049,7 +1053,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
 
               //Rowhrs=Math.floor(TotalRowMins/60);
               //RowMins=Math.floor(TotalRowMins%60);
-              trFormdata.WeeklyItemsData[index]["Total"]=TotalRowMins;
+              trFormdata.WeeklyItemsData[index]["Total"]=TotalRowMins.toFixed(2);
             }
             else if(rowType=="otrow")
             {
@@ -1057,7 +1061,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
             this.setState({ trFormdata});
               Object.keys(trFormdata.OTItemsData[index]).forEach(key =>{
                 let val=trFormdata.OTItemsData[index][key].toString();
-                [undefined,null,""].includes(val.trim())? val="0" :  val;
+                [undefined,null,"","."].includes(val.trim())? val="0" :  val;
                 if(!["Description","ProjectCode","Total"].includes(key))
                 {
                     TotalRowMins=TotalRowMins+(parseFloat(val)); 
@@ -1066,7 +1070,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
 
             //Rowhrs=Math.floor(TotalRowMins/60);
             //RowMins=Math.floor(TotalRowMins%60);
-              trFormdata.OTItemsData[index]["Total"]=TotalRowMins;
+              trFormdata.OTItemsData[index]["Total"]=TotalRowMins.toFixed(2);
             }
             else if(rowType=="SynOffcHrs")
             {
@@ -1074,7 +1078,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                 this.setState({ trFormdata});
                   Object.keys(trFormdata.SynergyOfficeHrs[index]).forEach(key =>{
                     let val=trFormdata.SynergyOfficeHrs[index][key].toString();
-                    [undefined,null,""].includes(val.trim())? val="0" :  val;
+                    [undefined,null,"","."].includes(val.trim())? val="0" :  val;
                     if(!["Description","ProjectCode","Total"].includes(key))
                     {
                         TotalRowMins=TotalRowMins+(parseFloat(val)); 
@@ -1083,7 +1087,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
     
                   //Rowhrs=Math.floor(TotalRowMins/60);
                  // RowMins=Math.floor(TotalRowMins%60);
-                  trFormdata.SynergyOfficeHrs[index]["Total"]=TotalRowMins;
+                  trFormdata.SynergyOfficeHrs[index]["Total"]=TotalRowMins.toFixed(2);
             }
             else if(rowType=="SynHldHrs")
            {
@@ -1091,7 +1095,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
             this.setState({ trFormdata});
               Object.keys(trFormdata.SynergyHolidayHrs[index]).forEach(key =>{
                 let val=trFormdata.SynergyHolidayHrs[index][key].toString();
-                [undefined,null,""].includes(val.trim())? val="0" :  value;
+                [undefined,null,"","."].includes(val.trim())? val="0" :  value;
                 if(!["Description","ProjectCode","Total"].includes(key))
                 {
                     TotalRowMins=TotalRowMins+( parseFloat(val)); 
@@ -1100,7 +1104,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
 
               //Rowhrs=Math.floor(TotalRowMins/60);
               //RowMins=Math.floor(TotalRowMins%60);
-              trFormdata.SynergyHolidayHrs[index]["Total"]=TotalRowMins;
+              trFormdata.SynergyHolidayHrs[index]["Total"]=TotalRowMins.toFixed(2);
            }
            else if(rowType=="ClientHldHrs")
            {
@@ -1108,7 +1112,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
             this.setState({ trFormdata});
               Object.keys(trFormdata.ClientHolidayHrs[index]).forEach(key =>{
                 let val=trFormdata.ClientHolidayHrs[index][key].toString();
-                [undefined,null,""].includes(val.trim())? val="0" :  val;
+                [undefined,null,"","."].includes(val.trim())? val="0" :  val;
                 if(!["Description","ProjectCode","Total"].includes(key))
                 {
                     TotalRowMins=TotalRowMins+( parseFloat(val)); 
@@ -1117,7 +1121,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
 
               //Rowhrs=Math.floor(TotalRowMins/60);
               //RowMins=Math.floor(TotalRowMins%60);
-              trFormdata.ClientHolidayHrs[index]["Total"]=TotalRowMins;
+              trFormdata.ClientHolidayHrs[index]["Total"]=TotalRowMins.toFixed(2);
            }
             else if(rowType=="PTOHrs")
           {
@@ -1125,7 +1129,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
             this.setState({ trFormdata});
               Object.keys(trFormdata.PTOHrs[index]).forEach(key =>{
                 let val=trFormdata.PTOHrs[index][key].toString();
-                [undefined,null,""].includes(val.trim())? val="0" :  val;
+                [undefined,null,"","."].includes(val.trim())? val="0" :  val;
                 if(!["Description","ProjectCode","Total"].includes(key))
                 {
                     TotalRowMins=TotalRowMins+( parseFloat(val)); 
@@ -1134,7 +1138,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
 
               //Rowhrs=Math.floor(TotalRowMins/60);
               //RowMins=Math.floor(TotalRowMins%60);
-              trFormdata.PTOHrs[index]["Total"]=TotalRowMins;
+              trFormdata.PTOHrs[index]["Total"]=TotalRowMins.toFixed(2);
            }
            this.setState({ trFormdata});
            //FOR COLUMN WISE CALCULATION
@@ -1149,18 +1153,18 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
             {
                 //For weekly calculation
                 let val=item[prop].toString();; 
-                [undefined,null,""].includes(val.trim())? val="0" :  val;
+                [undefined,null,"","."].includes(val.trim())? val="0" :  val;
                 WeeklyTotal=WeeklyTotal+(parseFloat(val));
                  //For total calculation
                 let TotalVal=item.Total.toString();
-                [undefined,null,""].includes(TotalVal.trim())? TotalVal="0" : TotalVal;
+                [undefined,null,"","."].includes(TotalVal.trim())? TotalVal="0" : TotalVal;
                 Total= Total+(parseFloat(TotalVal));
                 WeekTotal= WeekTotal+(parseFloat(TotalVal));
             }
             let H=Math.floor(WeekTotal/60);
             let M=Math.floor(WeekTotal%60);
             //trFormdata.WeeklyItemsTotalTime=(H.toString().length==1?"0"+H:H)+"."+(M.toString().length==1?"0"+M:M);
-            trFormdata.WeeklyItemsTotalTime=WeeklyTotal.toString();
+            trFormdata.WeeklyItemsTotalTime=WeeklyTotal.toFixed(2).toString();
             // to iterate OT hrs
               H=0;
               M=0;
@@ -1168,25 +1172,25 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
             {
                  //For weekly calculation
                 let val=item[prop].toString();
-                [undefined,null,""].includes(val.trim())? val="0" : val;
+                [undefined,null,"","."].includes(val.trim())? val="0" : val;
                 WeeklyTotal=WeeklyTotal+( parseFloat(val)); 
                  //For total calculation
                  let TotalVal=item.Total.toString();
-                [undefined,null,""].includes(TotalVal.trim())? TotalVal="0" : TotalVal;
+                [undefined,null,"","."].includes(TotalVal.trim())? TotalVal="0" : TotalVal;
                  Total= Total+( parseFloat(TotalVal));
                  OTTotal= OTTotal+( parseFloat(TotalVal));
             }
              //H=Math.floor(OTTotal/60);
              //M=Math.floor(OTTotal%60);
-            trFormdata.OTItemsTotalTime=OTTotal.toString();
+            trFormdata.OTItemsTotalTime=OTTotal.toFixed(2).toString();
 
             //WeeklyColHrs=Math.floor(WeeklyTotal/60);
             //WeeklyColMins=Math.floor(WeeklyTotal%60);
             //TotalColHrs=Math.floor(Total/60);
             //TotalColMins=Math.floor(Total%60);
             if(!["Description","ProjectCode"].includes(prop))
-            trFormdata.BillableSubTotal[0][prop]=WeeklyTotal.toString();
-            trFormdata.BillableSubTotal[0]["Total"]=Total.toString();
+            trFormdata.BillableSubTotal[0][prop]=WeeklyTotal.toFixed(2).toString();
+            trFormdata.BillableSubTotal[0]["Total"]=Total.toFixed(2).toString();
 
              // NON BILLABLE SUBTOTAL COLUMN WISE
              WeeklyTotal=0;
@@ -1194,30 +1198,30 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
              WeeklyColMins=0;
             [Total,TotalColHrs,TotalColMins]=[0,0,0];
              let NonBillableColValue=trFormdata.SynergyOfficeHrs[0][prop].toString();
-             [undefined,null,""].includes(NonBillableColValue.trim())? NonBillableColValue="0" : NonBillableColValue;
+             [undefined,null,"","."].includes(NonBillableColValue.trim())? NonBillableColValue="0" : NonBillableColValue;
              let TotalVal=trFormdata.SynergyOfficeHrs[0]["Total"];
-             [undefined,null,""].includes(TotalVal.trim())? TotalVal="0" : TotalVal=TotalVal.toString();
+             [undefined,null,"","."].includes(TotalVal.trim())? TotalVal="0" : TotalVal=TotalVal.toString();
              WeeklyTotal=WeeklyTotal+( parseFloat(NonBillableColValue)); 
              Total=Total+( parseFloat(TotalVal)); 
 
              NonBillableColValue=trFormdata.SynergyHolidayHrs[0][prop].toString();
-             [undefined,null,""].includes(NonBillableColValue.trim())? NonBillableColValue="0" : NonBillableColValue;
+             [undefined,null,"","."].includes(NonBillableColValue.trim())? NonBillableColValue="0" : NonBillableColValue;
              TotalVal=trFormdata.SynergyHolidayHrs[0]["Total"].toString();
-             [undefined,null,""].includes(TotalVal.trim())? TotalVal="0" : TotalVal;
+             [undefined,null,"","."].includes(TotalVal.trim())? TotalVal="0" : TotalVal;
              WeeklyTotal=WeeklyTotal+( parseFloat(NonBillableColValue));
              Total=Total+( parseFloat(TotalVal)); 
              
              NonBillableColValue=trFormdata.ClientHolidayHrs[0][prop].toString();
-             [undefined,null,""].includes(NonBillableColValue.trim())? NonBillableColValue="0" : NonBillableColValue;
+             [undefined,null,"","."].includes(NonBillableColValue.trim())? NonBillableColValue="0" : NonBillableColValue;
              TotalVal=trFormdata.ClientHolidayHrs[0]["Total"].toString();
-             [undefined,null,""].includes(TotalVal.trim())? TotalVal="0" : TotalVal;
+             [undefined,null,"","."].includes(TotalVal.trim())? TotalVal="0" : TotalVal;
              WeeklyTotal=WeeklyTotal+( parseFloat(NonBillableColValue));
              Total=Total+( parseFloat(TotalVal)); 
 
              NonBillableColValue=trFormdata.PTOHrs[0][prop].toString();
-             [undefined,null,""].includes(NonBillableColValue.trim())? NonBillableColValue="0" : NonBillableColValue;
+             [undefined,null,"","."].includes(NonBillableColValue.trim())? NonBillableColValue="0" : NonBillableColValue;
              TotalVal=trFormdata.PTOHrs[0]["Total"].toString();
-             [undefined,null,""].includes(TotalVal.trim())? TotalVal="0" : TotalVal;
+             [undefined,null,"","."].includes(TotalVal.trim())? TotalVal="0" : TotalVal;
              WeeklyTotal=WeeklyTotal+( parseFloat(NonBillableColValue)); 
              Total=Total+( parseFloat(TotalVal)); 
 
@@ -1226,8 +1230,8 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
              //TotalColHrs=Math.floor(Total/60);
              //TotalColMins=Math.floor(Total%60);
              if(!["Description","ProjectCode"].includes(prop))
-             trFormdata.NonBillableSubTotal[0][prop]=WeeklyTotal.toString();
-             trFormdata.NonBillableSubTotal[0]["Total"]=Total.toString();
+             trFormdata.NonBillableSubTotal[0][prop]=WeeklyTotal.toFixed(2).toString();
+             trFormdata.NonBillableSubTotal[0]["Total"]=Total.toFixed(2).toString();
 
              //GRAND TOTAL COLUMN WISE
              WeeklyTotal=0;
@@ -1237,16 +1241,16 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
              if(!["Description","ProjectCode"].includes(prop))
              {
              let TotalColVal=trFormdata.BillableSubTotal[0][prop].toString();
-             [undefined,null,""].includes(TotalColVal.trim())? TotalColVal="0" : TotalColVal;
+             [undefined,null,"","."].includes(TotalColVal.trim())? TotalColVal="0" : TotalColVal;
             let BillableTotalVal=trFormdata.BillableSubTotal[0]["Total"].toString();
-            [undefined,null,""].includes(BillableTotalVal.trim())? BillableTotalVal="0" : BillableTotalVal;
+            [undefined,null,"","."].includes(BillableTotalVal.trim())? BillableTotalVal="0" : BillableTotalVal;
              WeeklyTotal=WeeklyTotal+( parseFloat(TotalColVal)); 
              Total=Total+( parseFloat(BillableTotalVal)); 
 
              TotalColVal=trFormdata.NonBillableSubTotal[0][prop].toString(); 
-             [undefined,null,""].includes(TotalColVal.trim())? TotalColVal="0" : TotalColVal;
+             [undefined,null,"","."].includes(TotalColVal.trim())? TotalColVal="0" : TotalColVal;
              BillableTotalVal=trFormdata.NonBillableSubTotal[0]["Total"].toString();
-            [undefined,null,""].includes(BillableTotalVal.trim())? BillableTotalVal="0" : BillableTotalVal;
+            [undefined,null,"","."].includes(BillableTotalVal.trim())? BillableTotalVal="0" : BillableTotalVal;
              WeeklyTotal=WeeklyTotal+( parseFloat(TotalColVal));
              Total=Total+( parseFloat(BillableTotalVal)); 
              
@@ -1258,8 +1262,8 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
              if(!["Description","ProjectCode"].includes(prop))
              {
 
-                 trFormdata.Total[0][prop]=WeeklyTotal.toString();
-                 trFormdata.Total[0]["Total"]=Total.toString();
+                 trFormdata.Total[0][prop]=WeeklyTotal.toFixed(2).toString();
+                 trFormdata.Total[0]["Total"]=Total.toFixed(2).toString();
              }else{
                 trFormdata.Total[0][prop]=trFormdata.Total[0][prop];
                 trFormdata.Total[0]["Total"]=trFormdata.Total[0]["Total"];
@@ -1285,11 +1289,11 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                         {
                             //For weekly calculation
                             let val=item[prop].toString(); 
-                            [undefined,null,""].includes(val)? val="0" : val;
+                            [undefined,null,"","."].includes(val)? val="0" : val;
                             WeeklyTotal=WeeklyTotal+( parseFloat(val));
                             //For total calculation
                             let TotalVal=item.Total.toString();
-                            [undefined,null,""].includes(TotalVal)? TotalVal="0"  : TotalVal;
+                            [undefined,null,"","."].includes(TotalVal)? TotalVal="0"  : TotalVal;
                             Total= Total+( parseFloat(TotalVal));
                            
                         }
@@ -1297,11 +1301,11 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                         {
                             //For weekly calculation
                             let val=item[prop].toString();
-                            [undefined,null,""].includes(val)? val="0"  :  val;
+                            [undefined,null,"","."].includes(val)? val="0"  :  val;
                             WeeklyTotal=WeeklyTotal+( parseFloat(val)); 
                             //For total calculation
                             let TotalVal=item.Total.toString();
-                            [undefined,null,""].includes(TotalVal)? TotalVal="0"  : TotalVal;
+                            [undefined,null,"","."].includes(TotalVal)? TotalVal="0"  : TotalVal;
                             Total= Total+( parseFloat(TotalVal));
                         }
             }
@@ -1313,11 +1317,11 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                         {
                             //For weekly calculation
                             let val=item[prop].toString();
-                            [undefined,null,""].includes(val)? val="0" : val;
+                            [undefined,null,"","."].includes(val)? val="0" : val;
                             WeeklyTotal=WeeklyTotal+( parseFloat(val));
                             //For total calculation
                             let TotalVal=item.Total.toString();
-                            [undefined,null,""].includes(TotalVal)? TotalVal="0" : TotalVal;
+                            [undefined,null,"","."].includes(TotalVal)? TotalVal="0" : TotalVal;
                             Total= Total+( parseFloat(TotalVal));
                            
                         }
@@ -1326,11 +1330,11 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                         {
                             //For weekly calculation
                             let val=item[prop].toString();
-                            [undefined,null,""].includes(val)? val="0"  : val;
+                            [undefined,null,"","."].includes(val)? val="0"  : val;
                             WeeklyTotal=WeeklyTotal+( parseFloat(val)); 
                             //For total calculation
                             let TotalVal=item.Total.toString();
-                            [undefined,null,""].includes(TotalVal)? TotalVal="0" : TotalVal;
+                            [undefined,null,"","."].includes(TotalVal)? TotalVal="0" : TotalVal;
                             Total= Total+( parseFloat(TotalVal));
                            
                         }
@@ -1341,8 +1345,8 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                        // TotalColHrs=Math.floor(Total/60);
                         //TotalColMins=Math.floor(Total%60);
 
-                        trFormdata.BillableSubTotal[0][prop]=WeeklyTotal.toString();
-                        trFormdata.BillableSubTotal[0]["Total"]=Total.toString();
+                        trFormdata.BillableSubTotal[0][prop]=WeeklyTotal.toFixed(2).toString();
+                        trFormdata.BillableSubTotal[0]["Total"]=Total.toFixed(2).toString();
 
                         //GRAND TOTAL COLUMN WISE
                         WeeklyTotal=0;
@@ -1350,16 +1354,16 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                         WeeklyColMins=0;
                         [Total,TotalColHrs,TotalColMins]=[0,0,0];
                         let TotalColVal=trFormdata.BillableSubTotal[0][prop].toString();
-                        [undefined,null,""].includes(TotalColVal)? TotalColVal="0" : TotalColVal;
+                        [undefined,null,"","."].includes(TotalColVal)? TotalColVal="0" : TotalColVal;
                         let BillableTotalVal=trFormdata.BillableSubTotal[0]["Total"].toString();
-                        [undefined,null,""].includes(BillableTotalVal)? BillableTotalVal="0"  : BillableTotalVal;
+                        [undefined,null,"","."].includes(BillableTotalVal)? BillableTotalVal="0"  : BillableTotalVal;
                         WeeklyTotal=WeeklyTotal+( parseFloat(TotalColVal)); 
                         Total=Total+( parseFloat(BillableTotalVal)); 
 
                         TotalColVal=trFormdata.NonBillableSubTotal[0][prop].toString();
-                        [undefined,null,""].includes(TotalColVal)? TotalColVal="0"  : TotalColVal;
+                        [undefined,null,"","."].includes(TotalColVal)? TotalColVal="0"  : TotalColVal;
                         BillableTotalVal=trFormdata.NonBillableSubTotal[0]["Total"].toString();
-                        [undefined,null,""].includes(BillableTotalVal)? BillableTotalVal="0"  : BillableTotalVal;
+                        [undefined,null,"","."].includes(BillableTotalVal)? BillableTotalVal="0"  : BillableTotalVal;
                         WeeklyTotal=WeeklyTotal+( parseFloat(TotalColVal));
                         Total=Total+( parseFloat(BillableTotalVal)); 
                         
@@ -1367,8 +1371,8 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                         //WeeklyColMins=Math.floor(WeeklyTotal%60);
                         //TotalColHrs=Math.floor(Total/60);
                         //TotalColMins=Math.floor(Total%60);
-                        trFormdata.Total[0][prop]=WeeklyTotal.toString();
-                        trFormdata.Total[0]["Total"]=Total.toString();
+                        trFormdata.Total[0][prop]=WeeklyTotal.toFixed(2).toString();
+                        trFormdata.Total[0]["Total"]=Total.toFixed(2).toString();
 
                        // this.setState({ trFormdata});  
                       
@@ -1504,7 +1508,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
         var formdata = { ...this.state.trFormdata };
         const id = this.props.match.params.id ? this.props.match.params.id : 0;
 
-        formdata=this.Calculte_Indvidual_OT_Weekly_TotalTime(formdata);
+        formdata=this.Calculate_Indvidual_OT_Weekly_TotalTime(formdata);
         this.setState({trFormdata:formdata})
         let isValid = Formvalidator.checkValidations(data);
         if (isValid.status) {
@@ -1538,6 +1542,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                 ReviewersId:{"results":formdata.ReviewerIds},
                 NotifiersId:{"results":formdata.NotifierIds},
                IsClientApprovalNeed:formdata.IsClientApprovalNeeded,
+               Revised:formdata.Revised
             }
             switch(btnId.toLowerCase())
             {
@@ -1648,7 +1653,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
         //this.setState({ReportingManagersEmail:RMEmail,ReviewersEmail:ReviewEmail,NotifiersEmail:NotifyEmail});
         return Formdata;
      }
-     private Calculte_Indvidual_OT_Weekly_TotalTime_Minutes=(Formdata)=>{
+     private Calculate_Indvidual_OT_Weekly_TotalTime_Minutes=(Formdata)=>{
         const formdata =Formdata;
          //Weekly  and OT total Hrs calculation
 
@@ -1677,7 +1682,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
 
          return formdata;
      }
-     private Calculte_Indvidual_OT_Weekly_TotalTime=(Formdata)=>{
+     private Calculate_Indvidual_OT_Weekly_TotalTime=(Formdata)=>{
         const formdata =Formdata;
          //Weekly  and OT total Hrs calculation
 
@@ -1691,7 +1696,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
          }
           //H=Math.floor(WeekTotal/60);
           //M=Math.floor(WeekTotal%60);
-          formdata.WeeklyItemsTotalTime=WeekTotal.toString();
+          formdata.WeeklyItemsTotalTime=WeekTotal.toFixed(2).toString();
              // to iterate OT hrs
              H=0;
              M=0;
@@ -1702,14 +1707,14 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
          } 
          //H=Math.floor(OTTotal/60);
          //M=Math.floor(OTTotal%60);
-         formdata.OTItemsTotalTime=OTTotal.toString();
+         formdata.OTItemsTotalTime=OTTotal.toFixed(2).toString();
 
          return formdata;
      }
     private handleApprove=async (event)=>
     {
         var formdata = { ...this.state.trFormdata };
-        formdata=this.Calculte_Indvidual_OT_Weekly_TotalTime(formdata);
+        formdata=this.Calculate_Indvidual_OT_Weekly_TotalTime(formdata);
         formdata=this.GetRequiredEmails(formdata.ClientName,formdata);
         var postObject={};
        // postObject["WeeklyTotalHrs"]=formdata.WeeklyItemsTotalTime;
@@ -1720,6 +1725,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                 formdata.CommentsHistoryData.push({"Action":StatusType.Approved,"Role":"Manager","User":this.currentUser,"Comments":this.state.trFormdata.Comments,"Date":new Date().toISOString()})
                 //postObject['Status']=StatusType.InProgress;
                 postObject['Status']=StatusType.Approved;
+                postObject['Revised']=true;
                 //postObject['PendingWith']="Reviewer";
                 postObject['PendingWith']="NA";
                 break;
@@ -1737,11 +1743,13 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
     private handleRevoke=async (event)=>
     {
         var formdata = { ...this.state.trFormdata };
+        formdata=this.Calculate_Indvidual_OT_Weekly_TotalTime(formdata);
+        formdata=this.GetRequiredEmails(formdata.ClientName,formdata);
         var postObject={};
         let user = "Initiator";
         user = this.state.EmployeeEmail!=this.props.spContext.userEmail?"Administator":user;
                 formdata.CommentsHistoryData.push({"Action":StatusType.Revoke,"Role":user,"User":this.currentUser,"Comments":this.state.trFormdata.Comments,"Date":new Date().toISOString()})
-                postObject['Status']=StatusType.Save;
+                postObject['Status']=StatusType.Revoke;
                 postObject['PendingWith']="NA";
            
              postObject["CommentsHistory"]=JSON.stringify(formdata.CommentsHistoryData),
@@ -1758,7 +1766,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
         //postObject["OTTotalHrs"]=formdata.OTItemsTotalTime;
         let isValid = Formvalidator.checkValidations(data);
         if (isValid.status) {
-            formdata=this.Calculte_Indvidual_OT_Weekly_TotalTime(formdata);
+            formdata=this.Calculate_Indvidual_OT_Weekly_TotalTime(formdata);
             formdata=this.GetRequiredEmails(formdata.ClientName,formdata);
             var postObject={};
             if(formdata.Status==StatusType.Submit)
@@ -1773,6 +1781,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
             postObject['PendingWith']="initiator";
             postObject["CommentsHistory"]=JSON.stringify(formdata.CommentsHistoryData),
             postObject['IsClientApprovalNeed']=formdata.IsClientApprovalNeeded;
+            postObject['Revised']=true;
             this.setState({errorMessage : '',trFormdata:formdata});
             this.InsertorUpdatedata(postObject,formdata);
         }
@@ -1801,6 +1810,24 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                {
                 this.setState({loading:false,modalTitle:'Success',modalText:' Weekly Timesheet Updated Successfully',isSuccess:true,showHideModal:true});
                }
+               else if(StatusType.Revoke==formdata.Status)
+               {
+                let To=[];
+             
+                    for(const mail of formObject.ReportingManagersEmail)
+                    {
+                        To.push(mail);
+                    }
+                    for(const mail of formObject.ReviewersEmail)
+                    {
+                        To.push(mail);
+                    }
+                sub="Weekly Time Sheet has been "+formdata.Status+"."
+                emaildetails ={toemail:To,ccemail:this.state.EmployeeEmail,subject:sub,bodyString:sub,body:'' };
+                var DashboardURl = 'https://synergycomcom.sharepoint.com/sites/Billing.Timesheet/SitePages/TimeSheet.aspx';
+                emaildetails['body'] = this.emailBodyPreparation(this.siteURL+'/SitePages/TimeSheet.aspx#/WeeklyTimesheet/'+this.state.ItemID,tableContent,emaildetails['bodyString'],this.props.spContext.userDisplayName,DashboardURl);
+                this.sendemail(emaildetails);
+               }
                else if(StatusType.Submit==formdata.Status)
                {
                     sub="Weekly Time Sheet has been "+formdata.Status+"."
@@ -1821,7 +1848,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
             //         emaildetails['body'] = this.emailBodyPreparation(this.siteURL+'/SitePages/TimeSheet.aspx#/WeeklyTimesheet/'+this.state.ItemID,tableContent,emaildetails['bodyString'],this.props.spContext.userDisplayName);
             //         this.sendemail(emaildetails);
             //    }
-            else if(StatusType.Save==formObject.Status)  //save after submit case
+            else if(StatusType.Save==formObject.Status)  //save after submit case.
             {
                  sub="Weekly Time Sheet has been "+StatusType.Submit+"."
                  emaildetails ={toemail:formObject.ReportingManagersEmail,ccemail:this.state.EmployeeEmail,subject:sub,bodyString:sub,body:'' };
@@ -1829,7 +1856,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                  emaildetails['body'] = this.emailBodyPreparation(this.siteURL+'/SitePages/TimeSheet.aspx#/WeeklyTimesheet/'+this.state.ItemID,tableContent,emaildetails['bodyString'],this.props.spContext.userDisplayName,DashboardURl);
                  this.sendemail(emaildetails);
             }
-            else if(StatusType.ReviewerReject==formObject.Status) //Reviewer rejected but client Approval not needed
+            else if(StatusType.ReviewerReject==formObject.Status) //Reviewer rejected but client Approval not needed or not depends on IsClientApprovalNeeded
             {
                 sub="Weekly Time Sheet has been "+StatusType.Submit+"."
                 CC=this.state.EmployeeEmail;
@@ -1862,7 +1889,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                     {
                         CC.push(mail);
                     }
-                    emaildetails ={toemail:formObject.NotifiersEmail,ccemail:CC,subject:sub,bodyString:sub,body:'' };
+                    emaildetails ={toemail:this.state.EmployeeEmail,ccemail:CC,subject:sub,bodyString:sub,body:'' };
                     var DashboardURl = 'https://synergycomcom.sharepoint.com/sites/Billing.Timesheet/SitePages/TimeSheet.aspx';
                     emaildetails['body'] = this.emailBodyPreparation(this.siteURL+'/SitePages/TimeSheet.aspx#/WeeklyTimesheet/'+this.state.ItemID,tableContent,emaildetails['bodyString'],this.props.spContext.userDisplayName,DashboardURl);
                     this.sendemail(emaildetails);
@@ -1998,6 +2025,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                 trFormdata.SuperviserNames=JSON.parse(ExistRecordData[0].SuperviserName);
                 trFormdata.Pendingwith=ExistRecordData[0].PendingWith;
                 trFormdata.IsClientApprovalNeeded=ExistRecordData[0].IsClientApprovalNeed;
+                trFormdata.Revised=ExistRecordData[0].Revised;
                 let EmpEmail=[];
                 let RMEmail=[];
                 let ReviewEmail=[];
@@ -2027,7 +2055,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                 {
                     this.setState({isSubmitted:true});
                 }
-                else if([StatusType.ManagerReject,StatusType.ReviewerReject,StatusType.Save].includes(ExistRecordData[0].Status))
+                else if([StatusType.ManagerReject,StatusType.ReviewerReject,StatusType.Save,StatusType.Revoke].includes(ExistRecordData[0].Status))
                 {
                     this.setState({isSubmitted:false});
                 }
@@ -2110,6 +2138,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                 trFormdata.ReviewersEmail=[];
                 trFormdata.NotifiersEmail=[];
                 trFormdata.IsClientApprovalNeeded=false;
+                trFormdata.Revised=false;
                 // for( var item of this.state.Clients_DateOfJoinings)
                 // {
                 //     if(item.ClientName.toLowerCase()==trFormdata.ClientName.toLowerCase())
@@ -2594,7 +2623,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
             //         return isValid;
             //     }
             // }
-            if(formdata.ClientHolidayHrs[0].Total!='')
+            if(formdata.ClientHolidayHrs[0].Total!=0)
             {
                 if(formdata.ClientHolidayHrs[0].Description.trim()=="" && formdata.IsDescriptionMandatory)
                 {
@@ -2613,7 +2642,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                     return isValid;
                 }
             }
-            if(formdata.PTOHrs[0].Total!=''){
+            if(formdata.PTOHrs[0].Total!=0){
                 if(formdata.PTOHrs[0].Description.trim()=="" && formdata.IsDescriptionMandatory)
                 {
                     isValid.message="Description can not be blank";
@@ -2815,7 +2844,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                 {this.getOTBadge(rowType)}
                 </td>
                 <td>
-                    <input className="form-control time WeekTotal" value={Obj[i].Total} id={i+"_Total_"+rowType} onChange={this.changeTime} type="text" readOnly></input>
+                    <input className="form-control time WeekTotal" value={Obj[i].Total} id={i+"_Total_"+rowType} onChange={this.changeTime} type="text" maxLength={5} readOnly></input>
                 </td>
                 <td>
     
@@ -2853,7 +2882,6 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
         }
        return body;
     }
-// new function by ganesh
     private getClientNames=()=>
     {
         var Formdata=this.state.trFormdata;
@@ -2914,6 +2942,13 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
        //this.setState({trFormdata:Formdata})
         return section;
     }
+    private getRevisedLabel=(formdata)=>
+    {
+        let label=""
+        if(this.state.trFormdata.Revised)
+        label="-Revised";
+        return label;
+    }
 
 
     public render() {
@@ -2938,7 +2973,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
             <div className="container-fluid">
             <div className='FormContent'>
                 <div className="mt-3 mb-1 media-p-1 Billable Hours">
-                <div className="title">Weekly Timesheet
+                <div className="title">Weekly Timesheet {this.getRevisedLabel(this.state.trFormdata)}
                                         <div className='mandatory-note'>
                                             <span className='mandatoryhastrick'>*</span> indicates a required field
                                         </div>
@@ -3035,7 +3070,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                                 <tr id="rowPRJ1"  >
                                     <td className=" text-start"> 
                                         <div className="p-1">
-                                            <strong>Billable Hours</strong>
+                                            <strong>Billable</strong>
                                         </div>
                                     </td>
                                     <td> 
@@ -3069,7 +3104,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                                         
                                     </td>
                                     <td>
-                                        <input className="form-control time WeekTotal"  value={this.state.trFormdata.WeeklyItemsData[0].Total} id="0_Total_weekrow" onChange={this.changeTime} type="text" readOnly></input>
+                                        <input className="form-control time WeekTotal"  value={this.state.trFormdata.WeeklyItemsData[0].Total} id="0_Total_weekrow" onChange={this.changeTime} type="text" maxLength={5} readOnly></input>
                                     </td>
                                     <td>
                                     { this.state.showBillable ? '' :this.state.isSubmitted?'':<span className='span-fa-plus' title='Add new Billable hours row'   onClick={this.CreateWeeklyHrsRow} id='addnewRow'><FontAwesomeIcon icon={faPlus}></FontAwesomeIcon></span>}
@@ -3114,7 +3149,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                                         <span className="c-badge">OT</span>
                                     </td>
                                     <td>
-                                        <input className="form-control time WeekTotal" value={this.state.trFormdata.OTItemsData[0].Total} id="0_Total_otrow" onChange={this.changeTime} type="text" readOnly></input>
+                                        <input className="form-control time WeekTotal" value={this.state.trFormdata.OTItemsData[0].Total} id="0_Total_otrow" onChange={this.changeTime} type="text" maxLength={5} readOnly></input>
                                     </td>
                                     <td>
                                     {/* <span className='span-fa-plus' title='Add New row'   onClick={this.CreateOTHrsRow} id='' hidden={this.state.isSubmitted}><FontAwesomeIcon icon={faPlus}></FontAwesomeIcon></span> */}
@@ -3149,7 +3184,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                                         <input className={"form-control time "+(this.WeekNames[0].day7)} value={this.state.trFormdata.SynergyOfficeHrs[0].Sun} onChange={this.changeTime} id="0_Sun_SynOffcHrs"  disabled={this.state.isSubmitted || this.state.showNonBillable || this.WeekHeadings[0].IsSunJoined} ></input>
                                         </td>
                                     <td><span className="c-badge">O</span></td>
-                                    <td><input className="form-control time WeekTotal" value={this.state.trFormdata.SynergyOfficeHrs[0].Total} onChange={this.changeTime} id="0_Total_SynOffcHrs" type="text" readOnly></input></td>
+                                    <td><input className="form-control time WeekTotal" value={this.state.trFormdata.SynergyOfficeHrs[0].Total} onChange={this.changeTime} id="0_Total_SynOffcHrs" type="text"maxLength={5} readOnly></input></td>
                                     <td></td>
                                 </tr>}
                                
@@ -3179,7 +3214,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                                         <input className={"form-control time "+(this.WeekNames[0].day7)+(this.WeekHeadings[0].IsDay7Holiday.isHoliday?" ClientHoliday":"")} value={this.state.trFormdata.ClientHolidayHrs[0].Sun} onChange={this.changeTime} id="0_Sun_ClientHldHrs"  disabled={this.state.isSubmitted || this.state.showNonBillable || this.WeekHeadings[0].IsSunJoined||!this.WeekHeadings[0].IsDay7Holiday.isHoliday} ></input>
                                         </td>
                                     <td><span className="c-badge">H</span></td>
-                                    <td><input className="form-control time WeekTotal" value={this.state.trFormdata.ClientHolidayHrs[0].Total} onChange={this.changeTime} id="0_Total_ClientHldHrs" type="text" readOnly></input></td>
+                                    <td><input className="form-control time WeekTotal" value={this.state.trFormdata.ClientHolidayHrs[0].Total} onChange={this.changeTime} id="0_Total_ClientHldHrs" type="text" maxLength={5} readOnly></input></td>
                                     <td></td>
                                 </tr>
                                 <tr id="PTOHrs">
@@ -3208,7 +3243,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                                         <input className={"form-control time "+(this.WeekNames[0].day7)} value={this.state.trFormdata.PTOHrs[0].Sun} onChange={this.changeTime} id="0_Sun_PTOHrs"  disabled={this.state.isSubmitted || this.state.showNonBillable || this.WeekHeadings[0].IsSunJoined} ></input>
                                         </td>
                                     <td><span className="c-badge">PTO</span></td>
-                                    <td><input className="form-control time WeekTotal" value={this.state.trFormdata.PTOHrs[0].Total} onChange={this.changeTime} id="0_Total_PTOHrs" type="text" readOnly></input></td>
+                                    <td><input className="form-control time WeekTotal" value={this.state.trFormdata.PTOHrs[0].Total} onChange={this.changeTime} id="0_Total_PTOHrs" type="text" maxLength={5} readOnly></input></td>
                                     <td></td>
                                 </tr>
         
@@ -3225,31 +3260,31 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                                     {/* <td>   
                                     </td> */}
                                     <td>
-                                        <input className="form-control time DayTotal" id="BillableTotalMon" value={this.state.trFormdata.BillableSubTotal[0].Mon} type="text" readOnly></input>
+                                        <input className="form-control time DayTotal" id="BillableTotalMon" value={this.state.trFormdata.BillableSubTotal[0].Mon} type="text" maxLength={5} readOnly></input>
                                     </td>
                                     <td>
-                                        <input className="form-control time DayTotal" id="BillableTotalTue" value={this.state.trFormdata.BillableSubTotal[0].Tue} type="text" readOnly></input>
+                                        <input className="form-control time DayTotal" id="BillableTotalTue" value={this.state.trFormdata.BillableSubTotal[0].Tue} type="text" maxLength={5} readOnly></input>
                                     </td>
                                     <td>
-                                        <input className="form-control time DayTotal" id="BillableTotalWed" value={this.state.trFormdata.BillableSubTotal[0].Wed} type="text" readOnly></input>
+                                        <input className="form-control time DayTotal" id="BillableTotalWed" value={this.state.trFormdata.BillableSubTotal[0].Wed} type="text" maxLength={5} readOnly></input>
                                     </td>
                                     <td>
-                                        <input className="form-control time DayTotal" id="BillableTotalThu" value={this.state.trFormdata.BillableSubTotal[0].Thu} type="text" readOnly></input>
+                                        <input className="form-control time DayTotal" id="BillableTotalThu" value={this.state.trFormdata.BillableSubTotal[0].Thu} type="text" maxLength={5} readOnly></input>
                                     </td>
                                     <td>
-                                        <input className="form-control time DayTotal" id="BillableTotalFri" value={this.state.trFormdata.BillableSubTotal[0].Fri} type="text" readOnly></input>
+                                        <input className="form-control time DayTotal" id="BillableTotalFri" value={this.state.trFormdata.BillableSubTotal[0].Fri} type="text" maxLength={5} readOnly></input>
                                     </td>
                                     <td>
-                                        <input className="form-control time DayTotal" id="BillableTotalSat" value={this.state.trFormdata.BillableSubTotal[0].Sat} type="text" readOnly></input>
+                                        <input className="form-control time DayTotal" id="BillableTotalSat" value={this.state.trFormdata.BillableSubTotal[0].Sat} type="text" maxLength={5} readOnly></input>
                                     </td>
                                     <td>
-                                        <input className="form-control time DayTotal" id="BillableTotalSat" value={this.state.trFormdata.BillableSubTotal[0].Sun} type="text" readOnly></input>
+                                        <input className="form-control time DayTotal" id="BillableTotalSat" value={this.state.trFormdata.BillableSubTotal[0].Sun} type="text" maxLength={5} readOnly></input>
                                     </td>
                                     <td>
                                         <span className="c-badge">BT</span>
                                     </td>
                                     <td className='fw-bold'>
-                                        <input className="form-control fw-bold time BillableSubTotal" id="BillableTotal" value={this.state.trFormdata.BillableSubTotal[0].Total}  type="text" readOnly></input>
+                                        <input className="form-control fw-bold time BillableSubTotal" id="BillableTotal" value={this.state.trFormdata.BillableSubTotal[0].Total}  type="text" maxLength={5} readOnly></input>
                                     </td>
                                     <td>
                                         
@@ -3264,29 +3299,29 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                                     <td colSpan={2}></td>
                                     {/* <td></td> */}
                                     <td>
-                                        <input className="form-control time DayTotal" id="TotalMon" value={this.state.trFormdata.Total[0].Mon} type="text" readOnly></input>
+                                        <input className="form-control time DayTotal" id="TotalMon" value={this.state.trFormdata.Total[0].Mon} type="text" maxLength={5} readOnly></input>
                                     </td>
                                     <td>
-                                        <input className="form-control time DayTotal" id="TotalTue" value={this.state.trFormdata.Total[0].Tue} type="text" readOnly></input>
+                                        <input className="form-control time DayTotal" id="TotalTue" value={this.state.trFormdata.Total[0].Tue} type="text" maxLength={5} readOnly></input>
                                     </td>
                                     <td>
-                                        <input className="form-control time DayTotal" id="TotalWed" value={this.state.trFormdata.Total[0].Wed} type="text" readOnly></input>
+                                        <input className="form-control time DayTotal" id="TotalWed" value={this.state.trFormdata.Total[0].Wed} type="text" maxLength={5} readOnly></input>
                                     </td>
                                     <td>
-                                        <input className="form-control time DayTotal" id="TotalThu" value={this.state.trFormdata.Total[0].Thu} type="text" readOnly></input>
+                                        <input className="form-control time DayTotal" id="TotalThu" value={this.state.trFormdata.Total[0].Thu} type="text" maxLength={5} readOnly></input>
                                     </td>
                                     <td> 
-                                        <input className="form-control time DayTotal" id="TotalFri" value={this.state.trFormdata.Total[0].Fri} type="text" readOnly></input>
+                                        <input className="form-control time DayTotal" id="TotalFri" value={this.state.trFormdata.Total[0].Fri} type="text" maxLength={5} readOnly></input>
                                     </td>
                                     <td>
-                                        <input className="form-control time DayTotal" id="TotalSat" value={this.state.trFormdata.Total[0].Sat} type="text" readOnly></input>
+                                        <input className="form-control time DayTotal" id="TotalSat" value={this.state.trFormdata.Total[0].Sat} type="text" maxLength={5} readOnly></input>
                                     </td>
                                     <td>
-                                        <input className="form-control time DayTotal" id="TotalSun" value={this.state.trFormdata.Total[0].Sun} type="text" readOnly></input>
+                                        <input className="form-control time DayTotal" id="TotalSun" value={this.state.trFormdata.Total[0].Sun} type="text" maxLength={5} readOnly></input>
                                     </td>
                                     <td><span className="c-badge">T</span></td>
                                     <td>
-                                        <input className="form-control time  GrandTotal" id="GrandTotal" value={this.state.trFormdata.Total[0].Total} type="text" readOnly></input>
+                                        <input className="form-control time  GrandTotal" id="GrandTotal" value={this.state.trFormdata.Total[0].Total} type="text" maxLength={5} readOnly></input>
                                     </td>
                                     <td>
                                         
@@ -3348,7 +3383,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                             {this.state.showApproveRejectbtn&&!this.state.IsReviewer?<button type="button" id="btnApprove" onClick={this.handleApprove} className="SubmitButtons btn">Approve</button>:''}
                             {this.state.showApproveRejectbtn?<button type="button" id="btnReject" onClick={this.handleReject}  className="RejectButtons btn">Reject</button>:''}
                             {this.state.isSubmitted?'': <button type="button" id="btnSubmit" onClick={this.handleSubmitorSave} className="SubmitButtons btn">Submit</button>}
-                            {/* {this.state.trFormdata.Status==StatusType.Submit&&!this.state.showApproveRejectbtn?<button type="button" id="btnRevoke" onClick={this.handleRevoke} className="CancelButtons btn">Revoke</button>:''} */}
+                            {(this.state.trFormdata.Status==StatusType.Submit||this.state.trFormdata.Status==StatusType.Approved)&&!this.state.showApproveRejectbtn?<button type="button" id="btnRevoke" onClick={this.handleRevoke} className="CancelButtons btn">Revoke</button>:''}
                             {this.state.isSubmitted?'':  <button type="button" id="btnSave" onClick={this.handleSubmitorSave} className="SaveButtons btn">Save</button>}
                             <button type="button" id="btnCancel" onClick={this.handleCancel} className="CancelButtons btn">Cancel</button>
                         </div>
