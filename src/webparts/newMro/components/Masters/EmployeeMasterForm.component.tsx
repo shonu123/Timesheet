@@ -322,7 +322,7 @@ private async validateDuplicateRecord () {
         if(!isValid.status){
             // this.setState({errorMessage : isValid.message})
             // toast.error(isValid.message)
-            customToaster('toster-error',ToasterTypes.Error,isValid.message,4000)
+            customToaster('toster-error',ToasterTypes.Error,isValid.message,40000)
         }
         else if(Rm.includes(this.state.EmployeeId)){
             let errMsg = 'The selected Employee can not be assigned as their own Manager';
@@ -350,7 +350,9 @@ private async validateDuplicateRecord () {
            let duplicate = await this.validateDuplicateRecord()
            if(duplicate>0){
                console.log("duplicate record found");
-               this.setState({errorMessage : 'Current Employee is already assosiated with '+this.state.ClientName+" client"})
+            //    this.setState({errorMessage : 'Current Employee is already assosiated with '+this.state.ClientName+" client"})
+            customToaster('toster-error',ToasterTypes.Error,'Current Employee is already assosiated with '+this.state.ClientName+" client",4000)
+
            }
            else{
                 this.setState({errorMessage : ''})
@@ -758,9 +760,7 @@ else {
                             </div>
                         </div>
                     </div>
-                    <div className="toster-message">
                         <Toaster />  
-                    </div>  
                     {this.state.loading && <Loader />}
                 </React.Fragment >
             );

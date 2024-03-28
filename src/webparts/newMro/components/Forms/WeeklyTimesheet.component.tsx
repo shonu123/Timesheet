@@ -26,7 +26,8 @@ import { addDays } from 'office-ui-fabric-react';
 import '../../CSS/WeeklyTimesheet.css'
 import ModalPopUpConfirm from '../Shared/ModalPopUpConfirm';
 import toast, { Toaster } from 'react-hot-toast';
-
+import customToaster from '../Shared/Toaster.component';
+import { ToasterTypes } from '../../Constants/Constants';
 
 export interface WeeklyTimesheetProps {
     match: any;
@@ -1459,7 +1460,8 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
         }
         else{
             this.setState({ showLabel: true})
-            toast.error(isValid.message)
+            // toast.error(isValid.message)
+            customToaster('toster-error',ToasterTypes.Error,isValid.message,4000)
         }
     }
     private CreateOTHrsRow= () => {
@@ -1490,8 +1492,9 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
           this.setState({ trFormdata, currentOTRowsCount: count,showLabel:false, errorMessage:""});
       }
       else{
-        this.setState({ showLabel: true});
-        toast.error(isValid.message)
+        // this.setState({ showLabel: true});
+        // toast.error(isValid.message)
+        customToaster('toster-error',ToasterTypes.Error,isValid.message,4000)
       }
     }
     //functions related to CRUD operations
@@ -1606,8 +1609,9 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
          
         } 
         else {
-            this.setState({ showLabel: true});
-            toast.error(isValid.message)
+            // this.setState({ showLabel: true});
+            // toast.error(isValid.message)
+            customToaster('toster-error',ToasterTypes.Error,isValid.message,4000)
         }
     }
     private GetRequiredEmails=(ClentName,formdata)=>{
@@ -1788,8 +1792,9 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
         else
         {
             // this.setState({ showLabel: true, errorMessage: isValid.message });
-            this.setState({ showLabel: true});
-            toast.error(isValid.message)
+            // this.setState({ showLabel: true});
+            // toast.error(isValid.message)
+            customToaster('toster-error',ToasterTypes.Error,isValid.message,4000)
         }
     }
     private handleCancel=async(event)=>

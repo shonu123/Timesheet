@@ -20,7 +20,7 @@ class NavBar extends React.Component<NavBarProps, NavBarState> {
                 this.currentUserLinksArr.push(permission.link);
             }
         }
-        if(!this.props.currentUserGroups.includes('Timesheet Administrators') || this.props.currentUserGroups.includes("Timesheet Owners")){
+        if(!(this.props.currentUserGroups.includes('Timesheet Administrators') || this.props.currentUserGroups.includes("Timesheet Owners") || this.props.currentUserGroups.includes('Timesheet Members'))){
             document.getElementById('O365_SuiteBranding_container').style.display='none';
             document.getElementById('O365_MainLink_Settings_container').style.display='none';
             document.getElementById('O365_MainLink_Help_container').style.display='none';

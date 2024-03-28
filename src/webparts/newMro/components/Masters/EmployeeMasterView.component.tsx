@@ -77,7 +77,7 @@ class EmployeeMasterView extends React.Component<EmployeeMasterViewProps, Employ
             else{
                 let status = message.split('-')[1]
                 setTimeout(() => {
-                    status == "Added"?customToaster('.toster-success',ToasterTypes.Success,'Employee configuration added successfully',2000):customToaster('.toster-success',ToasterTypes.Success,'Employee configuration updated successfully',
+                    status == "Added"?customToaster('toster-success',ToasterTypes.Success,'Employee configuration added successfully',2000):customToaster('toster-success',ToasterTypes.Success,'Employee configuration updated successfully',
                     2000)}, 0);
             }
         }
@@ -235,9 +235,7 @@ class EmployeeMasterView extends React.Component<EmployeeMasterViewProps, Employ
             </div>
             </div>
             </div>
-            <div className="toster-message">
                 <Toaster /> 
-            </div>  
             </React.Fragment> 
         );
     }

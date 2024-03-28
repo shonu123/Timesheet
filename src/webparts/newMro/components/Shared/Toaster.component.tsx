@@ -20,7 +20,7 @@ const customToaster=(customClassName,toasterType,message,toasterDuration) =>{
     toasterDuration = parseInt(toasterDuration)
 
 return(
-    toast(message, {
+    toast(<div className="toster-message">{message}</div>, {
         duration: toasterDuration,
         position: 'top-center',
         className: customClassName,

@@ -774,9 +774,7 @@ class HolidaysList extends Component<HolidaysListProps, HolidaysListState> {
                                                 </div>
                                             </div>
                                         </div>
-                                        <div className="toster-message">
                                         <Toaster />  
-                                        </div>           
                                         <div className="c-v-table table-head-1st-td">
                                             <TableGenerator columns={columns} data={this.state.HolidayListObj} fileName={'Holidays List'}showExportExcel={true} ExportExcelCustomisedColumns={ExportExcelreportColumns} ></TableGenerator>
                                         </div>

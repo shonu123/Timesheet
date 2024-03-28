@@ -485,9 +485,7 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
                         <TableGenerator columns={columns} data={this.state.Reviewers} fileName={'My Reviews'} showExportExcel={false} showAddButton={false} searchBoxLeft={true} ExportExcelCustomisedData={this.state.ExportExcelData}></TableGenerator>
                     </div>
                 </div>
-                <div className="toster-message">
                     <Toaster />  
-                </div>  
                 {this.state.loading && <Loader />}
                 </React.Fragment> 
             );

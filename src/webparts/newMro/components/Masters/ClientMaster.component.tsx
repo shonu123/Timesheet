@@ -459,9 +459,7 @@ class Clients extends Component<ClientProps, ClientState> {
                                                 </div>
                                             </div>
                                         </div>
-                                        <div className="toster-message">
                                         <Toaster />  
-                                        </div>   
                                         <div className="c-v-table table-head-1st-td">
                                             <TableGenerator columns={columns} data={this.state.ClientsObj} fileName={'Clients'}showExportExcel={true} ExportExcelCustomisedColumns={ExportExcelreportColumns} ExportExcelCustomisedData={this.state.ExportExcelData}></TableGenerator>
                                         </div>
