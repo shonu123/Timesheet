@@ -121,7 +121,8 @@ class Clients extends Component<ClientProps, ClientState> {
         if (isValid.status) {
             this.checkDuplicates(formdata, id);
         } else {
-            this.setState({ showLabel: true, errorMessage: isValid.message });
+            // this.setState({ showLabel: true, errorMessage: isValid.message });
+            customToaster('toster-error',ToasterTypes.Error,isValid.message,4000)
         }
     }
 
