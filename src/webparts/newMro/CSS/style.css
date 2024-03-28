@@ -1722,6 +1722,9 @@ div[id^="_TopSpan_NotificationSpan"]{
   }
 
 @media only screen and (max-width: 1406px) {
+  .width-94vw{
+          width: 94vw!important; 
+  }
   .dataTables_wrapper-overflow{
       width: 92vw!important; 
       /* commented by sri */
@@ -2621,6 +2624,14 @@ textarea{
   padding-top: 2px;
   font-weight: bold;
 }
-.toster-message {
+.toster-success div {
+  display: inline-block;
+}
+
+.toster-warning div {
+  display: inline-block;
+}
+
+.toster-error div {
   display: inline-block;
 }

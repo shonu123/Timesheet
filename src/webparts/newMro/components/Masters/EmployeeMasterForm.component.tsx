@@ -322,7 +322,7 @@ private async validateDuplicateRecord () {
         if(!isValid.status){
             // this.setState({errorMessage : isValid.message})
             // toast.error(isValid.message)
-            customToaster('toster-error',ToasterTypes.Error,isValid.message,40000)
+            customToaster('toster-error',ToasterTypes.Error,isValid.message,4000)
         }
         else if(Rm.includes(this.state.EmployeeId)){
             let errMsg = 'The selected Employee can not be assigned as their own Manager';
