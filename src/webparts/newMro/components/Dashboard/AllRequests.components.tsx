@@ -116,7 +116,7 @@ class AllRequests extends React.Component<AllRequestsProps,AllRequestsState> {
                 this.setState({ AllRequests: Data,ExportExcelData:ExcelData });
                 setTimeout(() => {
                     this.setState({ loading: false });
-                      }, 1500);
+                      }, 1000);
                 // this.setState({ loading: false });
             }).catch(err => {
                 console.log('Failed to fetch data.', err);

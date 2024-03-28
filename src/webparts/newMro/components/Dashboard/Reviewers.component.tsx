@@ -97,7 +97,7 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
                 this.setState({ Reviewers: Data});
                 setTimeout(() => {
                     this.setState({ loading: false });
-                      }, 1500);
+                      }, 500);
                 //console.log(this.state.approvals);
             }).catch(err => {
                 console.log('Failed to fetch data.', err);

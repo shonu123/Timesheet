@@ -112,7 +112,7 @@ export interface WeeklyTimesheetState {
     onBehalf:boolean;
     currentUserId:number;
     EmployeesObj:any;
-
+    weeks:any;
 }
 
 class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetState> {
@@ -221,6 +221,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
             currentUserId: this.props.spContext.userId,
             EmployeesObj: [],
             isAdmin: false,
+            weeks:['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'],
         };
         this.oweb = Web(this.props.spContext.siteAbsoluteUrl);
          // for first row of weekly and OT hrs
@@ -558,6 +559,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                 this.currentUser = this.props.spContext.userDisplayName;;
                 trFormdata['ClientName'] = ''
                 trFormdata['Name'] = this.currentUser
+                trFormdata.WeekStartDate=null;
                 this.setState({onBehalf: false,ClientNames:[],loading:true,trFormdata})
                 this.loadWeeklyTimeSheetData(this.props.spContext.userId)
             }
@@ -658,7 +660,9 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                 break;
             }
         }
-        Formdata.WeekStartDate=null;  //For restricting  of incorrect WeekstarDay binding in DatePicker
+        // Formdata.WeekStartDate=null; 
+        Formdata.WeekStartDate=this.getCurrentWeekStartDate(Formdata.WeekStartDay);
+        //For restricting  of incorrect WeekstarDay binding in DatePicker
         //this.setState({trFormdata:Formdata});
        this.validateDuplicateRecord(Formdata.WeekStartDate,clientVal,Formdata);
     
@@ -2895,6 +2899,16 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
         }
        return body;
     }
+    //get current week start date based on clients weekstartday
+    private getCurrentWeekStartDate =(weekStartDay)=>{
+        let weeks = this.state.weeks
+        let dayCode = weeks.indexOf(weekStartDay)
+        let date = new Date()
+        while(date.getDay()!=dayCode){
+            date.setDate(date.getDate()-1)
+        }
+        return date
+    }
     private getClientNames=()=>
     {
         var Formdata=this.state.trFormdata;
@@ -2915,6 +2929,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                  Formdata.IsDescriptionMandatory=item.IsDescriptionMandatory;
                  Formdata.IsProjectCodeMandatory=item.IsProjectCodeMandatory;
                  Formdata.WeekStartDay=item.WeekStartDay;
+                 Formdata.WeekStartDate = this.getCurrentWeekStartDate(item.WeekStartDay)
                  Formdata.HolidayType=item.HolidayType;
                  this.WeekNames=[];
                  switch(Formdata.WeekStartDay)

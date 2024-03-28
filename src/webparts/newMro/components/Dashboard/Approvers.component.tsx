@@ -85,7 +85,7 @@ class ApproversApprovals extends React.Component<ApproversProps, ApproversState>
                 // this.setState({ loading: false });
                 setTimeout(() => {
                     this.setState({ loading: false });
-                      }, 1500);
+                      }, 1000);
             }).catch(err => {
                 console.log('Failed to fetch data.', err);
             });

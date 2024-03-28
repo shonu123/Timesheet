@@ -84,9 +84,9 @@ class MyRequests extends React.Component<MyRequestsProps, MyRequestsState> {
                 this.setState({ Requests: Data });
                 setTimeout(() => {
                     this.setState({ loading: false });
-                      }, 1500);
+                      }, 1000);
                 // document.getElementById('txtTableSearch').style.display = 'none';
-                this.setState({ loading: false });
+                // this.setState({ loading: false });
             }).catch(err => {
                 console.log('Failed to fetch data.', err);
             });
