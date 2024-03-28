@@ -235,7 +235,9 @@ class EmployeeMasterView extends React.Component<EmployeeMasterViewProps, Employ
             </div>
             </div>
             </div>
-            <Toaster />  
+            <div className="toster-message">
+                <Toaster /> 
+            </div>  
             </React.Fragment> 
         );
     }

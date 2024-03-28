@@ -758,7 +758,9 @@ else {
                             </div>
                         </div>
                     </div>
-                    <Toaster />  
+                    <div className="toster-message">
+                        <Toaster />  
+                    </div>  
                     {this.state.loading && <Loader />}
                 </React.Fragment >
             );

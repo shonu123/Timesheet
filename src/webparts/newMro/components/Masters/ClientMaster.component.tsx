@@ -121,7 +121,8 @@ class Clients extends Component<ClientProps, ClientState> {
         if (isValid.status) {
             this.checkDuplicates(formdata, id);
         } else {
-            this.setState({ showLabel: true, errorMessage: isValid.message });
+            // this.setState({ showLabel: true, errorMessage: isValid.message });
+            customToaster('toster-error',ToasterTypes.Error,isValid.message,4000)
         }
     }
 
@@ -139,7 +140,8 @@ class Clients extends Component<ClientProps, ClientState> {
             sp.web.lists.getByTitle(ClientList).items.filter(filterString).get().
                 then((response: any[]) => {
                     if (response.length > 0) {
-                        this.setState({ showLabel: true, errorMessage: 'Duplicate record is not accepted'});
+                        // this.setState({ showLabel: true, errorMessage: 'Duplicate record is not accepted'});
+                        customToaster('toster-error',ToasterTypes.Error,'Duplicate record is not accepted',4000)
                     }
                     else {
                         // this.insertorupdateListitem(formData, HolidaysList);
@@ -457,7 +459,9 @@ class Clients extends Component<ClientProps, ClientState> {
                                                 </div>
                                             </div>
                                         </div>
+                                        <div className="toster-message">
                                         <Toaster />  
+                                        </div>   
                                         <div className="c-v-table table-head-1st-td">
                                             <TableGenerator columns={columns} data={this.state.ClientsObj} fileName={'Clients'}showExportExcel={true} ExportExcelCustomisedColumns={ExportExcelreportColumns} ExportExcelCustomisedData={this.state.ExportExcelData}></TableGenerator>
                                         </div>

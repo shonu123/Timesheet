@@ -165,7 +165,8 @@ class HolidaysList extends Component<HolidaysListProps, HolidaysListState> {
         if (isValid.status) {
             this.checkDuplicates(formdata, id);
         } else {
-            this.setState({ showLabel: true, errorMessage: isValid.message });
+            // this.setState({ showLabel: true, errorMessage: isValid.message });
+            customToaster('toster-error',ToasterTypes.Error,isValid.message,4000)
         }
     }
 
@@ -192,7 +193,9 @@ class HolidaysList extends Component<HolidaysListProps, HolidaysListState> {
                     if (response.length > 0) {
                         let date = new Date(formData.HolidayDate)
                         let dateSelected = `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`
-                        this.setState({ showLabel: true, errorMessage: 'A holiday already exists on '+dateSelected+' for '+this.state.formData.ClientName });
+                        // this.setState({ showLabel: true, errorMessage:  });
+                        customToaster('toster-error',ToasterTypes.Error,'A holiday already exists on '+dateSelected+' for '+this.state.formData.ClientName,4000)
+
                     }
                     else {
                         // this.insertorupdateListitem(formData, HolidaysList);
@@ -420,17 +423,17 @@ class HolidaysList extends Component<HolidaysListProps, HolidaysListState> {
                 this.resetImportField();
                 // toast.error('No new records found')
                 customToaster('toster-warning',ToasterTypes.Warning,'No new records found',3000)
-                toast('No new records found', {
-                    // duration: 4000,
-                    // position: 'top-center',
+                // toast('No new records found', {
+                //     // duration: 4000,
+                //     // position: 'top-center',
                   
-                    // Styling
-                    style: {color:'#e5a05b'},
-                    // className: '',
+                //     // Styling
+                //     style: {color:'#e5a05b'},
+                //     // className: '',
                   
-                    // Custom Icon
-                    icon: '⚠️',
-                })
+                //     // Custom Icon
+                //     icon: '⚠️',
+                // })
                 
                 this.setState({
                     loading: false,
@@ -771,7 +774,9 @@ class HolidaysList extends Component<HolidaysListProps, HolidaysListState> {
                                                 </div>
                                             </div>
                                         </div>
-                                        <Toaster />             
+                                        <div className="toster-message">
+                                        <Toaster />  
+                                        </div>           
                                         <div className="c-v-table table-head-1st-td">
                                             <TableGenerator columns={columns} data={this.state.HolidayListObj} fileName={'Holidays List'}showExportExcel={true} ExportExcelCustomisedColumns={ExportExcelreportColumns} ></TableGenerator>
                                         </div>
