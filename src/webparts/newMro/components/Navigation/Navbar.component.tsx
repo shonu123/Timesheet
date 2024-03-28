@@ -31,11 +31,11 @@ class NavBar extends React.Component<NavBarProps, NavBarState> {
         let navLinks = document.querySelectorAll('.nav-click');
         if(navLinks.length > 0 ){
             navLinks.forEach(item => {
-                item.className = 'nav-item';
+                item.className = '';
             });
         }
-        // event.currentTarget.className = 'nav-item nav-click';
-        event.currentTarget.classList.add('nav-click')
+        event.currentTarget.className = 'nav-click';
+        // event.currentTarget.classList.add('nav-click')
     }
     public render() {
         return (
@@ -103,26 +103,26 @@ class NavBar extends React.Component<NavBarProps, NavBarState> {
                         <ul className="list-unstyled ul-leftnav components mb-0 mt-2">
                             {
                                 (this.props.currentUserGroups.includes("Timesheet Owners")||this.props.currentUserGroups.includes('Timesheet Members') || this.props.currentUserGroups.includes('Timesheet Administrators'))?
-                                    <li className="nav-item" id="employeemaster" onClick={(event) => this.onNavItemClick(event)}>
+                                    <li className="" id="employeemaster" onClick={(event) => this.onNavItemClick(event)}>
                                         <NavLink className="" to="/EmployeeMasterView"><span className=""><span className="">Approval Matrix</span></span></NavLink>
                                     </li>:''
                             }
                             
                             {
                                 (this.props.currentUserGroups.includes("Timesheet Owners")||this.props.currentUserGroups.includes('Timesheet Members') || this.props.currentUserGroups.includes('Timesheet Administrators'))?
-                                    <li className="nav-item" id="ClientMaster" onClick={(event) => this.onNavItemClick(event)}>
+                                    <li className="" id="ClientMaster" onClick={(event) => this.onNavItemClick(event)}>
                                         <NavLink className="" to="/ClientMaster"><span className=""><span className="">Clients</span></span></NavLink>
                                     </li>:''
                             }
                             {
                                 (this.props.currentUserGroups.includes('Timesheet Initiators') ||this.props.currentUserGroups.includes('Timesheet Approvers') || this.props.currentUserGroups.includes('Timesheet Reviewers') )?
-                                    <li className="nav-item nav-click" id="liDashboard" onClick={(event) => this.onNavItemClick(event)}>
+                                    <li className="nav-click" id="liDashboard" onClick={(event) => this.onNavItemClick(event)}>
                                         <NavLink className="" to="/Dashboard"><span className=""><span className="">Dashboard</span></span></NavLink>
                                     </li>:''
                             }
                             {
                                 (this.props.currentUserGroups.includes("Timesheet Owners")||this.props.currentUserGroups.includes('Timesheet Members') || this.props.currentUserGroups.includes('Timesheet Administrators'))?
-                                    <li className="nav-item" id="HolidayMaster" onClick={(event) => this.onNavItemClick(event)}>
+                                    <li className="" id="HolidayMaster" onClick={(event) => this.onNavItemClick(event)}>
                                         <NavLink className="" to="/HolidayMaster"><span className=""><span className="">Holidays</span></span></NavLink>
                                     </li>:''
                             }

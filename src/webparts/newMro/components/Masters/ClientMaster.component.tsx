@@ -20,6 +20,8 @@ import InputCheckBox from '../Shared/InputCheckBox';
 import { highlightCurrentNav } from '../../Utilities/HighlightCurrentComponent';
 import "../Shared/Menuhandler";
 import toast, { Toaster } from 'react-hot-toast';
+import customToaster from '../Shared/Toaster.component';
+import { ToasterTypes } from '../../Constants/Constants';
 import ImportExcel from '../Shared/ImportExcel';
 import DatePicker from "../Shared/DatePickerField";
 import { addDays } from 'office-ui-fabric-react';
@@ -147,7 +149,9 @@ class Clients extends Component<ClientProps, ClientState> {
                             //console.log(this.props);
                             sp.web.lists.getByTitle(ClientList).items.getById(id).update(formData).then((res) => {
                                 // this.resetHolidayMasterForm();
-                                toast.success('updated successfully');
+                                // toast.success('updated successfully');
+                                customToaster('toster-success',ToasterTypes.Success,'updated successfully',2000)
+
                                 this.resetHolidayMasterForm();
                                 this.setState({
                                     modalTitle: 'Success',
@@ -167,7 +171,8 @@ class Clients extends Component<ClientProps, ClientState> {
                                 sp.web.lists.getByTitle(ClientList).items.add({ ...this.state.formData })
                                     .then((res) => {
                                         this.resetHolidayMasterForm();
-                                        toast.success('updated successfully');
+                                        // toast.success('updated successfully');
+                                        customToaster('toster-success',ToasterTypes.Success,'updated successfully',2000)
                                         this.setState({ showHideModal: false,addNewClient: false,loading:false,isRedirect:true});
                                         //  this.setState({
                                         //      modalTitle: 'Success',
@@ -179,7 +184,8 @@ class Clients extends Component<ClientProps, ClientState> {
                                     })
                                     .catch((err) => {
                                         console.log('Failed to add');
-                                        toast.error('Sorry! something went wrong');
+                                        // toast.error('Sorry! something went wrong');
+                                        customToaster('toster-error',ToasterTypes.Error,'Sorry! something went wrong',4000)
                                         this.setState({ showHideModal: false,isRedirect:true,loading:false,addNewClient:false});
                                         // this.setState({
                                         //     loading: false,

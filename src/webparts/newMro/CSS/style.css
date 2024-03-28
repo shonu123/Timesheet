@@ -2476,10 +2476,10 @@ li {
   color: rgb(241, 94, 94);
 } */
 .Sun,.Sat{
-  /* color: rgb(241, 94, 94);
-   */
+  color: rgb(241, 94, 94);
+  
    /* by sri */
-   color: #e5a05b !important;
+   /* color: #e5a05b !important; */
 }
 #s4-workspace{
   font-family: Verdana, Geneva, Tahoma, sans-serif !important;
@@ -2572,4 +2572,53 @@ textarea{
 }
 .fw-normal{
   font-weight: normal;
+}
+.toster-error {
+  background-color: #ffdfdf;
+  border-bottom: 2px solid #bc1313;
+  max-width: inherit;
+  display: block;
+}
+.toster-fa-close{
+  background: #bf0033;
+  color: #fff;
+}
+
+.toster-success{  
+  background-color: #e8ffe5;
+  border-bottom: 2px solid #13ae00;
+  max-width: inherit;
+  display: block;
+}
+.toster-fa-plus{  
+  background: #17b004;
+  color: #fff;
+}
+
+.toster-warning {
+  background-color: #ffead5;
+  border-bottom: 2px solid #ff8d00;
+  max-width: inherit;
+  display: block;
+}
+.toster-fa-warning{  
+  background: #d37d13;
+  color: #fff;
+}
+
+
+
+.toster-fa-icon{
+  display: inline-block;
+  margin: auto;
+  width: 62px;
+  height: 30px;
+  text-align: center;
+  border-radius: 50%;
+  font-size: 19px;
+  padding-top: 2px;
+  font-weight: bold;
+}
+.toster-message {
+  display: inline-block;
 }

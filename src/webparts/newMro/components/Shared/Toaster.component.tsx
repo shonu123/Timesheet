@@ -15,11 +15,12 @@ const customToaster=(customClassName,toasterType,message,toasterDuration) =>{
     if([undefined,"",null].includes(toasterDuration)){
         toasterDuration = 4000
     }
-    customIcon = toasterType==ToasterTypes.Success?<span className='span-fa-plus'><FontAwesomeIcon icon={faCircleCheck}></FontAwesomeIcon></span>:toasterType==ToasterTypes.Warning?<span style={{"backgroundColor":'#fff'}}><FontAwesomeIcon icon={faWarning} color='#e5a05b'></FontAwesomeIcon></span>:<span className='span-fa-close'><FontAwesomeIcon icon={faClose}></FontAwesomeIcon></span>
+    // customClassName= 'toster-error'
+    customIcon = toasterType==ToasterTypes.Success?<span className='toster-fa-icon toster-fa-plus'><FontAwesomeIcon icon={faCircleCheck}></FontAwesomeIcon></span>:toasterType==ToasterTypes.Warning?<span className='toster-fa-icon toster-fa-warning'><FontAwesomeIcon icon={faWarning}></FontAwesomeIcon></span>:<span className='toster-fa-icon toster-fa-close'><FontAwesomeIcon icon={faClose}></FontAwesomeIcon></span>
     toasterDuration = parseInt(toasterDuration)
 
 return(
-    toast(message, {
+    toast('<div class="toster-message"> '+message+'</div>', {
         duration: toasterDuration,
         position: 'top-center',
         className: customClassName,

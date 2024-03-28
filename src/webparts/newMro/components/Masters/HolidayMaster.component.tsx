@@ -24,6 +24,8 @@ import DatePicker from "../Shared/DatePickerField";
 import { addDays } from 'office-ui-fabric-react';
 import { faXmark, faEdit, faCheck, faPlus } from '@fortawesome/free-solid-svg-icons';
 import toast, { Toaster } from 'react-hot-toast';
+import customToaster from '../Shared/Toaster.component';
+import { ToasterTypes } from '../../Constants/Constants';
 interface HolidaysListProps {
     match: any;
     spContext: any;
@@ -200,7 +202,8 @@ class HolidaysList extends Component<HolidaysListProps, HolidaysListState> {
                             //console.log(this.props);
                             sp.web.lists.getByTitle(HolidaysList).items.getById(id).update(formData).then((res) => {
                                 // this.resetHolidayMasterForm();
-                                toast.success('updated successfully');
+                                // toast.success('updated successfully');
+                                customToaster('toster-success',ToasterTypes.Success,'updated successfully',2000)
                                 this.resetHolidayMasterForm();
                                 this.setState({ showHideModal: false,isRedirect:true});
                                 // this.setState({
@@ -219,7 +222,8 @@ class HolidaysList extends Component<HolidaysListProps, HolidaysListState> {
                                 sp.web.lists.getByTitle(HolidaysList).items.add({ ...this.state.formData })
                                     .then((res) => {
                                         this.resetHolidayMasterForm();
-                                        toast.success('submitted successfully');
+                                        // toast.success('submitted successfully');
+                                        customToaster('toster-success',ToasterTypes.Success,'submitted successfully',2000)
                                         this.resetHolidayMasterForm();
                                         this.setState({ showHideModal: false,isRedirect:true});
                                         // this.setState({
@@ -232,7 +236,8 @@ class HolidaysList extends Component<HolidaysListProps, HolidaysListState> {
                                     })
                                     .catch((err) => {
                                         console.log('Failed to add');
-                                        toast.error('Sorry! something went wrong');
+                                        // toast.error('Sorry! something went wrong');
+                                        customToaster('toster-error',ToasterTypes.Error,'Sorry! something went wrong',4000)
                                         this.resetHolidayMasterForm();
                                         this.setState({ showHideModal: false,isRedirect:true});
                                         // this.setState({
@@ -247,7 +252,8 @@ class HolidaysList extends Component<HolidaysListProps, HolidaysListState> {
                             }
                             catch (e) {
                                 console.log(e);
-                                toast.error('Sorry! something went wrong');
+                                // toast.error('Sorry! something went wrong');
+                                customToaster('toster-error',ToasterTypes.Error,'Sorry! something went wrong',4000)
                                 this.setState({ showHideModal: false,isRedirect:true});
                                 // this.setState({
                                 //     loading: false,
@@ -413,6 +419,7 @@ class HolidaysList extends Component<HolidaysListProps, HolidaysListState> {
             } else if (!excelData.length && !statusChangedRec.length) {
                 this.resetImportField();
                 // toast.error('No new records found')
+                customToaster('toster-warning',ToasterTypes.Warning,'No new records found',3000)
                 toast('No new records found', {
                     // duration: 4000,
                     // position: 'top-center',
@@ -442,7 +449,8 @@ class HolidaysList extends Component<HolidaysListProps, HolidaysListState> {
         }
         catch (e) {
             console.log(e);
-            toast.error('Sorry! something went wrong')
+            // toast.error('Sorry! something went wrong')
+            customToaster('toster-error',ToasterTypes.Error,'Sorry! something went wrong',4000)
             this.setState({
                 loading: false,
                 // modalTitle: 'Error',
@@ -459,7 +467,8 @@ class HolidaysList extends Component<HolidaysListProps, HolidaysListState> {
 
             }).then((res) => {
                 if (!nonDuplicateRec.length) {
-                    toast.success('Holidays updated successfully')
+                    // toast.success('Holidays updated successfully')
+                    customToaster('toster-success',ToasterTypes.Success,'Holidays updated successfully',2000)
                     this.setState({
                         // modalTitle: 'Success',
                         // modalText: 'Holiday updated successfully',
@@ -503,10 +512,12 @@ class HolidaysList extends Component<HolidaysListProps, HolidaysListState> {
                                 if (response != undefined) {
                                     console.log('Failed to add');
                                     toast.error('Failed to add');
+                                    customToaster('toster-error',ToasterTypes.Error,'Failed to add',4000)
                                 }
                                 if (index == splitSize - 1) {
                                     this.loadListData();
                                     toast.success('Holidays uploaded successfully');
+                                    customToaster('toster-success',ToasterTypes.Success,'Holidays uploaded successfully',2000)
                                     this.setState({
                                         // modalTitle: 'Success',
                                         // modalText: 'Holidays uploaded successfully',
@@ -528,7 +539,8 @@ class HolidaysList extends Component<HolidaysListProps, HolidaysListState> {
         }
         catch (e) {
             console.log(e);
-            toast.error('Sorry! something went wrong');
+            // toast.error('Sorry! something went wrong');
+            customToaster('toster-error',ToasterTypes.Error,'Sorry! something went wrong',4000)
             this.setState({
                 loading: false,
                 // modalTitle: 'Alert',
@@ -549,7 +561,8 @@ class HolidaysList extends Component<HolidaysListProps, HolidaysListState> {
     }
     public ErrorFileSelect = () => {
         this.resetImportField();
-        toast.error('Sorry! something went wrong');
+        // toast.error('Sorry! something went wrong');
+        customToaster('toster-error',ToasterTypes.Error,'Sorry! something went wrong',4000)
         this.setState({
             loading: false,
             // modalTitle: 'Alert',

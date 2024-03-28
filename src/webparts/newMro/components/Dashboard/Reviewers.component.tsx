@@ -14,7 +14,8 @@ import Loader from '../Shared/Loader';
 import { StatusType } from '../../Constants/Constants';
 import ModalPopUp from '../Shared/ModalPopUp';
 import toast, { Toaster } from 'react-hot-toast';
-
+import customToaster from '../Shared/Toaster.component';
+import { ToasterTypes } from '../../Constants/Constants';
 export interface ReviewerApprovalsProps {
     match: any;
     spContext: any;
@@ -116,13 +117,15 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
           }).then((i) => {  
             // alert("Record Updated Sucessfully");
             this.setState({showHideModal : false,ItemID:0,message:'',title:'',Action:'',loading: false,successPopUp:false,modalTitle:modalTitle});
-            toast.success('Timesheet rejcted succesfully')
+            // toast.success('Timesheet rejcted succesfully')
+            customToaster('toster-success',ToasterTypes.Success,'Timesheet rejcted succesfully',2000)
             // this.setState({redirect : true});
             // <Navigate to={'/'} />
           }).catch((i) => {
             // alert("Error while updating the record");
             this.setState({showHideModal : false,ItemID:0,message:'',title:'',Action:'',loading: false,successPopUp:false,modalTitle:'Email sending failed',modalText:'Something went wrong please try again'});        // this.setState({redirect : true});
-            toast.error('Sorry! something went wrong please try again')
+            // toast.error('Sorry! something went wrong please try again')
+            customToaster('toster-error',ToasterTypes.Error,'Sorry! something went wrong',4000)
             console.log(i)
           });  
     }

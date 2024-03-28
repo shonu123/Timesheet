@@ -72,12 +72,12 @@ class EmployeeMasterView extends React.Component<EmployeeMasterViewProps, Employ
             let message = this.props.match.params.message
             window.location.hash='#/EmployeeMasterView';
             if(message == 'Error'){
-                customToaster('',ToasterTypes.Error,'Sorry! something went wrong',4000)
+                customToaster('toster-error',ToasterTypes.Error,'Sorry! something went wrong',4000)
             }
             else{
                 let status = message.split('-')[1]
                 setTimeout(() => {
-                    status == "Added"?customToaster('',ToasterTypes.Success,'Employee configuration added successfully',2000):customToaster('',ToasterTypes.Success,'Employee configuration updated successfully',
+                    status == "Added"?customToaster('.toster-success',ToasterTypes.Success,'Employee configuration added successfully',2000):customToaster('.toster-success',ToasterTypes.Success,'Employee configuration updated successfully',
                     2000)}, 0);
             }
         }
