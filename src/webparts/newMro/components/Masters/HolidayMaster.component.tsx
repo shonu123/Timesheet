@@ -192,7 +192,9 @@ class HolidaysList extends Component<HolidaysListProps, HolidaysListState> {
                     if (response.length > 0) {
                         let date = new Date(formData.HolidayDate)
                         let dateSelected = `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`
-                        this.setState({ showLabel: true, errorMessage: 'A holiday already exists on '+dateSelected+' for '+this.state.formData.ClientName });
+                        // this.setState({ showLabel: true, errorMessage:  });
+                        customToaster('toster-error',ToasterTypes.Error,'A holiday already exists on '+dateSelected+' for '+this.state.formData.ClientName,4000)
+
                     }
                     else {
                         // this.insertorupdateListitem(formData, HolidaysList);
@@ -771,7 +773,9 @@ class HolidaysList extends Component<HolidaysListProps, HolidaysListState> {
                                                 </div>
                                             </div>
                                         </div>
-                                        <Toaster />             
+                                        <div className="toster-message">
+                                        <Toaster />  
+                                        </div>           
                                         <div className="c-v-table table-head-1st-td">
                                             <TableGenerator columns={columns} data={this.state.HolidayListObj} fileName={'Holidays List'}showExportExcel={true} ExportExcelCustomisedColumns={ExportExcelreportColumns} ></TableGenerator>
                                         </div>
