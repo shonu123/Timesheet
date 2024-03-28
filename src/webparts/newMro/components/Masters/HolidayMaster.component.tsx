@@ -165,7 +165,8 @@ class HolidaysList extends Component<HolidaysListProps, HolidaysListState> {
         if (isValid.status) {
             this.checkDuplicates(formdata, id);
         } else {
-            this.setState({ showLabel: true, errorMessage: isValid.message });
+            // this.setState({ showLabel: true, errorMessage: isValid.message });
+            customToaster('toster-error',ToasterTypes.Error,isValid.message,4000)
         }
     }
 
@@ -422,17 +423,17 @@ class HolidaysList extends Component<HolidaysListProps, HolidaysListState> {
                 this.resetImportField();
                 // toast.error('No new records found')
                 customToaster('toster-warning',ToasterTypes.Warning,'No new records found',3000)
-                toast('No new records found', {
-                    // duration: 4000,
-                    // position: 'top-center',
+                // toast('No new records found', {
+                //     // duration: 4000,
+                //     // position: 'top-center',
                   
-                    // Styling
-                    style: {color:'#e5a05b'},
-                    // className: '',
+                //     // Styling
+                //     style: {color:'#e5a05b'},
+                //     // className: '',
                   
-                    // Custom Icon
-                    icon: '⚠️',
-                })
+                //     // Custom Icon
+                //     icon: '⚠️',
+                // })
                 
                 this.setState({
                     loading: false,

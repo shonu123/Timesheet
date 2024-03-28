@@ -1,7 +1,7 @@
 //toast.error(isValid.message)
 import * as React from 'react';
 import toast from 'react-hot-toast';
-import { faL, faClose,faCircleCheck, faWarning} from "@fortawesome/free-solid-svg-icons";
+import { faL, faClose,faCheck, faWarning} from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { ToasterTypes } from '../../Constants/Constants';
 // interface customToasterProps {
@@ -16,7 +16,7 @@ const customToaster=(customClassName,toasterType,message,toasterDuration) =>{
         toasterDuration = 4000
     }
     // customClassName= 'toster-error'
-    customIcon = toasterType==ToasterTypes.Success?<span className='toster-fa-icon toster-fa-plus'><FontAwesomeIcon icon={faCircleCheck}></FontAwesomeIcon></span>:toasterType==ToasterTypes.Warning?<span className='toster-fa-icon toster-fa-warning'><FontAwesomeIcon icon={faWarning}></FontAwesomeIcon></span>:<span className='toster-fa-icon toster-fa-close'><FontAwesomeIcon icon={faClose}></FontAwesomeIcon></span>
+    customIcon = toasterType==ToasterTypes.Success?<span className='toster-fa-icon toster-fa-plus'><FontAwesomeIcon icon={faCheck}></FontAwesomeIcon></span>:toasterType==ToasterTypes.Warning?<span className='toster-fa-icon toster-fa-warning'><FontAwesomeIcon icon={faWarning}></FontAwesomeIcon></span>:<span className='toster-fa-icon toster-fa-close'><FontAwesomeIcon icon={faClose}></FontAwesomeIcon></span>
     toasterDuration = parseInt(toasterDuration)
 
 return(
@@ -25,7 +25,7 @@ return(
         position: 'top-center',
         className: customClassName,
         // Styling
-        // style: {color:'#e5a05b'},      
+        style: {display: 'inline-block'},      
         // Custom Icon
         icon: customIcon,
     })
