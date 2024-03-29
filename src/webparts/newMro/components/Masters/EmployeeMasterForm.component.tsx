@@ -5,7 +5,7 @@ import Formvalidator from '../../Utilities/Formvalidator';
 import { ControlType, Dropdowns, ActionStatus, ApprovalStatus, PendingStatus,StatusType } from '../../Constants/Constants';
 import ModalPopUp from '../Shared/ModalPopUp';
 import Loader from '../Shared/Loader';
-import { SPBatch, sp } from '@pnp/sp';
+import { sp } from '@pnp/sp';
 import { Web } from '@pnp/sp/webs';
 import "@pnp/sp/webs";
 import "@pnp/sp/lists";
@@ -18,16 +18,10 @@ import "@pnp/sp/folders";
 import "@pnp/sp/site-users/web";
 import "@pnp/sp/site-groups";
 import { highlightCurrentNav, sortDataByTitle } from '../../Utilities/HighlightCurrentComponent';
-import FileUpload from '../Shared/FileUpload';
 import DatePicker from "../Shared/DatePickerField";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faL, faPlus,faPrint, fas} from "@fortawesome/free-solid-svg-icons";
-import formValidation from '../../Utilities/Formvalidator';
 import { Navigate } from 'react-router-dom';
-import { confirm } from 'react-confirm-box';
 import InputCheckBox from '../Shared/InputCheckBox';
-// import CustomDatePicker from './DatePicker';
-import toast, { Toaster } from 'react-hot-toast';
+import { Toaster } from 'react-hot-toast';
 import customToaster from '../Shared/Toaster.component';
 import { ToasterTypes } from '../../Constants/Constants';
 export interface EmployeeMasterFormProps {
@@ -55,7 +49,6 @@ class EmployeeMasterForm extends React.Component<EmployeeMasterFormProps, Employ
     constructor(props: EmployeeMasterFormProps) {
         super(props);
         this.siteURL = this.props.spContext.webAbsoluteUrl;
-        // this.userContext = this.props.spContext;
         sp.setup({
             spfxContext: this.props.context
         });
@@ -69,12 +62,10 @@ class EmployeeMasterForm extends React.Component<EmployeeMasterFormProps, Employ
     public state = {
         ItemID : 0,
         EmployeeId : null,
-        // ReportingManagerId : null,
         ClientName : '',
         HolidayType: '',
         ApproverId : {results:[]},
         ReviewerId: {results:[]},
-        // NotifierId: {results:[]},
         ClientsObject : [],
         HolidaysObject: [],
         DateOfJoining : new Date(),
@@ -86,7 +77,6 @@ class EmployeeMasterForm extends React.Component<EmployeeMasterFormProps, Employ
         ReportingManagerEmail:[],
         ApproverEmail : [],
         ReviewerEmail: [],
-        // NotifierEmail: [],
         weekStartDay: 'Monday',
         SelectedEmployee : '',
         SelectedClient : '',
@@ -103,10 +93,14 @@ class EmployeeMasterForm extends React.Component<EmployeeMasterFormProps, Employ
     public componentDidMount() {
         highlightCurrentNav("employeemaster");
         this.setState({ loading: true });
-        // this.getUserGroups();
          this.GetClients();
     }
 
+    /* this function is used to 
+    1. get al the active clients from client list 
+    2. get current user groups
+    3. Restricts other than Admin users to access the page
+    */
     private async GetClients() {
 
         let [clients,groups] = await Promise.all([
@@ -114,15 +108,8 @@ class EmployeeMasterForm extends React.Component<EmployeeMasterFormProps, Employ
             sp.web.currentUser.groups()
         ])
         this.setState({ClientsObject : clients})
-        // let HolidayClients = []
-        // for (const client of Holidays) {
-        //     if(!HolidayClients.includes(client.ClientName))
-        //     HolidayClients.push(client.ClientName)
-        // }
-        // this.setState({HolidaysObject : HolidayClients})
         console.log(clients);
         this.setState({ loading: false });
-
         if(this.props.match.params.id != undefined){
             this.setState({ loading: true });
             console.log(this.props.match.params.id)
@@ -142,41 +129,18 @@ class EmployeeMasterForm extends React.Component<EmployeeMasterFormProps, Employ
         else{
             this.setState({isPageAccessable : false})
         }
-        // let user = userGroup=='Timesheet Initiators' ?'Initiator': userGroup=='Timesheet Approvers'?'Approver':userGroup=='Timesheet Reviewers'?'Reviewer':'Administrator'
-        // console.log('You are :'+user)
-
-        // if(user !='Administrator'){
-        //     this.setState({isPageAccessable : false})
-        // }
-
-
     }
 
+    // this function is used to get data from the employee master of Edit record
     private async getData(){
         let filterQuery = "ID eq '"+this.state.ItemID+"'"
         let selectQuery = "Employee/ID,Employee/EMail,ReportingManager/ID,ReportingManager/EMail,Approvers/ID,Approvers/EMail,Reviewers/ID,Reviewers/EMail,Notifiers/ID,Notifiers/EMail,*"
         let data = await sp.web.lists.getByTitle(this.listName).items.filter(filterQuery).select(selectQuery).expand('Employee,ReportingManager,Approvers,Reviewers,Notifiers').get()
         console.log(data)
-        this.setState({EmployeeEmail : data[0].Employee.EMail,EmployeeId : data[0].Employee.ID})
-        // this.setState({ReportingManagerEmail : data[0].ReportingManager.EMail,ReportingManagerId:data[0].ReportingManager.ID})
-        this.setState({ClientName : data[0].ClientName})
-        this.setState({isActive : data[0].IsActive})
         let date = new Date(data[0].DateOfJoining)
-        this.setState({ DateOfJoining : date })
-        this.setState({SelectedEmployee : data[0].Employee.ID})
-        this.setState({SelectedClient : data[0].ClientName })
-        this.setState({HolidayType : data[0].HolidayType})
-        this.setState({weekStartDay : data[0].WeekStartDay })
-        this.setState({MandatoryProjectCode : data[0].MandatoryProjectCode?"Yes":"No" })
-        this.setState({MandatoryDescription : data[0].MandatoryDescription?"Yes":"No" })
-
-        // let ApproversEMail = []
         let ReportingManagersEmail = []
-        // let ApproverIds = {results:[]}
         let ReportingManagerIds = {results:[]}
         let ReviewerIds = {results:[]}
-        // let NotifierIds = {results:[]}
-
         if(data[0].ReportingManager.length>0){
             let array = []
             for (const user of data[0].ReportingManager) {
@@ -198,15 +162,12 @@ class EmployeeMasterForm extends React.Component<EmployeeMasterFormProps, Employ
         //         NotifierIds.results.push(user.ID)
         //     }
         // }
-        // this.setState({ ApproverEmail: ApproversEMail,ApproverId : ApproverIds})
-        this.setState({ ReportingManagerEmail: ReportingManagersEmail,ReportingManagerId : ReportingManagerIds})
-        this.setState({ReviewerEmail : ReviewersEMail,ReviewerId : ReviewerIds})
-        // this.setState({NotifierEmail : NotifiersEMail,NotifierId: NotifierIds})
-        this.getHolidays()
-        // this.setState({ loading: false });
+        this.setState({EmployeeEmail : data[0].Employee.EMail,EmployeeId : data[0].Employee.ID,ClientName : data[0].ClientName,isActive : data[0].IsActive,DateOfJoining : date,SelectedEmployee : data[0].Employee.ID,SelectedClient : data[0].ClientName,HolidayType : data[0].HolidayType,weekStartDay : data[0].WeekStartDay,MandatoryProjectCode : data[0].MandatoryProjectCode?"Yes":"No",MandatoryDescription : data[0].MandatoryDescription?"Yes":"No",ReportingManagerEmail: ReportingManagersEmail,ReportingManagerId : ReportingManagerIds,ReviewerEmail: ReviewersEMail,ReviewerId : ReviewerIds})
+        this.getHolidays(data[0].ClientName)
     }
+
+    // this function is used to bind users to people pickers
     private _getPeoplePickerItems(items, name) { 
-        
          let value = null;
          let values = {results:[]};
         if (items.length > 0) {
@@ -226,14 +187,17 @@ class EmployeeMasterForm extends React.Component<EmployeeMasterFormProps, Employ
         name == 'EmployeeId'?this.setState({ EmployeeId: value }):name == 'ReportingManagerId'?this.setState({ ReportingManagerId: values }):name == 'ApproverId'?this.setState({ ApproverId: values }):name == 'ReviewerId'?this.setState({ ReviewerId: values }):this.setState({ NotifierId: values })
     }
 
-    private async getHolidays(){
-        // this.setState({ loading: true });
+    /* this function is used to get holidays of all the clients from HolidaysList and filters with the active clients present in client list.
+    Filter based on the selected client and Synergy
+    we show all the Client holidays and all Synergy
+     */
+    private async getHolidays(selectedClient){
         let Year = new Date().getFullYear()+"";
-        let Holidays = await  sp.web.lists.getByTitle('HolidaysList').items.filter("Year eq '"+Year+"'").select('*').orderBy('ClientName').get()
+        let Holidays = await  sp.web.lists.getByTitle('HolidaysList').items.top(2000).filter("Year eq '"+Year+"'").select('*').orderBy('ClientName').get()
       let HolidayClients = []
       let filteredData = Holidays.filter(item=> {
         const lowerCaseItem = item.ClientName .toLowerCase();
-        let selectedClient = this.state.ClientName.toLowerCase()
+        // let selectedClient = this.state.ClientName.toLowerCase()
         return lowerCaseItem.includes(selectedClient) || lowerCaseItem.includes('synergy');
       });
 
@@ -245,6 +209,8 @@ class EmployeeMasterForm extends React.Component<EmployeeMasterFormProps, Employ
                 }
             this.setState({HolidaysObject : HolidayClients,loading: false})
     }
+
+    // this function is used to bind and set values to respect form feilds
     private handleChangeEvents=(event)=>{
         console.log(this.state);
         let value = event.target.type == 'checkbox' ? event.target.checked : event.target.value.trim();
@@ -252,17 +218,16 @@ class EmployeeMasterForm extends React.Component<EmployeeMasterFormProps, Employ
         let  {name}  = event.target;
         this.setState({[name] : value});
         if(name == 'ClientName'){
-            if(value!='')
-            this.getHolidays()
-            else
-            this.setState({HolidaysObject : []})
+            if(value!=''){
+                this.getHolidays(value)
+            }
+            else{
+                this.setState({HolidaysObject : []})
+            }
         }
-        
-        // if(name == 'isActive')
-        // this.setState({isActive : value})
-        // else
     }
     
+    // this function is used to set date to the date feild
     private UpdateDate = (dateprops) => {
         console.log(dateprops)
         let date = new Date()
@@ -273,8 +238,7 @@ class EmployeeMasterForm extends React.Component<EmployeeMasterFormProps, Employ
 
     }
 
-
-
+    // this function is used to validate duplicate record if the  employee is already associated withe selected client or not
 private async validateDuplicateRecord () {
 
     if(this.state.SelectedEmployee==this.state.EmployeeId && this.state.SelectedClient == this.state.ClientName){
@@ -289,12 +253,12 @@ private async validateDuplicateRecord () {
         return duplicateRecord.length;
     }
 }
-
+// this functionis uesd to go to dashboard when clicked on cancel button
     private handleCancel = async (e)=>{
         this.setState({message:'',Homeredirect : true});
     }
 
-
+    // this function is used to validate form and send data to list if validation succeeds
     private handleSubmit = async (e)=>{
         let data ={
         Employee : { val: this.state.EmployeeId, required: true, Name: 'Employee', Type: ControlType.people,Focusid:'divEmployee' },
@@ -320,16 +284,11 @@ private async validateDuplicateRecord () {
             Rm.push(manager)
         }
         if(!isValid.status){
-            // this.setState({errorMessage : isValid.message})
-            // toast.error(isValid.message)
             customToaster('toster-error',ToasterTypes.Error,isValid.message,4000)
         }
         else if(Rm.includes(this.state.EmployeeId)){
             let errMsg = 'The selected Employee can not be assigned as their own Manager';
-            // this.setState({errorMessage : errMsg});
-            // toast.error(errMsg)
             customToaster('toster-error',ToasterTypes.Error,errMsg,4000)
-
         }
         else{
             console.log(data);
@@ -349,28 +308,24 @@ private async validateDuplicateRecord () {
             }
            let duplicate = await this.validateDuplicateRecord()
            if(duplicate>0){
-               console.log("duplicate record found");
-            //    this.setState({errorMessage : 'Current Employee is already assosiated with '+this.state.ClientName+" client"})
-            customToaster('toster-error',ToasterTypes.Error,'Current Employee is already assosiated with '+this.state.ClientName+" client",4000)
-
+               console.log("duplicate record found"); 
+            customToaster('toster-error',ToasterTypes.Error,'Current Employee is already associated with '+this.state.ClientName+" client",4000)
            }
            else{
                 this.setState({errorMessage : ''})
                 this.InsertorUpdatedata(postObject, '');
            }
-
         }
     }
 
+    // this function is used save data in the list
     private InsertorUpdatedata(formdata, actionStatus) {
         if (this.state.ItemID > 0) {   
             this.setState({ loading: true });
             //update existing record
             sp.web.lists.getByTitle(this.listName).items.getById(this.state.ItemID).update(formdata).then((res) => {
                 this.setState({ loading: false});
-                // alert('Data updated sucessfully');
                 this.setState({message:'Success-Update',Homeredirect: true})
-                // this.setState({showHideModal : true,modalText: 'Employee configuration updated successfully',modalTitle:'Success'});
             }, (error) => {
                 console.log(error);
             });
@@ -390,32 +345,19 @@ private async validateDuplicateRecord () {
             catch (e) {
                 console.log('Failed to add');
                 this.setState({message:'Error'})
-                this.onError();
             }
 
         }
     }
 
-    private onSucess = (Action, ItemID,emaildetails) => {
-        // if(Action == "submitted successfully" || Action == "rejected successfully"||Action == "approved successfully"){
-        //     // this.sendemail(Action,ItemID,emaildetails);
-        // }
-        // else{
-        //     // this.setState({ modalTitle: 'Success', modalText: 'Requisition Details ' + Action, showHideModal: true, loading: false, isSuccess: true, ItemID: ItemID,showHideModalConfirm:false });
-        // }
-        // // this.setState({ modalTitle: 'Success', modalText: 'Requisition Details ' + Action, showHideModal: true, loading: false, isSuccess: true, ItemID: ItemID });
-    }
-
-    private onError = () => {
-        // this.setState({ modalTitle: 'Error', modalText: ActionStatus.Error, showHideModal: true, loading: false, isSuccess: false, ItemID: 0 ,showHideModalConfirm:false});
-    }
+    // this function is used to close popup
     private handleClose = ()=>{
         this.setState({loading:false,showHideModal : false,message:'',Homeredirect: true})
     }
+
    public render() {
     if(!this.state.isPageAccessable){
         let url = `https://synergycomcom.sharepoint.com/sites/Billing.Timesheet/SitePages/AccessDenied.aspx?`
-        // return (<Navigate to={url} />);
         window.location.href = url
     }
     if (this.state.Homeredirect) {
@@ -548,9 +490,6 @@ else {
                                                         </div>
                                                     </div>
                                             </div>
-
- 
-
                                                 {/* Notifers */}
                                                 {/* <div className="col-md-3">
                                                     <div className="light-text">
@@ -572,35 +511,6 @@ else {
                                                     </div>
                                                 </div> */}
                                                 {/* Notifiers */}
-
-                                                {/* ///////////// */}
-                                                    {/* <div className="col-md-3">
-                                                        <div className="light-text">
-                                                            <label>Week Start Day<span className="mandatoryhastrick">*</span></label>
-                                                            <select className="form-control"  name="weekStartDay" title="WeekStartDay" id='WeekStartDay' ref={this.WeekStartDay} onChange={this.handleChangeEvents} value={this.state.weekStartDay}>
-                                                                <option value='Monday'>Monday</option>
-                                                                <option value='Tuesday'>Tuesday</option>
-                                                                <option value='Wednessday'>Wednessday</option>
-                                                                <option value='Thursday'>Thursday</option>
-                                                                <option value='Friday'>Friday</option>
-                                                                <option value='Saturday'>Saturday</option>
-                                                                <option value='Sunday'>Sunday</option>
-                                                            </select>
-                                                        </div>
-                                                    </div>
-
-                                                    <div className="col-md-3">
-                                                        <div className="light-text">
-                                                            <label>Is Description Mandatory<span className="mandatoryhastrick">*</span></label>
-                                                            <select className="form-control"  name="MandatoryDescription" title="MandatoryDescription" id='MandatoryDescription' ref={this.MandatoryDescription} onChange={this.handleChangeEvents} value={this.state.MandatoryDescription}>
-                                                                <option value='No'>No</option>
-                                                                <option value='Yes'>Yes</option>
-                                                            </select>
-                                                        </div>
-                                                    </div> */}
-                                                    {/* /////// */}
-                                                 
-
                                                     <div className="col-md-3">
                                                         <div className="light-text">
                                                             <label>Week Start Day</label>
@@ -653,21 +563,6 @@ else {
                                                         </div>
                                                     </div>
                                                 </div> */}
-                                                {/* /////////////// */}
-                                                {/* <div className="col-md-3">
-                                                        <div className="light-text">
-                                                            <label>Week Start Day<span className="mandatoryhastrick">*</span></label>
-                                                            <select className="form-control"  name="weekStartDay" title="WeekStartDay" id='WeekStartDay' ref={this.WeekStartDay} onChange={this.handleChangeEvents} value={this.state.weekStartDay}>
-                                                                <option value='Monday'>Monday</option>
-                                                                <option value='Tuesday'>Tuesday</option>
-                                                                <option value='Wednessday'>Wednessday</option>
-                                                                <option value='Thursday'>Thursday</option>
-                                                                <option value='Friday'>Friday</option>
-                                                                <option value='Saturday'>Saturday</option>
-                                                                <option value='Sunday'>Sunday</option>
-                                                            </select>
-                                                        </div>
-                                                    </div> */}
                                                     <div className="col-md-3">
                                                         <div className="light-text">
                                                             <label>Is Project Code Mandatory</label>
@@ -677,56 +572,6 @@ else {
                                                             </select>
                                                         </div>
                                                     </div>
-                                                    {/* ------------ Description ------------- */}
-                                                    {/* <div className="col-md-3">
-                                                        <div className="light-text">
-                                                            <label>Is Description Mandatory</label>
-                                                            <select className="form-control"  name="MandatoryDescription" title="MandatoryDescription" id='MandatoryDescription' ref={this.MandatoryDescription} onChange={this.handleChangeEvents} value={this.state.MandatoryDescription}>
-                                                                <option value='No'>No</option>
-                                                                <option value='Yes'>Yes</option>
-                                                            </select>
-                                                        </div>
-                                                    </div> */}
-                                                    {/* -------------Description end------------- */}
-                                                {/* <div className="col-md-3">
-                                                    <div className="light-text">
-                                                        <label>Reviewer <span className="mandatoryhastrick">*</span></label>
-                                                        <div className="custom-peoplepicker" id="divReviewer">
-                                                                <PeoplePicker
-                                                                    context={this.props.context}
-                                                                    titleText=""
-                                                                    personSelectionLimit={10}
-                                                                    showtooltip={false}
-                                                                    disabled={false}
-                                                                    defaultSelectedUsers = {this.state.ReviewerEmail}
-                                                                    onChange={(e) => this._getPeoplePickerItems(e, 'ReviewerId')}    
-                                                                    ensureUser={true}
-                                                                    required={true}        
-                                                                    principalTypes={[PrincipalType.User]} placeholder=""
-                                                                    resolveDelay={1000} peoplePickerCntrlclassName={"input-peoplePicker-custom"} />
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                <div className="col-md-3">
-                                                    <div className="light-text">
-                                                        <label>Notifier <span className="mandatoryhastrick">*</span></label>
-                                                        <div className="custom-peoplepicker" id="divNotifier">
-                                                                <PeoplePicker
-                                                                    context={this.props.context}
-                                                                    titleText=""
-                                                                    personSelectionLimit={10}
-                                                                    showtooltip={false}
-                                                                    disabled={false}
-                                                                    defaultSelectedUsers = {this.state.NotifierEmail}
-                                                                    onChange={(e) => this._getPeoplePickerItems(e, 'NotifierId')}    
-                                                                    ensureUser={true}
-                                                                    required={true}        
-                                                                    principalTypes={[PrincipalType.User]} placeholder=""
-                                                                    resolveDelay={1000} peoplePickerCntrlclassName={"input-peoplePicker-custom"} />
-                                                        </div>
-                                                    </div>
-                                                </div> */}
-                                                {/* ////////////// */}
                                             <div className="col-md-3">
                                                     <div className="light-text" id='chkIsActive'>
                                                         <InputCheckBox
@@ -748,15 +593,11 @@ else {
                                     <span className='text-validator'> {this.state.errorMessage}</span>
                                 </div>
                                 <div className="row mx-1" id="">
-                                                <div className="col-sm-12 text-center my-2" id="">
-                                                    <button type="button" className="SubmitButtons btn" onClick={this.handleSubmit}>Submit</button>
-                                                    <button type="button" className="CancelButtons btn" onClick={this.handleCancel}>Cancel</button>
-                                                </div>
+                                    <div className="col-sm-12 text-center my-2" id="">
+                                        <button type="button" className="SubmitButtons btn" onClick={this.handleSubmit}>Submit</button>
+                                        <button type="button" className="CancelButtons btn" onClick={this.handleCancel}>Cancel</button>
+                                    </div>
                                 </div>
-
-
-                             
-
                             </div>
                         </div>
                     </div>

@@ -59,9 +59,8 @@ class EmployeeMasterView extends React.Component<EmployeeMasterViewProps, Employ
             }
         }
     }
-
+// this function is used to get all records of  both active and inactive employees from employee master list
     private EmployeeMasterData = async () => {
-        const userId = this.props.spContext.userId;
         var selectQuery = "Employee/Title,ReportingManager/Title,Approvers/Title,Reviewers/Title,Notifiers/Title,*";
         var expandQuery = "Employee,ReportingManager,Approvers,Reviewers,Notifiers";
         sp.web.lists.getByTitle('EmployeeMaster').items.top(2000).expand(expandQuery).select(selectQuery).orderBy('Modified', false).get()
@@ -75,13 +74,11 @@ class EmployeeMasterView extends React.Component<EmployeeMasterViewProps, Employ
                             ReportingManagerString+= "<div>"+user.Title+"</div>"
                         }
                     }
-                    // ReportingManagerString = ReportingManagerString.substring(0, ReportingManagerString.lastIndexOf(","));
                     if(d.Reviewers.length>0){
                         for(let user of d.Reviewers){
                             ReviewersString+= "<div>"+user.Title+"</div>"
                         }
                     }
-                    // ReviewersString = ReviewersString.substring(0, ReviewersString.lastIndexOf(","));
                     // --------------Notifiers-----------
                     // if(d.Notifiers.length>0){
                     //     for(let user of d.Notifiers){
@@ -95,27 +92,20 @@ class EmployeeMasterView extends React.Component<EmployeeMasterViewProps, Employ
                     Data.push({
                         Id : d.Id,
                         Employee : d.Employee.Title,
-                        // ReportingManager:d.ReportingManager.Title,
                         Company : d.ClientName,
                         ReportingManager: ReportingManagerString,
                         Reviewers:ReviewersString,
-                        // Notifiers:NotifiersString,
                         Doj : `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`,
                         IsActive: d.IsActive
                     })
                 }
                 console.log(Data);
                 this.setState({ Details: Data,loading: false});
-                // setTimeout(() => {
-                //     this.setState({ loading: false });
-                //       }, 1500);
                 // document.getElementById('txtTableSearch').style.display = 'none';
-                // this.setState({ loading: false });
             }).catch(err => {
                 console.log('Failed to fetch data.', err);
             });
     }
-
 
     public render() {
         const columns = [
@@ -139,20 +129,17 @@ class EmployeeMasterView extends React.Component<EmployeeMasterViewProps, Employ
             {
                 name: "Employee",
                 selector: (row, i) => row.Employee,
-                // width: '150px',
                 sortable: true
             },
             {
                 name: "Manager",
                 selector: (row, i) => row.ReportingManager,
-                // width: '250px',
                 cell: row => <div dangerouslySetInnerHTML={{ __html: row.ReportingManager }} />,
                 sortable: true
             },
             {
                 name: "Client",
                 selector: (row, i) => row.Company,
-                // width: '150px',
                 sortable: true
             },
             // {
@@ -166,7 +153,6 @@ class EmployeeMasterView extends React.Component<EmployeeMasterViewProps, Employ
                 selector: (row, i) => row.Reviewers,
                 sortable: true,
                 cell: row => <div dangerouslySetInnerHTML={{ __html: row.Reviewers }} />
-                // width: '250px'
             },
             // { ------Notifiers--------
             //     name: "Notifiers",

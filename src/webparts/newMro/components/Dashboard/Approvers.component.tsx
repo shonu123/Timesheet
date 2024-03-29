@@ -20,7 +20,6 @@ export interface ApproversProps {
 }
 
 export interface ApproversState {
-    // Approvers: Array<Object>;
     ReportingManager: Array<Object>;
     loading:boolean;
     message : string;
@@ -31,9 +30,6 @@ export interface ApproversState {
     Action : string;
     errorMessage: string;
     ItemID : Number
-    // pageNumber:number;
-    // sortBy:number;
-    // sortOrder:boolean;
 }
 
 class ApproversApprovals extends React.Component<ApproversProps, ApproversState> {
@@ -46,10 +42,9 @@ class ApproversApprovals extends React.Component<ApproversProps, ApproversState>
     }
 
     public componentDidMount() {
-        //console.log(this.props);
         this.ReportingManagerApproval();
     }
-
+// this function is used to get 1 month records of weeklytime data of the employees who's manager is current logged in user from weeklytimesheet list
     private ReportingManagerApproval = async () => {
         this.setState({ loading: true });
         const userId = this.props.spContext.userId;
@@ -80,14 +75,10 @@ class ApproversApprovals extends React.Component<ApproversProps, ApproversState>
                 }
                 console.log(Data);
                 this.setState({ ReportingManager: Data,loading: false });
-                // setTimeout(() => {
-                //     this.setState({ loading: false });
-                //       }, 1000);
             }).catch(err => {
                 console.log('Failed to fetch data.', err);
             });
     }
-
 
     public render() {
         const columns = [
@@ -121,23 +112,18 @@ class ApproversApprovals extends React.Component<ApproversProps, ApproversState>
             },
             {
                 name: "Pending With",
-                //selector: 'VendorName',
                 selector: (row, i) => row.PendingWith,
-                // width: '180px',
                 sortable: true
-
             },
             {
                 name: "Status",
                 selector: (row, i) => row.Status,
                 sortable: true
-
             },
             {
                 name: "Billable",
                 selector: (row, i) => row.BillableTotalHrs,
                 sortable: true,
-                // width: '135px'
             },
             {
                 name: "OT",
@@ -149,7 +135,6 @@ class ApproversApprovals extends React.Component<ApproversProps, ApproversState>
                 name: "Non-Billable",
                 selector: (row, i) => row.NonBillableTotalHrs,
                 sortable: true,
-                // width: '200px'
             },
             {
                 name: "Total",
@@ -159,11 +144,8 @@ class ApproversApprovals extends React.Component<ApproversProps, ApproversState>
         ];
         return (
             <React.Fragment>
-            {/* <h1>Approver Screen</h1> */}
             <div>
                 <div className='table-head-1st-td'>
-                    {/* <TableGenerator columns={columns} data={this.state.ReportingManager} fileName={'My Approvals'} showExportExcel={false} searchBoxLeft={true} showAddButton={false}></TableGenerator> */}
-
                     <TableGenerator columns={columns} data={this.state.ReportingManager} fileName={'My Approvals'} showExportExcel={false}
                     showAddButton={false} customBtnClass='' btnDivID='' navigateOnBtnClick='' btnSpanID='newEmployeeMasterForm' btnCaption='' btnTitle='' searchBoxLeft={true}></TableGenerator>
                 </div>
@@ -173,5 +155,4 @@ class ApproversApprovals extends React.Component<ApproversProps, ApproversState>
         );
     }
 }
-
 export default ApproversApprovals

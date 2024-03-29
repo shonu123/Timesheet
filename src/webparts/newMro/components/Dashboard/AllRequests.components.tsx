@@ -2,10 +2,8 @@ import * as React from 'react';
 import { NavLink } from 'react-router-dom';
 import TableGenerator from '../Shared/TableGenerator';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faXmark, faEdit, faCheck,faPlus, faEye } from '@fortawesome/free-solid-svg-icons';
+import { faPlus, faEye } from '@fortawesome/free-solid-svg-icons';
 import { SPHttpClient} from '@microsoft/sp-http';
-import ModalApprovePopUp from '../Shared/ModalApprovePopUp';
-import { WebPartContext } from '@microsoft/sp-webpart-base';
 import { sp } from '@pnp/sp';
 import "@pnp/sp/webs";
 import "@pnp/sp/lists";
@@ -18,9 +16,7 @@ export interface AllRequestsProps {
     context: any;
     history: any;
 }
-
 export interface AllRequestsState {
-    // Approvers: Array<Object>;
     AllRequests: Array<Object>;
     loading:boolean;
     message : string;
@@ -32,9 +28,6 @@ export interface AllRequestsState {
     errorMessage: string;
     ItemID : Number;
     ExportExcelData:any;
-    // pageNumber:number;
-    // sortBy:number;
-    // sortOrder:boolean;
 }
 
 class AllRequests extends React.Component<AllRequestsProps,AllRequestsState> {
@@ -47,20 +40,16 @@ class AllRequests extends React.Component<AllRequestsProps,AllRequestsState> {
     }
 
     public componentDidMount() {
-        //console.log(this.props);
         this.setState({ loading: true });
         this.AllRequests();
     }
-
+// this function is used to get 1 month records of weeklytime data of all employees from weeklytimesheet list
     private AllRequests = async () => {
         const userId = this.props.spContext.userId;
         let dateFilter = new Date()
         dateFilter.setDate(new Date().getDate()-31);
         let date = `${dateFilter.getMonth() + 1}/${dateFilter.getDate()}/${dateFilter.getFullYear()}`
-        // var filterString = "Approvers/Id eq '"+userId+"' and PendingWith eq 'Approver' and Status eq '"+StatusType.Submit+"'"
         var filterString = "WeekStartDate ge '"+date+"'"
-
-
         sp.web.lists.getByTitle('WeeklyTimeSheet').items.top(5000).filter(filterString).expand("ReportingManager").select('ReportingManager/Title','*').orderBy('WeekStartDate,DateSubmitted', false).getAll()
             .then((response) => {
                 console.log(response)
@@ -112,15 +101,10 @@ class AllRequests extends React.Component<AllRequestsProps,AllRequestsState> {
                 }
                 console.log(Data);
                 this.setState({ AllRequests: Data,ExportExcelData:ExcelData,loading: false });
-                // setTimeout(() => {
-                //     this.setState({ loading: false });
-                //       }, 1000);
             }).catch(err => {
                 console.log('Failed to fetch data.', err);
             });
     }
-
-
     public render() {
         const columns = [
             {
@@ -149,39 +133,33 @@ class AllRequests extends React.Component<AllRequestsProps,AllRequestsState> {
             {
                 name: "Employee Name",
                 selector: (row, i) => row.EmployeName,
-                // width: '250px',
                 sortable: true
             },
             {
                 name: "Client",
                 selector: (row, i) => row.Client,
-                // width: '120px',
                 sortable: true
             },
             {
                 name: "Reporting Manager",
                 selector: (row, i) => row.RM,
-                // width: '250px',
                 cell: row => <div dangerouslySetInnerHTML={{ __html: row.RM }} />,
                 sortable: true
             },
             {
                 name: "Status",
                 selector: (row, i) => row.Status,
-                // width: '250px',
                 sortable: true
             },
             {
                 name: "Pending With",
                 selector: (row, i) => row.PendingWith,
-                // width: '140px',
                 sortable: true
             },
             {
                 name: "Billable",
                 selector: (row, i) => row.BillableHours,
                 sortable: true,
-                // width: '160px'
             },
             {
                 name: "OT",
@@ -193,13 +171,11 @@ class AllRequests extends React.Component<AllRequestsProps,AllRequestsState> {
                 name: "Total Billable",
                 selector: (row, i) => row.TotalBillableHrs,
                 sortable: true,
-                // width: '170px'
             },
             {
                 name: "Non-Billable",
                 selector: (row, i) => row.NonBillableTotalHrs,
                 sortable: true,
-                // width: '185px'
             },
             {
                 name: "Total",
@@ -218,13 +194,11 @@ class AllRequests extends React.Component<AllRequestsProps,AllRequestsState> {
             {
                 name: "Employee Name",
                 selector: "EmployeName",
-                // width: '250px',
                 sortable: true
             },
             {
                 name: "Client",
                 selector: "Client",
-                // width: '120px',
                 sortable: true
             },
             {
@@ -272,13 +246,7 @@ class AllRequests extends React.Component<AllRequestsProps,AllRequestsState> {
         ];
         return (
             <React.Fragment>
-            {/* <h1>Approver Screen</h1> */}
             <div className="">
-                {/* <div style={{ paddingLeft: '10px' }} className="px-1 text-right" id='divNewWeeklyTimeSheet'>
-                    <NavLink title="New Weekly Timesheet"  className="csrLink ms-draggable" to={`/WeeklyTimesheet`}>
-                        <span className='SubmitButtons' id='newWeeklyTimeSheet'><FontAwesomeIcon icon={faPlus}></FontAwesomeIcon> New</span>
-                    </NavLink>
-                </div> */}
                 <div className="mx-2"><div className="text-right pt-2"><button type="button" id="btnSubmit" className="SubmitButtons btn"><NavLink title="New Weekly Timesheet"  className="csrLink ms-draggable" to={`/WeeklyTimesheet`}>
                         <span className='' id='WeeklyTimeSheet'><FontAwesomeIcon icon={faPlus}></FontAwesomeIcon> New</span>
                     </NavLink>
@@ -292,5 +260,4 @@ class AllRequests extends React.Component<AllRequestsProps,AllRequestsState> {
         );
     }
 }
-
 export default AllRequests

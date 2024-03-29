@@ -1,13 +1,6 @@
 import * as React from 'react';
-// import Myapprovals from './Myapprovals.component';
-import Myrequests from './Myrequests.component';
 import ReviewerApprovals from './Reviewers.component'
-import Pending from '../Masters/EmployeeMasterView.component';
-// import PurchasingManager from './PurchasingManager.component';
-import Approved from './Approvers.component';
-import Exported from './Exported.component';
 import { SPHttpClient} from '@microsoft/sp-http';
-import { WebPartContext } from '@microsoft/sp-webpart-base';
 import { sp } from '@pnp/sp';
 import {highlightCurrentNav} from '../../Utilities/HighlightCurrentComponent';
 import "../Shared/Menuhandler";
@@ -15,11 +8,10 @@ import "@pnp/sp/site-users/web";
 import ApproversApprovals from './Approvers.component';
 import MyRequests from './Myrequests.component';
 import AllRequests from './AllRequests.components';
-import EmployeeMasterForm from '../Masters/EmployeeMasterForm.component';
-import EmployeeMasterView from '../Masters/EmployeeMasterView.component';
 import Loader from '../Shared/Loader';
 import customToaster from '../Shared/Toaster.component';
 import { StatusType, ToasterTypes } from '../../Constants/Constants';
+
 export interface DashboardProps {
     match: any;
     spContext: any;
@@ -30,18 +22,10 @@ export interface DashboardProps {
 
 export interface DashboardState {
     showReviewerComp: boolean;
-    // showRequestComp: boolean;
-    // showPurchasing: boolean;
-    // showApproved: boolean;
     showExported: boolean;
     CurrentuserId: number;
-    // PurchasingManager: boolean;
-    // purchasingDeptMember : boolean;
-    // isMROAdmin:boolean;
-    // showPending:boolean;
     activeElementClass:string;
     userRole: string;
-    // tempUserRole: string;
     showApproveComp : boolean;
     showMyRequestsComp : boolean;
     isInitiator:boolean;
@@ -64,18 +48,10 @@ class Dashboard extends React.Component<DashboardProps, DashboardState> {
         this.state = {
             showApproveComp : false,
             showReviewerComp: false,
-            // showRequestComp: true,
             CurrentuserId: this.props.context.pageContext.legacyPageContext["userId"],
-            // PurchasingManager: false,
-            // showPurchasing: false,
-            // showApproved: false,
             showExported: false,
-            // purchasingDeptMember : false,
-            // isMROAdmin:false,
-            // showPending:false,
             activeElementClass:"nav-link",
             userRole:'',
-            // tempUserRole : 'Approver',
             showMyRequestsComp : false,
             isInitiator:false,
             isApprover: false,
@@ -89,8 +65,6 @@ class Dashboard extends React.Component<DashboardProps, DashboardState> {
         };
     }
     public componentDidMount() {
-        // this.getUserGroups();
-        // this.setState({ loading: true });
         this.setState({ loading: true });
         this.getUserGroups();
         if(!["",undefined,null].includes(this.props.match.params.message)){
@@ -116,15 +90,11 @@ class Dashboard extends React.Component<DashboardProps, DashboardState> {
                             break;
                     }
                 },0)
-                    // status == StatusType.Submit?customToaster('toster-success',ToasterTypes.Success,'Weekly timesheet'+StatusType.Submit+ 'succesfully',2000):status == StatusType.Approved?customToaster('toster-success',ToasterTypes.Success,'Weekly timesheet'+StatusType.Approved+ 'succesfully',2000):customToaster('toster-success',ToasterTypes.Success,'Weekly timesheet'+StatusType.Reject+ 'succesfully',2000)}, 0);
             }
         }
-        // this.getUserGroups();
     }
-
+// this function is used to fetch the current logged in user groups
     private getUserGroups = async () => {
-        let qryReviewedTO = '';
-        let qeyPurTeam ='';
         let groups = await sp.web.currentUser.groups();
         console.log("current user deatils")
         console.log(this.props.context.pageContext)
@@ -133,26 +103,6 @@ class Dashboard extends React.Component<DashboardProps, DashboardState> {
         for(let grp of groups){
             userGroup.push(grp.Title)
         }
-     
-        // let user = userGroup=='Timesheet Initiators' ?'Initiator': userGroup=='Timesheet Approvers'?'Approver':userGroup=='Timesheet Reviewers'?'Reviewer':'Administrator'
-        // console.log('You are :'+user)
-        // this.setState({userRole : user})
-        // if(user=="Initiator"){
-        //     this.setState({isInitiator : true});
-        //     this.onHandleClick('MyRequests')
-        // }
-        // else if(user=='Approver'){
-        //     this.setState({isApprover : true});
-        //     // this.onHandleClick('MyRequests')
-        //     this.onHandleClick('Approvers')
-        // }
-        // else if(user=='Reviewer'){
-        //     this.setState({isReviewer : true});
-        //     this.onHandleClick('Reviewers')
-        // }
-        // else if(user=='Administrator'){
-        //     this.setState({isAdmin : true}) 
-        // }
         if(userGroup.includes('Timesheet Initiators')){
             this.setState({ showRequestTab: true});
             this.onHandleClick('MyRequests')
@@ -178,73 +128,22 @@ class Dashboard extends React.Component<DashboardProps, DashboardState> {
             this.setState({ showAllRequestsTab: true});
             this.onHandleClick('AllRequests')
         }
-        // this.setState({loading:false})
+        this.setState({loading:false})
     }
 
-
-
-
-
-
-
-    private updatethetabs=()=> {
-        let prvData = localStorage.getItem('PrvData');
-        let lsMyrequests = {'PageNumber':1,"sortOrder":true,"sortBy":1,'tab':'','SearchKey':null};
-       if(prvData!= null && JSON.parse(prvData).tab !="" && JSON.parse(prvData).tab !=undefined) this.onHandleClick(JSON.parse(prvData).tab);
-       else  localStorage.setItem('PrvData', JSON.stringify(lsMyrequests));
-    }
-    
-
-    // private getUserGroups = async () => {
-    //     let qryReviewedTO = '';
-    //     let qeyPurTeam ='';
-    //     let groups = await sp.web.currentUser.groups();
-    //     let mroGroups=groups.filter(c=>c.Title.includes('MRO'));
-    //     mroGroups.forEach(grp=>{
-    //         qryReviewedTO += ' or ReviewerId eq ' + grp.Id;
-    //     });
-    //     mroGroups.forEach(grp=>{
-    //         qeyPurTeam += ' or PurchasingTeamId eq ' + grp.Id;
-    //     });
-    //     this.GetMasterListData(qryReviewedTO,groups,qeyPurTeam);
-    //     this.updatethetabs();
-    // }
-    // private async GetMasterListData(qryReviewedTO,groups,qeyPurTeam) {
-    //     let ApprovalsMatrix: any = await sp.web.lists.getByTitle('ApprovalsMatrix').items.filter("IsActive eq 1 and (ReviewerId eq " + this.state.CurrentuserId + qryReviewedTO +")").select('*').get();
-    //     let PurTeammember: any = await sp.web.lists.getByTitle('ApprovalsMatrix').items.filter("IsActive eq 1 and (PurchasingTeamId eq " + this.state.CurrentuserId + qeyPurTeam +")").select('*').get();
-    //     //let groupsInfo = groups.filter((item) => item.Title == "MRO Purchasing Team");
-    //     const adminGrp = groups.filter((item) => item.Title == "MRO Admin");
-    //     if (ApprovalsMatrix.length > 0) {
-    //         this.setState({ PurchasingManager: true });
-    //     } if (PurTeammember.length > 0) {
-    //         this.setState({ purchasingDeptMember: true });        }  
-    //     if (adminGrp.length > 0) {
-    //         this.setState({ isMROAdmin: true });
-    //     }
-    // }
-    public checkUserInPurchasingGroup = async () => {
-        let groups = await sp.web.currentUser.groups();
-
-        const groupInfo = groups.filter((item) => item.Title == "MRO Purchasing Team");
-      
-    }
     private onMenuItemClick(event) {
         let item = document.getElementById('sideMenuNav');
         item.classList.toggle('menu-hide');
     }
+    //This function is used to display Tabs in Dasboard. Tabs are shown according to user groups
     private onHandleClick = (url) => {
-        //remove active class for all hyperlinks
         const activeLinkClass="nav-link active";
         let items = document.querySelectorAll('.nav-link');
-
-        // Using forEach loop
         items.forEach(function(item) {
         item.classList.remove('active');
         });
 
         let itemsPane = document.querySelectorAll('.tab-pane');
-
-        // Using forEach loop
         itemsPane.forEach(function(item) {
         item.classList.remove('active');
         item.classList.remove('show');
@@ -291,11 +190,6 @@ class Dashboard extends React.Component<DashboardProps, DashboardState> {
         }
         
         this.setState({ showReviewerComp: showReviewerComp, showApproveComp: showApproveComp, showMyRequestsComp: showMyRequestsComp, showExported: showExported,isAdmin:isAdmin});
-        // let lsMyrequests = {'PageNumber':1,"sortOrder":true,"sortBy":1,'tab':'','SearchKey':null};
-        // if(url!= undefined) {setTimeout(() => {
-        //     localStorage.setItem('PrvData', JSON.stringify(lsMyrequests));
-        //   }, 1000);
-        //  } 
     }
     public render() {
         return (
@@ -316,12 +210,6 @@ class Dashboard extends React.Component<DashboardProps, DashboardState> {
                 <div id="content" className="content p-2 pt-2">
                 <div className="container-fluid">
                     <div className='FormContent'>
-                        {/* <div className='title'>Dashboard
-                        </div> */}
-
-                        {/* <div className="after-title"></div>
-                        <h1>Welcome {this.state.userRole}</h1> */}
-                        {/* <App {...this.props}></App> */}
                         <div className="p-1">
                             <div className="border-box-shadow light-box m-2">
                                 <ul className="nav nav-tabs nav-fill" id="myTab" role="tablist">
@@ -361,7 +249,6 @@ class Dashboard extends React.Component<DashboardProps, DashboardState> {
                                     </div>
                                     <div className="" id="AdminRequests" role="tabpanel" aria-labelledby="AdminRequests-tab">
                                         <div className="border-box-shadow light-box table-responsive dataTables_wrapper-overflow p-2">
-                                            {/* {this.state.isAdmin && <EmployeeMasterForm {...this.props} />}  */}
                                             {this.state.isAdmin && <AllRequests {...this.props} />}
                                         </div>
                                     </div>
@@ -375,10 +262,8 @@ class Dashboard extends React.Component<DashboardProps, DashboardState> {
             </div>
         {this.state.loading && <Loader />}
                 </React.Fragment>
-
         );
            
     }
 }
-
 export default Dashboard;

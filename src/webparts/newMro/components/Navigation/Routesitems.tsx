@@ -75,10 +75,15 @@ class Routesitems extends Component<RoutesProps, RoutesState> {
             let params =useParams();
             return <Clients {...this.context}{...this.props}  {...{...props, match: {params}} } />
           }
+          const WrapperDashboard = (props) => {
+            let params =useParams();
+            return <Dashboard {...this.context}{...this.props}  {...{...props, match: {params}} } />
+          }
         return (
             <Suspense fallback={<div></div>}>
                 <Routes>
-                    <Route path='/' element={<Dashboard {...this.context}{...this.props}  />} />
+                    {/* <Route path='/' element={<Dashboard {...this.context}{...this.props}  />} />WrapperDashboard */}
+                    <Route path='/:message?' element={<WrapperDashboard/>} />
                    <Route path='/WeeklyTimesheet/:id?' element ={<WrapperWeeklyTimesheet/>} />
                    <Route path='/EmployeeMasterForm/:id?' element ={<WrapperEmployeeMasterForm/>} />
                    <Route path='/EmployeeMasterView/:message?' element ={<WrapperMasterView/>} />
@@ -86,11 +91,10 @@ class Routesitems extends Component<RoutesProps, RoutesState> {
                    <Route path='/ClientMaster/:id?' element ={<WrapperClientMaster/>} />
                     <Route path='/purchaserequest/:id?' element={<Wrapper />} />
                     <Route path='/requisitionreport' element={(matchprops) => <RequisitionReport {...matchprops}{...this.props} />} />
-                    <Route path='/Dashboard/:message?' element={<Dashboard {...this.context} {...this.props} />} />
-                    {/* <Route path='/vendor/:id?' element={<Vendor {...this.context}{...this.props} />} /> */}
+                    {/* <Route path='/Dashboard/:message?' element={<Dashboard {...this.context} {...this.props} />} /> */}
+                    <Route path='/Dashboard/:message?' element={<WrapperDashboard/>} />
                     <Route path='/purchaserequestlist' element={<Purchaserequestlist {...this.context} {...this.props} />} />
                     <Route path='/myrequests' element={<Myrequests {...this.context}{...this.props} />} />
-                   
                     {this.renderProtectedRoutes()}
                 </Routes>
             </Suspense>

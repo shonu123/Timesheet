@@ -35,16 +35,12 @@ export interface ReviewerApprovalsState {
     errorMessage: string;
     ItemID : Number;
     siteURL : string;
-    redirect:boolean;
     modalTitle:string;
     modalText:string;
     successPopUp:boolean;
     ModalHeader: string;
     IsClientApprovalNeed:boolean;
     ExportExcelData:any;
-    // pageNumber:number;
-    // sortBy:number;
-    // sortOrder:boolean;
 }
 
 class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, ReviewerApprovalsState> {
@@ -53,14 +49,13 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
         sp.setup({
             spfxContext: this.props.context
         });
-        this.state = {Reviewers: [], loading:false,message:'',title:'',showHideModal:false,isSuccess:false,comments:'',Action:'',errorMessage:'',ItemID:0,siteURL : this.props.spContext.webAbsoluteUrl,redirect:false,modalTitle:'',modalText:'',successPopUp:false,ModalHeader:'modal-header-Approve',IsClientApprovalNeed:false,ExportExcelData:[]};
+        this.state = {Reviewers: [], loading:false,message:'',title:'',showHideModal:false,isSuccess:false,comments:'',Action:'',errorMessage:'',ItemID:0,siteURL : this.props.spContext.webAbsoluteUrl,modalTitle:'',modalText:'',successPopUp:false,ModalHeader:'modal-header-Approve',IsClientApprovalNeed:false,ExportExcelData:[]};
     }
 
     public componentDidMount() {
-        //console.log(this.props);
         this.ReviewerApproval();
     }
-
+// this function is used to get 1 month records of weeklytime data of the employees who's Reviewer is current logged in user from weeklytimesheet list
     private ReviewerApproval = async () => {
         this.setState({ loading: true });
         const userId = this.props.spContext.userId;
@@ -94,40 +89,28 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
                 this.setState({ExportExcelData:Data})
                 console.log(Data);
                 this.setState({ Reviewers: Data,loading: false});
-                // setTimeout(() => {
-                //     this.setState({ loading: false });
-                //       }, 500);
             }).catch(err => {
                 console.log('Failed to fetch data.', err);
             });
     }
 
+    //this function is used to send Email
     private sendemail(emaildetails,modalTitle,modalText){
         sp.utility.sendEmail({
-            //Body of Email  
             Body: emaildetails.body,  
-            //Subject of Email  
-            From: this.props.spContext.userEmail,
             Subject: emaildetails.subject,  
-            //Array of string for To of Email  
             To: emaildetails.toemail,  
             CC: emaildetails.ccemail
           }).then((i) => {  
-            // alert("Record Updated Sucessfully");
             this.setState({showHideModal : false,ItemID:0,message:'',title:'',Action:'',loading: false,successPopUp:false,modalTitle:modalTitle});
-            // toast.success('Timesheet rejcted succesfully')
             customToaster('toster-success',ToasterTypes.Success,'Timesheet rejcted succesfully',2000)
-            // this.setState({redirect : true});
-            // <Navigate to={'/'} />
           }).catch((i) => {
-            // alert("Error while updating the record");
-            this.setState({showHideModal : false,ItemID:0,message:'',title:'',Action:'',loading: false,successPopUp:false,modalTitle:'Email sending failed',modalText:'Something went wrong please try again'});        // this.setState({redirect : true});
-            // toast.error('Sorry! something went wrong please try again')
+            this.setState({showHideModal : false,ItemID:0,message:'',title:'',Action:'',loading: false,successPopUp:false,modalTitle:'Email sending failed',modalText:'Something went wrong please try again'}); 
             customToaster('toster-error',ToasterTypes.Error,'Sorry! something went wrong',4000)
             console.log(i)
           });  
     }
-    
+    // this function is used to prepare Email body in table formate
     private emailBodyPreparation(redirectURL, tableContent, bodyString, userName,DashboardURL) {
         var emailLink = "Please <a href=" + redirectURL + ">click here</a> to review the details or go to <a href="+ DashboardURL+">Dashboard</a>.";
         var emailBody = '<table id="email-container" border="0" cellpadding="0" cellspacing="0" style="margin: 0; padding: 0; text-align: left;""width="600px"">' +
@@ -147,8 +130,8 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
         return emailBody;
     }
 
+    // this function is used to update the weekly time sheet when Reviewer Approves/Rejects
     private  updateStatus = async (recordId,Status,Comments,To,CC,tableContent) =>{
-
         let clinetApproval = this.state.IsClientApprovalNeed
         let postObject = {
             Status : Status,
@@ -160,8 +143,6 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
         console.log(postObject);
         this.setState({comments  :''})
         sp.web.lists.getByTitle('WeeklyTimeSheet').items.getById(recordId).update(postObject).then((res) => {
-            // alert("Record Updated Sucessfully");
-            // this.setState({showHideModal : false,ItemID:0,message:'',title:'',Action:'',loading: false});
             let sub=''; 
             if(Status==StatusType.Approved){
                 sub = "Weekly Time Sheet has been approved by Reviewer"
@@ -179,11 +160,9 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
              this.sendemail(emaildetails,'Success','Record approved successfully')
             else
             this.sendemail(emaildetails,'Success','Record rejected successfully')
-            // <Navigate to={'/'} />
-            // this.setState({redirect:true})
         });
     }
-
+// This function is used to bind comments to comments input feild
     private handleComments = async (e) =>{
        let value = e.target.type == 'checkbox' ? e.target.checked : e.target.value;
        console.log(value);
@@ -194,7 +173,7 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
         this.setState({IsClientApprovalNeed : value})
 
     }
-
+// this function is used to get current records data and then update the status of the time sheet to Approved
     private handleApprove = async (e) => {
         
         let recordId = this.state.ItemID;
@@ -243,6 +222,7 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
         this.updateStatus(recordId,StatusType.Approved,commentsObj,toEmail,ccEmail,tableContent)
     }
 
+// this function is used to get current records data and then update the status of the time sheet to Reject
     private handleReject= async (e) =>{
 
         let recordId = this.state.ItemID;
@@ -298,15 +278,16 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
             this.updateStatus(recordId,'Rejected by Synergy',commentsObj,toEmail,ccEmail,tableContent)
         }
     }
+    //This function is used to close popup
     private handlefullClose = () => {
         this.setState({ showHideModal: false, Action :'', errorMessage : '',ItemID : 0,comments:''});
     }
-
+// this function is used to reload the data after Approve/Reject is done
     private navigateAfterAction =()=>{
         this.setState({successPopUp : false});
         this.ReviewerApproval();
     }
-
+// This function is used to Display confirm popup based on Approve/Reject
     private showPopUp = (e) =>{
         console.log(e.target.id);
         console.log(e.target.dataset);
@@ -331,6 +312,7 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
         }
     }
 
+    //this function calls handleApprove/handleReject function based on the user action
     private handleAction = (e) =>{
         this.setState({loading : true})
          //if(this.state.Action == StatusType.Approved)
@@ -340,17 +322,9 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
     }
 
     public render() {
-        if (this.state.redirect) {
-            let url = `/Dashboard`
-            // this.ReviewerApproval();
-            // return (<Navigate to={url} replace />);
-            window.location.href = 'https://synergycomcom.sharepoint.com/sites/Billing.Timesheet/SitePages/Timesheet.aspx'
-        }
-        else {
             const columns = [
                 {
                     name: "Edit",
-                    //selector: "Id",
                     selector: (row, i) => row.Id,
                     export: false,
                     cell: record => {
@@ -368,74 +342,56 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
                 },
                 {
                     name: "Date",
-                    //selector: "Plant",
                     selector: (row, i) => row.Date,
                     width: '100px',
                     sortable: true
                 },
                 {
                     name: "Employee Name",
-                    //selector: "Department",
                     selector: (row, i) => row.EmployeName,
-                    // width: '180px',
                     sortable: true
                 },
                 {
                     name: "Client",
-                    //selector: "Department",
                     selector: (row, i) => row.Company,
-                    // width: '150px',
                     sortable: true
                 },
                 {
                     name: "Pending With",
-                    //selector: 'VendorName',
                     selector: (row, i) => row.PendingWith,
-                    // width: '180px',
                     sortable: true
 
                 },
                 {
                     name: "Status",
-                    //selector: 'VendorName',
                     selector: (row, i) => row.Status,
-                    // width: '180px',
                     sortable: true
 
                 },
                 {
                     name: "Billable",
-                    //selector: "Requisitioner",
                     selector: (row, i) => row.BillableHrs,
                     sortable: true,
-                    // width: '135px'
                 },
                 {
                     name: "OT",
-                    //selector: 'Created',
                     selector: (row, i) => row.OTTotalHrs,
                     width: '130px',
                     sortable: true,
                 },
                 {
                     name: "Total Billable",
-                    //selector: "Requisitioner",
                     selector: (row, i) => row.TotalBillableHours,
                     sortable: true,
-                    // width: '175px'
                 },
                 {
                     name: "Non-Billable",
-                    //selector: "TotalAmount",
                     selector: (row, i) => row.NonBillableTotalHrs,
                     sortable: true,
-                    // width: '200px'
                 },
                 {
                     name: "Total",
-                    //selector: "Status",
                     selector: (row, i) => row.WeeklyTotalHrs,
-                    // width: '150px',
                     sortable: true
                 },
                 // {
@@ -456,7 +412,6 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
                 // },
                 {
                     name: "Reject",
-                    //selector: "Id",
                     selector: (row, i) => row.Id,
                     export: false,
                     cell: record => {
@@ -473,14 +428,14 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
             ];
             return (
                 <React.Fragment>
-                {/* <h1>Reviewer Screen</h1> */}
+                    {/* this popup is show after the approve/reject action completes */}
                 <ModalPopUp title={this.state.modalTitle} modalText={this.state.modalText} isVisible={this.state.successPopUp} onClose={this.navigateAfterAction} isSuccess={this.state.isSuccess}></ModalPopUp>
-                {/* <ModalPopUp title={this.state.modalTitle} modalText={this.state.modalText} isVisible={this.state.showHideModal} onClose={this.handlefullClose} isSuccess={this.state.isSuccess}></ModalPopUp> */}
+
+                {/* ModalApprovePopUp is a custom popup shown with Comments and to Approve or Reject the timesheet */}
                 <ModalApprovePopUp message={this.state.message} title={this.state.title} isVisible={this.state.showHideModal} isSuccess={this.state.isSuccess} onConfirm={this.handleAction} onCancel={this.handlefullClose} comments={this.handleComments} errorMessage={this.state.errorMessage} commentsValue={this.state.comments} modalHeader={this.state.ModalHeader} IsClientApprovalNeed= {this.state.IsClientApprovalNeed}></ModalApprovePopUp>
+                
                 <div>
                     <div className='table-head-1st-td'>
-                        {/* <TableGenerator columns={columns} data={this.state.Reviewers} fileName={'My Reviews'} showExportExcel={false} searchBoxLeft={true} showAddButton={false}></TableGenerator> */}
-
                         <TableGenerator columns={columns} data={this.state.Reviewers} fileName={'My Reviews'} showExportExcel={false} showAddButton={false} searchBoxLeft={true} ExportExcelCustomisedData={this.state.ExportExcelData}></TableGenerator>
                     </div>
                 </div>
@@ -488,8 +443,7 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
                 {this.state.loading && <Loader />}
                 </React.Fragment> 
             );
-        }
+        
     }
 }
-
 export default ReviewerApprovals

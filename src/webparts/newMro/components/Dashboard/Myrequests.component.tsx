@@ -9,8 +9,6 @@ import "@pnp/sp/webs";
 import "@pnp/sp/lists";
 import "@pnp/sp/items";
 import Loader from '../Shared/Loader';
-import { StatusType } from '../../Constants/Constants';
-
 export interface MyRequestsProps {
     match: any;
     spContext: any;
@@ -18,7 +16,6 @@ export interface MyRequestsProps {
     context: any;
     history: any;
 }
-
 export interface MyRequestsState {
     Requests: Array<Object>;
     loading:boolean;
@@ -30,9 +27,6 @@ export interface MyRequestsState {
     Action : string;
     errorMessage: string;
     ItemID : Number;
-    // pageNumber:number;
-    // sortBy:number;
-    // sortOrder:boolean;
 }
 
 class MyRequests extends React.Component<MyRequestsProps, MyRequestsState> {
@@ -45,10 +39,9 @@ class MyRequests extends React.Component<MyRequestsProps, MyRequestsState> {
     }
 
     public componentDidMount() {
-        //console.log(this.props);
         this.ReviewerApproval();
     }
-
+// this function is used to get 1 month records of weeklytime data of the current logged in user from weeklytimesheet list
     private ReviewerApproval = async () => {
         this.setState({ loading: true });
         const userId = this.props.spContext.userId;
@@ -80,15 +73,11 @@ class MyRequests extends React.Component<MyRequestsProps, MyRequestsState> {
                 }
                 console.log(Data);
                 this.setState({ Requests: Data,loading: false });
-                // setTimeout(() => {
-                //     this.setState({ loading: false });
-                //       }, 1000);
                 // document.getElementById('txtTableSearch').style.display = 'none';
             }).catch(err => {
                 console.log('Failed to fetch data.', err);
             });
     }
-
 
     public render() {
         const columns = [
@@ -107,43 +96,30 @@ class MyRequests extends React.Component<MyRequestsProps, MyRequestsState> {
                         </React.Fragment>
                     );
                 },
-                // width: '100px'
             },
             {
                 name: "Week Start Date",
                 selector: (row, i) => row.Date,
-                // width: '250px',
                 sortable: true
             },
             {
                 name: "Client",
                 selector: (row, i) => row.Company,
-                // width: '150px',
                 sortable: true
             },
             {
                 name: "Pending With",
                 selector: (row, i) => row.PendingWith,
                 sortable: true,
-                // width: '250px'
             },
             {
                 name: "Status",
                 selector: (row, i) => row.Status,
-                // width: '100px',
                 sortable: true
-
             }
         ];
         return (
             <React.Fragment>
-            {/* <h1>Initiator Screen</h1> */}
-
-                {/* <div style={{ paddingLeft: '10px' }} className="px-1 text-right" id='divAddNewWeeklyTimeSheet'>
-                    <NavLink title="New Weekly Timesheet"  className="csrLink ms-draggable" to={`/WeeklyTimesheet`}>
-                        <span className='add-button' id='newWeeklyTimeSheet'><FontAwesomeIcon icon={faPlus}></FontAwesomeIcon> New</span>
-                    </NavLink>
-                </div> */}
             <div>
                 <div className='table-head-1st-td'>
                     <TableGenerator columns={columns} data={this.state.Requests} fileName={'My Requests'} showExportExcel={false} showAddButton={true} customBtnClass='px-1 text-right' navigateOnBtnClick={`/WeeklyTimesheet`} btnDivID='divAddNewWeeklyTimeSheet' btnSpanID='newWeeklyTimeSheet' btnCaption=' New' btnTitle='New Weekly Timesheet' searchBoxLeft={false}></TableGenerator>
@@ -154,5 +130,4 @@ class MyRequests extends React.Component<MyRequestsProps, MyRequestsState> {
         );
     }
 }
-
 export default MyRequests
