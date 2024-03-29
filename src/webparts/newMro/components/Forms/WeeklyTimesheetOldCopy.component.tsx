@@ -2944,3 +2944,598 @@
 //     }
 // }
 // export default WeeklyTimesheet;
+
+//these functions need if Time considered as HH.MM
+// private validateTimeControls_Minutes(formdata){
+//     let isValid={status:true,message:''};
+//      let val;
+//     let Time;
+//     for(let key in formdata.Total[0])
+//     {
+//         val=formdata.Total[0][key];
+//             let DayTime=0;
+//             if(!["Description","ProjectCode","Total"].includes(key))
+//             {
+//                 DayTime=( parseInt(val.split(".")[0])*60 ) + (parseInt(val.split(".")[1]));
+//                 if(DayTime>1440)
+//                 {
+//                      isValid.message="Total working hours in a day can not exceed '24' hours";
+//                       isValid.status=false;
+//                     document.getElementById("Total"+key).focus();
+//                     document.getElementById("Total"+key).classList.add('mandatory-FormContent-focus');
+//                       return isValid;
+//                 } 
+//             } 
+//     }
+//        val=formdata.Total[0].Total;
+//        Time=( parseInt(val.split(".")[0])*60 ) + (parseInt(val.split(".")[1]));
+//        if(Time==0)
+//        {
+//         isValid.message="Total working hours in a week can not be '' hours";
+//         isValid.status=false;
+//         document.getElementById("GrandTotal").focus();
+//         document.getElementById("GrandTotal").classList.add('mandatory-FormContent-focus');
+//         return isValid;
+//        }
+//        if(formdata.ClientName.toLowerCase()=="synergy")
+//        {
+//            if(formdata.SynergyOfficeHrs[0].Description.trim()=="" && formdata.IsDescriptionMandatory)
+//             {
+//                 isValid.message="Description can not be blank";
+//                 isValid.status=false;
+//                 document.getElementById("0_Description_SynOffcHrs").focus();
+//                 document.getElementById("0_Description_SynOffcHrs").classList.add('mandatory-FormContent-focus');
+//                 return isValid;
+//             }
+//             else if(formdata.SynergyOfficeHrs[0].ProjectCode.trim()=="" && formdata.IsProjectCodeMandatory)
+//             {
+//                 isValid.message="ProjectCode can not be blank";
+//                 isValid.status=false;
+//                 document.getElementById("0_ProjectCode_SynOffcHrs").focus();
+//                 document.getElementById("0_ProjectCode_SynOffcHrs").classList.add('mandatory-FormContent-focus');
+//                 return isValid;
+//             }
+//        }
+//        else if(formdata.ClientName.toLowerCase()!="synergy")
+//        {
+//              for(let i in formdata.WeeklyItemsData)
+//              { 
+//                 if(formdata.WeeklyItemsData[i].Description.trim()=="" && formdata.IsDescriptionMandatory)
+//                 {
+//                     isValid.message="Description can not be blank";
+//                     isValid.status=false;
+//                     document.getElementById(i+"_Description_weekrow").focus();
+//                     document.getElementById(i+"_Description_weekrow").classList.add('mandatory-FormContent-focus');
+//                    return isValid;
+//                 }
+//                 else if(formdata.WeeklyItemsData[i].ProjectCode.trim()=="" && formdata.IsProjectCodeMandatory)
+//                 {
+//                     isValid.message="ProjectCode can not be blank";
+//                     isValid.status=false;
+//                     document.getElementById(i+"_ProjectCode_weekrow").focus();
+//                     document.getElementById(i+"_ProjectCode_weekrow").classList.add('mandatory-FormContent-focus');
+//                     return isValid;
+//                 }
+
+//              }
+//              if(formdata.OTItemsData.length>1)
+//              {
+//                  for(let i in formdata.OTItemsData)
+//                  { 
+//                     if(formdata.OTItemsData[i].Description.trim()=="" && formdata.IsDescriptionMandatory)
+//                     {
+//                         isValid.message="Description can not be blank";
+//                         isValid.status=false;
+//                         document.getElementById(i+"_Description_otrow").focus();
+//                         document.getElementById(i+"_Description_otrow").classList.add('mandatory-FormContent-focus');
+//                        return isValid;
+//                     }
+//                     else if(formdata.OTItemsData[i].ProjectCode.trim()=="" && formdata.IsProjectCodeMandatory)
+//                     {
+//                         isValid.message="ProjectCode can not be blank";
+//                         isValid.status=false;
+//                         document.getElementById(i+"_ProjectCode_otrow").focus();
+//                         document.getElementById(i+"_ProjectCode_otrow").classList.add('mandatory-FormContent-focus');
+//                         return isValid;
+//                     }
+
+//                  }
+//              }
+//        }
+//        if(formdata.ClientName.toLowerCase()!="")
+//        {
+//         if(formdata.SynergyHolidayHrs[0].Total!=0)
+//         {
+//             if(formdata.SynergyHolidayHrs[0].Description.trim()=="" && formdata.IsDescriptionMandatory)
+//             {
+//                 isValid.message="Description can not be blank";
+//                 isValid.status=false;
+//                 document.getElementById("0_Description_SynHldHrs").focus();
+//                 document.getElementById("0_Description_SynHldHrs").classList.add('mandatory-FormContent-focus');
+//                 return isValid;
+//             }
+//             else if(formdata.SynergyHolidayHrs[0].ProjectCode.trim()=="" && formdata.IsProjectCodeMandatory)
+//             {
+//                 isValid.message="ProjectCode can not be blank";
+//                 isValid.status=false;
+//                 document.getElementById("0_ProjectCode_SynHldHrs").focus();
+//                 document.getElementById("0_ProjectCode_SynHldHrs").classList.add('mandatory-FormContent-focus');
+//                 return isValid;
+//             }
+//         }
+//         if(formdata.ClientHolidayHrs[0].Total!=0)
+//         {
+//             if(formdata.ClientHolidayHrs[0].Description.trim()=="" && formdata.IsDescriptionMandatory)
+//             {
+//                 isValid.message="Description can not be blank";
+//                 isValid.status=false;
+//                 document.getElementById("0_Description_ClientHldHrs").focus();
+//                 document.getElementById("0_Description_ClientHldHrs").classList.add('mandatory-FormContent-focus');
+//                 return isValid;
+//             }
+//             else if(formdata.ClientHolidayHrs[0].ProjectCode.trim()=="" && formdata.IsProjectCodeMandatory)
+//             {
+//                 isValid.message="ProjectCode can not be blank";
+//                 isValid.status=false;
+//                 document.getElementById("0_ProjectCode_ClientHldHrs").focus();
+//                 document.getElementById("0_ProjectCode_ClientHldHrs").classList.add('mandatory-FormContent-focus');
+//                 return isValid;
+//             }
+//         }
+//         if(formdata.PTOHrs[0].Total!=0){
+//             if(formdata.PTOHrs[0].Description.trim()=="" && formdata.IsDescriptionMandatory)
+//             {
+//                 isValid.message="Description can not be blank";
+//                 isValid.status=false;
+//                 document.getElementById("0_Description_PTOHrs").focus();
+//                 document.getElementById("0_Description_PTOHrs").classList.add('mandatory-FormContent-focus');
+//                 return isValid;
+//             }
+//             else if(formdata.PTOHrs[0].ProjectCode.trim()=="" && formdata.IsProjectCodeMandatory)
+//             {
+//                 isValid.message="ProjectCode can not be blank";
+//                 isValid.status=false;
+//                 document.getElementById("0_ProjectCode_PTOHrs").focus();
+//                 document.getElementById("0_ProjectCode_PTOHrs").classList.add('mandatory-FormContent-focus');
+//                 return isValid;
+//             }
+//         }
+//        }
+//     //is isValid true remove all 'mandatory-FormContent-focus' classes
+//     if (formdata.ClientName.toLowerCase() != "synergy") {
+//         for (let i in formdata.WeeklyItemsData) {
+//             document.getElementById(i + "_Description_weekrow").classList.remove('mandatory-FormContent-focus');
+//             document.getElementById(i + "_ProjectCode_weekrow").classList.remove('mandatory-FormContent-focus');
+//         }
+//         for (let i in formdata.OTItemsData) {
+//             document.getElementById(i + "_Description_otrow").classList.remove('mandatory-FormContent-focus');
+//             document.getElementById(i + "_ProjectCode_otrow").classList.remove('mandatory-FormContent-focus');
+//         }
+//     }
+//     else {
+//         document.getElementById("0_Description_SynOffcHrs").classList.remove('mandatory-FormContent-focus');
+//         document.getElementById("0_ProjectCode_SynOffcHrs").classList.remove('mandatory-FormContent-focus');
+//     }
+//           document.getElementById("0_Description_SynHldHrs").classList.remove('mandatory-FormContent-focus');
+//           document.getElementById("0_ProjectCode_SynHldHrs").classList.remove('mandatory-FormContent-focus');
+//           document.getElementById("0_Description_PTOHrs").classList.remove('mandatory-FormContent-focus');
+//           document.getElementById("0_ProjectCode_PTOHrs").classList.remove('mandatory-FormContent-focus');
+//        Object.keys(formdata.Total[0]).forEach(key =>{
+//         if(!["Total","Description","ProjectCode"].includes(key))
+//         document.getElementById("Total"+key).classList.remove('mandatory-FormContent-focus');        
+//        })
+//        document.getElementById("GrandTotal").classList.remove('mandatory-FormContent-focus');
+//        return isValid;
+// }
+// private Calculate_Indvidual_OT_Weekly_TotalTime_Minutes=(Formdata)=>{
+//     const formdata =Formdata;
+//      //Weekly  and OT total Hrs calculation
+
+//      let [WeekTotal,OTTotal]=[0,0];
+//      let [H,M]=[0,0];
+//      // to iterate Weekly items
+//      for(var item of formdata.WeeklyItemsData)
+//      {
+//          let TotalVal=item.Total;
+//          WeekTotal= WeekTotal+( parseInt(TotalVal.split(".")[0])*60 ) + (parseInt(TotalVal.split(".")[1]));
+//      }
+//       H=Math.floor(WeekTotal/60);
+//       M=Math.floor(WeekTotal%60);
+//       formdata.WeeklyItemsTotalTime=(H.toString().length==1?"0"+H:H)+":"+(M.toString().length==1?"0"+M:M);
+//          // to iterate OT hrs
+//          H=0;
+//          M=0;
+//      for(var item of formdata.OTItemsData)
+//      {
+//          let TotalVal=item.Total;
+//          OTTotal= OTTotal+( parseInt(TotalVal.split(".")[0])*60 ) + (parseInt(TotalVal.split(".")[1]));
+//      } 
+//      H=Math.floor(OTTotal/60);
+//      M=Math.floor(OTTotal%60);
+//      formdata.OTItemsTotalTime=(H.toString().length==1?"0"+H:H)+":"+(M.toString().length==1?"0"+M:M);
+
+//      return formdata;
+//  }
+//  private changeTime_Minutes=(event)=>{
+//     const trFormdata = { ...this.state.trFormdata };
+//     let value=event.target.value;
+
+   
+//     let index=parseInt(event.target.id.split("_")[0]);
+//     let prop=event.target.id.split("_")[1];
+//     let rowType=event.target.id.split("_")[2];
+//     if(!["Description","ProjectCode","Total"].includes(prop))
+//     {
+//         value=value.match(/\d{0,7}(\.\d{0,2})?/)[0];
+//         [undefined,null,"","."].includes(value)? value="0.0" : value.length==1? value=value+".0" : value;
+//     }
+
+//     //FOR ROW WISE CALCULATION
+//     let TotalRowMins=0;
+//     let Rowhrs=0;
+//     let RowMins=0;
+//         if(rowType=="weekrow")
+//         {
+//             trFormdata.WeeklyItemsData[index][prop]=value;
+//             this.setState({trFormdata});
+//           Object.keys(trFormdata.WeeklyItemsData[index]).forEach(key =>{
+//             let val=trFormdata.WeeklyItemsData[index][key];
+//             [undefined,null,"","."].includes(val.trim())? val="0.0" : val.length==1?val=val+".0" : val;
+//             if(!["Description","ProjectCode","Total"].includes(key))
+//             {
+//                 TotalRowMins=TotalRowMins+( parseInt(val.split(".")[0])*60 ) + (parseInt(val.split(".")[1])); 
+//             }
+//           })
+
+//           Rowhrs=Math.floor(TotalRowMins/60);
+//           RowMins=Math.floor(TotalRowMins%60);
+//           trFormdata.WeeklyItemsData[index]["Total"]=(Rowhrs.toString().length==1?"0"+Rowhrs:Rowhrs)+"."+(RowMins.toString().length==1?"0"+RowMins:RowMins);
+//         }
+//         else if(rowType=="otrow")
+//         {
+//         trFormdata.OTItemsData[index][prop]=value;
+//         this.setState({ trFormdata});
+//           Object.keys(trFormdata.OTItemsData[index]).forEach(key =>{
+//             let val=trFormdata.OTItemsData[index][key];
+//             [undefined,null,"","."].includes(val.trim())? val="0.0" : val.length==1?val=val+".0" : val;
+//             if(!["Description","ProjectCode","Total"].includes(key))
+//             {
+//                 TotalRowMins=TotalRowMins+( parseInt(val.split(".")[0])*60 ) + (parseInt(val.split(".")[1])); 
+//             }
+//           })
+
+//           Rowhrs=Math.floor(TotalRowMins/60);
+//           RowMins=Math.floor(TotalRowMins%60);
+//           trFormdata.OTItemsData[index]["Total"]=(Rowhrs.toString().length==1?"0"+Rowhrs:Rowhrs)+"."+(RowMins.toString().length==1?"0"+RowMins:RowMins);
+//         }
+//         else if(rowType=="SynOffcHrs")
+//         {
+//             trFormdata.SynergyOfficeHrs[index][prop]=value;
+//             this.setState({ trFormdata});
+//               Object.keys(trFormdata.SynergyOfficeHrs[index]).forEach(key =>{
+//                 let val=trFormdata.SynergyOfficeHrs[index][key];
+//                 [undefined,null,"","."].includes(val.trim())? val="0.0" : val.length==1?val=val+".0" : val;
+//                 if(!["Description","ProjectCode","Total"].includes(key))
+//                 {
+//                     TotalRowMins=TotalRowMins+( parseInt(val.split(".")[0])*60 ) + (parseInt(val.split(".")[1])); 
+//                 }
+//               })
+
+//               Rowhrs=Math.floor(TotalRowMins/60);
+//               RowMins=Math.floor(TotalRowMins%60);
+//               trFormdata.SynergyOfficeHrs[index]["Total"]=(Rowhrs.toString().length==1?"0"+Rowhrs:Rowhrs)+"."+(RowMins.toString().length==1?"0"+RowMins:RowMins);
+//         }
+//         else if(rowType=="SynHldHrs")
+//        {
+//         trFormdata.SynergyHolidayHrs[index][prop]=value;
+//         this.setState({ trFormdata});
+//           Object.keys(trFormdata.SynergyHolidayHrs[index]).forEach(key =>{
+//             let val=trFormdata.SynergyHolidayHrs[index][key];
+//             [undefined,null,"","."].includes(val.trim())? val="0.0" : val.length==1?val=val+".0" : val;
+//             if(!["Description","ProjectCode","Total"].includes(key))
+//             {
+//                 TotalRowMins=TotalRowMins+( parseInt(val.split(".")[0])*60 ) + (parseInt(val.split(".")[1])); 
+//             }
+//           })
+
+//           Rowhrs=Math.floor(TotalRowMins/60);
+//           RowMins=Math.floor(TotalRowMins%60);
+//           trFormdata.SynergyHolidayHrs[index]["Total"]=(Rowhrs.toString().length==1?"0"+Rowhrs:Rowhrs)+"."+(RowMins.toString().length==1?"0"+RowMins:RowMins);
+//        }
+//        else if(rowType=="ClientHldHrs")
+//        {
+//         trFormdata.ClientHolidayHrs[index][prop]=value;
+//         this.setState({ trFormdata});
+//           Object.keys(trFormdata.ClientHolidayHrs[index]).forEach(key =>{
+//             let val=trFormdata.ClientHolidayHrs[index][key];
+//             [undefined,null,"","."].includes(val.trim())? val="0.0" : val.length==1?val=val+".0" : val;
+//             if(!["Description","ProjectCode","Total"].includes(key))
+//             {
+//                 TotalRowMins=TotalRowMins+( parseInt(val.split(".")[0])*60 ) + (parseInt(val.split(".")[1])); 
+//             }
+//           })
+
+//           Rowhrs=Math.floor(TotalRowMins/60);
+//           RowMins=Math.floor(TotalRowMins%60);
+//           trFormdata.ClientHolidayHrs[index]["Total"]=(Rowhrs.toString().length==1?"0"+Rowhrs:Rowhrs)+"."+(RowMins.toString().length==1?"0"+RowMins:RowMins);
+//        }
+//         else if(rowType=="PTOHrs")
+//       {
+//         trFormdata.PTOHrs[index][prop]=value;
+//         this.setState({ trFormdata});
+//           Object.keys(trFormdata.PTOHrs[index]).forEach(key =>{
+//             let val=trFormdata.PTOHrs[index][key];
+//             [undefined,null,"","."].includes(val.trim())? val="0.0" : val.length==1?val=val+".0" : val;
+//             if(!["Description","ProjectCode","Total"].includes(key))
+//             {
+//                 TotalRowMins=TotalRowMins+( parseInt(val.split(".")[0])*60 ) + (parseInt(val.split(".")[1])); 
+//             }
+//           })
+
+//           Rowhrs=Math.floor(TotalRowMins/60);
+//           RowMins=Math.floor(TotalRowMins%60);
+//           trFormdata.PTOHrs[index]["Total"]=(Rowhrs.toString().length==1?"0"+Rowhrs:Rowhrs)+"."+(RowMins.toString().length==1?"0"+RowMins:RowMins);
+//        }
+//        this.setState({ trFormdata});
+//        //FOR COLUMN WISE CALCULATION
+//        let WeeklyTotal=0;
+//        let WeeklyColHrs=0;
+//        let WeeklyColMins=0;
+//        let [Total,TotalColHrs,TotalColMins]=[0,0,0];
+//        let [WeekTotal,OTTotal]=[0,0];
+//         //BILLABLE SUB TOTAL COLUMN WISE
+//         // to iterate Weekly hrs
+//         for(var item of trFormdata.WeeklyItemsData)
+//         {
+//             //For weekly calculation
+//             let val=item[prop]; 
+//             [undefined,null,"","."].includes(val.trim())? val="0.0" : val.length==1?val=val+".0" : val;
+//             WeeklyTotal=WeeklyTotal+( parseInt(val.split(".")[0])*60 ) + (parseInt(val.split(".")[1]));
+//              //For total calculation
+//             let TotalVal=item.Total;
+//             [undefined,null,"","."].includes(TotalVal.trim())? TotalVal="0.0" : TotalVal.length==1?TotalVal=TotalVal+".0" : TotalVal;
+//             Total= Total+( parseInt(TotalVal.split(".")[0])*60 ) + (parseInt(TotalVal.split(".")[1]));
+//             WeekTotal= WeekTotal+( parseInt(TotalVal.split(".")[0])*60 ) + (parseInt(TotalVal.split(".")[1]));
+//         }
+//         let H=Math.floor(WeekTotal/60);
+//         let M=Math.floor(WeekTotal%60);
+//         trFormdata.WeeklyItemsTotalTime=(H.toString().length==1?"0"+H:H)+"."+(M.toString().length==1?"0"+M:M);
+//           // to iterate OT hrs
+//           H=0;
+//           M=0;
+//         for(var item of trFormdata.OTItemsData)
+//         {
+//              //For weekly calculation
+//             let val=item[prop];
+//             [undefined,null,"","."].includes(val.trim())? val="0.0" : val.length==1?val=val+".0" : val;
+//             WeeklyTotal=WeeklyTotal+( parseInt(val.split(".")[0])*60 ) + (parseInt(val.split(".")[1])); 
+//              //For total calculation
+//              let TotalVal=item.Total;
+//             [undefined,null,"","."].includes(TotalVal.trim())? TotalVal="0.0" : TotalVal.length==1?TotalVal=TotalVal+".0" : TotalVal;
+//              Total= Total+( parseInt(TotalVal.split(".")[0])*60 ) + (parseInt(TotalVal.split(".")[1]));
+//              OTTotal= OTTotal+( parseInt(TotalVal.split(".")[0])*60 ) + (parseInt(TotalVal.split(".")[1]));
+//         }
+//          H=Math.floor(OTTotal/60);
+//          M=Math.floor(OTTotal%60);
+//         trFormdata.OTItemsTotalTime=(H.toString().length==1?"0"+H:H)+"."+(M.toString().length==1?"0"+M:M);
+
+//         WeeklyColHrs=Math.floor(WeeklyTotal/60);
+//         WeeklyColMins=Math.floor(WeeklyTotal%60);
+//         TotalColHrs=Math.floor(Total/60);
+//         TotalColMins=Math.floor(Total%60);
+//         if(!["Description","ProjectCode"].includes(prop))
+//         trFormdata.BillableSubTotal[0][prop]=(WeeklyColHrs.toString().length==1?"0"+WeeklyColHrs:WeeklyColHrs)+"."+(WeeklyColMins.toString().length==1?"0"+WeeklyColMins:WeeklyColMins);
+//         trFormdata.BillableSubTotal[0]["Total"]=(TotalColHrs.toString().length==1?"0"+TotalColHrs:TotalColHrs)+"."+(TotalColMins.toString().length==1?"0"+TotalColMins:TotalColMins);
+
+//          // NON BILLABLE SUBTOTAL COLUMN WISE
+//          WeeklyTotal=0;
+//          WeeklyColHrs=0;
+//          WeeklyColMins=0;
+//         [Total,TotalColHrs,TotalColMins]=[0,0,0];
+//          let NonBillableColValue=trFormdata.SynergyOfficeHrs[0][prop];
+//          [undefined,null,"","."].includes(NonBillableColValue.trim())? NonBillableColValue="0.0" : NonBillableColValue.length==1?NonBillableColValue=NonBillableColValue+".0" : NonBillableColValue;
+//          let TotalVal=trFormdata.SynergyOfficeHrs[0]["Total"];
+//          [undefined,null,"","."].includes(TotalVal.trim())? TotalVal="0.0" : TotalVal.length==1?TotalVal=TotalVal+".0" : TotalVal;
+//          WeeklyTotal=WeeklyTotal+( parseInt(NonBillableColValue.split(".")[0])*60 ) + (parseInt(NonBillableColValue.split(".")[1])); 
+//          Total=Total+( parseInt(TotalVal.split(".")[0])*60 ) + (parseInt(TotalVal.split(".")[1])); 
+
+//          NonBillableColValue=trFormdata.SynergyHolidayHrs[0][prop];
+//          [undefined,null,"","."].includes(NonBillableColValue.trim())? NonBillableColValue="0.0" : NonBillableColValue.length==1?NonBillableColValue=NonBillableColValue+".0" : NonBillableColValue;
+//          TotalVal=trFormdata.SynergyHolidayHrs[0]["Total"];
+//          [undefined,null,"","."].includes(TotalVal.trim())? TotalVal="0.0" : TotalVal.length==1?TotalVal=TotalVal+".0" : TotalVal;
+//          WeeklyTotal=WeeklyTotal+( parseInt(NonBillableColValue.split(".")[0])*60 ) + (parseInt(NonBillableColValue.split(".")[1]));
+//          Total=Total+( parseInt(TotalVal.split(".")[0])*60 ) + (parseInt(TotalVal.split(".")[1])); 
+         
+//          NonBillableColValue=trFormdata.ClientHolidayHrs[0][prop];
+//          [undefined,null,"","."].includes(NonBillableColValue.trim())? NonBillableColValue="0.0" : NonBillableColValue.length==1?NonBillableColValue=NonBillableColValue+".0" : NonBillableColValue;
+//          TotalVal=trFormdata.ClientHolidayHrs[0]["Total"];
+//          [undefined,null,"","."].includes(TotalVal.trim())? TotalVal="0.0" : TotalVal.length==1?TotalVal=TotalVal+".0" : TotalVal;
+//          WeeklyTotal=WeeklyTotal+( parseInt(NonBillableColValue.split(".")[0])*60 ) + (parseInt(NonBillableColValue.split(".")[1]));
+//          Total=Total+( parseInt(TotalVal.split(".")[0])*60 ) + (parseInt(TotalVal.split(".")[1])); 
+
+//          NonBillableColValue=trFormdata.PTOHrs[0][prop];
+//          [undefined,null,"","."].includes(NonBillableColValue.trim())? NonBillableColValue="0.0" : NonBillableColValue.length==1?NonBillableColValue=NonBillableColValue+".0" : NonBillableColValue;
+//          TotalVal=trFormdata.PTOHrs[0]["Total"];
+//          [undefined,null,"","."].includes(TotalVal.trim())? TotalVal="0.0" : TotalVal.length==1?TotalVal=TotalVal+".0" : TotalVal;
+//          WeeklyTotal=WeeklyTotal+( parseInt(NonBillableColValue.split(".")[0])*60 ) + (parseInt(NonBillableColValue.split(".")[1])); 
+//          Total=Total+( parseInt(TotalVal.split(".")[0])*60 ) + (parseInt(TotalVal.split(".")[1])); 
+
+//          WeeklyColHrs=Math.floor(WeeklyTotal/60);
+//          WeeklyColMins=Math.floor(WeeklyTotal%60);
+//          TotalColHrs=Math.floor(Total/60);
+//          TotalColMins=Math.floor(Total%60);
+//          if(!["Description","ProjectCode"].includes(prop))
+//          trFormdata.NonBillableSubTotal[0][prop]=(WeeklyColHrs.toString().length==1?"0"+WeeklyColHrs:WeeklyColHrs)+"."+(WeeklyColMins.toString().length==1?"0"+WeeklyColMins:WeeklyColMins);
+//          trFormdata.NonBillableSubTotal[0]["Total"]=(TotalColHrs.toString().length==1?"0"+TotalColHrs:TotalColHrs)+"."+(TotalColMins.toString().length==1?"0"+TotalColMins:TotalColMins);
+
+//          //GRAND TOTAL COLUMN WISE
+//          WeeklyTotal=0;
+//          WeeklyColHrs=0;
+//          WeeklyColMins=0;
+//          [Total,TotalColHrs,TotalColMins]=[0,0,0];
+//          if(!["Description","ProjectCode"].includes(prop))
+//          {
+//          let TotalColVal=trFormdata.BillableSubTotal[0][prop];
+//          [undefined,null,"","."].includes(TotalColVal.trim())? TotalColVal="0.0" : TotalColVal.length==1?TotalColVal=TotalColVal+".0" : TotalColVal;
+//         let BillableTotalVal=trFormdata.BillableSubTotal[0]["Total"];
+//         [undefined,null,"","."].includes(BillableTotalVal.trim())? BillableTotalVal="0.0" : BillableTotalVal.length==1?BillableTotalVal=BillableTotalVal+".0" : BillableTotalVal;
+//          WeeklyTotal=WeeklyTotal+( parseInt(TotalColVal.split(".")[0])*60 ) + (parseInt(TotalColVal.split(".")[1])); 
+//          Total=Total+( parseInt(BillableTotalVal.split(".")[0])*60 ) + (parseInt(BillableTotalVal.split(".")[1])); 
+
+//          TotalColVal=trFormdata.NonBillableSubTotal[0][prop];  
+//          [undefined,null,"","."].includes(TotalColVal.trim())? TotalColVal="0.0" : TotalColVal.length==1?TotalColVal=TotalColVal+".0" : TotalColVal;
+//          BillableTotalVal=trFormdata.NonBillableSubTotal[0]["Total"];
+//         [undefined,null,"","."].includes(BillableTotalVal.trim())? BillableTotalVal="0.0" : BillableTotalVal.length==1?BillableTotalVal=BillableTotalVal+".0" : BillableTotalVal;
+//          WeeklyTotal=WeeklyTotal+( parseInt(TotalColVal.split(".")[0])*60 ) + (parseInt(TotalColVal.split(".")[1]));
+//          Total=Total+( parseInt(BillableTotalVal.split(".")[0])*60 ) + (parseInt(BillableTotalVal.split(".")[1])); 
+         
+//          WeeklyColHrs=Math.floor(WeeklyTotal/60);
+//          WeeklyColMins=Math.floor(WeeklyTotal%60);
+//          TotalColHrs=Math.floor(Total/60);
+//          TotalColMins=Math.floor(Total%60);
+//          }
+//          if(!["Description","ProjectCode"].includes(prop))
+//          {
+
+//              trFormdata.Total[0][prop]=(WeeklyColHrs.toString().length==1?"0"+WeeklyColHrs:WeeklyColHrs)+"."+(WeeklyColMins.toString().length==1?"0"+WeeklyColMins:WeeklyColMins);
+//              trFormdata.Total[0]["Total"]=(TotalColHrs.toString().length==1?"0"+TotalColHrs:TotalColHrs)+"."+(TotalColMins.toString().length==1?"0"+TotalColMins:TotalColMins);
+//          }else{
+//             trFormdata.Total[0][prop]=trFormdata.Total[0][prop]
+//             trFormdata.Total[0]["Total"]=trFormdata.Total[0]["Total"]
+//          }
+      
+//     this.setState({ trFormdata});
+      
+// }
+// private calculateTimeWhenRemoveRow_Minutes=(Data,DataAfterRemovedObject,RowType)=>{
+//     const trFormdata =Data;
+//     let TableColumns=["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
+//       //FOR COLUMN WISE CALCULATION
+   
+//     for(var prop of TableColumns)
+//     {
+//         let [Total,TotalColHrs,TotalColMins]=[0,0,0];
+//         let [WeeklyTotal,WeeklyColHrs,WeeklyColMins]=[0,0,0];
+//         if(RowType.toLowerCase()=="weekrow")  //When Weekly items removed 
+//         {
+
+//                     //BILLABLE SUB TOTAL COLUMN WISE
+//                     // to iterate Weekly hrs
+//                     for(var item of DataAfterRemovedObject)
+//                     {
+//                         //For weekly calculation
+//                         let val=item[prop]; 
+//                         [undefined,null,"","."].includes(val)? val="0.0" : val.length==1? val=val+".0" : val;
+//                         WeeklyTotal=WeeklyTotal+( parseInt(val.split(".")[0])*60 ) + (parseInt(val.split(".")[1]));
+//                         //For total calculation
+//                         let TotalVal=item.Total;
+//                         [undefined,null,"","."].includes(TotalVal)? TotalVal="0.0" : TotalVal.length==1? TotalVal=TotalVal+".0" : TotalVal;
+//                         Total= Total+( parseInt(TotalVal.split(".")[0])*60 ) + (parseInt(TotalVal.split(".")[1]));
+                       
+//                     }
+//                     for(var item of trFormdata.OTItemsData)
+//                     {
+//                         //For weekly calculation
+//                         let val=item[prop];
+//                         [undefined,null,"","."].includes(val)? val="0.0" : val.length==1? val=val+".0" : val;
+//                         WeeklyTotal=WeeklyTotal+( parseInt(val.split(".")[0])*60 ) + (parseInt(val.split(".")[1])); 
+//                         //For total calculation
+//                         let TotalVal=item.Total;
+//                         [undefined,null,"","."].includes(TotalVal)? TotalVal="0.0" : TotalVal.length==1? TotalVal=TotalVal+".0" : TotalVal;
+//                         Total= Total+( parseInt(TotalVal.split(".")[0])*60 ) + (parseInt(TotalVal.split(".")[1]));
+//                     }
+//         }
+//         else{      //When OT items removed 
+            
+//                     //BILLABLE SUB TOTAL COLUMN WISE
+//                     // to iterate Weekly hrs
+//                     for(var item of trFormdata.WeeklyItemsData)
+//                     {
+//                         //For weekly calculation
+//                         let val=item[prop]; 
+//                         [undefined,null,"","."].includes(val)? val="0.0" : val.length==1? val=val+".0" : val;
+//                         WeeklyTotal=WeeklyTotal+( parseInt(val.split(".")[0])*60 ) + (parseInt(val.split(".")[1]));
+//                         //For total calculation
+//                         let TotalVal=item.Total;
+//                         [undefined,null,"","."].includes(TotalVal)? TotalVal="0.0" : TotalVal.length==1? TotalVal=TotalVal+".0" : TotalVal;
+//                         Total= Total+( parseInt(TotalVal.split(".")[0])*60 ) + (parseInt(TotalVal.split(".")[1]));
+                       
+//                     }
+                  
+//                     for(var item of DataAfterRemovedObject)
+//                     {
+//                         //For weekly calculation
+//                         let val=item[prop];
+//                         [undefined,null,"","."].includes(val)? val="0.0" : val.length==1? val=val+".0" : val;
+//                         WeeklyTotal=WeeklyTotal+( parseInt(val.split(".")[0])*60 ) + (parseInt(val.split(".")[1])); 
+//                         //For total calculation
+//                         let TotalVal=item.Total;
+//                         [undefined,null,"","."].includes(TotalVal)? TotalVal="0.0" : TotalVal.length==1? TotalVal=TotalVal+".0" : TotalVal;
+//                         Total= Total+( parseInt(TotalVal.split(".")[0])*60 ) + (parseInt(TotalVal.split(".")[1]));
+                       
+//                     }
+
+//         }
+//                     WeeklyColHrs=Math.floor(WeeklyTotal/60);
+//                     WeeklyColMins=Math.floor(WeeklyTotal%60);
+//                     TotalColHrs=Math.floor(Total/60);
+//                     TotalColMins=Math.floor(Total%60);
+
+//                     trFormdata.BillableSubTotal[0][prop]=(WeeklyColHrs.toString().length==1?"0"+WeeklyColHrs:WeeklyColHrs)+"."+(WeeklyColMins.toString().length==1?"0"+WeeklyColMins:WeeklyColMins);
+//                     trFormdata.BillableSubTotal[0]["Total"]=(TotalColHrs.toString().length==1?"0"+TotalColHrs:TotalColHrs)+"."+(TotalColMins.toString().length==1?"0"+TotalColMins:TotalColMins);
+
+//                     //GRAND TOTAL COLUMN WISE
+//                     WeeklyTotal=0;
+//                     WeeklyColHrs=0;
+//                     WeeklyColMins=0;
+//                     [Total,TotalColHrs,TotalColMins]=[0,0,0];
+//                     let TotalColVal=trFormdata.BillableSubTotal[0][prop];
+//                     [undefined,null,"","."].includes(TotalColVal)? TotalColVal="0.0" : TotalColVal.length==1? TotalColVal=TotalColVal+".0" : TotalColVal;
+//                     let BillableTotalVal=trFormdata.BillableSubTotal[0]["Total"];
+//                     [undefined,null,"","."].includes(BillableTotalVal)? BillableTotalVal="0.0" : BillableTotalVal.length==1? BillableTotalVal=BillableTotalVal+".0" : BillableTotalVal;
+//                     WeeklyTotal=WeeklyTotal+( parseInt(TotalColVal.split(".")[0])*60 ) + (parseInt(TotalColVal.split(".")[1])); 
+//                     Total=Total+( parseInt(BillableTotalVal.split(".")[0])*60 ) + (parseInt(BillableTotalVal.split(".")[1])); 
+
+//                     TotalColVal=trFormdata.NonBillableSubTotal[0][prop];  
+//                     [undefined,null,"","."].includes(TotalColVal)? TotalColVal="0.0" : TotalColVal.length==1? TotalColVal=TotalColVal+".0" : TotalColVal;
+//                     BillableTotalVal=trFormdata.NonBillableSubTotal[0]["Total"];
+//                     [undefined,null,"","."].includes(BillableTotalVal)? BillableTotalVal="0.0" : BillableTotalVal.length==1? BillableTotalVal=BillableTotalVal+".0" : BillableTotalVal;
+//                     WeeklyTotal=WeeklyTotal+( parseInt(TotalColVal.split(".")[0])*60 ) + (parseInt(TotalColVal.split(".")[1]));
+//                     Total=Total+( parseInt(BillableTotalVal.split(".")[0])*60 ) + (parseInt(BillableTotalVal.split(".")[1])); 
+                    
+//                     WeeklyColHrs=Math.floor(WeeklyTotal/60);
+//                     WeeklyColMins=Math.floor(WeeklyTotal%60);
+//                     TotalColHrs=Math.floor(Total/60);
+//                     TotalColMins=Math.floor(Total%60);
+//                     trFormdata.Total[0][prop]=(WeeklyColHrs.toString().length==1?"0"+WeeklyColHrs:WeeklyColHrs)+"."+(WeeklyColMins.toString().length==1?"0"+WeeklyColMins:WeeklyColMins);
+//                     trFormdata.Total[0]["Total"]=(TotalColHrs.toString().length==1?"0"+TotalColHrs:TotalColHrs)+"."+(TotalColMins.toString().length==1?"0"+TotalColMins:TotalColMins);
+
+//                    // this.setState({ trFormdata});  
+                  
+//     }
+//     return trFormdata;
+   
+// }
+// private removeBrowserwrtServer(date) {
+//     if (date != '') {
+//         var newDate = new Date(date.getTime());
+//         newDate.setTime(newDate.getTime() - ((this.props.spContext.webTimeZoneData.Bias+this.props.spContext.webTimeZoneData.DaylightBias) * 60 * 1000));
+//         return newDate;
+//     }
+// }
+// private GetCurrentWeekMonday=(date: Date)=>
+// {
+//     let tempCurrDate=new Date(date);
+//     let currWeekMonday=new Date();
+//     while(tempCurrDate)
+//     {
+//         if(tempCurrDate.getDay()==1)
+//         {
+//             currWeekMonday=tempCurrDate;
+//             break;
+//         }
+//         tempCurrDate.setDate(tempCurrDate.getDate()-1)
+//     }
+
+//     return currWeekMonday;
+// }

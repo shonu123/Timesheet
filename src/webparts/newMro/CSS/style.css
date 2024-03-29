@@ -2397,10 +2397,13 @@ li {
   width: 150px !important;
   }
 
-  .ddlClient{
+  .ddlClient,.ddlApplying {
     height: 35px !important;
+    width: auto;
   }
-
+ .ddlApplying{
+    width: 130px !important;
+  }
   .weeklysection1{
     margin-bottom: 1pc !important;
   }
