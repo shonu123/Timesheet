@@ -31,6 +31,7 @@ export interface EmployeeMasterViewState {
     Action : string;
     errorMessage: string;
     ItemID : Number;
+    showToaster:boolean;
 }
 
 class EmployeeMasterView extends React.Component<EmployeeMasterViewProps, EmployeeMasterViewState> {
@@ -39,13 +40,14 @@ class EmployeeMasterView extends React.Component<EmployeeMasterViewProps, Employ
         sp.setup({
             spfxContext: this.props.context
         });
-        this.state = {Details: [], loading:false,message:'',title:'',showHideModal:false,isSuccess:true,comments:'',Action:'',errorMessage:'',ItemID:0};
+        this.state = {Details: [], loading:false,message:'',title:'',showHideModal:false,isSuccess:true,comments:'',Action:'',errorMessage:'',ItemID:0,showToaster:false};
     }
 
     public componentDidMount() {
-        this.setState({ loading: true });
+        this.setState({ loading: true});
         this.EmployeeMasterData();
         if(!["",undefined,null].includes(this.props.match.params.message)){
+            this.setState({showToaster:true})
             let message = this.props.match.params.message
             window.location.hash='#/EmployeeMasterView';
             if(message == 'Error'){
@@ -198,7 +200,7 @@ class EmployeeMasterView extends React.Component<EmployeeMasterViewProps, Employ
             </div>
             </div>
             </div>
-                <Toaster /> 
+               {this.state.showToaster&& <Toaster /> }
             </React.Fragment> 
         );
     }

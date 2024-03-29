@@ -116,6 +116,7 @@ export interface WeeklyTimesheetState {
     currentUserId:number;
     EmployeesObj:any;
     weeks:any;
+    showToaster:boolean;
 }
 
 class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetState> {
@@ -228,6 +229,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
             EmployeesObj: [],
             isAdmin: false,
             weeks:['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'],
+            showToaster:false,
         };
         this.oweb = Web(this.props.spContext.siteAbsoluteUrl);
          // for first row of weekly and OT hrs
@@ -1094,7 +1096,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
             this.setState({ trFormdata, currentWeeklyRowsCount: count ,showLabel: true, errorMessage:""});
         }
         else{
-            this.setState({ showLabel: true})
+            this.setState({ showToaster: true})
             // toast.error(isValid.message)
             customToaster('toster-error',ToasterTypes.Error,isValid.message,4000)
         }
@@ -1127,7 +1129,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
           this.setState({ trFormdata, currentOTRowsCount: count,showLabel:false, errorMessage:""});
       }
       else{
-        // this.setState({ showLabel: true});
+        this.setState({ showToaster: true});
         // toast.error(isValid.message)
         customToaster('toster-error',ToasterTypes.Error,isValid.message,4000)
       }
@@ -1260,7 +1262,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
          
         } 
         else {
-            // this.setState({ showLabel: true});
+            this.setState({ showToaster: true});
             // toast.error(isValid.message)
             customToaster('toster-error',ToasterTypes.Error,isValid.message,4000)
         }
@@ -1414,7 +1416,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
         else
         {
             // this.setState({ showLabel: true, errorMessage: isValid.message });
-            // this.setState({ showLabel: true});
+            this.setState({ showToaster: true});
             // toast.error(isValid.message)
             customToaster('toster-error',ToasterTypes.Error,isValid.message,4000)
         }
@@ -2827,7 +2829,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                 </div>
             </div>
         </div>
-        <Toaster />  
+        {this.state.showToaster &&<Toaster />}  
             {this.state.loading && <Loader />}
                 </React.Fragment>
             );

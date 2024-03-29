@@ -11,6 +11,7 @@ import AllRequests from './AllRequests.components';
 import Loader from '../Shared/Loader';
 import customToaster from '../Shared/Toaster.component';
 import { StatusType, ToasterTypes } from '../../Constants/Constants';
+import { Toaster } from 'react-hot-toast';
 
 export interface DashboardProps {
     match: any;
@@ -37,6 +38,7 @@ export interface DashboardState {
     showMyReviewersTab: boolean;
     showAllRequestsTab:boolean;
     loading:boolean;
+    showToaster:boolean;
 }
 
 class Dashboard extends React.Component<DashboardProps, DashboardState> {
@@ -62,12 +64,14 @@ class Dashboard extends React.Component<DashboardProps, DashboardState> {
             showMyReviewersTab: false,
             showAllRequestsTab: false,
             loading:false,
+            showToaster:false,
         };
     }
     public componentDidMount() {
         this.setState({ loading: true });
         this.getUserGroups();
         if(!["",undefined,null].includes(this.props.match.params.message)){
+            this.setState({showToaster:true})
             let message = this.props.match.params.message
             window.location.hash='#/Dashboard';
             if(message == 'Error'){
@@ -260,6 +264,7 @@ class Dashboard extends React.Component<DashboardProps, DashboardState> {
                 </div>
              </div>
             </div>
+            {this.state.showToaster&& <Toaster /> }
         {this.state.loading && <Loader />}
                 </React.Fragment>
         );

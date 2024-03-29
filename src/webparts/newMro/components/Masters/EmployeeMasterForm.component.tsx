@@ -87,7 +87,8 @@ class EmployeeMasterForm extends React.Component<EmployeeMasterFormProps, Employ
         showHideModal: false,
         modalTitle:'',
         modalText:'',
-        message:"Success"
+        message:"Success",
+        showToaster:false,
     }
 
     public componentDidMount() {
@@ -191,13 +192,13 @@ class EmployeeMasterForm extends React.Component<EmployeeMasterFormProps, Employ
     Filter based on the selected client and Synergy
     we show all the Client holidays and all Synergy
      */
-    private async getHolidays(selectedClient){
+    private async getHolidays(selectedClientName){
         let Year = new Date().getFullYear()+"";
         let Holidays = await  sp.web.lists.getByTitle('HolidaysList').items.top(2000).filter("Year eq '"+Year+"'").select('*').orderBy('ClientName').get()
       let HolidayClients = []
       let filteredData = Holidays.filter(item=> {
         const lowerCaseItem = item.ClientName .toLowerCase();
-        // let selectedClient = this.state.ClientName.toLowerCase()
+        let selectedClient = selectedClientName.toLowerCase()
         return lowerCaseItem.includes(selectedClient) || lowerCaseItem.includes('synergy');
       });
 
@@ -284,10 +285,12 @@ private async validateDuplicateRecord () {
             Rm.push(manager)
         }
         if(!isValid.status){
+            this.setState({showToaster:true})
             customToaster('toster-error',ToasterTypes.Error,isValid.message,4000)
         }
         else if(Rm.includes(this.state.EmployeeId)){
             let errMsg = 'The selected Employee can not be assigned as their own Manager';
+            this.setState({showToaster:true})
             customToaster('toster-error',ToasterTypes.Error,errMsg,4000)
         }
         else{
@@ -308,7 +311,8 @@ private async validateDuplicateRecord () {
             }
            let duplicate = await this.validateDuplicateRecord()
            if(duplicate>0){
-               console.log("duplicate record found"); 
+               console.log("duplicate record found");
+               this.setState({showToaster:true})
             customToaster('toster-error',ToasterTypes.Error,'Current Employee is already associated with '+this.state.ClientName+" client",4000)
            }
            else{
@@ -601,7 +605,7 @@ else {
                             </div>
                         </div>
                     </div>
-                        <Toaster />  
+                        {this.state.showToaster&& <Toaster /> }
                     {this.state.loading && <Loader />}
                 </React.Fragment >
             );
