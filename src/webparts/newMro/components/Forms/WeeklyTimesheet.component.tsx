@@ -3084,7 +3084,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                                 </div>
                         </div>
                     </div>
-                    <div className="border-box-shadow light-box table-responsive dataTables_wrapper-overflow width-94vw p-2">
+                    <div className="border-box-shadow light-box table-responsive table-NoScroll">
                         {/* <h4>Billable Hours</h4> */}
                         <div className='table-outer'></div>
                         <table className="table table-bordered m-0 timetable table-td-p-0">

@@ -156,7 +156,8 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
             Status : Status,
             CommentsHistory : Comments,
             PendingWith : 'Initiator',
-            IsClientApprovalNeed : clinetApproval
+            IsClientApprovalNeed : clinetApproval,
+            Revised: true,
         }
         console.log(postObject);
         this.setState({comments  :''})
