@@ -1177,7 +1177,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
             var postObject = {
                 Name : formdata.Name,
                 ClientName :formdata.ClientName, 
-                WeekStartDate:this.addBrowserwrtServer(new Date(formdata.WeekStartDate)),
+                WeekStartDate:this.addBrowserwrtServer(new Date(formdata.WeekStartDate.getMonth()+1+"/"+formdata.WeekStartDate.getDate()+"/"+formdata.WeekStartDate.getFullYear())),
                 WeeklyHrs:JSON.stringify(formdata.WeeklyItemsData),
                 OverTimeHrs:JSON.stringify(formdata.OTItemsData),
                 BillableSubtotalHrs:JSON.stringify(formdata.BillableSubTotal),
@@ -1438,7 +1438,9 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                if(StatusType.Save==formdata.Status)
                {
                 //this.setState({loading:false,modalTitle:'Success',modalText:' Weekly Timesheet Updated Successfully',isSuccess:true,showHideModal:true});
-                this.setState({ActionToasterMessage:'Success-'+StatusType.Save,loading:false,redirect:false})
+                //this.setState({ActionToasterMessage:'Success-'+StatusType.Save,redirect:false})
+                customToaster('toster-success',ToasterTypes.Success,'Weekly timesheet saved succesfully',2000)
+                this.getItemData(this.state.ItemID);
                }
                else if(StatusType.Revoke==formdata.Status)
                {
@@ -1538,7 +1540,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                        this.sendemail(emaildetails,formdata);
                } 
             }, (error) => {
-                alert("Something Went Wrong ,While updating");
+                this.setState({ActionToasterMessage:'Error',loading:false,redirect:true})
                 console.log(error);
             });
         } 
@@ -1551,7 +1553,9 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                     //alert("Weekly Time Sheet Added successfully");
                     if (StatusType.Save == formdata.Status) {
                         //this.setState({loading:false,modalTitle:'Success',modalText:' Weekly Timesheet Added Successfully',isSuccess:true,showHideModal:true});
-                        this.setState({ActionToasterMessage:'Success-'+StatusType.Save,loading:false,redirect:false})
+                       // this.setState({ActionToasterMessage:'Success-'+StatusType.Save,redirect:false})
+                        customToaster('toster-success',ToasterTypes.Success,'Weekly timesheet saved succesfully',2000)
+                        this.getItemData(this.state.ItemID);
                     }
                     else if(StatusType.Submit==formdata.Status)
                     {
@@ -1563,11 +1567,12 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                     }
                 }, (error) => {
                     console.log(error);
-                    alert("Something Went Wrong ,While Adding");
+                    this.setState({ActionToasterMessage:'Error',loading:false,redirect:true})
                 });
             }
             catch (e) {
                 console.log('Failed to add');
+                this.setState({ActionToasterMessage:'Error',loading:false,redirect:true})
             }
 
         }
@@ -1609,11 +1614,15 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
            else if(formdata.Status==StatusType.Reject)
            this.setState({ActionToasterMessage:'Success-'+StatusType.Reject,showConfirmDeletePopup:false,loading:false,redirect:true})
            else if(formdata.Status==StatusType.Revoke)
-           this.setState({ActionToasterMessage:'Success-'+StatusType.Revoke,showConfirmDeletePopup:false,loading:false,redirect:false})
+           {
+               customToaster('toster-success',ToasterTypes.Success,'Weekly timesheet '+StatusType.Revoke+' succesfully',2000)
+               this.getItemData(this.state.ItemID);
+           }
           
           }).catch((i) => {
             //alert("Error while sending an Email");
-            this.setState({showHideModal : false,ItemID:0,errorMessage:'',loading: false,redirect : true});
+            //this.setState({showHideModal : false,ItemID:0,errorMessage:'',loading: false,redirect : true,ActionToasterMessage:i});
+            this.setState({ActionToasterMessage:'Error',loading:false,redirect:true})
             console.log(i)
           });  
     }
@@ -2104,9 +2113,9 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
             HolidaysListData.filter(item =>{
                 HolidayData.push({"ClientName":item.ClientName,"HolidayName":item.HolidayName,"HolidayDate":item.HolidayDate})
             }); 
-            if(selectedClientName.toLowerCase()=="synergy")
-            this.setState({SynergyHolidaysList:HolidayData})
-            else
+            // if(selectedClientName.toLowerCase()=="synergy")
+            // this.setState({SynergyHolidaysList:HolidayData})
+            // else
             this.setState({HolidaysList:HolidayData})
             let WeekStartDate=new Date(new Date(trFormdata.WeekStartDate).getMonth()+1+"/"+new Date(trFormdata.WeekStartDate).getDate()+"/"+new Date(trFormdata.WeekStartDate).getFullYear());
             let DateOfjoining=new Date(trFormdata.DateOfJoining.getMonth()+1+"/"+trFormdata.DateOfJoining.getDate()+"/"+trFormdata.DateOfJoining.getFullYear());
@@ -2146,20 +2155,6 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
         let HolidayData={isHoliday:false,HolidayName:""};
         let WeekDay=new Date(CurrentWeekDay);
         let Day=WeekDay.getMonth()+1+"/"+WeekDay.getDate()+"/"+WeekDay.getFullYear();
-        if(ClientName.toLowerCase()=="synergy")
-        {
-            for(var item of this.state.SynergyHolidaysList)
-            {
-                let Holiday=new Date(item.HolidayDate).getMonth()+1+"/"+new Date(item.HolidayDate).getDate()+"/"+new Date(item.HolidayDate).getFullYear();
-                 if(Holiday==Day)
-                 {
-                    HolidayData.isHoliday=true;
-                    HolidayData.HolidayName=item.HolidayName;
-                    return HolidayData;
-                 }
-            }
-        }
-        else{    
             for(var item of this.state.HolidaysList)
             {
                 let Holiday=new Date(item.HolidayDate).getMonth()+1+"/"+new Date(item.HolidayDate).getDate()+"/"+new Date(item.HolidayDate).getFullYear();
@@ -2170,7 +2165,6 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                     return HolidayData;
                  }
             }
-        }
         return HolidayData;
     }
     //Functions related to dynamic HTML binding
@@ -2270,62 +2264,63 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
     {
         var Formdata=this.state.trFormdata;
         let section=[];
-       if(this.state.ClientNames.length==1)
-       {
-           Formdata.ClientName= this.state.ClientNames[0];
-           this.state.ClientNames.map((option) => (
-               section.push(
-                   <><option value={option} selected={Formdata.ClientName == option} disabled>{option}</option></>
-           )))
-           //For getting Dateofjoining of selected client
-         for( var item of this.state.Clients_DateOfJoinings)
-         {
-             if(item.ClientName.toLowerCase()== Formdata.ClientName.toLowerCase())
-             {
-                 Formdata.DateOfJoining=new Date(item.DOJ);
-                 Formdata.IsDescriptionMandatory=item.IsDescriptionMandatory;
-                 Formdata.IsProjectCodeMandatory=item.IsProjectCodeMandatory;
-                 Formdata.WeekStartDay=item.WeekStartDay;
-                 Formdata.WeekStartDate = this.getCurrentWeekStartDate(item.WeekStartDay)
-                 Formdata.HolidayType=item.HolidayType;
-                // this.setState({isSubmitted:false})
-                 this.WeekNames=[];
-                 switch(Formdata.WeekStartDay)
-                 {
-                     case "Monday":
-                         this.WeekNames.push({"day1":"Mon","day2":"Tue","day3":"Wed","day4":"Thu","day5":"Fri","day6":"Sat","day7":"Sun","dayCode":"Monday"});
-                         break;
-                     case "Tuesday":
-                         this.WeekNames.push({"day1":"Tue","day2":"Wed","day3":"Thu","day4":"Fri","day5":"Sat","day6":"Sun","day7":"Mon","dayCode":"Tuesday"});
-                         break;
-                     case "Wednesday":
-                         this.WeekNames.push({"day1":"Wed","day2":"Thu","day3":"Fri","day4":"Sat","day5":"Sun","day6":"Mon","day7":"Tue","dayCode":"Wednesday"});
-                         break;
-                     case "Thursday":
-                         this.WeekNames.push({"day1":"Thu","day2":"Fri","day3":"Sat","day4":"Sun","day5":"Mon","day6":"Tue","day7":"Wed","dayCode":"Thursday"});
-                         break;
-                     case "Friday":
-                         this.WeekNames.push({"day1":"Fri","day2":"Sat","day3":"Sun","day4":"Mon","day5":"Tue","day6":"Wed","day7":"Thu","dayCode":"Friday"});
-                         break;
-                     case "Saturday":
-                         this.WeekNames.push({"day1":"Sat","day2":"Sun","day3":"Mon","day4":"Tue","day5":"Wed","day6":"Thu","day7":"Fri","dayCode":"Saturday"});
-                         break;
-                     case "Sunday":
-                         this.WeekNames.push({"day1":"Sun","day2":"Mon","day3":"Tue","day4":"Wed","day5":"Thu","day6":"Fri","day7":"Sat","dayCode":"Sunday"});
-                         break;
-                 }
-                 break;
-             }
-         }
+        //code commented for single client binding
+    //    if(this.state.ClientNames.length==1)
+    //    {
+    //        Formdata.ClientName= this.state.ClientNames[0];
+    //        this.state.ClientNames.map((option) => (
+    //            section.push(
+    //                <><option value={option} selected={Formdata.ClientName == option} disabled>{option}</option></>
+    //        )))
+    //        //For getting Dateofjoining of selected client
+    //      for( var item of this.state.Clients_DateOfJoinings)
+    //      {
+    //          if(item.ClientName.toLowerCase()== Formdata.ClientName.toLowerCase())
+    //          {
+    //              Formdata.DateOfJoining=new Date(item.DOJ);
+    //              Formdata.IsDescriptionMandatory=item.IsDescriptionMandatory;
+    //              Formdata.IsProjectCodeMandatory=item.IsProjectCodeMandatory;
+    //              Formdata.WeekStartDay=item.WeekStartDay;
+    //              Formdata.WeekStartDate = this.getCurrentWeekStartDate(item.WeekStartDay)
+    //              Formdata.HolidayType=item.HolidayType;
+    //             // this.setState({isSubmitted:false})
+    //              this.WeekNames=[];
+    //              switch(Formdata.WeekStartDay)
+    //              {
+    //                  case "Monday":
+    //                      this.WeekNames.push({"day1":"Mon","day2":"Tue","day3":"Wed","day4":"Thu","day5":"Fri","day6":"Sat","day7":"Sun","dayCode":"Monday"});
+    //                      break;
+    //                  case "Tuesday":
+    //                      this.WeekNames.push({"day1":"Tue","day2":"Wed","day3":"Thu","day4":"Fri","day5":"Sat","day6":"Sun","day7":"Mon","dayCode":"Tuesday"});
+    //                      break;
+    //                  case "Wednesday":
+    //                      this.WeekNames.push({"day1":"Wed","day2":"Thu","day3":"Fri","day4":"Sat","day5":"Sun","day6":"Mon","day7":"Tue","dayCode":"Wednesday"});
+    //                      break;
+    //                  case "Thursday":
+    //                      this.WeekNames.push({"day1":"Thu","day2":"Fri","day3":"Sat","day4":"Sun","day5":"Mon","day6":"Tue","day7":"Wed","dayCode":"Thursday"});
+    //                      break;
+    //                  case "Friday":
+    //                      this.WeekNames.push({"day1":"Fri","day2":"Sat","day3":"Sun","day4":"Mon","day5":"Tue","day6":"Wed","day7":"Thu","dayCode":"Friday"});
+    //                      break;
+    //                  case "Saturday":
+    //                      this.WeekNames.push({"day1":"Sat","day2":"Sun","day3":"Mon","day4":"Tue","day5":"Wed","day6":"Thu","day7":"Fri","dayCode":"Saturday"});
+    //                      break;
+    //                  case "Sunday":
+    //                      this.WeekNames.push({"day1":"Sun","day2":"Mon","day3":"Tue","day4":"Wed","day5":"Thu","day6":"Fri","day7":"Sat","dayCode":"Sunday"});
+    //                      break;
+    //              }
+    //              break;
+    //          }
+    //      }
          
-       }
-    else if(this.state.ClientNames.length>1){
+    //    }
+    //else if(this.state.ClientNames.length>1){
            section.push(<option value=''>None</option>)
                this.state.ClientNames.map((option) => (
                    section.push(
                        <><option value={option} selected={this.state.trFormdata.ClientName == option}>{option}</option></>
                )))
-       }
+      // }
        //this.setState({trFormdata:Formdata})
         return section;
     }
@@ -2432,7 +2427,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                         <div className={this.state.isAdmin?"col-md-3":"col-md-4"}>
                                 <div className="light-text clientName">
                                     <label className='lblClient'>Client Name <span className="mandatoryhastrick">*</span></label>
-                                    <select className="ddlClient" required={true}  name="ClientName" title="Client Name" onChange={this.handleClientChange} ref={this.Client} disabled={(this.state.ClientNames.length==1?true:this.currentUser==this.state.trFormdata.Name?false: this.state.isSubmitted)}>
+                                    <select className="ddlClient" required={true}  name="ClientName" title="Client Name" onChange={this.handleClientChange} ref={this.Client} disabled={(this.state.ClientNames.length==1?false:this.currentUser==this.state.trFormdata.Name?false: this.state.isSubmitted)}>
                                                 {/* <option value=''>None</option>
                                                 {this.state.ClientNames.map((option) => (
                                                     <option value={option} selected={this.state.trFormdata.ClientName==option}>{option}</option>
@@ -2444,7 +2439,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
 
                         <div className={this.state.isAdmin?"col-md-3 divWeeklyStartDate":"col-md-4 divWeeklyStartDate"}>
                                 <div className="light-text div-readonly">
-                                            {/* <label className="z-in-9">Weekly Start Date</label> */}
+                                           
                                             <div className="custom-datepicker" id="divWeekStartDate">
                                                 <CustomDatePicker
                                                     handleChange={this.WeekStartDateChange}

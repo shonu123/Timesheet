@@ -3539,3 +3539,34 @@
 
 //     return currWeekMonday;
 // }
+// private  IsHoliday=(CurrentWeekDay,ClientName)=>{
+//     let HolidayData={isHoliday:false,HolidayName:""};
+//     let WeekDay=new Date(CurrentWeekDay);
+//     let Day=WeekDay.getMonth()+1+"/"+WeekDay.getDate()+"/"+WeekDay.getFullYear();
+//     if(ClientName.toLowerCase()=="synergy")
+//     {
+//         for(var item of this.state.SynergyHolidaysList)
+//         {
+//             let Holiday=new Date(item.HolidayDate).getMonth()+1+"/"+new Date(item.HolidayDate).getDate()+"/"+new Date(item.HolidayDate).getFullYear();
+//              if(Holiday==Day)
+//              {
+//                 HolidayData.isHoliday=true;
+//                 HolidayData.HolidayName=item.HolidayName;
+//                 return HolidayData;
+//              }
+//         }
+//     }
+//     else{    
+//         for(var item of this.state.HolidaysList)
+//         {
+//             let Holiday=new Date(item.HolidayDate).getMonth()+1+"/"+new Date(item.HolidayDate).getDate()+"/"+new Date(item.HolidayDate).getFullYear();
+//              if(Holiday==Day)
+//              {
+//                 HolidayData.isHoliday=true;
+//                 HolidayData.HolidayName=item.HolidayName;
+//                 return HolidayData;
+//              }
+//         }
+//     }
+//     return HolidayData;
+// }
