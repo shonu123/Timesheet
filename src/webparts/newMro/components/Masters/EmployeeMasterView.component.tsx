@@ -45,7 +45,7 @@ class EmployeeMasterView extends React.Component<EmployeeMasterViewProps, Employ
     public componentDidMount() {
         this.setState({ loading: true });
         this.EmployeeMasterData();
-        if(this.props.match.params.message != undefined){
+        if(!["",undefined,null].includes(this.props.match.params.message)){
             let message = this.props.match.params.message
             window.location.hash='#/EmployeeMasterView';
             if(message == 'Error'){

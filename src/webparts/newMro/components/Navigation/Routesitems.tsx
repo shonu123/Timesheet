@@ -86,7 +86,7 @@ class Routesitems extends Component<RoutesProps, RoutesState> {
                    <Route path='/ClientMaster/:id?' element ={<WrapperClientMaster/>} />
                     <Route path='/purchaserequest/:id?' element={<Wrapper />} />
                     <Route path='/requisitionreport' element={(matchprops) => <RequisitionReport {...matchprops}{...this.props} />} />
-                    <Route path='/Dashboard' element={<Dashboard {...this.context} {...this.props} />} />
+                    <Route path='/Dashboard/:message?' element={<Dashboard {...this.context} {...this.props} />} />
                     {/* <Route path='/vendor/:id?' element={<Vendor {...this.context}{...this.props} />} /> */}
                     <Route path='/purchaserequestlist' element={<Purchaserequestlist {...this.context} {...this.props} />} />
                     <Route path='/myrequests' element={<Myrequests {...this.context}{...this.props} />} />

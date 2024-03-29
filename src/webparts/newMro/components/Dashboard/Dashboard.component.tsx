@@ -18,6 +18,8 @@ import AllRequests from './AllRequests.components';
 import EmployeeMasterForm from '../Masters/EmployeeMasterForm.component';
 import EmployeeMasterView from '../Masters/EmployeeMasterView.component';
 import Loader from '../Shared/Loader';
+import customToaster from '../Shared/Toaster.component';
+import { StatusType, ToasterTypes } from '../../Constants/Constants';
 export interface DashboardProps {
     match: any;
     spContext: any;
@@ -89,7 +91,35 @@ class Dashboard extends React.Component<DashboardProps, DashboardState> {
     public componentDidMount() {
         // this.getUserGroups();
         // this.setState({ loading: true });
+        this.setState({ loading: true });
         this.getUserGroups();
+        if(!["",undefined,null].includes(this.props.match.params.message)){
+            let message = this.props.match.params.message
+            window.location.hash='#/Dashboard';
+            if(message == 'Error'){
+                customToaster('toster-error',ToasterTypes.Error,'Sorry! something went wrong',4000)
+            }
+            else{
+                let status = message.split('-')[1]
+                setTimeout(() => {
+                    switch (status) {
+                        case StatusType.Submit:
+                            customToaster('toster-success',ToasterTypes.Success,'Weekly timesheet'+StatusType.Submit+ 'succesfully',2000)
+                            break;
+                        case StatusType.Approved:
+                            customToaster('toster-success',ToasterTypes.Success,'Weekly timesheet'+StatusType.Approved+ 'succesfully',2000)
+                            break;
+                        case StatusType.Reject:
+                            customToaster('toster-success',ToasterTypes.Success,'Weekly timesheet'+StatusType.Reject+ 'succesfully',2000)
+                            break;                    
+                        default:
+                            break;
+                    }
+                },0)
+                    // status == StatusType.Submit?customToaster('toster-success',ToasterTypes.Success,'Weekly timesheet'+StatusType.Submit+ 'succesfully',2000):status == StatusType.Approved?customToaster('toster-success',ToasterTypes.Success,'Weekly timesheet'+StatusType.Approved+ 'succesfully',2000):customToaster('toster-success',ToasterTypes.Success,'Weekly timesheet'+StatusType.Reject+ 'succesfully',2000)}, 0);
+            }
+        }
+        // this.getUserGroups();
     }
 
     private getUserGroups = async () => {
