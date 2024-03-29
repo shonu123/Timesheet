@@ -4,16 +4,13 @@ import TableGenerator from '../Shared/TableGenerator';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faXmark, faEdit, faCheck, faPlus } from '@fortawesome/free-solid-svg-icons';
 import { SPHttpClient} from '@microsoft/sp-http';
-import ModalApprovePopUp from '../Shared/ModalApprovePopUp';
-import { WebPartContext } from '@microsoft/sp-webpart-base';
 import { sp } from '@pnp/sp';
 import "@pnp/sp/webs";
 import "@pnp/sp/lists";
 import "@pnp/sp/items";
 import Loader from '../Shared/Loader';
-import { StatusType } from '../../Constants/Constants';
-import toast, { Toaster } from 'react-hot-toast';
 import { ToasterTypes } from '../../Constants/Constants';
+import toast, { Toaster } from 'react-hot-toast';
 import customToaster from '../Shared/Toaster.component';
 export interface EmployeeMasterViewProps {
     match: any;
@@ -34,9 +31,6 @@ export interface EmployeeMasterViewState {
     Action : string;
     errorMessage: string;
     ItemID : Number;
-    // pageNumber:number;
-    // sortBy:number;
-    // sortOrder:boolean;
 }
 
 class EmployeeMasterView extends React.Component<EmployeeMasterViewProps, EmployeeMasterViewState> {
@@ -49,24 +43,7 @@ class EmployeeMasterView extends React.Component<EmployeeMasterViewProps, Employ
     }
 
     public componentDidMount() {
-        //console.log(this.props);
-        //comment start
-        // if(this.props.match.params.message != undefined){
-        //     let message = this.props.match.params.message
-            
-        //     if(message == 'Error'){
-        //         toast.error('Sorry! something went wrong')
-        //     }
-        //     else{
-        //         // if(message!=''||message!=undefined){
-        //             let status = message.split('-')[1]
-        //             status == "Added"?toast.success('Employee configuration added successfully'):toast.success('Employee configuration updated successfully')
-        //         // }
-        //     }
-        //     //window.location.hash='#/EmployeeMasterView';
-        // }
-        // this.EmployeeMasterData();
-        // comment end
+        this.setState({ loading: true });
         this.EmployeeMasterData();
         if(this.props.match.params.message != undefined){
             let message = this.props.match.params.message
@@ -84,7 +61,6 @@ class EmployeeMasterView extends React.Component<EmployeeMasterViewProps, Employ
     }
 
     private EmployeeMasterData = async () => {
-        this.setState({ loading: true });
         const userId = this.props.spContext.userId;
         var selectQuery = "Employee/Title,ReportingManager/Title,Approvers/Title,Reviewers/Title,Notifiers/Title,*";
         var expandQuery = "Employee,ReportingManager,Approvers,Reviewers,Notifiers";
@@ -129,10 +105,10 @@ class EmployeeMasterView extends React.Component<EmployeeMasterViewProps, Employ
                     })
                 }
                 console.log(Data);
-                this.setState({ Details: Data});
-                setTimeout(() => {
-                    this.setState({ loading: false });
-                      }, 1500);
+                this.setState({ Details: Data,loading: false});
+                // setTimeout(() => {
+                //     this.setState({ loading: false });
+                //       }, 1500);
                 // document.getElementById('txtTableSearch').style.display = 'none';
                 // this.setState({ loading: false });
             }).catch(err => {
@@ -227,6 +203,7 @@ class EmployeeMasterView extends React.Component<EmployeeMasterViewProps, Employ
                     </NavLink>
                 </div> */}
             <div>
+            {this.state.loading && <Loader />}
                 <div className='table-head-1st-td'>
                     <TableGenerator columns={columns} data={this.state.Details} fileName={'My Details'} showExportExcel={false}
                     showAddButton={true} customBtnClass='px-1 text-right mt-2' btnDivID='divAddNewEmployeeMaster' navigateOnBtnClick={`/EmployeeMasterForm`} btnSpanID='newEmployeeMasterForm' btnCaption=' New' btnTitle='New Approval Matrix' searchBoxLeft={false}></TableGenerator>
