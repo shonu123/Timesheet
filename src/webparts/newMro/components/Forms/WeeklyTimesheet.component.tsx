@@ -1742,7 +1742,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                 formdata.CommentsHistoryData.push({"Action":StatusType.Approved,"Role":"Manager","User":this.currentUser,"Comments":this.state.trFormdata.Comments,"Date":new Date().toISOString()})
                 //postObject['Status']=StatusType.InProgress;
                 postObject['Status']=StatusType.Approved;
-                //postObject['PendingWith']="Reviewer";
+                postObject['Revised']=true;
                 postObject['PendingWith']="NA";
                 break;
             case StatusType.InProgress:
@@ -2986,7 +2986,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
         let weekEnd=addDays(new Date(weekStart), 6);
         let weekStartArr=weekStart.toDateString().split(" ");
         let weekEndArr=weekEnd.toDateString().split(" ")
-        weekstartWeekEnd="      ( "+weekStartArr[1]+" "+weekStartArr[2]+" "+weekStartArr[3]+" - "+weekEndArr[1]+" "+weekEndArr[2]+" "+weekEndArr[3]+" )";
+        weekstartWeekEnd="      ("+weekStartArr[1]+"-"+weekStartArr[2]+"-"+weekStartArr[3]+" To "+weekEndArr[1]+"-"+weekEndArr[2]+"-"+weekEndArr[3]+" )";
         return weekstartWeekEnd
     }
    }
@@ -3423,7 +3423,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                             {this.state.showApproveRejectbtn&&!this.state.IsReviewer?<button type="button" id="btnApprove" onClick={this.handleApprove} className="SubmitButtons btn">Approve</button>:''}
                             {this.state.showApproveRejectbtn?<button type="button" id="btnReject" onClick={this.handleReject}  className="RejectButtons btn">Reject</button>:''}
                             {this.state.isSubmitted?'': <button type="button" id="btnSubmit" onClick={this.handleSubmitorSave} className="SubmitButtons btn">Submit</button>}
-                            {(this.state.trFormdata.Status==StatusType.Submit||this.state.trFormdata.Status==StatusType.Approved)&&!this.state.showApproveRejectbtn?<button type="button" id="btnRevoke" onClick={this.handleRevoke} className="CancelButtons btn">Revoke</button>:''}
+                            {(this.state.trFormdata.Status==StatusType.Submit||this.state.trFormdata.Status==StatusType.Approved)&&!this.state.showApproveRejectbtn?<button type="button" id="btnRevoke" onClick={this.handleRevoke} className="txt-white bc-burgundy  btn">Revoke</button>:''}
                             {this.state.isSubmitted?'':  <button type="button" id="btnSave" onClick={this.handleSubmitorSave} className="SaveButtons btn">Save</button>}
                             <button type="button" id="btnCancel" onClick={this.handleCancel} className="CancelButtons btn">Cancel</button>
                         </div>
