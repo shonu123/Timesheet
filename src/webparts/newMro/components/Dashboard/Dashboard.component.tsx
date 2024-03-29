@@ -82,13 +82,13 @@ class Dashboard extends React.Component<DashboardProps, DashboardState> {
                 setTimeout(() => {
                     switch (status) {
                         case StatusType.Submit:
-                            customToaster('toster-success',ToasterTypes.Success,'Weekly timesheet '+StatusType.Submit+ 'succesfully',2000)
+                            customToaster('toster-success',ToasterTypes.Success,'Weekly timesheet '+StatusType.Submit+ ' succesfully',2000)
                             break;
                         case StatusType.Approved:
-                            customToaster('toster-success',ToasterTypes.Success,'Weekly timesheet '+StatusType.Approved+ 'succesfully',2000)
+                            customToaster('toster-success',ToasterTypes.Success,'Weekly timesheet '+StatusType.Approved+ ' succesfully',2000)
                             break;
                         case StatusType.Reject:
-                            customToaster('toster-success',ToasterTypes.Success,'Weekly timesheet '+StatusType.Reject+ 'succesfully',2000)
+                            customToaster('toster-success',ToasterTypes.Success,'Weekly timesheet '+StatusType.Reject+ ' succesfully',2000)
                             break;                    
                         default:
                             break;
