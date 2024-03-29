@@ -1565,7 +1565,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                 case "btnsave":
                     //formdata.CommentsHistoryData.push({"Action":StatusType.Save,"Role":this.state.userRole,"User":this.currentUser,"Comments":this.state.trFormdata.Comments,"Date":new Date()})
                     postObject['Status']=StatusType.Save;
-                    postObject['PendingWith']="NA";
+                    postObject['PendingWith']="Initiator";
                     break;
                 case "btnsubmit":
                     if(this.state.ItemID==0 && formdata.Status==StatusType.Save)
@@ -1742,7 +1742,6 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                 formdata.CommentsHistoryData.push({"Action":StatusType.Approved,"Role":"Manager","User":this.currentUser,"Comments":this.state.trFormdata.Comments,"Date":new Date().toISOString()})
                 //postObject['Status']=StatusType.InProgress;
                 postObject['Status']=StatusType.Approved;
-                postObject['Revised']=true;
                 postObject['PendingWith']="NA";
                 break;
             case StatusType.InProgress:
@@ -1766,7 +1765,9 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
         user = this.state.EmployeeEmail!=this.props.spContext.userEmail?"Administator":user;
                 formdata.CommentsHistoryData.push({"Action":StatusType.Revoke,"Role":user,"User":this.currentUser,"Comments":this.state.trFormdata.Comments,"Date":new Date().toISOString()})
                 postObject['Status']=StatusType.Revoke;
-                postObject['PendingWith']="NA";
+                postObject['PendingWith']="Initiator";
+                if(formdata.Status==StatusType.Approved)
+                postObject['Revised']=true;
            
              postObject["CommentsHistory"]=JSON.stringify(formdata.CommentsHistoryData),
             this.setState({errorMessage : '',trFormdata:formdata});
@@ -1795,7 +1796,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                 postObject['Status']=StatusType.ReviewerReject;
                 postObject['Revised']=true;
             }
-            postObject['PendingWith']="initiator";
+            postObject['PendingWith']="Initiator";
             postObject["CommentsHistory"]=JSON.stringify(formdata.CommentsHistoryData),
             postObject['IsClientApprovalNeed']=formdata.IsClientApprovalNeeded;
             this.setState({errorMessage : '',trFormdata:formdata});
