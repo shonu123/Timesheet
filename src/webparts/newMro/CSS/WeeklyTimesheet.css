@@ -236,6 +236,15 @@
         border: none !important;
         width: 100px !important;
        }
+
+    #weekstartAndweekEnd{
+        margin-left: 20px;
+        /* color: #047cf3; */
+        color: #0d2f4b;
+    }
+    #BillableTotal{
+     background-color: #e3a5a5 !important;   
+    }
     /*.ClientHoliday .TimeInput-input
     {
         color:hwb(263 9% 9%);
