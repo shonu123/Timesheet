@@ -129,6 +129,7 @@
             display: inline-block;
             border-radius: 10px;
             border: 1px solid #0D2F4B;
+            text-align: center;
     }
     .ds-none{
         display: none;
@@ -239,11 +240,15 @@
 
     #weekstartAndweekEnd{
         margin-left: 20px;
-        /* color: #047cf3; */
         color: #0d2f4b;
+        font-weight: normal;
     }
     #BillableTotal{
      background-color: #e3a5a5 !important;   
+    }
+    .headerClient{
+        font-size: 33px;
+        color: #0d2f4b;
     }
     /*.ClientHoliday .TimeInput-input
     {

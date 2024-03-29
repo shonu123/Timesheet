@@ -3020,7 +3020,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                                         </div>
                                     </div>
                     <div className="col-md-12 SynergyAddress">
-                    <h4><label>{this.state.trFormdata.ClientName} <span id='weekstartAndweekEnd'>{this.getWeekstartAndWeekEnd(this.state.trFormdata)}</span></label></h4>
+                    <h4><label className='headerClient'>{this.state.trFormdata.ClientName} <span id='weekstartAndweekEnd'>{this.getWeekstartAndWeekEnd(this.state.trFormdata)}</span></label></h4>
                     </div>
                     <div className="row pt-2 px-4 weeklysection1">
                     {/* new changes start */}
