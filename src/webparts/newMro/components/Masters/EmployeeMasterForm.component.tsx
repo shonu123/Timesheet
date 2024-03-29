@@ -110,9 +110,10 @@ class EmployeeMasterForm extends React.Component<EmployeeMasterFormProps, Employ
         ])
         this.setState({ClientsObject : clients})
         console.log(clients);
-        this.setState({ loading: false });
+        // this.setState({ loading: false});        this.setState({showToaster:true})
+
         if(this.props.match.params.id != undefined){
-            this.setState({ loading: true });
+            // this.setState({ loading: true});
             console.log(this.props.match.params.id)
             this.setState({ItemID : this.props.match.params.id})
             this.getData()
@@ -125,7 +126,7 @@ class EmployeeMasterForm extends React.Component<EmployeeMasterFormProps, Employ
             userGroups.push(grp.Title)
         }
         if(userGroups.includes('Timesheet Owners') || userGroups.includes('Timesheet Members')){
-            this.setState({isPageAccessable : true})
+            this.setState({isPageAccessable : true,loading:false,showToaster:true})
         }
         else{
             this.setState({isPageAccessable : false})
@@ -259,8 +260,13 @@ private async validateDuplicateRecord () {
         this.setState({message:'',Homeredirect : true});
     }
 
+    private showToaster=()=>{
+        this.handleSubmit()
+    }
+
     // this function is used to validate form and send data to list if validation succeeds
-    private handleSubmit = async (e)=>{
+    private handleSubmit = async ()=>{
+        // this.setState({showToaster:true})
         let data ={
         Employee : { val: this.state.EmployeeId, required: true, Name: 'Employee', Type: ControlType.people,Focusid:'divEmployee' },
         ReportingManager: { val: this.state.ReportingManagerId, required: true, Name: 'Reporting Manager', Type: ControlType.people,Focusid:'divReportingManager' },
@@ -285,12 +291,12 @@ private async validateDuplicateRecord () {
             Rm.push(manager)
         }
         if(!isValid.status){
-            this.setState({showToaster:true})
+            // this.setState({showToaster:true})
             customToaster('toster-error',ToasterTypes.Error,isValid.message,4000)
         }
         else if(Rm.includes(this.state.EmployeeId)){
             let errMsg = 'The selected Employee can not be assigned as their own Manager';
-            this.setState({showToaster:true})
+            // this.setState({showToaster:true})
             customToaster('toster-error',ToasterTypes.Error,errMsg,4000)
         }
         else{
@@ -312,7 +318,7 @@ private async validateDuplicateRecord () {
            let duplicate = await this.validateDuplicateRecord()
            if(duplicate>0){
                console.log("duplicate record found");
-               this.setState({showToaster:true})
+            //    this.setState({showToaster:true})
             customToaster('toster-error',ToasterTypes.Error,'Current Employee is already associated with '+this.state.ClientName+" client",4000)
            }
            else{
@@ -598,14 +604,14 @@ else {
                                 </div>
                                 <div className="row mx-1" id="">
                                     <div className="col-sm-12 text-center my-2" id="">
-                                        <button type="button" className="SubmitButtons btn" onClick={this.handleSubmit}>Submit</button>
+                                        <button type="button" className="SubmitButtons btn" onClick={this.showToaster}>Submit</button>
                                         <button type="button" className="CancelButtons btn" onClick={this.handleCancel}>Cancel</button>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                        {this.state.showToaster&& <Toaster /> }
+                        {this.state.showToaster && <Toaster />}
                     {this.state.loading && <Loader />}
                 </React.Fragment >
             );
