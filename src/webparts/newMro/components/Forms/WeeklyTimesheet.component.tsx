@@ -1044,6 +1044,9 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
         if(!["Description","ProjectCode","Total"].includes(prop))
         {
             value=value.match(/\d{0,5}(\.\d{0,2})?/)[0];
+           if(parseFloat(value)>24.00){
+                return false
+           }
             //value=="."? value="0" : value;
            //[undefined,null,""].includes(value)? value="0.0" : value.length==1? value=value+".0" : value;
         }
@@ -1449,7 +1452,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
         let isValid={status:true,message:''};
         for(let i in trFormdata.WeeklyItemsData)
         {  
-            if(trFormdata.WeeklyItemsData[i].Total==0)
+            if(parseFloat(trFormdata.WeeklyItemsData[i].Total)==0)
             {
                 isValid.message="Total working hours in a week can not be blank";
                 isValid.status=false;
@@ -1482,7 +1485,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
         let isValid={status:true,message:''};
         for(let i in trFormdata.OTItemsData)
         {
-            if(trFormdata.OTItemsData[i].Total==0)
+            if(parseFloat(trFormdata.OTItemsData[i].Total)==0)
             {
                 isValid.message="Total working hours in a week can not be blank";
                 isValid.status=false;
@@ -3020,7 +3023,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                                         </div>
                                     </div>
                     <div className="col-md-12 SynergyAddress">
-                    <h4><label className='headerClient'>{this.state.trFormdata.ClientName} <span id='weekstartAndweekEnd'>{this.getWeekstartAndWeekEnd(this.state.trFormdata)}</span></label></h4>
+                    <label className='headerClient'>{this.state.trFormdata.ClientName}</label><span id='weekstartAndweekEnd'>{this.getWeekstartAndWeekEnd(this.state.trFormdata)}</span>
                     </div>
                     <div className="row pt-2 px-4 weeklysection1">
                     {/* new changes start */}

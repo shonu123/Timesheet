@@ -2,10 +2,8 @@ import * as React from 'react';
 import { NavLink } from 'react-router-dom';
 import TableGenerator from '../Shared/TableGenerator';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faXmark, faEdit, faCheck, faPlus } from '@fortawesome/free-solid-svg-icons';
+import { faEdit } from '@fortawesome/free-solid-svg-icons';
 import { SPHttpClient} from '@microsoft/sp-http';
-import ModalApprovePopUp from '../Shared/ModalApprovePopUp';
-import { WebPartContext } from '@microsoft/sp-webpart-base';
 import { sp } from '@pnp/sp';
 import "@pnp/sp/webs";
 import "@pnp/sp/lists";
@@ -81,12 +79,11 @@ class MyRequests extends React.Component<MyRequestsProps, MyRequestsState> {
                     })
                 }
                 console.log(Data);
-                this.setState({ Requests: Data });
-                setTimeout(() => {
-                    this.setState({ loading: false });
-                      }, 1000);
+                this.setState({ Requests: Data,loading: false });
+                // setTimeout(() => {
+                //     this.setState({ loading: false });
+                //       }, 1000);
                 // document.getElementById('txtTableSearch').style.display = 'none';
-                // this.setState({ loading: false });
             }).catch(err => {
                 console.log('Failed to fetch data.', err);
             });
@@ -152,6 +149,7 @@ class MyRequests extends React.Component<MyRequestsProps, MyRequestsState> {
                     <TableGenerator columns={columns} data={this.state.Requests} fileName={'My Requests'} showExportExcel={false} showAddButton={true} customBtnClass='px-1 text-right' navigateOnBtnClick={`/WeeklyTimesheet`} btnDivID='divAddNewWeeklyTimeSheet' btnSpanID='newWeeklyTimeSheet' btnCaption=' New' btnTitle='New Weekly Timesheet' searchBoxLeft={false}></TableGenerator>
                 </div>
             </div>
+            {this.state.loading && <Loader />}
             </React.Fragment> 
         );
     }

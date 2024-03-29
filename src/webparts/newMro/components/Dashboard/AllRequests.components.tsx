@@ -11,8 +11,6 @@ import "@pnp/sp/webs";
 import "@pnp/sp/lists";
 import "@pnp/sp/items";
 import Loader from '../Shared/Loader';
-import { StatusType } from '../../Constants/Constants';
-
 export interface AllRequestsProps {
     match: any;
     spContext: any;
@@ -113,11 +111,10 @@ class AllRequests extends React.Component<AllRequestsProps,AllRequestsState> {
 
                 }
                 console.log(Data);
-                this.setState({ AllRequests: Data,ExportExcelData:ExcelData });
-                setTimeout(() => {
-                    this.setState({ loading: false });
-                      }, 1000);
-                // this.setState({ loading: false });
+                this.setState({ AllRequests: Data,ExportExcelData:ExcelData,loading: false });
+                // setTimeout(() => {
+                //     this.setState({ loading: false });
+                //       }, 1000);
             }).catch(err => {
                 console.log('Failed to fetch data.', err);
             });
@@ -290,6 +287,7 @@ class AllRequests extends React.Component<AllRequestsProps,AllRequestsState> {
                     <TableGenerator columns={columns} data={this.state.AllRequests} fileName={'All Requests'} showExportExcel={true} ExportExcelCustomisedColumns={Exportcolumns} ExportExcelCustomisedData={this.state.ExportExcelData} ></TableGenerator>
                 </div>
             </div>
+            {this.state.loading && <Loader />}
             </React.Fragment> 
         );
     }

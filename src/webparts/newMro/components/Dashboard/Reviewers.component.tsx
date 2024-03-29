@@ -5,7 +5,6 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faXmark, faEdit, faCheck } from '@fortawesome/free-solid-svg-icons';
 import { SPHttpClient} from '@microsoft/sp-http';
 import ModalApprovePopUp from '../Shared/ModalApprovePopUp';
-import { WebPartContext } from '@microsoft/sp-webpart-base';
 import { sp } from '@pnp/sp';
 import "@pnp/sp/webs";
 import "@pnp/sp/lists";
@@ -13,7 +12,7 @@ import "@pnp/sp/items";
 import Loader from '../Shared/Loader';
 import { StatusType } from '../../Constants/Constants';
 import ModalPopUp from '../Shared/ModalPopUp';
-import toast, { Toaster } from 'react-hot-toast';
+import { Toaster } from 'react-hot-toast';
 import customToaster from '../Shared/Toaster.component';
 import { ToasterTypes } from '../../Constants/Constants';
 export interface ReviewerApprovalsProps {
@@ -94,11 +93,10 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
                 }
                 this.setState({ExportExcelData:Data})
                 console.log(Data);
-                this.setState({ Reviewers: Data});
-                setTimeout(() => {
-                    this.setState({ loading: false });
-                      }, 500);
-                //console.log(this.state.approvals);
+                this.setState({ Reviewers: Data,loading: false});
+                // setTimeout(() => {
+                //     this.setState({ loading: false });
+                //       }, 500);
             }).catch(err => {
                 console.log('Failed to fetch data.', err);
             });

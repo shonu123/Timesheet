@@ -241,7 +241,14 @@
     #weekstartAndweekEnd{
         margin-left: 20px;
         color: #0d2f4b;
-        font-weight: normal;
+        font-weight: 400;
+        font-size: 18px;
+        position: relative;
+        top: -4px;
+    }
+    .SynergyAddress{
+        display: flex;
+        align-items: center;
     }
     #BillableTotal{
      background-color: #e3a5a5 !important;   
