@@ -283,50 +283,14 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
     
     }
     //functions related to  initial loading
-     private async loadWeeklyTimeSheetData(currentUserId) {
+    private async loadWeeklyTimeSheetData(currentUserId) {
         var ClientNames: any;
         var ClientsFromClientMaster:any;
         var Client=[];
-
-         if(this.props.match.params.id!=undefined){
-            this.setState({ItemID : this.props.match.params.id})
-             ClientNames= await this.getItemData(this.props.match.params.id)
-            //  ClientNames = await this.oweb.lists.getByTitle('EmployeeMaster').items.filter(" Employee/Id eq "+data[0].InitiatorId+"and IsActive eq 1").select("ClientName ,DateOfJoining,Employee/Title,Employee/Id,Employee/EMail,ReportingManager/Id,Reviewers/Id,Notifiers/Id,ReportingManager/Title,Reviewers/Title,Notifiers/Title,ReportingManager/EMail,Reviewers/EMail,Notifiers/EMail,*").orderBy("Employee/Title").expand("Employee,ReportingManager,Reviewers,Notifiers").getAll();
-         }
-         else
-         {
-             ClientNames = await this.oweb.lists.getByTitle('EmployeeMaster').items.filter(" Employee/Id eq "+currentUserId+"and IsActive eq 1").select("ClientName ,DateOfJoining,Employee/Title,Employee/Id,Employee/EMail,ReportingManager/Id,Reviewers/Id,Notifiers/Id,ReportingManager/Title,Reviewers/Title,Notifiers/Title,ReportingManager/EMail,Reviewers/EMail,Notifiers/EMail,*").expand("Employee,ReportingManager,Reviewers,Notifiers").orderBy("ClientName",true).getAll();
-         }
-        console.log(ClientNames);
-        if(ClientNames.length<1){
-            this.setState({modalTitle:'Invalid Employee configuration',modalText:'Employee not configured in Approval Matrix,Please contact Administrator',isSuccess: false,showHideModal:true})
-            this.setState({loading:false,isSubmitted:true});
-            return false;
-        }
-        ClientsFromClientMaster = await this.oweb.lists.getByTitle('Client').items.filter("IsActive eq 1").select("Title,*").orderBy("Title",true).getAll();
-
-        this.setState({EmployeeEmail:[],ClientNames:[],Clients_DateOfJoinings:[],SuperviserNames:[],Reviewers:[],Notifiers:[]});
-        this.state.EmployeeEmail.push(ClientNames[0].Employee.EMail);
-        ClientNames.filter(item => {
-              Client.push({"ClientName":item.ClientName});
-              this.state.Clients_DateOfJoinings.push({"ClientName":item.ClientName,"DOJ":item.DateOfJoining,"IsDescriptionMandatory":item.MandatoryDescription,"IsProjectCodeMandatory":item.MandatoryProjectCode,"WeekStartDay":item.WeekStartDay,"HolidayType":item.HolidayType})
-              if(item.hasOwnProperty("ReportingManager"))
-              item.ReportingManager.map(i=>(this.state.SuperviserNames.push({"ClientName":item.ClientName,"ReportingManager":i.Title,"ReportingManagerId":i.Id,"ReportingManagerEmail":i.EMail})));
-              if(item.hasOwnProperty("Reviewers"))
-              item.Reviewers.map(i=>(this.state.Reviewers.push({"ClientName":item.ClientName,"ReviewerId":i.Id,"ReviewerEmail":i.EMail})));
-              if(item.hasOwnProperty("Notifiers"))
-              item.Notifiers.map(i=>(this.state.Notifiers.push({"ClientName":item.ClientName,"NotifierId":i.Id,"NotifierEmail":i.EMail})));
-
-        }); 
-
-        ClientsFromClientMaster.filter(ClientItem=>{ //to filter only active client names
-            Client.filter(employeeItem=>{
-                if(ClientItem.Title.toLowerCase()==employeeItem.ClientName.toLowerCase())
-                this.state.ClientNames.push(employeeItem.ClientName)
-            })
-        })
-        
-        let groups = await sp.web.currentUser.groups();
+        let [clientMaster,groups] = await Promise.all([
+            this.oweb.lists.getByTitle('Client').items.filter("IsActive eq 1").select("Title,*").orderBy("Title",true).getAll(),
+            sp.web.currentUser.groups()
+        ]);
         console.log("current user deatils")
         console.log(this.props.context.pageContext)
         //------new-----
@@ -336,13 +300,15 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
         }
         let trFormdata = this.state.trFormdata
         trFormdata['Name'] = this.currentUser
-        this.setState({UserGoups:userGroups,trFormdata,ClientNames: this.state.ClientNames,EmployeeEmail:this.state.EmployeeEmail})
-        if(this.props.match.params.id != undefined){
-            console.log(this.props.match.params.id)
+        
+        if(this.props.match.params.id!=undefined){
             this.setState({ItemID : this.props.match.params.id})
-            this.getItemData(this.state.ItemID);
+            ClientNames= await this.getItemData(this.props.match.params.id)
         }
-        else {
+        else
+        {
+            ClientNames = await this.oweb.lists.getByTitle('EmployeeMaster').items.filter(" Employee/Id eq "+currentUserId+"and IsActive eq 1").select("ClientName ,DateOfJoining,Employee/Title,Employee/Id,Employee/EMail,ReportingManager/Id,Reviewers/Id,Notifiers/Id,ReportingManager/Title,Reviewers/Title,Notifiers/Title,ReportingManager/EMail,Reviewers/EMail,Notifiers/EMail,*").expand("Employee,ReportingManager,Reviewers,Notifiers").orderBy("ClientName",true).getAll();
+
             if(userGroups.includes('Timesheet Owners') || userGroups.includes('Timesheet Members') || userGroups.includes('Timesheet Initiators')){
                 this.setState({isSubmitted : false,loading:false});
             }
@@ -353,7 +319,38 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                 this.setState({isAdmin:true,isSubmitted: true})
             }
         }
-
+        console.log(ClientNames);
+        if(ClientNames.length<1){
+            this.setState({modalTitle:'Invalid Employee configuration',modalText:'Employee not configured in Approval Matrix,Please contact Administrator',isSuccess: false,showHideModal:true})
+            this.setState({loading:false,isSubmitted:true});
+            return false;
+        }
+        ClientsFromClientMaster =clientMaster;
+        this.setState({EmployeeEmail:[],ClientNames:[],Clients_DateOfJoinings:[],SuperviserNames:[],Reviewers:[],Notifiers:[]});
+        this.state.EmployeeEmail.push(ClientNames[0].Employee.EMail);
+        this.state.EmployeeEmail.push(ClientNames[0].Employee.EMail);
+        ClientNames.filter(item => {
+              Client.push({"ClientName":item.ClientName});
+              this.state.Clients_DateOfJoinings.push({"ClientName":item.ClientName,"DOJ":item.DateOfJoining,"IsDescriptionMandatory":item.MandatoryDescription,"IsProjectCodeMandatory":item.MandatoryProjectCode,"WeekStartDay":item.WeekStartDay,"HolidayType":item.HolidayType})
+              if(item.hasOwnProperty("ReportingManager"))
+              item.ReportingManager.map(i=>(this.state.SuperviserNames.push({"ClientName":item.ClientName,"ReportingManager":i.Title,"ReportingManagerId":i.Id,"ReportingManagerEmail":i.EMail})));
+              if(item.hasOwnProperty("Reviewers"))
+              item.Reviewers.map(i=>(this.state.Reviewers.push({"ClientName":item.ClientName,"ReviewerId":i.Id,"ReviewerEmail":i.EMail})));
+              if(item.hasOwnProperty("Notifiers"))
+              item.Notifiers.map(i=>(this.state.Notifiers.push({"ClientName":item.ClientName,"NotifierId":i.Id,"NotifierEmail":i.EMail})));
+        }); 
+        ClientsFromClientMaster.filter(ClientItem=>{ //to filter only active client names
+            Client.filter(employeeItem=>{
+                if(ClientItem.Title.toLowerCase()==employeeItem.ClientName.toLowerCase())
+                this.state.ClientNames.push(employeeItem.ClientName)
+            });
+        });
+        this.setState({UserGoups:userGroups,trFormdata,ClientNames: this.state.ClientNames,EmployeeEmail:this.state.EmployeeEmail});
+        if(ClientNames.length==1){
+            trFormdata.ClientName=ClientNames[0].ClientName;
+            this.handleClientChange(ClientNames[0].ClientName);
+        }
+        
     }
     private async getItemData(TimesheetID){
         var ClientNames: any;
@@ -596,7 +593,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
     }
     private handleClientChange=(event)=>{
         this.setState({loading:true})
-        let clientVal=event.target.value;
+        let clientVal=event.target!=undefined? event.target.value: event;
         const Formdata = { ...this.state.trFormdata };
             Formdata.ClientName=clientVal;
             Formdata.SuperviserNames=[];
@@ -2427,12 +2424,10 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                         <div className={this.state.isAdmin?"col-md-3":"col-md-4"}>
                                 <div className="light-text clientName">
                                     <label className='lblClient'>Client Name <span className="mandatoryhastrick">*</span></label>
-                                    <select className="ddlClient" required={true}  name="ClientName" title="Client Name" onChange={this.handleClientChange} ref={this.Client} disabled={(this.state.ClientNames.length==1?false:this.currentUser==this.state.trFormdata.Name?false: this.state.isSubmitted)}>
-                                                {/* <option value=''>None</option>
-                                                {this.state.ClientNames.map((option) => (
-                                                    <option value={option} selected={this.state.trFormdata.ClientName==option}>{option}</option>
-                                                ))} */}
-                                                {this.getClientNames()}
+                                    <select className="ddlClient" required={true}  name="ClientName" title="Client Name" onChange={this.handleClientChange} ref={this.Client} disabled={(this.state.ClientNames.length==1?true:this.currentUser==this.state.trFormdata.Name?false: this.state.isSubmitted)}>
+                                    <option value='None'>None</option>
+                                        {this.state.ClientNames.map((option) => <option value={option} selected={option == this.state.trFormdata.ClientName}>{option}</option>)}
+                                                {/* {this.getClientNames()} */}
                                     </select>
                                 </div>
                         </div>
