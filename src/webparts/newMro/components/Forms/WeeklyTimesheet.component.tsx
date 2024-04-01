@@ -311,13 +311,13 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
         {
             ClientNames = await this.oweb.lists.getByTitle('EmployeeMaster').items.filter(" Employee/Id eq "+currentUserId+"and IsActive eq 1").select("ClientName ,DateOfJoining,Employee/Title,Employee/Id,Employee/EMail,ReportingManager/Id,Reviewers/Id,Notifiers/Id,ReportingManager/Title,Reviewers/Title,Notifiers/Title,ReportingManager/EMail,Reviewers/EMail,Notifiers/EMail,*").expand("Employee,ReportingManager,Reviewers,Notifiers").orderBy("ClientName",true).getAll();
 
-            if(userGroups.includes('Timesheet Owners') || userGroups.includes('Timesheet Members') || userGroups.includes('Timesheet Initiators')){
+            if(userGroups.includes('Timesheet Members')){
                 this.setState({isSubmitted : false,loading:false});
             }
             else{
                 this.setState({isSubmitted : true,loading:false});
             }
-            if(userGroups.includes('Timesheet Owners') || userGroups.includes('Timesheet Members') ){
+            if(userGroups.includes('Timesheet Administrators')){
                 this.setState({isAdmin:true,isSubmitted: true})
             }
         }
@@ -1245,13 +1245,13 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                            postObject['DateSubmitted']=new Date();
                        }
                        else{
-                         if(StatusType.Save==formdata.Status)
+                        if(StatusType.Save==formdata.Status||StatusType.Revoke==formdata.Status||StatusType.ManagerReject==formdata.Status)
                          {
                             postObject['Status']=StatusType.Submit;
                             postObject['PendingWith']="Manager";
                             postObject['DateSubmitted']=new Date();
                          }
-                         else{
+                         else if(StatusType.ReviewerReject==formdata.Status){
                              postObject['Status']=StatusType.Approved;
                              postObject['PendingWith']="NA";
                              postObject['DateSubmitted']=new Date();
@@ -1420,7 +1420,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                if(StatusType.Save==formdata.Status)
                {
                 this.setState({loading:false,showToaster: true});
-                customToaster('toster-success',ToasterTypes.Success,'Weekly timesheet saved succesfully',2000)
+                customToaster('toster-success',ToasterTypes.Success,'Weekly timesheet saved successfully',2000)
                 this.getItemData(this.state.ItemID);
                }
                else if(StatusType.Revoke==formdata.Status)
@@ -1533,7 +1533,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                     this.props.match.params.id =ItemID;
                     if (StatusType.Save == formdata.Status) {
                         this.setState({loading:false,showToaster: true});
-                        customToaster('toster-success',ToasterTypes.Success,'Weekly timesheet saved succesfully',2000)
+                        customToaster('toster-success',ToasterTypes.Success,'Weekly timesheet saved successfully',2000)
                         this.getItemData(this.state.ItemID);
                     }
                     else if(StatusType.Submit==formdata.Status)
@@ -1593,7 +1593,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
            else if(formdata.Status==StatusType.Revoke)
            {
                this.setState({loading:false,showToaster: true});
-               customToaster('toster-success',ToasterTypes.Success,'Weekly timesheet '+StatusType.Revoke+' succesfully',2000)
+               customToaster('toster-success',ToasterTypes.Success,'Weekly timesheet '+StatusType.Revoke+' successfully',2000)
                this.getItemData(this.state.ItemID);
            }
           
@@ -1858,6 +1858,10 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                 value = false
             }
         }
+        if(!RMEmails.includes(userEmail)){
+            if(!RevEmails.includes(userEmail))
+                value = false;
+        }
         // value = value?this.state.trFormdata.Pendingwith == "Approver"?this.state.userRole == 'Approver'?true:false:this.state.trFormdata.Pendingwith == "Reviewer"?this.state.userRole == 'Reviewer'?true:false:false:false
         this.setState({ showApproveRejectbtn: value,IsReviewer:false  })
     }
@@ -1885,7 +1889,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
         else if(NotifiersEmail.includes(currentUserEmail)){
             isAccessable = true
         }
-        else if(userGroups.includes('Timesheet Owners') || userGroups.includes('Timesheet Members')){
+        else if(userGroups.includes('Timesheet Administrators')){
             isAccessable = true;
             this.setState({isSubmitted:true})
         }
@@ -2727,7 +2731,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                             {this.state.showApproveRejectbtn&&!this.state.IsReviewer?<button type="button" id="btnApprove" onClick={this.showConfirmApprove} className="SubmitButtons btn">Approve</button>:''}
                             {this.state.showApproveRejectbtn?<button type="button" id="btnReject" onClick={this.showConfirmReject}  className="RejectButtons btn">Reject</button>:''}
                             {this.state.isSubmitted?'': <button type="button" id="btnSubmit" onClick={this.showConfirmSubmit} className="SubmitButtons btn">Submit</button>}
-                            {(this.state.trFormdata.Status==StatusType.Submit||this.state.trFormdata.Status==StatusType.Approved)&&!this.state.showApproveRejectbtn?<button type="button" id="btnRevoke" onClick={this.handleRevoke} className="txt-white bc-burgundy  btn">Revoke</button>:''}
+                            {(this.state.trFormdata.Status==StatusType.Submit||this.state.trFormdata.Status==StatusType.Approved)&&!this.state.showApproveRejectbtn?<button type="button" id="btnRevoke" onClick={this.handleRevoke} className="txt-white CancelButtons bc-burgundy btn">Revoke</button>:''}
                             {this.state.isSubmitted?'':  <button type="button" id="btnSave" onClick={this.handleSubmitorSave} className="SaveButtons btn">Save</button>}
                             <button type="button" id="btnCancel" onClick={this.handleCancel} className="CancelButtons btn">Cancel</button>
                         </div>

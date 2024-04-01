@@ -1745,7 +1745,7 @@ div[id^="_TopSpan_NotificationSpan"]{
       /* width: 94vw!important;  */
   }
 }
-@media only screen and (max-width: 1250px) {
+@media only screen and (max-width: 1260px) {
   .dataTables_wrapper-overflow{
       width: 91vw!important; 
       /* commented by sri */
