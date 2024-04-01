@@ -1434,7 +1434,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                 emaildetails ={toemail:To,ccemail:this.state.EmployeeEmail,subject:sub,bodyString:sub,body:'' };
                 var DashboardURl = 'https://synergycomcom.sharepoint.com/sites/Billing.Timesheet/SitePages/TimeSheet.aspx';
                 emaildetails['body'] = this.emailBodyPreparation(this.siteURL+'/SitePages/TimeSheet.aspx#/WeeklyTimesheet/'+this.state.ItemID,tableContent,emaildetails['bodyString'],this.props.spContext.userDisplayName,DashboardURl);
-                this.sendemail(emaildetails,formdata);
+                this.sendemail(emaildetails,formdata.Status);
                }
                else if(StatusType.Submit==formdata.Status)
                {
@@ -1442,7 +1442,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                     emaildetails ={toemail:formObject.ReportingManagersEmail,ccemail:this.state.EmployeeEmail,subject:sub,bodyString:sub,body:'' };
                     var DashboardURl = 'https://synergycomcom.sharepoint.com/sites/Billing.Timesheet/SitePages/TimeSheet.aspx';
                     emaildetails['body'] = this.emailBodyPreparation(this.siteURL+'/SitePages/TimeSheet.aspx#/WeeklyTimesheet/'+this.state.ItemID,tableContent,emaildetails['bodyString'],this.props.spContext.userDisplayName,DashboardURl);
-                    this.sendemail(emaildetails,formdata);
+                    this.sendemail(emaildetails,formdata.Status);
                }
                else if(StatusType.Save==formObject.Status)  //save after submit case.
             {
@@ -1450,7 +1450,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                  emaildetails ={toemail:formObject.ReportingManagersEmail,ccemail:this.state.EmployeeEmail,subject:sub,bodyString:sub,body:'' };
                  var DashboardURl = 'https://synergycomcom.sharepoint.com/sites/Billing.Timesheet/SitePages/TimeSheet.aspx';
                  emaildetails['body'] = this.emailBodyPreparation(this.siteURL+'/SitePages/TimeSheet.aspx#/WeeklyTimesheet/'+this.state.ItemID,tableContent,emaildetails['bodyString'],this.props.spContext.userDisplayName,DashboardURl);
-                 this.sendemail(emaildetails,formdata);
+                 this.sendemail(emaildetails,StatusType.Submit);
                }
               else if(StatusType.ReviewerReject==formObject.Status) //Reviewer rejected but client Approval not needed or not depends on IsClientApprovalNeeded
             {
@@ -1471,7 +1471,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                emaildetails ={toemail:this.state.EmployeeEmail,ccemail:CC,subject:sub,bodyString:sub,body:'' };
                var DashboardURl = 'https://synergycomcom.sharepoint.com/sites/Billing.Timesheet/SitePages/TimeSheet.aspx';
                emaildetails['body'] = this.emailBodyPreparation(this.siteURL+'/SitePages/TimeSheet.aspx#/WeeklyTimesheet/'+this.state.ItemID,tableContent,emaildetails['bodyString'],this.props.spContext.userDisplayName,DashboardURl);
-               this.sendemail(emaildetails,formdata);
+               this.sendemail(emaildetails,StatusType.Submit);
               }
                else if(StatusType.Approved==formdata.Status)
                {
@@ -1488,7 +1488,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                     emaildetails ={toemail:this.state.EmployeeEmail,ccemail:CC,subject:sub,bodyString:sub,body:'' };
                     var DashboardURl = 'https://synergycomcom.sharepoint.com/sites/Billing.Timesheet/SitePages/TimeSheet.aspx';
                     emaildetails['body'] = this.emailBodyPreparation(this.siteURL+'/SitePages/TimeSheet.aspx#/WeeklyTimesheet/'+this.state.ItemID,tableContent,emaildetails['bodyString'],this.props.spContext.userDisplayName,DashboardURl);
-                    this.sendemail(emaildetails,formdata);
+                    this.sendemail(emaildetails,formdata.Status);
                }
                else if([StatusType.ManagerReject,StatusType.ReviewerReject].includes(formdata.Status))
                {
@@ -1513,7 +1513,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                        emaildetails ={toemail:this.state.EmployeeEmail,ccemail:CC,subject:sub,bodyString:sub,body:'' };
                        var DashboardURl = 'https://synergycomcom.sharepoint.com/sites/Billing.Timesheet/SitePages/TimeSheet.aspx';
                        emaildetails['body'] = this.emailBodyPreparation(this.siteURL+'/SitePages/TimeSheet.aspx#/WeeklyTimesheet/'+this.state.ItemID,tableContent,emaildetails['bodyString'],this.props.spContext.userDisplayName,DashboardURl);
-                       this.sendemail(emaildetails,formdata);
+                       this.sendemail(emaildetails,formdata.Status);
                } 
             }, (error) => {
                 this.setState({ActionToasterMessage:'Error',loading:false,redirect:true})
@@ -1537,7 +1537,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                          emaildetails ={toemail:formObject.ReportingManagersEmail,ccemail:this.state.EmployeeEmail,subject:sub,bodyString:sub,body:'' };
                          var DashboardURl = 'https://synergycomcom.sharepoint.com/sites/Billing.Timesheet/SitePages/TimeSheet.aspx';
                          emaildetails['body'] = this.emailBodyPreparation(this.siteURL+'/SitePages/TimeSheet.aspx#/WeeklyTimesheet/'+ItemID,tableContent,emaildetails['bodyString'],this.props.spContext.userDisplayName,DashboardURl);
-                         this.sendemail(emaildetails,formdata);
+                         this.sendemail(emaildetails,formdata.Status);
                     }
                 }, (error) => {
                     console.log(error);
@@ -1569,7 +1569,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
         emailBody += '</td></tr></table>';
         return emailBody;
     }
-    private sendemail(emaildetails,formdata){
+    private sendemail(emaildetails,ActionStatus){
         sp.utility.sendEmail({
             //Body of Email  
             Body: emaildetails.body,  
@@ -1579,13 +1579,13 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
             To: emaildetails.toemail,  
             CC: emaildetails.ccemail
           }).then((i) => {  
-           if(formdata.Status==StatusType.Submit)
+           if(ActionStatus==StatusType.Submit)
            this.setState({ActionToasterMessage:'Success-'+StatusType.Submit,loading:false,redirect:true})
-           else if(formdata.Status==StatusType.Approved)
+           else if(ActionStatus==StatusType.Approved)
            this.setState({ActionToasterMessage:'Success-'+StatusType.Approved,loading:false,redirect:true})
-           else if([StatusType.ManagerReject,StatusType.ReviewerReject].includes(formdata.Status))
+           else if([StatusType.ManagerReject,StatusType.ReviewerReject].includes(ActionStatus))
            this.setState({ActionToasterMessage:'Success-'+StatusType.Reject,loading:false,redirect:true})
-           else if(formdata.Status==StatusType.Revoke)
+           else if(ActionStatus==StatusType.Revoke)
            {
             this.setState({loading:false})
                customToaster('toster-success',ToasterTypes.Success,'Weekly timesheet '+StatusType.Revoke+' successfully',2000)
