@@ -230,9 +230,8 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
             this.setState({errorMessage : 'Comments cannot be Blank',loading : false})
         }
         else{
-
             var filterString = "Id eq '"+recordId+"'"
-            this.setState({ successPopUp:false,loading: true });
+            this.setState({showHideModal:false, successPopUp:false,loading: true });
             let data =  await sp.web.lists.getByTitle('WeeklyTimeSheet').items.filter(filterString).select('Initiator/ID,Initiator/Title,*').expand('Initiator').orderBy('WeekStartDate,DateSubmitted', false).get()
             console.log(data)
             let commentsObj = JSON.parse(data[0].CommentsHistory)
