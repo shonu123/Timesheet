@@ -54,6 +54,7 @@ interface HolidaysListState {
     isNewform: boolean;
     ImportedExcelData: any;
     isRedirect: boolean;
+    showToaster:boolean,
 }
 
 class HolidaysList extends Component<HolidaysListProps, HolidaysListState> {
@@ -93,6 +94,7 @@ class HolidaysList extends Component<HolidaysListProps, HolidaysListState> {
             isNewform: true,
             ImportedExcelData: [],
             isRedirect: false,
+            showToaster:false,
         };
 
     }
@@ -299,7 +301,8 @@ class HolidaysList extends Component<HolidaysListProps, HolidaysListState> {
                     })),
                     SaveUpdateText: 'Submit',
                     showLabel: false,
-                    loading: false
+                    loading: false,
+                    showToaster:true,
                 });
                 // setTimeout(() => {
                 //     this.setState({loading: false})
@@ -774,7 +777,7 @@ class HolidaysList extends Component<HolidaysListProps, HolidaysListState> {
                                                 </div>
                                             </div>
                                         </div>
-                                        <Toaster />  
+                                        {this.state.showToaster&&<Toaster />  }
                                         <div className="c-v-table table-head-1st-td">
                                             <TableGenerator columns={columns} data={this.state.HolidayListObj} fileName={'Holidays List'}showExportExcel={true} ExportExcelCustomisedColumns={ExportExcelreportColumns} ></TableGenerator>
                                         </div>

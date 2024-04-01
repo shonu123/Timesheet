@@ -67,6 +67,7 @@ class Clients extends Component<ClientProps, ClientState> {
         isNewform: true,
         isRedirect: false,
         ExportExcelData:[],
+        showToaster:false,
     };
 
     public componentDidMount() {
@@ -248,7 +249,7 @@ class Clients extends Component<ClientProps, ClientState> {
                     SaveUpdateText: 'Submit',
                     showLabel: false,
                     loading: false,
-                    ExportExcelData : ExcelData,
+                    ExportExcelData : ExcelData,showToaster:true,
                 });
    
                 // setTimeout(() => {
@@ -458,7 +459,7 @@ class Clients extends Component<ClientProps, ClientState> {
                                                 </div>
                                             </div>
                                         </div>
-                                        <Toaster />  
+                                        {this.state.showToaster&&<Toaster /> }
                                         <div className="c-v-table table-head-1st-td">
                                             <TableGenerator columns={columns} data={this.state.ClientsObj} fileName={'Clients'}showExportExcel={true} ExportExcelCustomisedColumns={ExportExcelreportColumns} ExportExcelCustomisedData={this.state.ExportExcelData}></TableGenerator>
                                         </div>

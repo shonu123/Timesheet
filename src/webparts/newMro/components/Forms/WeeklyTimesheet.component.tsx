@@ -1125,12 +1125,11 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
          this.setState({RowType:TypeofRow,rowCount:CountOfRow})
     }
     private showConfirmSubmit=(event)=>{
-        let data = {
-            ClientName:{val:this.state.trFormdata.ClientName,required:true, Name: 'Client Name', Type: ControlType.string, Focusid: this.Client},
-            WeeklyStartDate:{val: this.state.trFormdata.WeekStartDate, required:true, Name: 'Weekly Start Date', Type: ControlType.date, Focusid:"divWeekStartDate"}
-        };
+        let data = {};
         // new onbehalf changes
         {this.state.onBehalf?data['Employee'] = {val:this.state.currentUserId,required:true, Name: 'Employee', Type: ControlType.number, Focusid: this.EmployeeDropdown}:''}
+        data['ClientName']={val:this.state.trFormdata.ClientName,required:true, Name: 'Client Name', Type: ControlType.string, Focusid: this.Client}
+        data['WeeklyStartDate']={val: this.state.trFormdata.WeekStartDate, required:true, Name: 'Weekly Start Date', Type: ControlType.date, Focusid:"divWeekStartDate"}
         var formdata = { ...this.state.trFormdata };
         let isValid = Formvalidator.checkValidations(data);
         if (isValid.status) {
@@ -1163,12 +1162,11 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
    private handleSubmitorSave = async () => {
     this.setState({showConfirmDeletePopup:false})
         let Action=this.state.ActionButtonId=="btnSubmit"? this.state.ActionButtonId : "btnSave";
-        let data = {
-            ClientName:{val:this.state.trFormdata.ClientName,required:true, Name: 'Client Name', Type: ControlType.string, Focusid: this.Client},
-            WeeklyStartDate:{val: this.state.trFormdata.WeekStartDate, required:true, Name: 'Weekly Start Date', Type: ControlType.date, Focusid:"divWeekStartDate"}
-        };
-        // new onbehalf changes
+        let data = {};
+                // new onbehalf changes
         {this.state.onBehalf?data['Employee'] = {val:this.state.currentUserId,required:true, Name: 'Employee', Type: ControlType.number, Focusid: this.EmployeeDropdown}:''}
+        data['ClientName']={val:this.state.trFormdata.ClientName,required:true, Name: 'Client Name', Type: ControlType.string, Focusid: this.Client}
+        data['WeeklyStartDate']={val: this.state.trFormdata.WeekStartDate, required:true, Name: 'Weekly Start Date', Type: ControlType.date, Focusid:"divWeekStartDate"}
         var formdata = { ...this.state.trFormdata };
         var id = this.props.match.params.id ? this.props.match.params.id : 0;
 
