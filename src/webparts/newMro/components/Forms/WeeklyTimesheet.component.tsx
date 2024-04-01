@@ -1167,6 +1167,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
     }
     //functions related to CRUD operations
    private handleSubmitorSave = async () => {
+    this.setState({showConfirmDeletePopup:false})
         let Action=this.state.ActionButtonId=="btnSubmit"? this.state.ActionButtonId : "btnSave";
         let data = {
             ClientName:{val:this.state.trFormdata.ClientName,required:true, Name: 'Client Name', Type: ControlType.string, Focusid: this.Client},
@@ -1342,6 +1343,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
      }
     private handleApprove=async ()=>
     {
+        this.setState({showConfirmDeletePopup:false})
         var formdata = { ...this.state.trFormdata };
         formdata=this.Calculate_Indvidual_OT_Weekly_TotalTime(formdata);
         formdata=this.GetRequiredEmails(formdata.ClientName,formdata);
@@ -1384,6 +1386,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
     }
     private handleReject=async ()=>
     {
+        this.setState({showConfirmDeletePopup:false})
         var formdata = { ...this.state.trFormdata};
             formdata=this.Calculate_Indvidual_OT_Weekly_TotalTime(formdata);
             formdata=this.GetRequiredEmails(formdata.ClientName,formdata);
@@ -1585,11 +1588,11 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
             CC: emaildetails.ccemail
           }).then((i) => {  
            if(formdata.Status==StatusType.Submit)
-           this.setState({ActionToasterMessage:'Success-'+StatusType.Submit,showConfirmDeletePopup:false,loading:false,redirect:true})
+           this.setState({ActionToasterMessage:'Success-'+StatusType.Submit,loading:false,redirect:true})
            else if(formdata.Status==StatusType.Approved)
-           this.setState({ActionToasterMessage:'Success-'+StatusType.Approved,showConfirmDeletePopup:false,loading:false,redirect:true})
-           else if(formdata.Status==StatusType.Reject)
-           this.setState({ActionToasterMessage:'Success-'+StatusType.Reject,showConfirmDeletePopup:false,loading:false,redirect:true})
+           this.setState({ActionToasterMessage:'Success-'+StatusType.Approved,loading:false,redirect:true})
+           else if([StatusType.ManagerReject,StatusType.ReviewerReject].includes(formdata.Status))
+           this.setState({ActionToasterMessage:'Success-'+StatusType.Reject,loading:false,redirect:true})
            else if(formdata.Status==StatusType.Revoke)
            {
                this.setState({loading:false,showToaster: true});
