@@ -1134,7 +1134,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
         var formdata = { ...this.state.trFormdata };
         let isValid = Formvalidator.checkValidations(data);
         if (isValid.status) {
-            isValid=this.validateTimeControls(formdata);
+            isValid=this.validateTimeControls(formdata,"Submit");
         }
         if (isValid.status) {
         this.setState({showConfirmDeletePopup:true,ConfirmPopupMessage:'Are you sure you want to submit?',ActionButtonId:event.target.id});
@@ -1170,11 +1170,17 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
         // new onbehalf changes
         {this.state.onBehalf?data['Employee'] = {val:this.state.currentUserId,required:true, Name: 'Employee', Type: ControlType.number, Focusid: this.EmployeeDropdown}:''}
         var formdata = { ...this.state.trFormdata };
-        const id = this.props.match.params.id ? this.props.match.params.id : 0;
+        var id = this.props.match.params.id ? this.props.match.params.id : 0;
 
         formdata=this.Calculate_Indvidual_OT_Weekly_TotalTime(formdata);
         this.setState({trFormdata:formdata})
         let isValid = Formvalidator.checkValidations(data);
+        if(Action=="btnSave")
+        {
+            if (isValid.status) {
+                isValid=this.validateTimeControls(formdata,"Save");
+            }
+        }
         if (isValid.status) {
             console.log(this.state);
             formdata=this.GetRequiredEmails(formdata.ClientName,formdata);
@@ -1708,6 +1714,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                 trFormdata.OTItemsData=[];
                 trFormdata.BillableSubTotal=[];
                 trFormdata.SynergyOfficeHrs=[];
+                trFormdata.SynergyHolidayHrs=[];
                 trFormdata.ClientHolidayHrs=[];
                 trFormdata.PTOHrs=[];
                 trFormdata.NonBillableSubTotal=[];
@@ -1891,10 +1898,10 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
         this.setState({isRecordAcessable : isAccessable})
     }
     //function related to custom Validation
-    private validateTimeControls(formdata){
+    private validateTimeControls(formdata,Action){
         let isValid={status:true,message:''};
          let val;
-        let Time;
+         let Time;
         for(let key in formdata.Total[0])
         {
             val=formdata.Total[0][key];
@@ -1904,7 +1911,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                     DayTime=parseFloat(val);
                     if(DayTime>24)
                     {
-                         isValid.message="Total working hours in a day can not exceed '24' hours";
+                         isValid.message="Total working hours in a day must not exceed 24 hours";
                           isValid.status=false;
                         document.getElementById("Total"+key).focus();
                         document.getElementById("Total"+key).classList.add('mandatory-FormContent-focus');
@@ -1922,125 +1929,128 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
         //     document.getElementById("GrandTotal").classList.add('mandatory-FormContent-focus');
         //     return isValid;
         //    }
-           if(formdata.ClientName.toLowerCase().includes("synergy"))
-           {
-               if(formdata.SynergyOfficeHrs[0].Description.trim()=="" && formdata.IsDescriptionMandatory)
-                {
-                    isValid.message="Description can not be blank";
-                    isValid.status=false;
-                    document.getElementById("0_Description_SynOffcHrs").focus();
-                    document.getElementById("0_Description_SynOffcHrs").classList.add('mandatory-FormContent-focus');
-                    return isValid;
-                }
-                else if(formdata.SynergyOfficeHrs[0].ProjectCode.trim()=="" && formdata.IsProjectCodeMandatory)
-                {
-                    isValid.message="ProjectCode can not be blank";
-                    isValid.status=false;
-                    document.getElementById("0_ProjectCode_SynOffcHrs").focus();
-                    document.getElementById("0_ProjectCode_SynOffcHrs").classList.add('mandatory-FormContent-focus');
-                    return isValid;
-                }
-           }
-           else if(!formdata.ClientName.toLowerCase().includes("synergy"))
-           {
-                 for(let i in formdata.WeeklyItemsData)
-                 { 
-                    if(formdata.WeeklyItemsData[i].Description.trim()=="" && formdata.IsDescriptionMandatory)
-                    {
-                        isValid.message="Description can not be blank";
-                        isValid.status=false;
-                        document.getElementById(i+"_Description_weekrow").focus();
-                        document.getElementById(i+"_Description_weekrow").classList.add('mandatory-FormContent-focus');
-                       return isValid;
-                    }
-                    else if(formdata.WeeklyItemsData[i].ProjectCode.trim()=="" && formdata.IsProjectCodeMandatory)
-                    {
-                        isValid.message="ProjectCode can not be blank";
-                        isValid.status=false;
-                        document.getElementById(i+"_ProjectCode_weekrow").focus();
-                        document.getElementById(i+"_ProjectCode_weekrow").classList.add('mandatory-FormContent-focus');
-                        return isValid;
-                    }
-
-                 }
-                 if(formdata.OTItemsData.length>1)
-                 {
-                     for(let i in formdata.OTItemsData)
-                     { 
-                        if(formdata.OTItemsData[i].Description.trim()=="" && formdata.IsDescriptionMandatory)
-                        {
-                            isValid.message="Description can not be blank";
-                            isValid.status=false;
-                            document.getElementById(i+"_Description_otrow").focus();
-                            document.getElementById(i+"_Description_otrow").classList.add('mandatory-FormContent-focus');
-                           return isValid;
-                        }
-                        else if(formdata.OTItemsData[i].ProjectCode.trim()=="" && formdata.IsProjectCodeMandatory)
-                        {
-                            isValid.message="ProjectCode can not be blank";
-                            isValid.status=false;
-                            document.getElementById(i+"_ProjectCode_otrow").focus();
-                            document.getElementById(i+"_ProjectCode_otrow").classList.add('mandatory-FormContent-focus');
-                            return isValid;
-                        }
-    
-                     }
-                 }
-           }
-           if(formdata.ClientName.toLowerCase()!="")
-           {
-            if(formdata.ClientHolidayHrs[0].Total!=0)
+        if(Action=="Submit")
+        {
+            if(formdata.ClientName.toLowerCase().includes("synergy"))
             {
-                if(formdata.ClientHolidayHrs[0].Description.trim()=="" && formdata.IsDescriptionMandatory)
-                {
-                    isValid.message="Description can not be blank";
-                    isValid.status=false;
-                    document.getElementById("0_Description_ClientHldHrs").focus();
-                    document.getElementById("0_Description_ClientHldHrs").classList.add('mandatory-FormContent-focus');
-                    return isValid;
-                }
-                else if(formdata.ClientHolidayHrs[0].ProjectCode.trim()=="" && formdata.IsProjectCodeMandatory)
-                {
-                    isValid.message="ProjectCode can not be blank";
-                    isValid.status=false;
-                    document.getElementById("0_ProjectCode_ClientHldHrs").focus();
-                    document.getElementById("0_ProjectCode_ClientHldHrs").classList.add('mandatory-FormContent-focus');
-                    return isValid;
-                }
+                if(formdata.SynergyOfficeHrs[0].Description.trim()=="" && formdata.IsDescriptionMandatory)
+                 {
+                     isValid.message="Description can not be blank";
+                     isValid.status=false;
+                     document.getElementById("0_Description_SynOffcHrs").focus();
+                     document.getElementById("0_Description_SynOffcHrs").classList.add('mandatory-FormContent-focus');
+                     return isValid;
+                 }
+                 else if(formdata.SynergyOfficeHrs[0].ProjectCode.trim()=="" && formdata.IsProjectCodeMandatory)
+                 {
+                     isValid.message="ProjectCode can not be blank";
+                     isValid.status=false;
+                     document.getElementById("0_ProjectCode_SynOffcHrs").focus();
+                     document.getElementById("0_ProjectCode_SynOffcHrs").classList.add('mandatory-FormContent-focus');
+                     return isValid;
+                 }
             }
-            if(formdata.PTOHrs[0].Total!=0){
-                if(formdata.PTOHrs[0].Description.trim()=="" && formdata.IsDescriptionMandatory)
-                {
-                    isValid.message="Description can not be blank";
-                    isValid.status=false;
-                    document.getElementById("0_Description_PTOHrs").focus();
-                    document.getElementById("0_Description_PTOHrs").classList.add('mandatory-FormContent-focus');
-                    return isValid;
-                }
-                else if(formdata.PTOHrs[0].ProjectCode.trim()=="" && formdata.IsProjectCodeMandatory)
-                {
-                    isValid.message="ProjectCode can not be blank";
-                    isValid.status=false;
-                    document.getElementById("0_ProjectCode_PTOHrs").focus();
-                    document.getElementById("0_ProjectCode_PTOHrs").classList.add('mandatory-FormContent-focus');
-                    return isValid;
-                }
+            else if(!formdata.ClientName.toLowerCase().includes("synergy"))
+            {
+                  for(let i in formdata.WeeklyItemsData)
+                  { 
+                     if(formdata.WeeklyItemsData[i].Description.trim()=="" && formdata.IsDescriptionMandatory)
+                     {
+                         isValid.message="Description can not be blank";
+                         isValid.status=false;
+                         document.getElementById(i+"_Description_weekrow").focus();
+                         document.getElementById(i+"_Description_weekrow").classList.add('mandatory-FormContent-focus');
+                        return isValid;
+                     }
+                     else if(formdata.WeeklyItemsData[i].ProjectCode.trim()=="" && formdata.IsProjectCodeMandatory)
+                     {
+                         isValid.message="ProjectCode can not be blank";
+                         isValid.status=false;
+                         document.getElementById(i+"_ProjectCode_weekrow").focus();
+                         document.getElementById(i+"_ProjectCode_weekrow").classList.add('mandatory-FormContent-focus');
+                         return isValid;
+                     }
+ 
+                  }
+                  if(formdata.OTItemsData.length>1)
+                  {
+                      for(let i in formdata.OTItemsData)
+                      { 
+                         if(formdata.OTItemsData[i].Description.trim()=="" && formdata.IsDescriptionMandatory)
+                         {
+                             isValid.message="Description can not be blank";
+                             isValid.status=false;
+                             document.getElementById(i+"_Description_otrow").focus();
+                             document.getElementById(i+"_Description_otrow").classList.add('mandatory-FormContent-focus');
+                            return isValid;
+                         }
+                         else if(formdata.OTItemsData[i].ProjectCode.trim()=="" && formdata.IsProjectCodeMandatory)
+                         {
+                             isValid.message="ProjectCode can not be blank";
+                             isValid.status=false;
+                             document.getElementById(i+"_ProjectCode_otrow").focus();
+                             document.getElementById(i+"_ProjectCode_otrow").classList.add('mandatory-FormContent-focus');
+                             return isValid;
+                         }
+     
+                      }
+                  }
             }
-           }
-        //is isValid true remove all 'mandatory-FormContent-focus' classes
-        if (!formdata.ClientName.toLowerCase().includes("synergy")) {
-            for (let i in formdata.WeeklyItemsData) {
-                document.getElementById(i + "_Description_weekrow").classList.remove('mandatory-FormContent-focus');
-                document.getElementById(i + "_ProjectCode_weekrow").classList.remove('mandatory-FormContent-focus');
+            if(formdata.ClientName.toLowerCase()!="")
+            {
+             if(formdata.ClientHolidayHrs[0].Total!=0)
+             {
+                 if(formdata.ClientHolidayHrs[0].Description.trim()=="" && formdata.IsDescriptionMandatory)
+                 {
+                     isValid.message="Description can not be blank";
+                     isValid.status=false;
+                     document.getElementById("0_Description_ClientHldHrs").focus();
+                     document.getElementById("0_Description_ClientHldHrs").classList.add('mandatory-FormContent-focus');
+                     return isValid;
+                 }
+                 else if(formdata.ClientHolidayHrs[0].ProjectCode.trim()=="" && formdata.IsProjectCodeMandatory)
+                 {
+                     isValid.message="ProjectCode can not be blank";
+                     isValid.status=false;
+                     document.getElementById("0_ProjectCode_ClientHldHrs").focus();
+                     document.getElementById("0_ProjectCode_ClientHldHrs").classList.add('mandatory-FormContent-focus');
+                     return isValid;
+                 }
+             }
+             if(formdata.PTOHrs[0].Total!=0){
+                 if(formdata.PTOHrs[0].Description.trim()=="" && formdata.IsDescriptionMandatory)
+                 {
+                     isValid.message="Description can not be blank";
+                     isValid.status=false;
+                     document.getElementById("0_Description_PTOHrs").focus();
+                     document.getElementById("0_Description_PTOHrs").classList.add('mandatory-FormContent-focus');
+                     return isValid;
+                 }
+                 else if(formdata.PTOHrs[0].ProjectCode.trim()=="" && formdata.IsProjectCodeMandatory)
+                 {
+                     isValid.message="ProjectCode can not be blank";
+                     isValid.status=false;
+                     document.getElementById("0_ProjectCode_PTOHrs").focus();
+                     document.getElementById("0_ProjectCode_PTOHrs").classList.add('mandatory-FormContent-focus');
+                     return isValid;
+                 }
+             }
             }
-            for (let i in formdata.OTItemsData) {
-                document.getElementById(i + "_Description_otrow").classList.remove('mandatory-FormContent-focus');
-                document.getElementById(i + "_ProjectCode_otrow").classList.remove('mandatory-FormContent-focus');
-            }
-        }
-        else {
-            document.getElementById("0_Description_SynOffcHrs").classList.remove('mandatory-FormContent-focus');
-            document.getElementById("0_ProjectCode_SynOffcHrs").classList.remove('mandatory-FormContent-focus');
+         //is isValid true remove all 'mandatory-FormContent-focus' classes
+         if (!formdata.ClientName.toLowerCase().includes("synergy")) {
+             for (let i in formdata.WeeklyItemsData) {
+                 document.getElementById(i + "_Description_weekrow").classList.remove('mandatory-FormContent-focus');
+                 document.getElementById(i + "_ProjectCode_weekrow").classList.remove('mandatory-FormContent-focus');
+             }
+             for (let i in formdata.OTItemsData) {
+                 document.getElementById(i + "_Description_otrow").classList.remove('mandatory-FormContent-focus');
+                 document.getElementById(i + "_ProjectCode_otrow").classList.remove('mandatory-FormContent-focus');
+             }
+         }
+         else {
+             document.getElementById("0_Description_SynOffcHrs").classList.remove('mandatory-FormContent-focus');
+             document.getElementById("0_ProjectCode_SynOffcHrs").classList.remove('mandatory-FormContent-focus');
+         }
         }
               document.getElementById("0_Description_ClientHldHrs").classList.remove('mandatory-FormContent-focus');
               document.getElementById("0_ProjectCode_ClientHldHrs").classList.remove('mandatory-FormContent-focus');
@@ -2435,7 +2445,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                                 <tr id="rowPRJ1"  >
                                     <td className=" text-start"> 
                                         <div className="p-1">
-                                            <strong>Billable</strong>
+                                            <strong>Billable Hours</strong>
                                         </div>
                                     </td>
                                     <td> 
