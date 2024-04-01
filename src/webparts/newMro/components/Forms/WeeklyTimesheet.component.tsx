@@ -346,6 +346,19 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                 this.state.ClientNames.push(employeeItem.ClientName)
             });
         });
+         //For getting Dateofjoining,DescriptionMandatory,ProjectCOde Mandatory,WeekStartday of selected client
+         for( var item of this.state.Clients_DateOfJoinings)
+         {
+             if(item.ClientName.toLowerCase()==trFormdata.ClientName.toLowerCase())
+             {
+                 trFormdata.DateOfJoining=new Date(item.DOJ);
+                 trFormdata.IsDescriptionMandatory=item.IsDescriptionMandatory;
+                 trFormdata.IsProjectCodeMandatory=item.IsProjectCodeMandatory;
+                 trFormdata.WeekStartDay=item.WeekStartDay;
+                 trFormdata.HolidayType=item.HolidayType;
+                 break;
+             }
+         }
         this.setState({UserGoups:userGroups,trFormdata,ClientNames: this.state.ClientNames,EmployeeEmail:this.state.EmployeeEmail,showToaster: true});
         if(this.state.ClientNames.length==1){
             trFormdata.ClientName=ClientNames[0].ClientName;
@@ -440,18 +453,18 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
             this.setState({showBillable:true})
         }
           //For getting Dateofjoining,DescriptionMandatory,ProjectCOde Mandatory,WeekStartday of selected client
-          for( var item of this.state.Clients_DateOfJoinings)
-          {
-              if(item.ClientName.toLowerCase()==data[0].ClientName.toLowerCase())
-              {
-                  trFormdata.DateOfJoining=new Date(item.DOJ);
-                  trFormdata.IsDescriptionMandatory=item.IsDescriptionMandatory;
-                  trFormdata.IsProjectCodeMandatory=item.IsProjectCodeMandatory;
-                  trFormdata.WeekStartDay=item.WeekStartDay;
-                  trFormdata.HolidayType=item.HolidayType;
-                  break;
-              }
-          }
+        //   for( var item of this.state.Clients_DateOfJoinings)
+        //   {
+        //       if(item.ClientName.toLowerCase()==data[0].ClientName.toLowerCase())
+        //       {
+        //           trFormdata.DateOfJoining=new Date(item.DOJ);
+        //           trFormdata.IsDescriptionMandatory=item.IsDescriptionMandatory;
+        //           trFormdata.IsProjectCodeMandatory=item.IsProjectCodeMandatory;
+        //           trFormdata.WeekStartDay=item.WeekStartDay;
+        //           trFormdata.HolidayType=item.HolidayType;
+        //           break;
+        //       }
+        //   }
           this.GetHolidayMasterDataByClientName( trFormdata.WeekStartDate,trFormdata.HolidayType,trFormdata);
         let WeekStartDate=new Date(new Date(data[0].WeekStartDate).getMonth()+1+"/"+new Date(data[0].WeekStartDate).getDate()+"/"+new Date(data[0].WeekStartDate).getFullYear());
         let DateOfjoining=new Date(trFormdata.DateOfJoining.getMonth()+1+"/"+trFormdata.DateOfJoining.getDate()+"/"+trFormdata.DateOfJoining.getFullYear());
@@ -1970,11 +1983,11 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                      }
  
                   }
-                  if(formdata.OTItemsData.length>1)
-                  {
+                 // if(formdata.OTItemsData.length>1)
+                  //{
                       for(let i in formdata.OTItemsData)
                       { 
-                         if(formdata.OTItemsData[i].Description.trim()=="" && formdata.IsDescriptionMandatory)
+                         if(formdata.OTItemsData[i].Description.trim()=="" && formdata.IsDescriptionMandatory&&parseFloat(formdata.OTItemsData[i].Total)!=0)
                          {
                              isValid.message="Description can not be blank";
                              isValid.status=false;
@@ -1982,7 +1995,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                              document.getElementById(i+"_Description_otrow").classList.add('mandatory-FormContent-focus');
                             return isValid;
                          }
-                         else if(formdata.OTItemsData[i].ProjectCode.trim()=="" && formdata.IsProjectCodeMandatory)
+                         else if(formdata.OTItemsData[i].ProjectCode.trim()=="" && formdata.IsProjectCodeMandatory&&parseFloat(formdata.OTItemsData[i].Total)!=0)
                          {
                              isValid.message="ProjectCode can not be blank";
                              isValid.status=false;
@@ -1992,11 +2005,11 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                          }
      
                       }
-                  }
+                 // }
             }
             if(formdata.ClientName.toLowerCase()!="")
             {
-             if(formdata.ClientHolidayHrs[0].Total!=0)
+             if(parseFloat(formdata.ClientHolidayHrs[0].Total)!=0)
              {
                  if(formdata.ClientHolidayHrs[0].Description.trim()=="" && formdata.IsDescriptionMandatory)
                  {
@@ -2015,7 +2028,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                      return isValid;
                  }
              }
-             if(formdata.PTOHrs[0].Total!=0){
+             if(parseFloat(formdata.PTOHrs[0].Total)!=0){
                  if(formdata.PTOHrs[0].Description.trim()=="" && formdata.IsDescriptionMandatory)
                  {
                      isValid.message="Description can not be blank";
