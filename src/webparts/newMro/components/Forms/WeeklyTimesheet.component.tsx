@@ -1531,11 +1531,11 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                 this.setState({ loading: true });
                 sp.web.lists.getByTitle(this.listName).items.add(formdata).then((res) => {
                     let ItemID = res.data.Id;
-                    this.props.match.params.id =ItemID;
+                    // this.props.match.params.id =ItemID;
                     if (StatusType.Save == formdata.Status) {
-                        this.setState({loading:false})
+                        this.setState({ItemID:ItemID,loading:false})
                         customToaster('toster-success',ToasterTypes.Success,'Weekly timesheet saved successfully',2000)
-                        this.getItemData(this.state.ItemID);
+                        this.getItemData(ItemID);
                     }
                     else if(StatusType.Submit==formdata.Status)
                     {
