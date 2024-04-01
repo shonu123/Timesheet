@@ -1594,7 +1594,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
            else if(ActionStatus==StatusType.Revoke)
            {
             this.setState({loading:false})
-               customToaster('toster-success',ToasterTypes.Success,'Weekly timesheet '+StatusType.Revoke+' successfully',2000)
+               customToaster('toster-success',ToasterTypes.Success,'Weekly timesheet '+StatusType.Revoke.toLowerCase()+' successfully',2000)
                this.getItemData(this.state.ItemID);
            }
           
