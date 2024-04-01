@@ -12,7 +12,6 @@ import Loader from '../Shared/Loader';
 import customToaster from '../Shared/Toaster.component';
 import { StatusType, ToasterTypes } from '../../Constants/Constants';
 import { Toaster } from 'react-hot-toast';
-
 export interface DashboardProps {
     match: any;
     spContext: any;
@@ -103,7 +102,7 @@ class Dashboard extends React.Component<DashboardProps, DashboardState> {
     private getUserGroups = async () => {
         // let groups = await sp.web.currentUser.groups();
         let userID = this.props.spContext.userId
-        let filterQuery = "ReportingManager/ID eq '"+userID+"' or Employee/ID eq '"+userID+"' or Reviewers/ID eq '"+userID+"'"
+        let filterQuery = "ReportingManager/ID eq '"+userID+"' or Employee/ID eq '"+userID+"' or Reviewers/ID eq '"+userID+"' and IsActive eq 1"
         let [groups,EmployeeMaster] = await Promise.all([
             sp.web.currentUser.groups(),
             sp.web.lists.getByTitle("EmployeeMaster").items.filter(filterQuery).select('Employee/ID,ReportingManager/ID,Reviewers/ID,*').expand("Employee,ReportingManager,Reviewers").get()
@@ -287,7 +286,8 @@ class Dashboard extends React.Component<DashboardProps, DashboardState> {
                 </div>
              </div>
             </div>:<div className='noConfiguration'>
-                You are not configured in Employee Master. Please contact Administrator</div>}
+                <div className='ImgUnLink'><img src={require('../Images/unLink.png')} alt="" className=''/></div>
+                <b>You are not configured in Approval Matrix.</b>Please contact Administrator.</div>}
             {this.state.showToaster&& <Toaster /> }
         {this.state.loading && <Loader />}
                 </React.Fragment>

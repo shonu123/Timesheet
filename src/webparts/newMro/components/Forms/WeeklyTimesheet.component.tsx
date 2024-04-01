@@ -346,7 +346,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                 this.state.ClientNames.push(employeeItem.ClientName)
             });
         });
-        this.setState({UserGoups:userGroups,trFormdata,ClientNames: this.state.ClientNames,EmployeeEmail:this.state.EmployeeEmail});
+        this.setState({UserGoups:userGroups,trFormdata,ClientNames: this.state.ClientNames,EmployeeEmail:this.state.EmployeeEmail,showToaster: true});
         if(this.state.ClientNames.length==1){
             trFormdata.ClientName=ClientNames[0].ClientName;
             this.handleClientChange(ClientNames[0].ClientName);
@@ -1083,8 +1083,6 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
             this.setState({ trFormdata, currentWeeklyRowsCount: count ,showLabel: true, errorMessage:""});
         }
         else{
-            this.setState({ showToaster: true})
-            // toast.error(isValid.message)
             customToaster('toster-error',ToasterTypes.Error,isValid.message,4000)
         }
     }
@@ -1116,8 +1114,6 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
           this.setState({ trFormdata, currentOTRowsCount: count,showLabel:false, errorMessage:""});
       }
       else{
-        this.setState({ showToaster: true});
-        // toast.error(isValid.message)
         customToaster('toster-error',ToasterTypes.Error,isValid.message,4000)
       }
     }
@@ -1144,7 +1140,6 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
         this.setState({showConfirmDeletePopup:true,ConfirmPopupMessage:'Are you sure you want to submit?',ActionButtonId:event.target.id});
          }
         else {
-            this.setState({ showToaster: true});
             customToaster('toster-error',ToasterTypes.Error,isValid.message,4000)
         }
     }
@@ -1161,7 +1156,6 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
         }
         else
         {
-        this.setState({ showToaster: true});
         customToaster('toster-error',ToasterTypes.Error,isValid.message,4000)
         }
     }
@@ -1265,8 +1259,6 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                 this.InsertorUpdatedata(postObject,formdata);
        } 
         else {
-            this.setState({ showToaster: true});
-            // toast.error(isValid.message)
             customToaster('toster-error',ToasterTypes.Error,isValid.message,4000)
         }
     }
@@ -1422,7 +1414,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
             sp.web.lists.getByTitle(this.listName).items.getById(this.state.ItemID).update(formdata).then((res) => {
                if(StatusType.Save==formdata.Status)
                {
-                this.setState({loading:false,showToaster: true});
+                this.setState({loading:false})
                 customToaster('toster-success',ToasterTypes.Success,'Weekly timesheet saved successfully',2000)
                 this.getItemData(this.state.ItemID);
                }
@@ -1535,7 +1527,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                     let ItemID = res.data.Id;
                     this.props.match.params.id =ItemID;
                     if (StatusType.Save == formdata.Status) {
-                        this.setState({loading:false,showToaster: true});
+                        this.setState({loading:false})
                         customToaster('toster-success',ToasterTypes.Success,'Weekly timesheet saved successfully',2000)
                         this.getItemData(this.state.ItemID);
                     }
@@ -1595,7 +1587,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
            this.setState({ActionToasterMessage:'Success-'+StatusType.Reject,loading:false,redirect:true})
            else if(formdata.Status==StatusType.Revoke)
            {
-               this.setState({loading:false,showToaster: true});
+            this.setState({loading:false})
                customToaster('toster-success',ToasterTypes.Success,'Weekly timesheet '+StatusType.Revoke+' successfully',2000)
                this.getItemData(this.state.ItemID);
            }
@@ -1922,15 +1914,15 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
         }
            val=formdata.Total[0].Total;
            Time=parseFloat(val);
-           if(Time==0)
-           {
-            isValid.message="Total working hours in a week can not be blank";
-            isValid.status=false;
-            document.getElementById("GrandTotal").focus();
-            document.getElementById("GrandTotal").classList.add('mandatory-FormContent-focus');
-            return isValid;
-           }
-           if(formdata.ClientName.toLowerCase()=="synergy")
+        //    if(Time==0)
+        //    {
+        //     isValid.message="Total working hours in a week can not be blank";
+        //     isValid.status=false;
+        //     document.getElementById("GrandTotal").focus();
+        //     document.getElementById("GrandTotal").classList.add('mandatory-FormContent-focus');
+        //     return isValid;
+        //    }
+           if(formdata.ClientName.toLowerCase().includes("synergy"))
            {
                if(formdata.SynergyOfficeHrs[0].Description.trim()=="" && formdata.IsDescriptionMandatory)
                 {
@@ -1949,7 +1941,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                     return isValid;
                 }
            }
-           else if(formdata.ClientName.toLowerCase()!="synergy")
+           else if(!formdata.ClientName.toLowerCase().includes("synergy"))
            {
                  for(let i in formdata.WeeklyItemsData)
                  { 
@@ -2036,7 +2028,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
             }
            }
         //is isValid true remove all 'mandatory-FormContent-focus' classes
-        if (formdata.ClientName.toLowerCase() != "synergy") {
+        if (!formdata.ClientName.toLowerCase().includes("synergy")) {
             for (let i in formdata.WeeklyItemsData) {
                 document.getElementById(i + "_Description_weekrow").classList.remove('mandatory-FormContent-focus');
                 document.getElementById(i + "_ProjectCode_weekrow").classList.remove('mandatory-FormContent-focus');
@@ -2439,7 +2431,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                                         </tr>
                                         </thead>
                             <tbody>
-                                {this.state.trFormdata.ClientName.toLowerCase()=="synergy"||this.state.trFormdata.ClientName.toLowerCase()==""?"":
+                                {this.state.trFormdata.ClientName.toLowerCase().includes("synergy")||this.state.trFormdata.ClientName.toLowerCase()==""?"":
                                 <tr id="rowPRJ1"  >
                                     <td className=" text-start"> 
                                         <div className="p-1">
@@ -2484,7 +2476,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                                     </td>
                                 </tr>}
                                 {this.dynamicFieldsRow("weekrow")}
-                                {this.state.trFormdata.ClientName.toLowerCase()=="synergy"||this.state.trFormdata.ClientName.toLowerCase()==""?"":
+                                {this.state.trFormdata.ClientName.toLowerCase().includes("synergy")||this.state.trFormdata.ClientName.toLowerCase()==""?"":
                                 <tr id="rowOVR1" className="font-td-bold"  >
                                     <td className=" text-start"> 
                                         <div className="p-1">
@@ -2530,7 +2522,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                                     </td>
                                 </tr>}
                                 {this.dynamicFieldsRow("otrow")}
-                                 {this.state.trFormdata.ClientName.toLowerCase()!="synergy"?"":
+                                 {!this.state.trFormdata.ClientName.toLowerCase().includes("synergy")?"":
                                 <tr id="SynergyOfficeHrs">
                                     <td className="text-start"><div className="p-1">Office Hours</div></td>
                                     <td><textarea className="form-control textareaBorder" rows={1} value={this.state.trFormdata.SynergyOfficeHrs[0].Description} onChange={this.changeTime} id="0_Description_SynOffcHrs"  disabled={this.state.isSubmitted || this.state.showNonBillable} ></textarea></td>
