@@ -514,12 +514,12 @@ class HolidaysList extends Component<HolidaysListProps, HolidaysListState> {
                             .then(response => {
                                 if (response != undefined) {
                                     console.log('Failed to add');
-                                    toast.error('Failed to add');
+                                    // toast.error('Failed to add');
                                     customToaster('toster-error',ToasterTypes.Error,'Failed to add',4000)
                                 }
                                 if (index == splitSize - 1) {
                                     this.loadListData();
-                                    toast.success('Holidays uploaded successfully');
+                                    // toast.success('Holidays uploaded successfully');
                                     customToaster('toster-success',ToasterTypes.Success,'Holidays uploaded successfully',2000)
                                     this.setState({
                                         // modalTitle: 'Success',

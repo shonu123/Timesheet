@@ -247,10 +247,12 @@ class AllRequests extends React.Component<AllRequestsProps,AllRequestsState> {
         return (
             <React.Fragment>
             <div className="">
-                <div className="mx-2"><div className="text-right pt-2"><button type="button" id="btnSubmit" className="SubmitButtons btn"><NavLink title="New Weekly Timesheet"  className="csrLink ms-draggable" to={`/WeeklyTimesheet`}>
+                <div className="mx-2"><div className="text-right pt-2">
+                    <NavLink title="New Weekly Timesheet"  className="csrLink ms-draggable" to={`/WeeklyTimesheet`}>
+                    <button type="button" id="btnSubmit" className="SubmitButtons btn">
                         <span className='' id='WeeklyTimeSheet'><FontAwesomeIcon icon={faPlus}></FontAwesomeIcon> New</span>
-                    </NavLink>
-                </button></div></div>
+                        </button></NavLink>
+                </div></div>
                 <div className='c-v-table table-head-1st-td'>
                     <TableGenerator columns={columns} data={this.state.AllRequests} fileName={'All Requests'} showExportExcel={true} ExportExcelCustomisedColumns={Exportcolumns} ExportExcelCustomisedData={this.state.ExportExcelData} ></TableGenerator>
                 </div>

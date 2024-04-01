@@ -89,6 +89,7 @@ class EmployeeMasterForm extends React.Component<EmployeeMasterFormProps, Employ
         modalText:'',
         message:"Success",
         showToaster:false,
+        GlobalHolidayList:[]
     }
 
     public componentDidMount() {
@@ -103,20 +104,25 @@ class EmployeeMasterForm extends React.Component<EmployeeMasterFormProps, Employ
     3. Restricts other than Admin users to access the page
     */
     private async GetClients() {
-
-        let [clients,groups] = await Promise.all([
+        let Year = new Date().getFullYear()+"";
+        let [clients,groups,Holidays] = await Promise.all([
             sp.web.lists.getByTitle('Client').items.filter("IsActive eq 1").select('*').orderBy('Title').get(),
-            sp.web.currentUser.groups()
+            sp.web.currentUser.groups(),
+            sp.web.lists.getByTitle('HolidaysList').items.top(2000).filter("Year eq '"+Year+"'").select('*').orderBy('ClientName').get()
         ])
-        this.setState({ClientsObject : clients})
+        // this.setState({ClientsObject : clients})
         console.log(clients);
         // this.setState({ loading: false});        this.setState({showToaster:true})
-
         if(this.props.match.params.id != undefined){
             // this.setState({ loading: true});
             console.log(this.props.match.params.id)
-            this.setState({ItemID : this.props.match.params.id})
-            this.getData()
+            // this.setState({ItemID : this.props.match.params.id})
+            let ItemID = this.props.match.params.id
+            this.getData(ItemID,Holidays,clients)
+        }
+        else{
+            // let filterdHolidays = this.getHolidays(Holidays,'None')
+            this.setState({ClientsObject : clients,GlobalHolidayList:Holidays,HolidaysObject:[],loading:false})
         }
         console.log("current user deatils")
         console.log(this.props.context.pageContext)
@@ -125,8 +131,8 @@ class EmployeeMasterForm extends React.Component<EmployeeMasterFormProps, Employ
         for (const grp of groups) {
             userGroups.push(grp.Title)
         }
-        if(userGroups.includes('Timesheet Owners') || userGroups.includes('Timesheet Members')){
-            this.setState({isPageAccessable : true,loading:false,showToaster:true})
+        if(userGroups.includes('Timesheet Administrators')){
+            this.setState({isPageAccessable : true,showToaster:true})
         }
         else{
             this.setState({isPageAccessable : false})
@@ -134,17 +140,19 @@ class EmployeeMasterForm extends React.Component<EmployeeMasterFormProps, Employ
     }
 
     // this function is used to get data from the employee master of Edit record
-    private async getData(){
-        let filterQuery = "ID eq '"+this.state.ItemID+"'"
+    private async getData(ID,Holidays,Clients){
+        let filterQuery = "ID eq '"+ID+"'"
         let selectQuery = "Employee/ID,Employee/EMail,ReportingManager/ID,ReportingManager/EMail,Approvers/ID,Approvers/EMail,Reviewers/ID,Reviewers/EMail,Notifiers/ID,Notifiers/EMail,*"
+        // let Year = new Date().getFullYear()+"";
         let data = await sp.web.lists.getByTitle(this.listName).items.filter(filterQuery).select(selectQuery).expand('Employee,ReportingManager,Approvers,Reviewers,Notifiers').get()
+        // let Holidays = await  sp.web.lists.getByTitle('HolidaysList').items.top(2000).filter("Year eq '"+Year+"'").select('*').orderBy('ClientName').get()
+
         console.log(data)
         let date = new Date(data[0].DateOfJoining)
         let ReportingManagersEmail = []
         let ReportingManagerIds = {results:[]}
         let ReviewerIds = {results:[]}
         if(data[0].ReportingManager.length>0){
-            let array = []
             for (const user of data[0].ReportingManager) {
                 ReportingManagersEmail.push(user.EMail)
                 ReportingManagerIds.results.push(user.ID)
@@ -164,8 +172,8 @@ class EmployeeMasterForm extends React.Component<EmployeeMasterFormProps, Employ
         //         NotifierIds.results.push(user.ID)
         //     }
         // }
-        this.setState({EmployeeEmail : data[0].Employee.EMail,EmployeeId : data[0].Employee.ID,ClientName : data[0].ClientName,isActive : data[0].IsActive,DateOfJoining : date,SelectedEmployee : data[0].Employee.ID,SelectedClient : data[0].ClientName,HolidayType : data[0].HolidayType,weekStartDay : data[0].WeekStartDay,MandatoryProjectCode : data[0].MandatoryProjectCode?"Yes":"No",MandatoryDescription : data[0].MandatoryDescription?"Yes":"No",ReportingManagerEmail: ReportingManagersEmail,ReportingManagerId : ReportingManagerIds,ReviewerEmail: ReviewersEMail,ReviewerId : ReviewerIds})
-        this.getHolidays(data[0].ClientName)
+        let filterdHolidays = this.getHolidays(Holidays,data[0].ClientName)
+        this.setState({ClientsObject:Clients,ItemID:ID,EmployeeEmail : data[0].Employee.EMail,EmployeeId : data[0].Employee.ID,ClientName : data[0].ClientName,isActive : data[0].IsActive,DateOfJoining : date,SelectedEmployee : data[0].Employee.ID,SelectedClient : data[0].ClientName,HolidayType : data[0].HolidayType,weekStartDay : data[0].WeekStartDay,MandatoryProjectCode : data[0].MandatoryProjectCode?"Yes":"No",MandatoryDescription : data[0].MandatoryDescription?"Yes":"No",ReportingManagerEmail: ReportingManagersEmail,ReportingManagerId : ReportingManagerIds,ReviewerEmail: ReviewersEMail,ReviewerId : ReviewerIds,HolidaysObject:filterdHolidays,loading: false})
     }
 
     // this function is used to bind users to people pickers
@@ -193,11 +201,11 @@ class EmployeeMasterForm extends React.Component<EmployeeMasterFormProps, Employ
     Filter based on the selected client and Synergy
     we show all the Client holidays and all Synergy
      */
-    private async getHolidays(selectedClientName){
-        let Year = new Date().getFullYear()+"";
-        let Holidays = await  sp.web.lists.getByTitle('HolidaysList').items.top(2000).filter("Year eq '"+Year+"'").select('*').orderBy('ClientName').get()
+    private  getHolidays(HolidaysList,selectedClientName){
+        // let Year = new Date().getFullYear()+"";
+        // let Holidays = await  sp.web.lists.getByTitle('HolidaysList').items.top(2000).filter("Year eq '"+Year+"'").select('*').orderBy('ClientName').get()
       let HolidayClients = []
-      let filteredData = Holidays.filter(item=> {
+      let filteredData = HolidaysList.filter(item=> {
         const lowerCaseItem = item.ClientName .toLowerCase();
         let selectedClient = selectedClientName.toLowerCase()
         return lowerCaseItem.includes(selectedClient) || lowerCaseItem.includes('synergy');
@@ -209,7 +217,8 @@ class EmployeeMasterForm extends React.Component<EmployeeMasterFormProps, Employ
                         HolidayClients.push(client.ClientName)
                     }
                 }
-            this.setState({HolidaysObject : HolidayClients,loading: false})
+        return HolidayClients;
+            // this.setState({HolidaysObject : HolidayClients,loading: false})
     }
 
     // this function is used to bind and set values to respect form feilds
@@ -221,7 +230,8 @@ class EmployeeMasterForm extends React.Component<EmployeeMasterFormProps, Employ
         this.setState({[name] : value});
         if(name == 'ClientName'){
             if(value!=''){
-                this.getHolidays(value)
+               let HolidayClients = this.getHolidays(this.state.GlobalHolidayList,value)
+               this.setState({HolidaysObject : HolidayClients})
             }
             else{
                 this.setState({HolidaysObject : []})

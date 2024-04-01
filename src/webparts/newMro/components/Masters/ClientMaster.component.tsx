@@ -109,7 +109,7 @@ class Clients extends Component<ClientProps, ClientState> {
 
     private handleSubmit = (event) => {
         event.preventDefault();
-        // this.setState({ loading: true });
+        this.setState({ loading: true });
         let data = {
             Clinet: { val: this.state.formData.Title, required: true, Name: 'Client Name', Type: ControlType.string, Focusid: this.Client },
         };
@@ -122,6 +122,7 @@ class Clients extends Component<ClientProps, ClientState> {
             this.checkDuplicates(formdata, id);
         } else {
             // this.setState({ showLabel: true, errorMessage: isValid.message });
+            this.setState({ loading: false });
             customToaster('toster-error',ToasterTypes.Error,isValid.message,4000)
         }
     }
@@ -140,20 +141,18 @@ class Clients extends Component<ClientProps, ClientState> {
             sp.web.lists.getByTitle(ClientList).items.filter(filterString).get().
                 then((response: any[]) => {
                     if (response.length > 0) {
+                        this.setState({ loading: false });
                         // this.setState({ showLabel: true, errorMessage: 'Duplicate record is not accepted'});
                         customToaster('toster-error',ToasterTypes.Error,'Duplicate record is not accepted',4000)
                     }
                     else {
                         // this.insertorupdateListitem(formData, HolidaysList);
-
-                        this.setState({ loading: true });
                         if (id > 0) {                       //update existing record
                             //console.log(this.props);
                             sp.web.lists.getByTitle(ClientList).items.getById(id).update(formData).then((res) => {
                                 // this.resetHolidayMasterForm();
                                 // toast.success('updated successfully');
                                 customToaster('toster-success',ToasterTypes.Success,'updated successfully',2000)
-
                                 this.resetHolidayMasterForm();
                                 this.setState({
                                     modalTitle: 'Success',
@@ -169,12 +168,12 @@ class Clients extends Component<ClientProps, ClientState> {
                         }
                         else {                             //Add New record
                             try {
-                                this.setState({ loading: true });
+                                // this.setState({ loading: true });
                                 sp.web.lists.getByTitle(ClientList).items.add({ ...this.state.formData })
                                     .then((res) => {
+                                        customToaster('toster-success',ToasterTypes.Success,'Client added successfully',2000)
                                         this.resetHolidayMasterForm();
                                         // toast.success('updated successfully');
-                                        customToaster('toster-success',ToasterTypes.Success,'updated successfully',2000)
                                         this.setState({ showHideModal: false,addNewClient: false,loading:false,isRedirect:true});
                                         //  this.setState({
                                         //      modalTitle: 'Success',

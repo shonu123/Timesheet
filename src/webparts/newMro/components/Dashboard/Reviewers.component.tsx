@@ -227,13 +227,12 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
 
         let recordId = this.state.ItemID;
         if(['',undefined,null].includes(this.state.comments.trim())){
-            this.setState({errorMessage : 'Comments cannot be Blank'})
-            this.setState({loading : false})
+            this.setState({errorMessage : 'Comments cannot be Blank',loading : false})
         }
         else{
 
             var filterString = "Id eq '"+recordId+"'"
-            this.setState({ loading: true });
+            this.setState({ successPopUp:false,loading: true });
             let data =  await sp.web.lists.getByTitle('WeeklyTimeSheet').items.filter(filterString).select('Initiator/ID,Initiator/Title,*').expand('Initiator').orderBy('WeekStartDate,DateSubmitted', false).get()
             console.log(data)
             let commentsObj = JSON.parse(data[0].CommentsHistory)
@@ -273,7 +272,6 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
             let date = new Date(data[0].DateSubmitted)
             let tableContent = {'Name':data[0].Name,'Client':data[0].ClientName,'Submitted Date':`${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`,'Billable Hours':data[0].WeeklyTotalHrs,'OT Hours':data[0].OTTotalHrs,'Total Billable Hours':data[0].BillableTotalHrs,'Non-Billable  Hours':data[0].NonBillableTotalHrs,'Total Hours':data[0].GrandTotal}
             console.log(tableContent)
-            let clientApproval = this.state.IsClientApprovalNeed
 
             this.updateStatus(recordId,'Rejected by Synergy',commentsObj,toEmail,ccEmail,tableContent)
         }

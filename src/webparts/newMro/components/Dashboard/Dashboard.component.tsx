@@ -39,6 +39,7 @@ export interface DashboardState {
     showAllRequestsTab:boolean;
     loading:boolean;
     showToaster:boolean;
+    isEmployeeConfigured:boolean;
 }
 
 class Dashboard extends React.Component<DashboardProps, DashboardState> {
@@ -65,6 +66,7 @@ class Dashboard extends React.Component<DashboardProps, DashboardState> {
             showAllRequestsTab: false,
             loading:false,
             showToaster:false,
+            isEmployeeConfigured:true
         };
     }
     public componentDidMount() {
@@ -99,7 +101,31 @@ class Dashboard extends React.Component<DashboardProps, DashboardState> {
     }
 // this function is used to fetch the current logged in user groups
     private getUserGroups = async () => {
-        let groups = await sp.web.currentUser.groups();
+        // let groups = await sp.web.currentUser.groups();
+        let userID = this.props.spContext.userId
+        let filterQuery = "ReportingManager/ID eq '"+userID+"' or Employee/ID eq '"+userID+"' or Reviewers/ID eq '"+userID+"'"
+        let [groups,EmployeeMaster] = await Promise.all([
+            sp.web.currentUser.groups(),
+            sp.web.lists.getByTitle("EmployeeMaster").items.filter(filterQuery).select('Employee/ID,ReportingManager/ID,Reviewers/ID,*').expand("Employee,ReportingManager,Reviewers").get()
+          ]);
+        console.log(EmployeeMaster)
+        let isEmployee = false,isManager = false,isReviewer = false;
+ 
+        EmployeeMaster.forEach(obj => {
+            if (obj.Employee.ID === userID) {
+                isEmployee = true;
+            }
+        
+            if (obj.ReportingManager && obj.ReportingManager.some(manager => manager.ID === userID)) {
+                isManager = true;
+            }
+        
+            if (obj.Reviewers && obj.Reviewers.some(reviewer => reviewer.ID === userID)) {
+                isReviewer = true;
+            }
+        });
+        let EmployeeConfigured = isEmployee || isManager ||isReviewer
+        console.log("Is Employee Configured: "+EmployeeConfigured)
         console.log("current user deatils")
         console.log(this.props.context.pageContext)
         let userGroup = []
@@ -107,32 +133,28 @@ class Dashboard extends React.Component<DashboardProps, DashboardState> {
         for(let grp of groups){
             userGroup.push(grp.Title)
         }
-        if(userGroup.includes('Timesheet Initiators')){
+        if(userGroup.includes('Timesheet Members') && isEmployee){
             this.setState({ showRequestTab: true});
             this.onHandleClick('MyRequests')
         }
-        if(userGroup.includes('Timesheet Approvers')){
+        if(isManager){
             this.setState({ showMyApprovalsTab: true});
             this.onHandleClick('Approvers')
         }
-        if(userGroup.includes('Timesheet Reviewers') && userGroup.includes('Timesheet Approvers')){
-            this.setState({ showMyReviewersTab: true});
-            this.setState({ showMyApprovalsTab: true});
+        if(isManager&&isReviewer){
+            this.setState({ showMyReviewersTab: true,showMyApprovalsTab: true});
+            // this.setState({ showMyApprovalsTab: true});
             this.onHandleClick('Approvers')
         }
-        else if(userGroup.includes('Timesheet Reviewers')){
+        else if(isReviewer){
             this.setState({ showMyReviewersTab: true});
             this.onHandleClick('Reviewers')
         }
-        if(userGroup.includes('Timesheet Owners')){
+        if(userGroup.includes('Timesheet Administrators')){
             this.setState({ showAllRequestsTab: true});
             this.onHandleClick('AllRequests')
         }
-        if(userGroup.includes('Timesheet Members')){
-            this.setState({ showAllRequestsTab: true});
-            this.onHandleClick('AllRequests')
-        }
-        this.setState({loading:false})
+        this.setState({loading:false,isEmployeeConfigured: EmployeeConfigured})
     }
 
     private onMenuItemClick(event) {
@@ -198,6 +220,7 @@ class Dashboard extends React.Component<DashboardProps, DashboardState> {
     public render() {
         return (
             <React.Fragment>
+            {this.state.isEmployeeConfigured?
             <div id="content" className="content p-2 pt-2">
                 <div id="clickMenu" className="menu-icon-outer" onClick={(event) => this.onMenuItemClick(event)}>
                     <div className="menu-icon">
@@ -263,7 +286,8 @@ class Dashboard extends React.Component<DashboardProps, DashboardState> {
                     </div>
                 </div>
              </div>
-            </div>
+            </div>:<div className='noConfiguration'>
+                You are not configured in Employee Master. Please contact Administrator</div>}
             {this.state.showToaster&& <Toaster /> }
         {this.state.loading && <Loader />}
                 </React.Fragment>

@@ -1745,6 +1745,13 @@ div[id^="_TopSpan_NotificationSpan"]{
       /* width: 94vw!important;  */
   }
 }
+@media only screen and (max-width: 1250px) {
+  .dataTables_wrapper-overflow{
+      width: 91vw!important; 
+      /* commented by sri */
+      /* width: 94vw!important;  */
+  }
+}
 @media only screen and (max-width: 1100px) {
   .dataTables_wrapper-overflow,.table-NoScroll{
       width: 90vw!important;
