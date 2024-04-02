@@ -359,6 +359,39 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                  break;
              }
          }
+         this.GetHolidayMasterDataByClientName( trFormdata.WeekStartDate,trFormdata.HolidayType,trFormdata);
+         let WeekStartDate=new Date(new Date(trFormdata.WeekStartDate).getMonth()+1+"/"+new Date(trFormdata.WeekStartDate).getDate()+"/"+new Date(trFormdata.WeekStartDate).getFullYear());
+         let DateOfjoining=new Date(trFormdata.DateOfJoining.getMonth()+1+"/"+trFormdata.DateOfJoining.getDate()+"/"+trFormdata.DateOfJoining.getFullYear());
+         this.WeekHeadings=[];
+         this.WeekHeadings.push({"Mon":(new Date(WeekStartDate).getDate().toString().length == 1 ? "0" +WeekStartDate.getDate() :WeekStartDate.getDate()),
+         "IsMonJoined":WeekStartDate<DateOfjoining,
+         "IsDay1Holiday":this.IsHoliday(WeekStartDate,trFormdata.HolidayType),
+         "IsDay1SynergyHoliday":this.IsHoliday(WeekStartDate,"synergy"),
+         "Tue":(new Date(WeekStartDate.setDate(WeekStartDate.getDate()+1)).getDate().toString().length == 1 ? "0" +WeekStartDate.getDate() :WeekStartDate.getDate()),
+         "IsTueJoined":WeekStartDate<DateOfjoining,
+         "IsDay2Holiday":this.IsHoliday(WeekStartDate,trFormdata.HolidayType),
+         "IsDay2SynergyHoliday":this.IsHoliday(WeekStartDate,"synergy"),
+         "Wed":(new Date(WeekStartDate.setDate(WeekStartDate.getDate()+1)).getDate().toString().length == 1 ? "0" +WeekStartDate.getDate() :WeekStartDate.getDate()),
+         "IsWedJoined":WeekStartDate<DateOfjoining,
+         "IsDay3Holiday":this.IsHoliday(WeekStartDate,trFormdata.HolidayType),
+         "IsDay3SynergyHoliday":this.IsHoliday(WeekStartDate,"synergy"),
+         "Thu":(new Date(WeekStartDate.setDate(WeekStartDate.getDate()+1)).getDate().toString().length == 1 ? "0" +WeekStartDate.getDate() :WeekStartDate.getDate()),
+         "IsThuJoined":WeekStartDate<DateOfjoining,
+         "IsDay4Holiday":this.IsHoliday(WeekStartDate,trFormdata.HolidayType),
+         "IsDay4SynergyHoliday":this.IsHoliday(WeekStartDate,"synergy"),
+         "Fri":(new Date(WeekStartDate.setDate(WeekStartDate.getDate()+1)).getDate().toString().length == 1 ? "0" +WeekStartDate.getDate() :WeekStartDate.getDate()),
+         "IsFriJoined":WeekStartDate<DateOfjoining,
+         "IsDay5Holiday":this.IsHoliday(WeekStartDate,trFormdata.HolidayType),
+         "IsDay5SynergyHoliday":this.IsHoliday(WeekStartDate,"synergy"),
+         "Sat":(new Date(WeekStartDate.setDate(WeekStartDate.getDate()+1)).getDate().toString().length == 1 ? "0" +WeekStartDate.getDate() :WeekStartDate.getDate()),
+         "IsSatJoined":WeekStartDate<DateOfjoining,
+         "IsDay6Holiday":this.IsHoliday(WeekStartDate,trFormdata.HolidayType),
+         "IsDay6SynergyHoliday":this.IsHoliday(WeekStartDate,"synergy"),
+         "Sun":(new Date(WeekStartDate.setDate(WeekStartDate.getDate()+1)).getDate().toString().length == 1 ? "0" +WeekStartDate.getDate() :WeekStartDate.getDate()),
+         "IsSunJoined":WeekStartDate<DateOfjoining,
+         "IsDay7Holiday":this.IsHoliday(WeekStartDate,trFormdata.HolidayType),
+         "IsDay7SynergyHoliday":this.IsHoliday(WeekStartDate,"synergy"),
+         })
         this.setState({UserGoups:userGroups,trFormdata,ClientNames: this.state.ClientNames,EmployeeEmail:this.state.EmployeeEmail,showToaster: true});
         if(this.state.ClientNames.length==1){
             trFormdata.ClientName=ClientNames[0].ClientName;
@@ -367,7 +400,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
         
     }
     private async getItemData(TimesheetID){
-        this.setState({loading:true});
+        //this.setState({loading:true});
         var ClientNames: any;
         let filterQuery = "ID eq '"+TimesheetID+"'";
         let selectQuery = "Initiator/EMail,Reviewers/EMail,ReportingManager/EMail,Notifiers/EMail,*";
@@ -452,7 +485,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
             else
             this.setState({showBillable:true})
         }
-          //For getting Dateofjoining,DescriptionMandatory,ProjectCOde Mandatory,WeekStartday of selected client
+        //For getting Dateofjoining,DescriptionMandatory,ProjectCOde Mandatory,WeekStartday of selected client
         //   for( var item of this.state.Clients_DateOfJoinings)
         //   {
         //       if(item.ClientName.toLowerCase()==data[0].ClientName.toLowerCase())
@@ -465,39 +498,39 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
         //           break;
         //       }
         //   }
-          this.GetHolidayMasterDataByClientName( trFormdata.WeekStartDate,trFormdata.HolidayType,trFormdata);
-        let WeekStartDate=new Date(new Date(data[0].WeekStartDate).getMonth()+1+"/"+new Date(data[0].WeekStartDate).getDate()+"/"+new Date(data[0].WeekStartDate).getFullYear());
-        let DateOfjoining=new Date(trFormdata.DateOfJoining.getMonth()+1+"/"+trFormdata.DateOfJoining.getDate()+"/"+trFormdata.DateOfJoining.getFullYear());
-        this.WeekHeadings=[];
-        this.WeekHeadings.push({"Mon":(new Date(WeekStartDate).getDate().toString().length == 1 ? "0" +WeekStartDate.getDate() :WeekStartDate.getDate()),
-        "IsMonJoined":WeekStartDate<DateOfjoining,
-        "IsDay1Holiday":this.IsHoliday(WeekStartDate,trFormdata.HolidayType),
-        "IsDay1SynergyHoliday":this.IsHoliday(WeekStartDate,"synergy"),
-        "Tue":(new Date(WeekStartDate.setDate(WeekStartDate.getDate()+1)).getDate().toString().length == 1 ? "0" +WeekStartDate.getDate() :WeekStartDate.getDate()),
-        "IsTueJoined":WeekStartDate<DateOfjoining,
-        "IsDay2Holiday":this.IsHoliday(WeekStartDate,trFormdata.HolidayType),
-        "IsDay2SynergyHoliday":this.IsHoliday(WeekStartDate,"synergy"),
-        "Wed":(new Date(WeekStartDate.setDate(WeekStartDate.getDate()+1)).getDate().toString().length == 1 ? "0" +WeekStartDate.getDate() :WeekStartDate.getDate()),
-        "IsWedJoined":WeekStartDate<DateOfjoining,
-        "IsDay3Holiday":this.IsHoliday(WeekStartDate,trFormdata.HolidayType),
-        "IsDay3SynergyHoliday":this.IsHoliday(WeekStartDate,"synergy"),
-        "Thu":(new Date(WeekStartDate.setDate(WeekStartDate.getDate()+1)).getDate().toString().length == 1 ? "0" +WeekStartDate.getDate() :WeekStartDate.getDate()),
-        "IsThuJoined":WeekStartDate<DateOfjoining,
-        "IsDay4Holiday":this.IsHoliday(WeekStartDate,trFormdata.HolidayType),
-        "IsDay4SynergyHoliday":this.IsHoliday(WeekStartDate,"synergy"),
-        "Fri":(new Date(WeekStartDate.setDate(WeekStartDate.getDate()+1)).getDate().toString().length == 1 ? "0" +WeekStartDate.getDate() :WeekStartDate.getDate()),
-        "IsFriJoined":WeekStartDate<DateOfjoining,
-        "IsDay5Holiday":this.IsHoliday(WeekStartDate,trFormdata.HolidayType),
-        "IsDay5SynergyHoliday":this.IsHoliday(WeekStartDate,"synergy"),
-        "Sat":(new Date(WeekStartDate.setDate(WeekStartDate.getDate()+1)).getDate().toString().length == 1 ? "0" +WeekStartDate.getDate() :WeekStartDate.getDate()),
-        "IsSatJoined":WeekStartDate<DateOfjoining,
-        "IsDay6Holiday":this.IsHoliday(WeekStartDate,trFormdata.HolidayType),
-        "IsDay6SynergyHoliday":this.IsHoliday(WeekStartDate,"synergy"),
-        "Sun":(new Date(WeekStartDate.setDate(WeekStartDate.getDate()+1)).getDate().toString().length == 1 ? "0" +WeekStartDate.getDate() :WeekStartDate.getDate()),
-        "IsSunJoined":WeekStartDate<DateOfjoining,
-        "IsDay7Holiday":this.IsHoliday(WeekStartDate,trFormdata.HolidayType),
-        "IsDay7SynergyHoliday":this.IsHoliday(WeekStartDate,"synergy"),
-        })
+        // this.GetHolidayMasterDataByClientName( trFormdata.WeekStartDate,trFormdata.HolidayType,trFormdata);
+        // let WeekStartDate=new Date(new Date(data[0].WeekStartDate).getMonth()+1+"/"+new Date(data[0].WeekStartDate).getDate()+"/"+new Date(data[0].WeekStartDate).getFullYear());
+        // let DateOfjoining=new Date(trFormdata.DateOfJoining.getMonth()+1+"/"+trFormdata.DateOfJoining.getDate()+"/"+trFormdata.DateOfJoining.getFullYear());
+        // this.WeekHeadings=[];
+        // this.WeekHeadings.push({"Mon":(new Date(WeekStartDate).getDate().toString().length == 1 ? "0" +WeekStartDate.getDate() :WeekStartDate.getDate()),
+        // "IsMonJoined":WeekStartDate<DateOfjoining,
+        // "IsDay1Holiday":this.IsHoliday(WeekStartDate,trFormdata.HolidayType),
+        // "IsDay1SynergyHoliday":this.IsHoliday(WeekStartDate,"synergy"),
+        // "Tue":(new Date(WeekStartDate.setDate(WeekStartDate.getDate()+1)).getDate().toString().length == 1 ? "0" +WeekStartDate.getDate() :WeekStartDate.getDate()),
+        // "IsTueJoined":WeekStartDate<DateOfjoining,
+        // "IsDay2Holiday":this.IsHoliday(WeekStartDate,trFormdata.HolidayType),
+        // "IsDay2SynergyHoliday":this.IsHoliday(WeekStartDate,"synergy"),
+        // "Wed":(new Date(WeekStartDate.setDate(WeekStartDate.getDate()+1)).getDate().toString().length == 1 ? "0" +WeekStartDate.getDate() :WeekStartDate.getDate()),
+        // "IsWedJoined":WeekStartDate<DateOfjoining,
+        // "IsDay3Holiday":this.IsHoliday(WeekStartDate,trFormdata.HolidayType),
+        // "IsDay3SynergyHoliday":this.IsHoliday(WeekStartDate,"synergy"),
+        // "Thu":(new Date(WeekStartDate.setDate(WeekStartDate.getDate()+1)).getDate().toString().length == 1 ? "0" +WeekStartDate.getDate() :WeekStartDate.getDate()),
+        // "IsThuJoined":WeekStartDate<DateOfjoining,
+        // "IsDay4Holiday":this.IsHoliday(WeekStartDate,trFormdata.HolidayType),
+        // "IsDay4SynergyHoliday":this.IsHoliday(WeekStartDate,"synergy"),
+        // "Fri":(new Date(WeekStartDate.setDate(WeekStartDate.getDate()+1)).getDate().toString().length == 1 ? "0" +WeekStartDate.getDate() :WeekStartDate.getDate()),
+        // "IsFriJoined":WeekStartDate<DateOfjoining,
+        // "IsDay5Holiday":this.IsHoliday(WeekStartDate,trFormdata.HolidayType),
+        // "IsDay5SynergyHoliday":this.IsHoliday(WeekStartDate,"synergy"),
+        // "Sat":(new Date(WeekStartDate.setDate(WeekStartDate.getDate()+1)).getDate().toString().length == 1 ? "0" +WeekStartDate.getDate() :WeekStartDate.getDate()),
+        // "IsSatJoined":WeekStartDate<DateOfjoining,
+        // "IsDay6Holiday":this.IsHoliday(WeekStartDate,trFormdata.HolidayType),
+        // "IsDay6SynergyHoliday":this.IsHoliday(WeekStartDate,"synergy"),
+        // "Sun":(new Date(WeekStartDate.setDate(WeekStartDate.getDate()+1)).getDate().toString().length == 1 ? "0" +WeekStartDate.getDate() :WeekStartDate.getDate()),
+        // "IsSunJoined":WeekStartDate<DateOfjoining,
+        // "IsDay7Holiday":this.IsHoliday(WeekStartDate,trFormdata.HolidayType),
+        // "IsDay7SynergyHoliday":this.IsHoliday(WeekStartDate,"synergy"),
+        // })
         let groups = await sp.web.currentUser.groups();
         //------new-----
         let userGroups = []
@@ -540,6 +573,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                 trFormdata['ClientName'] = ''
                 trFormdata['Name'] = this.currentUser
                 trFormdata.WeekStartDate=null;
+                this.validateDuplicateRecord(trFormdata.WeekStartDate,trFormdata.ClientName,trFormdata);
                 this.setState({onBehalf: false,ClientNames:[],loading:true,trFormdata})
                 this.loadWeeklyTimeSheetData(this.props.spContext.userId)
             }
@@ -547,6 +581,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                 trFormdata.Name='';
                 trFormdata.ClientName='';
                 trFormdata.WeekStartDate=null;
+                this.validateDuplicateRecord(trFormdata.WeekStartDate,trFormdata.ClientName,trFormdata);
                 this.setState({trFormdata,onBehalf: true,isSubmitted:true,ClientNames:[],currentUserId:-1,loading:true});
                 this.getAllEmployees()
             }
@@ -558,6 +593,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
             if(value == '-1'){
                 trFormdata.ClientName='';
                 trFormdata.WeekStartDate=null;
+                this.validateDuplicateRecord(trFormdata.WeekStartDate,trFormdata.ClientName,trFormdata);
                 this.setState({trFormdata,currentUserId: -1,isSubmitted:true,ClientNames:[],loading:false})
                 this.currentUser = this.props.spContext.userDisplayName;
             }
@@ -567,12 +603,13 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                 trFormdata.WeekStartDate=null;
                 trFormdata['Name'] = e.target.selectedOptions[0].label
                 this.currentUser = e.target.selectedOptions[0].label;
+                this.validateDuplicateRecord(trFormdata.WeekStartDate,trFormdata.ClientName,trFormdata);
                 this.setState({currentUserId: parseInt(value),ClientNames:[],trFormdata})
                 this.loadWeeklyTimeSheetData(parseInt(value))
             }
         }
         //changes by Ganesh in this method:Clear the fields and validate record.
-        this.validateDuplicateRecord(trFormdata.WeekStartDate,trFormdata.ClientName,trFormdata);
+        //this.validateDuplicateRecord(trFormdata.WeekStartDate,trFormdata.ClientName,trFormdata);
     }
     //functions related to calculation
     private WeekStartDateChange = (dateprops) => {
@@ -1431,7 +1468,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
             sp.web.lists.getByTitle(this.listName).items.getById(this.state.ItemID).update(formdata).then((res) => {
                if(StatusType.Save==formdata.Status)
                {
-                this.setState({loading:false})
+                //this.setState({loading:false})
                 customToaster('toster-success',ToasterTypes.Success,'Weekly timesheet saved successfully',2000)
                 this.getItemData(this.state.ItemID);
                }
@@ -1544,7 +1581,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                     let ItemID = res.data.Id;
                     // this.props.match.params.id =ItemID;
                     if (StatusType.Save == formdata.Status) {
-                        this.setState({ItemID:ItemID,loading:false})
+                        this.setState({ItemID:ItemID})
                         customToaster('toster-success',ToasterTypes.Success,'Weekly timesheet saved successfully',2000)
                         this.getItemData(ItemID);
                     }
