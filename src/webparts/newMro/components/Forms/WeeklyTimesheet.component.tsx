@@ -322,7 +322,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
             }
         }
         console.log(ClientNames);
-        if(ClientNames.length<1){
+        if(ClientNames.length<1 && !this.state.isAdmin){
             this.setState({modalTitle:'Invalid Employee configuration',modalText:'Employee not configured in Approval Matrix,Please contact Administrator',isSuccess: false,showHideModal:true})
             this.setState({loading:false,isSubmitted:true});
             return false;
@@ -573,7 +573,6 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                 trFormdata['ClientName'] = ''
                 trFormdata['Name'] = this.currentUser
                 trFormdata.WeekStartDate=null;
-                this.validateDuplicateRecord(trFormdata.WeekStartDate,trFormdata.ClientName,trFormdata);
                 this.setState({onBehalf: false,ClientNames:[],loading:true,trFormdata})
                 this.loadWeeklyTimeSheetData(this.props.spContext.userId)
             }
@@ -581,7 +580,6 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                 trFormdata.Name='';
                 trFormdata.ClientName='';
                 trFormdata.WeekStartDate=null;
-                this.validateDuplicateRecord(trFormdata.WeekStartDate,trFormdata.ClientName,trFormdata);
                 this.setState({trFormdata,onBehalf: true,isSubmitted:true,ClientNames:[],currentUserId:-1,loading:true});
                 this.getAllEmployees()
             }
@@ -593,7 +591,6 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
             if(value == '-1'){
                 trFormdata.ClientName='';
                 trFormdata.WeekStartDate=null;
-                this.validateDuplicateRecord(trFormdata.WeekStartDate,trFormdata.ClientName,trFormdata);
                 this.setState({trFormdata,currentUserId: -1,isSubmitted:true,ClientNames:[],loading:false})
                 this.currentUser = this.props.spContext.userDisplayName;
             }
@@ -603,13 +600,12 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                 trFormdata.WeekStartDate=null;
                 trFormdata['Name'] = e.target.selectedOptions[0].label
                 this.currentUser = e.target.selectedOptions[0].label;
-                this.validateDuplicateRecord(trFormdata.WeekStartDate,trFormdata.ClientName,trFormdata);
                 this.setState({currentUserId: parseInt(value),ClientNames:[],trFormdata})
                 this.loadWeeklyTimeSheetData(parseInt(value))
             }
         }
         //changes by Ganesh in this method:Clear the fields and validate record.
-        //this.validateDuplicateRecord(trFormdata.WeekStartDate,trFormdata.ClientName,trFormdata);
+        this.ClearTimesheetControls(trFormdata);
     }
     //functions related to calculation
     private WeekStartDateChange = (dateprops) => {
@@ -1857,6 +1853,71 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                 this.setState({ trFormdata:trFormdata,currentWeeklyRowsCount:trFormdata.WeeklyItemsData.length,currentOTRowsCount: trFormdata.OTItemsData.length,ItemID:0,EmployeeEmail:this.state.EmployeeEmail,isSubmitted:false,errorMessage:'',showBillable:false,loading:false});
             }
             this.showApproveAndRejectButton()
+    }
+    private ClearTimesheetControls=(trFormdata)=>{
+       
+            trFormdata.ClientName="";
+            trFormdata.Name==""?trFormdata.Name="":trFormdata.Name=trFormdata.Name;
+            trFormdata.WeekStartDate=null;
+            trFormdata.WeeklyItemsData=[];
+            trFormdata.OTItemsData=[];
+            trFormdata.BillableSubTotal=[];
+            trFormdata.SynergyOfficeHrs=[];
+            trFormdata.SynergyHolidayHrs=[];
+            trFormdata.ClientHolidayHrs=[];
+            trFormdata.PTOHrs=[];
+            trFormdata.NonBillableSubTotal=[];
+            trFormdata.Total=[];
+            trFormdata.Status=StatusType.Save;
+            trFormdata.CommentsHistoryData=[];
+            trFormdata.SuperviserNames=[];
+            trFormdata.Pendingwith="NA";
+            trFormdata.WeeklyItemsData.push({Description:'',ProjectCode:'',Mon: '',Tue: '',Wed:'',Thu: '',Fri: '',Sat: '',Sun: '',Total: '0',});
+            trFormdata.OTItemsData.push({Description:'',ProjectCode:'',Mon: '',Tue: '',Wed:'',Thu: '',Fri: '',Sat: '',Sun: '',Total: '0',});
+            trFormdata.BillableSubTotal.push({Mon: '0',Tue: '0',Wed:'0',Thu: '0',Fri: '0',Sat: '0',Sun: '0',Total: '0',});
+            trFormdata.SynergyOfficeHrs.push({Description:'',ProjectCode:'',Mon: '',Tue: '',Wed:'',Thu: '',Fri: '',Sat: '',Sun: '',Total: '0',});
+            trFormdata.SynergyHolidayHrs.push({Description:'',ProjectCode:'',Mon: '',Tue: '',Wed:'',Thu: '',Fri: '',Sat: '',Sun: '',Total: '0',});
+            trFormdata.ClientHolidayHrs.push({Description:'',ProjectCode:'',Mon: '',Tue: '',Wed:'',Thu: '',Fri: '',Sat: '',Sun: '',Total: '0',});
+            trFormdata.PTOHrs.push({Description:'',ProjectCode:'',Mon: '',Tue: '',Wed:'',Thu: '',Fri: '',Sat: '',Sun: '',Total: '0',});
+            trFormdata.NonBillableSubTotal.push({Mon: '',Tue: '',Wed:'',Thu: '',Fri: '',Sat: '',Sun: '',Total: '0',});
+            trFormdata.Total.push({Mon: '0',Tue: '0',Wed:'0',Thu: '0',Fri: '0',Sat: '0',Sun: '0',Total: '0',});
+            trFormdata.ReportingManagersEmail=[];
+            trFormdata.ReviewersEmail=[];
+            trFormdata.NotifiersEmail=[];
+            trFormdata.IsClientApprovalNeeded=false;
+            trFormdata.Revised=false;
+            trFormdata.IsSubmitted=false;
+
+            let WeekStartDate=([null,undefined,''].includes(trFormdata.WeekStartDate)?new Date():new Date(trFormdata.WeekStartDate.getMonth()+1+"/"+trFormdata.WeekStartDate.getDate()+"/"+trFormdata.WeekStartDate.getFullYear()));
+            let DateOfjoining=new Date(trFormdata.DateOfJoining.getMonth()+1+"/"+trFormdata.DateOfJoining.getDate()+"/"+trFormdata.DateOfJoining.getFullYear());
+            this.WeekHeadings=[];
+                this.WeekHeadings.push({"Mon":"",
+                "IsMonJoined":true,
+                "IsDay1Holiday":this.IsHoliday(WeekStartDate,trFormdata.HolidayType),
+                "Tue":"",
+                "IsTueJoined":true,
+                "IsDay2Holiday":this.IsHoliday(WeekStartDate,trFormdata.HolidayType),
+                "Wed":"",
+                "IsWedJoined":true,
+                "IsDay3Holiday":this.IsHoliday(WeekStartDate,trFormdata.HolidayType),
+                "Thu":"",
+                "IsThuJoined":true,
+                "IsDay4Holiday":this.IsHoliday(WeekStartDate,trFormdata.HolidayType),
+                "Fri":"",
+                "IsFriJoined":true,
+                "IsDay5Holiday":this.IsHoliday(WeekStartDate,trFormdata.HolidayType),
+                "Sat":"",
+                "IsSatJoined":true,
+                "IsDay6Holiday":this.IsHoliday(WeekStartDate,trFormdata.HolidayType),
+                "Sun":"",
+                "IsSunJoined":true,
+                "IsDay7Holiday":this.IsHoliday(WeekStartDate,trFormdata.HolidayType),
+                })
+           
+            this.setState({ trFormdata:trFormdata,currentWeeklyRowsCount:trFormdata.WeeklyItemsData.length,currentOTRowsCount: trFormdata.OTItemsData.length,ItemID:0,EmployeeEmail:this.state.EmployeeEmail,isSubmitted:false,errorMessage:'',showBillable:false,loading:false});
+      
+        this.showApproveAndRejectButton()
+
     }
     private handlefullClose = () => {
 
