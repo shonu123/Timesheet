@@ -78,7 +78,7 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
                         EmployeName: d.Name,
                         Company : d.ClientName,
                         PendingWith: d.PendingWith,
-                        Status : d.Status=='rejected by Synergy'?'Rejected by Synergy':d.Status=='rejected by Manager'?'Rejected by Manager':d.Status,
+                        Status : d.Status=='rejected by Synergy'?'Rejected by Synergy':d.Status=='rejected by Manager'?'Rejected by Reporting Manager':d.Status,
                         BillableHrs: d.WeeklyTotalHrs,
                         OTTotalHrs : d.OTTotalHrs,
                         TotalBillableHours: d.BillableTotalHrs,

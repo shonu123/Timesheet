@@ -2679,3 +2679,9 @@ flex-direction: column;
   height: 100px;
   width: 100px;
 }
+
+.kEIRkz div:first-child {
+  white-space: nowrap !important;
+  overflow: inherit !important;
+  text-wrap: balance !important;
+}
