@@ -1740,10 +1740,14 @@ div[id^="_TopSpan_NotificationSpan"]{
 
   @media only screen and (max-width: 1525px) {
     .dataTables_wrapper-overflow{
-        width: 94vw!important;
+        width: 93vw!important;
     }
   }
-
+  @media only screen and (max-width: 1435px) {
+    .dataTables_wrapper-overflow{
+        width: 90vw!important;
+    }
+  }
 
 @media only screen and (max-width: 1406px) {
   .table-NoScroll{
