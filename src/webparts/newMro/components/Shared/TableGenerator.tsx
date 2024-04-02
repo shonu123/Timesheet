@@ -94,7 +94,7 @@ const TableGenerator = ({ columns, data, fileName,showExportExcel, ExportExcelCu
               <div className="col-6 text-right">
                   <div style={{ paddingLeft: '10px' }} className={customBtnClass} id={""+btnDivID}>
                     <NavLink title={btnTitle}  className="csrLink ms-draggable" to={navigateOnBtnClick}>
-                        <span className='SubmitButtons position-static' id={""+btnSpanID}><FontAwesomeIcon icon={faPlus}></FontAwesomeIcon>{btnCaption}</span>
+                    <button type="button" id="" className="SubmitButtons btn"><span className='position-static' id={""+btnSpanID}><FontAwesomeIcon icon={faPlus}></FontAwesomeIcon>{btnCaption}</span></button>
                     </NavLink>
                     </div> 
         </div>}
