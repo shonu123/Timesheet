@@ -153,7 +153,7 @@ class Clients extends Component<ClientProps, ClientState> {
                             sp.web.lists.getByTitle(ClientList).items.getById(id).update(formData).then((res) => {
                                 // this.resetHolidayMasterForm();
                                 // toast.success('updated successfully');
-                                customToaster('toster-success',ToasterTypes.Success,'updated successfully',2000)
+                                customToaster('toster-success',ToasterTypes.Success,'Client name updated successfully.',2000)
                                 this.resetHolidayMasterForm();
                                 this.setState({
                                     modalTitle: 'Success',
@@ -172,7 +172,7 @@ class Clients extends Component<ClientProps, ClientState> {
                                 // this.setState({ loading: true });
                                 sp.web.lists.getByTitle(ClientList).items.add({ ...this.state.formData })
                                     .then((res) => {
-                                        customToaster('toster-success',ToasterTypes.Success,'Client added successfully',2000)
+                                        customToaster('toster-success',ToasterTypes.Success,'Client name added successfully',2000)
                                         this.resetHolidayMasterForm();
                                         // toast.success('updated successfully');
                                         this.setState({ showHideModal: false,addNewClient: false,loading:false,isRedirect:true});
@@ -402,7 +402,7 @@ class Clients extends Component<ClientProps, ClientState> {
 
                                         <div className={this.state.addNewClient ? 'mx-2 activediv' : 'mx-2'}>
                                             <div className="text-right pt-2">
-                                                <button type="button" id="btnSubmit" className="SubmitButtons btn" onClick={this.addNewClientMaster}>
+                                                <button type="button" id="btnSubmit" title='Add New Client' className="SubmitButtons btn" onClick={this.addNewClientMaster}>
                                                 <span className='' id='addClient'><FontAwesomeIcon icon={faPlus}></FontAwesomeIcon> Add</span>
                                                 </button>
                                             </div>

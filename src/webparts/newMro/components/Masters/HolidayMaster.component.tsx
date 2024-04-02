@@ -208,7 +208,7 @@ class HolidaysList extends Component<HolidaysListProps, HolidaysListState> {
                             sp.web.lists.getByTitle(HolidaysList).items.getById(id).update(formData).then((res) => {
                                 // this.resetHolidayMasterForm();
                                 // toast.success('updated successfully');
-                                customToaster('toster-success',ToasterTypes.Success,'updated successfully',2000)
+                                customToaster('toster-success',ToasterTypes.Success,'Holiday updated successfully',2000)
                                 this.resetHolidayMasterForm();
                                 this.setState({ showHideModal: false,isRedirect:true});
                                 // this.setState({
@@ -228,7 +228,7 @@ class HolidaysList extends Component<HolidaysListProps, HolidaysListState> {
                                     .then((res) => {
                                         this.resetHolidayMasterForm();
                                         // toast.success('submitted successfully');
-                                        customToaster('toster-success',ToasterTypes.Success,'submitted successfully',2000)
+                                        customToaster('toster-success',ToasterTypes.Success,'Holiday added successfully',2000)
                                         this.resetHolidayMasterForm();
                                         this.setState({ showHideModal: false,isRedirect:true});
                                         // this.setState({
@@ -688,7 +688,7 @@ class HolidaysList extends Component<HolidaysListProps, HolidaysListState> {
                                                 <ImportExcel ErrorFileSelect={this.ErrorFileSelect} columns={["Client Name", "Holiday Name", "Holiday Date"]} filename="Holidays List" onDataFetch={this.fetchImportedExcelData} submitData={this.submitImportedExcelData}></ImportExcel>
 
                                                 {/* <button type="button" id="btnSubmit" className="add-button btn" onClick={this.addNewHolidayMaster}> */}
-                                                <button type="button" id="btnSubmit" className="SubmitButtons btn" onClick={this.addNewHolidayMaster}>
+                                                <button type="button" id="btnSubmit" title='Add New Holiday' className="SubmitButtons btn" onClick={this.addNewHolidayMaster}>
                                                     <span className='' id='addHoliday'><FontAwesomeIcon icon={faPlus}></FontAwesomeIcon> Add</span>
                                                 </button>
                                             </div>

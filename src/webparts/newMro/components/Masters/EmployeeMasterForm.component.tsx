@@ -305,7 +305,7 @@ private async validateDuplicateRecord () {
             customToaster('toster-error',ToasterTypes.Error,isValid.message,4000)
         }
         else if(Rm.includes(this.state.EmployeeId)){
-            let errMsg = 'The selected Employee can not be assigned as their own Manager';
+            let errMsg = 'The selected Employee cannot be assigned as their own Manager';
             // this.setState({showToaster:true})
             customToaster('toster-error',ToasterTypes.Error,errMsg,4000)
         }
