@@ -745,11 +745,13 @@ input.c-input-readonly {
   padding-left: 7px;
   padding-top: 4px;
   border-radius: .25rem;
+  font-size: 14px;
 }
 .light-text select{
   padding-left: 3px;
   padding-top: 4px;
   border-radius: .25rem;
+  font-size: 14px;
 }
 
 /* .light-text .form-control:focus,.form-select:focus{
@@ -2420,6 +2422,7 @@ li {
 
   .ddlClient,.ddlApplying {
     height: 35px !important;
+    min-width: 150px !important;
     width: auto;
   }
  .ddlApplying{

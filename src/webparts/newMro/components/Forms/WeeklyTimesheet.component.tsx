@@ -1108,7 +1108,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
         {  
             if(parseFloat(trFormdata.WeeklyItemsData[i].Total)==0)
             {
-                isValid.message="Total working hours in a week can not be blank";
+                isValid.message="Total working hours in a week cannot be blank";
                 isValid.status=false;
                 document.getElementById(i+"_Total_weekrow").focus();
                 document.getElementById(i+"_Total_weekrow").classList.add('mandatory-FormContent-focus');
@@ -1139,7 +1139,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
         {
             if(parseFloat(trFormdata.OTItemsData[i].Total)==0)
             {
-                isValid.message="Total working hours in a week can not be blank";
+                isValid.message="Total working hours in a week cannot be blank";
                 isValid.status=false;
                 document.getElementById(i+"_Total_otrow").focus();
                 document.getElementById(i+"_Total_otrow").classList.add('mandatory-FormContent-focus');
@@ -1166,8 +1166,9 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
     //functions related to confirmation popup
     private showConfirmDeleteRow = (event)=>{
         this.setState({showConfirmDeletePopup:true,ConfirmPopupMessage:'Are you sure you want to delete this row?'});
-         let TypeofRow = event.target.id.split("_")[1];
-         let  CountOfRow = event.target.id.split("_")[0];
+        //let CurrentRowId=["",null,undefined].includes(event.target.id)?event.target.parent().id :event.target.id;
+         let TypeofRow = event.currentTarget.id.split("_")[1];
+         let  CountOfRow = event.currentTarget.id.split("_")[0];
          this.setState({RowType:TypeofRow,rowCount:CountOfRow})
     }
     private showConfirmSubmit=(event)=>{
@@ -1203,6 +1204,9 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
         {
         customToaster('toster-error',ToasterTypes.Error,isValid.message,4000)
         }
+    }
+    private showConfirmRevoke=(event)=>{
+        this.setState({showConfirmDeletePopup:true,ConfirmPopupMessage:'Are you sure you want to revoke?',ActionButtonId:event.target.id});
     }
     //functions related to CRUD operations
    private handleSubmitorSave = async () => {
@@ -2032,7 +2036,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
            Time=parseFloat(val);
         //    if(Time==0)
         //    {
-        //     isValid.message="Total working hours in a week can not be blank";
+        //     isValid.message="Total working hours in a week cannot be blank";
         //     isValid.status=false;
         //     document.getElementById("GrandTotal").focus();
         //     document.getElementById("GrandTotal").classList.add('mandatory-FormContent-focus');
@@ -2044,7 +2048,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
             {
                 if(formdata.SynergyOfficeHrs[0].Description.trim()=="" && formdata.IsDescriptionMandatory)
                  {
-                     isValid.message="Description can not be blank";
+                     isValid.message="Description cannot be blank";
                      isValid.status=false;
                      document.getElementById("0_Description_SynOffcHrs").focus();
                      document.getElementById("0_Description_SynOffcHrs").classList.add('mandatory-FormContent-focus');
@@ -2052,7 +2056,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                  }
                  else if(formdata.SynergyOfficeHrs[0].ProjectCode.trim()=="" && formdata.IsProjectCodeMandatory)
                  {
-                     isValid.message="ProjectCode can not be blank";
+                     isValid.message="Project Code cannot be blank";
                      isValid.status=false;
                      document.getElementById("0_ProjectCode_SynOffcHrs").focus();
                      document.getElementById("0_ProjectCode_SynOffcHrs").classList.add('mandatory-FormContent-focus');
@@ -2065,7 +2069,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                   { 
                      if(formdata.WeeklyItemsData[i].Description.trim()=="" && formdata.IsDescriptionMandatory)
                      {
-                         isValid.message="Description can not be blank";
+                         isValid.message="Description cannot be blank";
                          isValid.status=false;
                          document.getElementById(i+"_Description_weekrow").focus();
                          document.getElementById(i+"_Description_weekrow").classList.add('mandatory-FormContent-focus');
@@ -2073,7 +2077,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                      }
                      else if(formdata.WeeklyItemsData[i].ProjectCode.trim()=="" && formdata.IsProjectCodeMandatory)
                      {
-                         isValid.message="ProjectCode can not be blank";
+                         isValid.message="Project Code cannot be blank";
                          isValid.status=false;
                          document.getElementById(i+"_ProjectCode_weekrow").focus();
                          document.getElementById(i+"_ProjectCode_weekrow").classList.add('mandatory-FormContent-focus');
@@ -2087,7 +2091,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                       { 
                          if(formdata.OTItemsData[i].Description.trim()=="" && formdata.IsDescriptionMandatory&&parseFloat(formdata.OTItemsData[i].Total)!=0)
                          {
-                             isValid.message="Description can not be blank";
+                             isValid.message="Description cannot be blank";
                              isValid.status=false;
                              document.getElementById(i+"_Description_otrow").focus();
                              document.getElementById(i+"_Description_otrow").classList.add('mandatory-FormContent-focus');
@@ -2095,7 +2099,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                          }
                          else if(formdata.OTItemsData[i].ProjectCode.trim()=="" && formdata.IsProjectCodeMandatory&&parseFloat(formdata.OTItemsData[i].Total)!=0)
                          {
-                             isValid.message="ProjectCode can not be blank";
+                             isValid.message="Project Code cannot be blank";
                              isValid.status=false;
                              document.getElementById(i+"_ProjectCode_otrow").focus();
                              document.getElementById(i+"_ProjectCode_otrow").classList.add('mandatory-FormContent-focus');
@@ -2111,7 +2115,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
              {
                  if(formdata.ClientHolidayHrs[0].Description.trim()=="" && formdata.IsDescriptionMandatory)
                  {
-                     isValid.message="Description can not be blank";
+                     isValid.message="Description cannot be blank";
                      isValid.status=false;
                      document.getElementById("0_Description_ClientHldHrs").focus();
                      document.getElementById("0_Description_ClientHldHrs").classList.add('mandatory-FormContent-focus');
@@ -2119,7 +2123,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                  }
                  else if(formdata.ClientHolidayHrs[0].ProjectCode.trim()=="" && formdata.IsProjectCodeMandatory)
                  {
-                     isValid.message="ProjectCode can not be blank";
+                     isValid.message="Project Code cannot be blank";
                      isValid.status=false;
                      document.getElementById("0_ProjectCode_ClientHldHrs").focus();
                      document.getElementById("0_ProjectCode_ClientHldHrs").classList.add('mandatory-FormContent-focus');
@@ -2129,7 +2133,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
              if(parseFloat(formdata.PTOHrs[0].Total)!=0){
                  if(formdata.PTOHrs[0].Description.trim()=="" && formdata.IsDescriptionMandatory)
                  {
-                     isValid.message="Description can not be blank";
+                     isValid.message="Description cannot be blank";
                      isValid.status=false;
                      document.getElementById("0_Description_PTOHrs").focus();
                      document.getElementById("0_Description_PTOHrs").classList.add('mandatory-FormContent-focus');
@@ -2137,7 +2141,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                  }
                  else if(formdata.PTOHrs[0].ProjectCode.trim()=="" && formdata.IsProjectCodeMandatory)
                  {
-                     isValid.message="ProjectCode can not be blank";
+                     isValid.message="Project Code cannot be blank";
                      isValid.status=false;
                      document.getElementById("0_ProjectCode_PTOHrs").focus();
                      document.getElementById("0_ProjectCode_PTOHrs").classList.add('mandatory-FormContent-focus');
@@ -2453,7 +2457,8 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                       this.state.ConfirmPopupMessage=="Are you sure you want to delete this row?"?<ModalPopUpConfirm message={this.state.ConfirmPopupMessage} title={''} isVisible={this.state.showConfirmDeletePopup} isSuccess={false} onConfirm={this.RemoveCurrentRow} onCancel={this.CancelDeleteRow}></ModalPopUpConfirm>:
                       this.state.ConfirmPopupMessage=="Are you sure you want to submit?"?<ModalPopUpConfirm message={this.state.ConfirmPopupMessage} title={''} isVisible={this.state.showConfirmDeletePopup} isSuccess={false} onConfirm={this.handleSubmitorSave} onCancel={this.CancelDeleteRow}></ModalPopUpConfirm>:
                       this.state.ConfirmPopupMessage=="Are you sure you want to approve?"?<ModalPopUpConfirm message={this.state.ConfirmPopupMessage} title={''} isVisible={this.state.showConfirmDeletePopup} isSuccess={false} onConfirm={this.handleApprove} onCancel={this.CancelDeleteRow}></ModalPopUpConfirm>:
-                      this.state.ConfirmPopupMessage=="Are you sure you want to reject?"?<ModalPopUpConfirm message={this.state.ConfirmPopupMessage} title={''} isVisible={this.state.showConfirmDeletePopup} isSuccess={false} onConfirm={this.handleReject} onCancel={this.CancelDeleteRow}></ModalPopUpConfirm>:""
+                      this.state.ConfirmPopupMessage=="Are you sure you want to reject?"?<ModalPopUpConfirm message={this.state.ConfirmPopupMessage} title={''} isVisible={this.state.showConfirmDeletePopup} isSuccess={false} onConfirm={this.handleReject} onCancel={this.CancelDeleteRow}></ModalPopUpConfirm> :
+                      this.state.ConfirmPopupMessage=="Are you sure you want to revoke?"?<ModalPopUpConfirm message={this.state.ConfirmPopupMessage} title={''} isVisible={this.state.showConfirmDeletePopup} isSuccess={false} onConfirm={this.handleRevoke} onCancel={this.CancelDeleteRow}></ModalPopUpConfirm>:""
                        }
             <div id="content" className="content p-2 pt-2">
             <div className="container-fluid">
@@ -2845,7 +2850,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                             {this.state.showApproveRejectbtn&&!this.state.IsReviewer?<button type="button" id="btnApprove" onClick={this.showConfirmApprove} className="SubmitButtons btn">Approve</button>:''}
                             {this.state.showApproveRejectbtn?<button type="button" id="btnReject" onClick={this.showConfirmReject}  className="RejectButtons btn">Reject</button>:''}
                             {this.state.isSubmitted?'': <button type="button" id="btnSubmit" onClick={this.showConfirmSubmit} className="SubmitButtons btn">Submit</button>}
-                            {(this.state.trFormdata.Status==StatusType.Submit||this.state.trFormdata.Status==StatusType.Approved)&&!this.state.showApproveRejectbtn?<button type="button" id="btnRevoke" onClick={this.handleRevoke} className="txt-white CancelButtons bc-burgundy btn">Revoke</button>:''}
+                            {(this.state.trFormdata.Status==StatusType.Submit||this.state.trFormdata.Status==StatusType.Approved)&&!this.state.showApproveRejectbtn?<button type="button" id="btnRevoke" onClick={this.showConfirmRevoke} className="txt-white CancelButtons bc-burgundy btn">Revoke</button>:''}
                             {this.state.isSubmitted?'':  <button type="button" id="btnSave" onClick={this.handleSubmitorSave} className="SaveButtons btn">Save</button>}
                             <button type="button" id="btnCancel" onClick={this.handleCancel} className="CancelButtons btn">Cancel</button>
                         </div>
