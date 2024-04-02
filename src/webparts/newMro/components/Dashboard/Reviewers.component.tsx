@@ -103,7 +103,8 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
             CC: emaildetails.ccemail
           }).then((i) => {  
             this.setState({showHideModal : false,ItemID:0,message:'',title:'',Action:'',loading: false,successPopUp:false,modalTitle:modalTitle});
-            customToaster('toster-success',ToasterTypes.Success,'Timesheet rejcted succesfully',2000)
+            customToaster('toster-success',ToasterTypes.Success,'Timesheet'+StatusType.Reject+'successfully',2000);
+            this.ReviewerApproval();
           }).catch((i) => {
             this.setState({showHideModal : false,ItemID:0,message:'',title:'',Action:'',loading: false,successPopUp:false,modalTitle:'Email sending failed',modalText:'Something went wrong please try again'}); 
             customToaster('toster-error',ToasterTypes.Error,'Sorry! something went wrong',4000)
@@ -227,7 +228,9 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
 
         let recordId = this.state.ItemID;
         if(['',undefined,null].includes(this.state.comments.trim())){
-            this.setState({errorMessage : 'Comments cannot be Blank',loading : false})
+            // this.setState({errorMessage : 'Comments cannot be Blank',loading : false})
+            this.setState({loading:false})
+            customToaster('toster-error',ToasterTypes.Error,'Comments cannot be Blank',4000)
         }
         else{
             var filterString = "Id eq '"+recordId+"'"

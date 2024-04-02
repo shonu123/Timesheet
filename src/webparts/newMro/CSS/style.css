@@ -1729,11 +1729,18 @@ div[id^="_TopSpan_NotificationSpan"]{
       }
   }
 
+  @media only screen and (max-width: 1540px) {
+    .dataTables_wrapper-overflow{
+        width: 92vw!important;
+    }
+  }
+
   @media only screen and (max-width: 1525px) {
     .dataTables_wrapper-overflow{
         width: 94vw!important;
     }
   }
+
 
 @media only screen and (max-width: 1406px) {
   .table-NoScroll{
