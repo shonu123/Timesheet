@@ -57,6 +57,8 @@ export interface WeeklyTimesheetState {
         SuperviserNames:any,
         Status:string
         WeeklyItemsTotalTime:string,
+        WeeklySubTotalHrs:any,
+        OTSubTotalHrs:any,
         OTItemsTotalTime:string,
         SuperviserIds:any,
         ReviewerIds:any,
@@ -171,8 +173,10 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                 DateSubmitted :new Date(),
                 SuperviserNames:[],
                 Status:StatusType.Save,
-                WeeklyItemsTotalTime:'',
-                OTItemsTotalTime:'',
+                WeeklyItemsTotalTime:'0',
+                OTItemsTotalTime:'0',
+                WeeklySubTotalHrs:[],
+                OTSubTotalHrs:[],
                 SuperviserIds:[],
                 ReviewerIds:[],
                 NotifierIds:[],
@@ -244,6 +248,8 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
          trFormdata.ClientHolidayHrs.push({Description:'',ProjectCode:'',Mon: '',Tue: '',Wed:'',Thu: '',Fri: '',Sat: '',Sun: '',Total: '0',});
          trFormdata.PTOHrs.push({Description:'',ProjectCode:'',Mon: '',Tue: '',Wed:'',Thu: '',Fri: '',Sat: '',Sun: '',Total: '0',});
          trFormdata.NonBillableSubTotal.push({Mon: '',Tue: '',Wed:'',Thu: '',Fri: '',Sat: '',Sun: '',Total: '0',});
+         trFormdata.WeeklySubTotalHrs.push({Mon: '0',Tue: '0',Wed:'0',Thu: '0',Fri: '0',Sat: '0',Sun: '0',Total: '0',});
+         trFormdata.OTSubTotalHrs.push({Mon: '0',Tue: '0',Wed:'0',Thu: '0',Fri: '0',Sat: '0',Sun: '0',Total: '0',});
          trFormdata.Total.push({Mon: '0',Tue: '0',Wed:'0',Thu: '0',Fri: '0',Sat: '0',Sun: '0',Total: '0',});
         
         this.WeekHeadings.push({"Mon":"",
@@ -400,7 +406,6 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
         
     }
     private async getItemData(TimesheetID){
-        //this.setState({loading:true});
         var ClientNames: any;
         let filterQuery = "ID eq '"+TimesheetID+"'";
         let selectQuery = "Initiator/EMail,Reviewers/EMail,ReportingManager/EMail,Notifiers/EMail,*";
@@ -417,6 +422,10 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
         trFormdata.SynergyHolidayHrs=JSON.parse(data[0].SynergyHolidayHrs);
         trFormdata.ClientHolidayHrs=JSON.parse(data[0].ClientHolidayHrs);
         trFormdata.PTOHrs=JSON.parse(data[0].PTOHrs);
+        trFormdata.WeeklyItemsTotalTime=data[0].WeeklyTotalHrs;
+        trFormdata.OTItemsTotalTime=data[0].OTTotalHrs;
+        trFormdata.WeeklySubTotalHrs=JSON.parse(data[0].WeeklySubTotalHrs)
+        trFormdata.OTSubTotalHrs=JSON.parse(data[0].OTSubTotalHrs)
         trFormdata.NonBillableSubTotal=JSON.parse(data[0].NonBillableSubTotalHrs);
         trFormdata.Total=JSON.parse(data[0].TotalHrs);
         trFormdata.Status=data[0].Status;
@@ -950,40 +959,29 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
     }
     private calculateTimeWhenRemoveRow=(Data,DataAfterRemovedObject,RowType)=>{
         const trFormdata =Data;
-        let TableColumns=["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
+        let TableColumns=["Mon","Tue","Wed","Thu","Fri","Sat","Sun","Total"];
           //FOR COLUMN WISE CALCULATION
        
         for(var prop of TableColumns)
         {
-            let [Total,TotalColHrs,TotalColMins]=[0,0,0];
-            let [WeeklyTotal,WeeklyColHrs,WeeklyColMins]=[0,0,0];
+            let [WeeklyTotal]=[0,0,0];
             if(RowType.toLowerCase()=="weekrow")  //When Weekly items removed 
             {
 
                         //BILLABLE SUB TOTAL COLUMN WISE
                         // to iterate Weekly hrs
                         for(var item of DataAfterRemovedObject)
-                        {
-                            //For weekly calculation
+                        { 
                             let val=item[prop].toString(); 
                             [undefined,null,"","."].includes(val)? val="0" : val;
-                            WeeklyTotal=WeeklyTotal+( parseFloat(val));
-                            //For total calculation
-                            let TotalVal=item.Total.toString();
-                            [undefined,null,"","."].includes(TotalVal)? TotalVal="0"  : TotalVal;
-                            Total= Total+( parseFloat(TotalVal));
-                           
+                            WeeklyTotal=WeeklyTotal+( parseFloat(val)); 
                         }
+                         // to iterate OT hrs
                         for(var item of trFormdata.OTItemsData)
                         {
-                            //For weekly calculation
                             let val=item[prop].toString();
                             [undefined,null,"","."].includes(val)? val="0"  :  val;
                             WeeklyTotal=WeeklyTotal+( parseFloat(val)); 
-                            //For total calculation
-                            let TotalVal=item.Total.toString();
-                            [undefined,null,"","."].includes(TotalVal)? TotalVal="0"  : TotalVal;
-                            Total= Total+( parseFloat(TotalVal));
                         }
             }
             else{      //When OT items removed 
@@ -992,67 +990,31 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                         // to iterate Weekly hrs
                         for(var item of trFormdata.WeeklyItemsData)
                         {
-                            //For weekly calculation
                             let val=item[prop].toString();
                             [undefined,null,"","."].includes(val)? val="0" : val;
                             WeeklyTotal=WeeklyTotal+( parseFloat(val));
-                            //For total calculation
-                            let TotalVal=item.Total.toString();
-                            [undefined,null,"","."].includes(TotalVal)? TotalVal="0" : TotalVal;
-                            Total= Total+( parseFloat(TotalVal));
-                           
                         }
-                      
+                       // to iterate OT hrs
                         for(var item of DataAfterRemovedObject)
                         {
-                            //For weekly calculation
                             let val=item[prop].toString();
                             [undefined,null,"","."].includes(val)? val="0"  : val;
                             WeeklyTotal=WeeklyTotal+( parseFloat(val)); 
-                            //For total calculation
-                            let TotalVal=item.Total.toString();
-                            [undefined,null,"","."].includes(TotalVal)? TotalVal="0" : TotalVal;
-                            Total= Total+( parseFloat(TotalVal));
-                           
                         }
 
             }
-                       // WeeklyColHrs=Math.floor(WeeklyTotal/60);
-                       // WeeklyColMins=Math.floor(WeeklyTotal%60);
-                       // TotalColHrs=Math.floor(Total/60);
-                        //TotalColMins=Math.floor(Total%60);
-
                         trFormdata.BillableSubTotal[0][prop]=WeeklyTotal.toFixed(2).toString();
-                        trFormdata.BillableSubTotal[0]["Total"]=Total.toFixed(2).toString();
-
                         //GRAND TOTAL COLUMN WISE
                         WeeklyTotal=0;
-                        WeeklyColHrs=0;
-                        WeeklyColMins=0;
-                        [Total,TotalColHrs,TotalColMins]=[0,0,0];
                         let TotalColVal=trFormdata.BillableSubTotal[0][prop].toString();
                         [undefined,null,"","."].includes(TotalColVal)? TotalColVal="0" : TotalColVal;
-                        let BillableTotalVal=trFormdata.BillableSubTotal[0]["Total"].toString();
-                        [undefined,null,"","."].includes(BillableTotalVal)? BillableTotalVal="0"  : BillableTotalVal;
-                        WeeklyTotal=WeeklyTotal+( parseFloat(TotalColVal)); 
-                        Total=Total+( parseFloat(BillableTotalVal)); 
-
+                         WeeklyTotal=WeeklyTotal+( parseFloat(TotalColVal)); 
+                     
                         TotalColVal=trFormdata.NonBillableSubTotal[0][prop].toString();
                         [undefined,null,"","."].includes(TotalColVal)? TotalColVal="0"  : TotalColVal;
-                        BillableTotalVal=trFormdata.NonBillableSubTotal[0]["Total"].toString();
-                        [undefined,null,"","."].includes(BillableTotalVal)? BillableTotalVal="0"  : BillableTotalVal;
-                        WeeklyTotal=WeeklyTotal+( parseFloat(TotalColVal));
-                        Total=Total+( parseFloat(BillableTotalVal)); 
-                        
-                        //WeeklyColHrs=Math.floor(WeeklyTotal/60);
-                        //WeeklyColMins=Math.floor(WeeklyTotal%60);
-                        //TotalColHrs=Math.floor(Total/60);
-                        //TotalColMins=Math.floor(Total%60);
+                         WeeklyTotal=WeeklyTotal+( parseFloat(TotalColVal));
+                     
                         trFormdata.Total[0][prop]=WeeklyTotal.toFixed(2).toString();
-                        trFormdata.Total[0]["Total"]=Total.toFixed(2).toString();
-
-                       // this.setState({ trFormdata});  
-                      
         }
         return trFormdata;
        
@@ -1253,6 +1215,8 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                 GrandTotal:formdata.Total[0].Total,
                 WeeklyTotalHrs:formdata.WeeklyItemsTotalTime,
                 OTTotalHrs:formdata.OTItemsTotalTime,
+                WeeklySubTotalHrs:JSON.stringify(formdata.WeeklySubTotalHrs),
+                OTSubTotalHrs:JSON.stringify(formdata.OTSubTotalHrs),
                 ReportingManagerId:{"results":formdata.SuperviserIds},
                 ReviewersId:{"results":formdata.ReviewerIds},
                 NotifiersId:{"results":formdata.NotifierIds},
@@ -1360,31 +1324,29 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
      }
      private Calculate_Indvidual_OT_Weekly_TotalTime=(Formdata)=>{
         const formdata =Formdata;
-         //Weekly  and OT total Hrs calculation
-
-         let [WeekTotal,OTTotal]=[0,0];
-         let [H,M]=[0,0];
-         // to iterate Weekly items
-         for(var item of formdata.WeeklyItemsData)
+        let TableColumns=["Mon","Tue","Wed","Thu","Fri","Sat","Sun","Total"];
+         for(var prop of TableColumns)
          {
-             let TotalVal=item.Total.toString();
-             WeekTotal= WeekTotal+( parseFloat(TotalVal));
-         }
-          //H=Math.floor(WeekTotal/60);
-          //M=Math.floor(WeekTotal%60);
-          formdata.WeeklyItemsTotalTime=WeekTotal.toFixed(2).toString();
-             // to iterate OT hrs
-             H=0;
-             M=0;
-         for(var item of formdata.OTItemsData)
-         {
-             let TotalVal=item.Total.toString()
-             OTTotal= OTTotal+( parseFloat(TotalVal));
-         } 
-         //H=Math.floor(OTTotal/60);
-         //M=Math.floor(OTTotal%60);
-         formdata.OTItemsTotalTime=OTTotal.toFixed(2).toString();
-
+             let [WeeklyTotal,OTTotal]=[0,0];
+                         //WEEKLY SUB TOTAL COLUMN WISE
+                         for(var item of formdata.WeeklyItemsData)
+                         {
+                             let val=item[prop].toString(); 
+                             [undefined,null,"","."].includes(val)? val="0" : val;
+                             WeeklyTotal=WeeklyTotal+( parseFloat(val));
+                         }
+                         //OT SUB TOTAL COLUMN WISE      
+                         for(var item of formdata.OTItemsData)
+                         {
+                             let val=item[prop].toString();
+                             [undefined,null,"","."].includes(val)? val="0" : val;
+                             OTTotal=OTTotal+( parseFloat(val));
+                         }
+                         formdata.WeeklySubTotalHrs[0][prop]=WeeklyTotal.toFixed(2).toString();
+                         formdata.OTSubTotalHrs[0][prop]=OTTotal.toFixed(2).toString();
+             }   
+             formdata.WeeklyItemsTotalTime=formdata.WeeklySubTotalHrs[0]["Total"];
+             formdata.OTItemsTotalTime=formdata.OTSubTotalHrs[0]["Total"] ;
          return formdata;
      }
     private handleApprove=async ()=>
@@ -1679,6 +1641,10 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                 trFormdata.SynergyHolidayHrs=JSON.parse(ExistRecordData[0].SynergyHolidayHrs);
                 trFormdata.ClientHolidayHrs=JSON.parse(ExistRecordData[0].ClientHolidayHrs);
                 trFormdata.PTOHrs=JSON.parse(ExistRecordData[0].PTOHrs);
+                trFormdata.WeeklyItemsTotalTime=ExistRecordData[0].WeeklyTotalHrs;
+                trFormdata.OTItemsTotalTime=ExistRecordData[0].OTTotalHrs;
+                trFormdata.WeeklySubTotalHrs=JSON.parse(ExistRecordData[0].WeeklySubTotalHrs)
+                trFormdata.OTSubTotalHrs=JSON.parse(ExistRecordData[0].OTSubTotalHrs)
                 trFormdata.NonBillableSubTotal=JSON.parse(ExistRecordData[0].NonBillableSubTotalHrs);
                 trFormdata.Total=JSON.parse(ExistRecordData[0].TotalHrs);
                 trFormdata.Status=ExistRecordData[0].Status;
@@ -1765,7 +1731,13 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                 trFormdata.SynergyHolidayHrs=[];
                 trFormdata.ClientHolidayHrs=[];
                 trFormdata.PTOHrs=[];
+                trFormdata.WeeklyItemsTotalTime="0";
+                trFormdata.OTItemsTotalTime="0";
+                trFormdata.WeeklySubTotalHrs=[];
+                trFormdata.OTSubTotalHrs=[];
                 trFormdata.NonBillableSubTotal=[];
+                trFormdata.WeeklySubTotalHrs=[];
+                trFormdata.OTSubTotalHrs=[];
                 trFormdata.Total=[];
                 trFormdata.Status=StatusType.Save;
                 trFormdata.CommentsHistoryData=[];
@@ -1779,6 +1751,8 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                 trFormdata.ClientHolidayHrs.push({Description:'',ProjectCode:'',Mon: '',Tue: '',Wed:'',Thu: '',Fri: '',Sat: '',Sun: '',Total: '0',});
                 trFormdata.PTOHrs.push({Description:'',ProjectCode:'',Mon: '',Tue: '',Wed:'',Thu: '',Fri: '',Sat: '',Sun: '',Total: '0',});
                 trFormdata.NonBillableSubTotal.push({Mon: '',Tue: '',Wed:'',Thu: '',Fri: '',Sat: '',Sun: '',Total: '0',});
+                trFormdata.WeeklySubTotalHrs.push({Mon: '0',Tue: '0',Wed:'0',Thu: '0',Fri: '0',Sat: '0',Sun: '0',Total: '0',});
+                trFormdata.OTSubTotalHrs.push({Mon: '0',Tue: '0',Wed:'0',Thu: '0',Fri: '0',Sat: '0',Sun: '0',Total: '0',});
                 trFormdata.Total.push({Mon: '0',Tue: '0',Wed:'0',Thu: '0',Fri: '0',Sat: '0',Sun: '0',Total: '0',});
                 trFormdata.ReportingManagersEmail=[];
                 trFormdata.ReviewersEmail=[];
@@ -1795,31 +1769,31 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                 {
                     this.WeekHeadings.push({"Mon":"",
                     "IsMonJoined":true,
-                    "IsDay1Holiday":this.IsHoliday(WeekStartDate,trFormdata.HolidayType),
+                    "IsDay1Holiday":{isHoliday:false,HolidayName:""},
                     "IsDay1SynergyHoliday":this.IsHoliday(WeekStartDate,"synergy"),
                     "Tue":"",
                     "IsTueJoined":true,
-                    "IsDay2Holiday":this.IsHoliday(WeekStartDate,trFormdata.HolidayType),
+                    "IsDay2Holiday":{isHoliday:false,HolidayName:""},
                     "IsDay2SynergyHoliday":this.IsHoliday(WeekStartDate,"synergy"),
                     "Wed":"",
                     "IsWedJoined":true,
-                    "IsDay3Holiday":this.IsHoliday(WeekStartDate,trFormdata.HolidayType),
+                    "IsDay3Holiday":{isHoliday:false,HolidayName:""},
                     "IsDay3SynergyHoliday":this.IsHoliday(WeekStartDate,"synergy"),
                     "Thu":"",
                     "IsThuJoined":true,
-                    "IsDay4Holiday":this.IsHoliday(WeekStartDate,trFormdata.HolidayType),
+                    "IsDay4Holiday":{isHoliday:false,HolidayName:""},
                     "IsDay4SynergyHoliday":this.IsHoliday(WeekStartDate,"synergy"),
                     "Fri":"",
                     "IsFriJoined":true,
-                    "IsDay5Holiday":this.IsHoliday(WeekStartDate,trFormdata.HolidayType),
+                    "IsDay5Holiday":{isHoliday:false,HolidayName:""},
                     "IsDay5SynergyHoliday":this.IsHoliday(WeekStartDate,"synergy"),
                     "Sat":"",
                     "IsSatJoined":true,
-                    "IsDay6Holiday":this.IsHoliday(WeekStartDate,trFormdata.HolidayType),
+                    "IsDay6Holiday":{isHoliday:false,HolidayName:""},
                     "IsDay6SynergyHoliday":this.IsHoliday(WeekStartDate,"synergy"),
                     "Sun":"",
                     "IsSunJoined":true,
-                    "IsDay7Holiday":this.IsHoliday(WeekStartDate,trFormdata.HolidayType),
+                    "IsDay7Holiday":{isHoliday:false,HolidayName:""},
                     "IsDay7SynergyHoliday":this.IsHoliday(WeekStartDate,"synergy"),
                     })
                 }
@@ -1870,7 +1844,13 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
             trFormdata.SynergyHolidayHrs=[];
             trFormdata.ClientHolidayHrs=[];
             trFormdata.PTOHrs=[];
+            trFormdata.WeeklyItemsTotalTime="0";
+            trFormdata.OTItemsTotalTime="0";
+            trFormdata.WeeklySubTotalHrs=[];
+            trFormdata.OTSubTotalHrs=[];
             trFormdata.NonBillableSubTotal=[];
+            trFormdata.WeeklySubTotalHrs=[];
+            trFormdata.OTSubTotalHrs=[];
             trFormdata.Total=[];
             trFormdata.Status=StatusType.Save;
             trFormdata.CommentsHistoryData=[];
@@ -1884,6 +1864,8 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
             trFormdata.ClientHolidayHrs.push({Description:'',ProjectCode:'',Mon: '',Tue: '',Wed:'',Thu: '',Fri: '',Sat: '',Sun: '',Total: '0',});
             trFormdata.PTOHrs.push({Description:'',ProjectCode:'',Mon: '',Tue: '',Wed:'',Thu: '',Fri: '',Sat: '',Sun: '',Total: '0',});
             trFormdata.NonBillableSubTotal.push({Mon: '',Tue: '',Wed:'',Thu: '',Fri: '',Sat: '',Sun: '',Total: '0',});
+            trFormdata.WeeklySubTotalHrs.push({Mon: '0',Tue: '0',Wed:'0',Thu: '0',Fri: '0',Sat: '0',Sun: '0',Total: '0',});
+            trFormdata.OTSubTotalHrs.push({Mon: '0',Tue: '0',Wed:'0',Thu: '0',Fri: '0',Sat: '0',Sun: '0',Total: '0',});
             trFormdata.Total.push({Mon: '0',Tue: '0',Wed:'0',Thu: '0',Fri: '0',Sat: '0',Sun: '0',Total: '0',});
             trFormdata.ReportingManagersEmail=[];
             trFormdata.ReviewersEmail=[];
@@ -1897,25 +1879,25 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
             this.WeekHeadings=[];
                 this.WeekHeadings.push({"Mon":"",
                 "IsMonJoined":true,
-                "IsDay1Holiday":this.IsHoliday(WeekStartDate,trFormdata.HolidayType),
+                "IsDay1Holiday":{isHoliday:false,HolidayName:""},
                 "Tue":"",
                 "IsTueJoined":true,
-                "IsDay2Holiday":this.IsHoliday(WeekStartDate,trFormdata.HolidayType),
+                "IsDay2Holiday":{isHoliday:false,HolidayName:""},
                 "Wed":"",
                 "IsWedJoined":true,
-                "IsDay3Holiday":this.IsHoliday(WeekStartDate,trFormdata.HolidayType),
+                "IsDay3Holiday":{isHoliday:false,HolidayName:""},
                 "Thu":"",
                 "IsThuJoined":true,
-                "IsDay4Holiday":this.IsHoliday(WeekStartDate,trFormdata.HolidayType),
+                "IsDay4Holiday":{isHoliday:false,HolidayName:""},
                 "Fri":"",
                 "IsFriJoined":true,
-                "IsDay5Holiday":this.IsHoliday(WeekStartDate,trFormdata.HolidayType),
+                "IsDay5Holiday":{isHoliday:false,HolidayName:""},
                 "Sat":"",
                 "IsSatJoined":true,
-                "IsDay6Holiday":this.IsHoliday(WeekStartDate,trFormdata.HolidayType),
+                "IsDay6Holiday":{isHoliday:false,HolidayName:""},
                 "Sun":"",
                 "IsSunJoined":true,
-                "IsDay7Holiday":this.IsHoliday(WeekStartDate,trFormdata.HolidayType),
+                "IsDay7Holiday":{isHoliday:false,HolidayName:""},
                 })
            
             this.setState({ trFormdata:trFormdata,currentWeeklyRowsCount:trFormdata.WeeklyItemsData.length,currentOTRowsCount: trFormdata.OTItemsData.length,ItemID:0,EmployeeEmail:this.state.EmployeeEmail,isSubmitted:true,errorMessage:'',showBillable:false,loading:false});
@@ -2278,25 +2260,25 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                     <input className="form-control" value={Obj[i].ProjectCode} id={i+"_ProjectCode_"+rowType} onChange={this.changeTime}  disabled={this.state.isSubmitted || this.state.showBillable} type="text"></input>
                 </td>
                 <td>
-                    <input className={"form-control time "+(this.WeekNames[0].day1)} value={Obj[i].Mon} id={i+"_Mon_"+rowType} onChange={this.changeTime}  disabled={this.state.isSubmitted || this.state.showBillable || this.WeekHeadings[0].IsMonJoined} ></input>
+                    <input className={"form-control time "+(this.WeekNames[0].day1)} value={Obj[i][this.WeekNames[0].day1]} id={i+"_"+this.WeekNames[0].day1+"_"+rowType} onChange={this.changeTime}  disabled={this.state.isSubmitted || this.state.showBillable || this.WeekHeadings[0].IsMonJoined} ></input>
                 </td>
                 <td>
-                    <input className={"form-control time "+(this.WeekNames[0].day2)} value={Obj[i].Tue} id={i+"_Tue_"+rowType} onChange={this.changeTime}  disabled={this.state.isSubmitted || this.state.showBillable || this.WeekHeadings[0].IsTueJoined} ></input>
+                    <input className={"form-control time "+(this.WeekNames[0].day2)} value={Obj[i][this.WeekNames[0].day2]} id={i+"_"+this.WeekNames[0].day2+"_"+rowType} onChange={this.changeTime}  disabled={this.state.isSubmitted || this.state.showBillable || this.WeekHeadings[0].IsTueJoined} ></input>
                 </td>
                 <td>
-                    <input className={"form-control time "+(this.WeekNames[0].day3)} value={Obj[i].Wed} id={i+"_Wed_"+rowType} onChange={this.changeTime}  disabled={this.state.isSubmitted || this.state.showBillable || this.WeekHeadings[0].IsWedJoined} ></input>
+                    <input className={"form-control time "+(this.WeekNames[0].day3)} value={Obj[i][this.WeekNames[0].day3]} id={i+"_"+this.WeekNames[0].day3+"_"+rowType} onChange={this.changeTime}  disabled={this.state.isSubmitted || this.state.showBillable || this.WeekHeadings[0].IsWedJoined} ></input>
                 </td>
                 <td>
-                    <input className={"form-control time "+(this.WeekNames[0].day4)} value={Obj[i].Thu} id={i+"_Thu_"+rowType} onChange={this.changeTime}  disabled={this.state.isSubmitted || this.state.showBillable || this.WeekHeadings[0].IsThuJoined} ></input>
+                    <input className={"form-control time "+(this.WeekNames[0].day4)} value={Obj[i][this.WeekNames[0].day4]} id={i+"_"+this.WeekNames[0].day4+"_"+rowType} onChange={this.changeTime}  disabled={this.state.isSubmitted || this.state.showBillable || this.WeekHeadings[0].IsThuJoined} ></input>
                 </td>
                 <td>
-                    <input className={"form-control time "+(this.WeekNames[0].day5)} value={Obj[i].Fri} id={i+"_Fri_"+rowType} onChange={this.changeTime}  disabled={this.state.isSubmitted || this.state.showBillable || this.WeekHeadings[0].IsFriJoined} ></input>
+                    <input className={"form-control time "+(this.WeekNames[0].day5)} value={Obj[i][this.WeekNames[0].day5]} id={i+"_"+this.WeekNames[0].day5+"_"+rowType} onChange={this.changeTime}  disabled={this.state.isSubmitted || this.state.showBillable || this.WeekHeadings[0].IsFriJoined} ></input>
                 </td>
                 <td>
-                    <input className={"form-control time "+(this.WeekNames[0].day6)} value={Obj[i].Sat} id={i+"_Sat_"+rowType} onChange={this.changeTime}  disabled={this.state.isSubmitted || this.state.showBillable || this.WeekHeadings[0].IsSatJoined} ></input>
+                    <input className={"form-control time "+(this.WeekNames[0].day6)} value={Obj[i][this.WeekNames[0].day6]} id={i+"_"+this.WeekNames[0].day6+"_"+rowType} onChange={this.changeTime}  disabled={this.state.isSubmitted || this.state.showBillable || this.WeekHeadings[0].IsSatJoined} ></input>
                 </td>
                 <td>
-                    <input className={"form-control time "+(this.WeekNames[0].day7)} value={Obj[i].Sun} id={i+"_Sun_"+rowType} onChange={this.changeTime}  disabled={this.state.isSubmitted || this.state.showBillable || this.WeekHeadings[0].IsSunJoined} ></input>
+                    <input className={"form-control time "+(this.WeekNames[0].day7)} value={Obj[i][this.WeekNames[0].day7]} id={i+"_"+this.WeekNames[0].day7+"_"+rowType} onChange={this.changeTime}  disabled={this.state.isSubmitted || this.state.showBillable || this.WeekHeadings[0].IsSunJoined} ></input>
                 </td>
                 <td>
                 {this.getOTBadge(rowType)}
@@ -2325,18 +2307,30 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
         let body=[];
         if(this.state.trFormdata.CommentsHistoryData.length>0)
         {
-            this.state.trFormdata.CommentsHistoryData.map((option) => (
-                body.push(<tr>
-                {/* <td className="" >{option["Action"]==StatusType.InProgress?"Approved by Manager":
-                option["Action"]==StatusType.Approved?"Approved by Reviewer":
-                option["Action"]==StatusType.Reject?"Rejected":"Pending with initiator"}</td> */}
-                <td className="" >{option["Role"]}</td>
-                <td className="" >{option["Action"]}</td>
-                <td className="" >{option["User"]}</td>
-                <td className="" >{option["Comments"]}</td>
-                <td className="" >{(new Date(option["Date"]).getMonth().toString().length==1?"0"+(new Date(option["Date"]).getMonth()+1):new Date(option["Date"]).getMonth()+1)+"/"+(new Date(option["Date"]).getDate().toString().length==1?"0"+new Date(option["Date"]).getDate():new Date(option["Date"]).getDate())+"/"+new Date(option["Date"]).getFullYear()}  {"  "+new Date(option["Date"]).toLocaleTimeString()}</td>
-            </tr>)
-           ))
+        //     this.state.trFormdata.CommentsHistoryData.map((option) => (
+        //         body.push(<tr>
+        //         {/* <td className="" >{option["Action"]==StatusType.InProgress?"Approved by Manager":
+        //         option["Action"]==StatusType.Approved?"Approved by Reviewer":
+        //         option["Action"]==StatusType.Reject?"Rejected":"Pending with initiator"}</td> */}
+        //         <td className="" >{option["Role"]}</td>
+        //         <td className="" >{option["Action"]}</td>
+        //         <td className="" >{option["User"]}</td>
+        //         <td className="" >{option["Comments"]}</td>
+        //         <td className="" >{(new Date(option["Date"]).getMonth().toString().length==1?"0"+(new Date(option["Date"]).getMonth()+1):new Date(option["Date"]).getMonth()+1)+"/"+(new Date(option["Date"]).getDate().toString().length==1?"0"+new Date(option["Date"]).getDate():new Date(option["Date"]).getDate())+"/"+new Date(option["Date"]).getFullYear()}  {"  "+new Date(option["Date"]).toLocaleTimeString()}</td>
+        //     </tr>)
+        //    ))
+        //    this.state.trFormdata.CommentsHistoryData.map((option) => (
+            var History=this.state.trFormdata.CommentsHistoryData;
+            for(let i=History.length-1;i>=0;i--)
+            {
+            body.push(<tr>
+            <td className="" >{History[i]["Role"]}</td>
+            <td className="" >{History[i]["Action"]}</td>
+            <td className="" >{History[i]["User"]}</td>
+            <td className="" >{History[i]["Comments"]}</td>
+            <td className="" >{(new Date(History[i]["Date"]).getMonth().toString().length==1?"0"+(new Date(History[i]["Date"]).getMonth()+1):new Date(History[i]["Date"]).getMonth()+1)+"/"+(new Date(History[i]["Date"]).getDate().toString().length==1?"0"+new Date(History[i]["Date"]).getDate():new Date(History[i]["Date"]).getDate())+"/"+new Date(History[i]["Date"]).getFullYear()}  {"  "+new Date(History[i]["Date"]).toLocaleTimeString()}</td>
+        </tr>)
+            }
         }
        return body;
     }
@@ -2569,25 +2563,25 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                                         <input className="form-control" value={this.state.trFormdata.WeeklyItemsData[0].ProjectCode}  id="0_ProjectCode_weekrow" onChange={this.changeTime}  disabled={this.state.isSubmitted || this.state.showBillable} ></input>
                                     </td>
                                     <td>
-                                        <input className={"form-control time "+(this.WeekNames[0].day1)}  value={this.state.trFormdata.WeeklyItemsData[0].Mon} id="0_Mon_weekrow"  onChange={this.changeTime}  disabled={this.state.isSubmitted || this.state.showBillable || this.WeekHeadings[0].IsMonJoined} ></input>
+                                        <input className={"form-control time "+(this.WeekNames[0].day1)} value={this.state.trFormdata.WeeklyItemsData[0][this.WeekNames[0].day1]} id={"0_"+this.WeekNames[0].day1+"_weekrow"}  onChange={this.changeTime}  disabled={this.state.isSubmitted || this.state.showBillable || this.WeekHeadings[0].IsMonJoined} ></input>
                                     </td>
                                     <td>
-                                        <input className={"form-control time "+(this.WeekNames[0].day2)} value={this.state.trFormdata.WeeklyItemsData[0].Tue} id="0_Tue_weekrow" onChange={this.changeTime}  disabled={this.state.isSubmitted || this.state.showBillable || this.WeekHeadings[0].IsTueJoined} ></input>
+                                        <input className={"form-control time "+(this.WeekNames[0].day2)} value={this.state.trFormdata.WeeklyItemsData[0][this.WeekNames[0].day2]} id={"0_"+this.WeekNames[0].day2+"_weekrow"} onChange={this.changeTime}  disabled={this.state.isSubmitted || this.state.showBillable || this.WeekHeadings[0].IsTueJoined} ></input>
                                     </td>
                                     <td>
-                                        <input className={"form-control time "+(this.WeekNames[0].day3)} value={this.state.trFormdata.WeeklyItemsData[0].Wed} id="0_Wed_weekrow" onChange={this.changeTime}  disabled={this.state.isSubmitted || this.state.showBillable || this.WeekHeadings[0].IsWedJoined} ></input>
+                                        <input className={"form-control time "+(this.WeekNames[0].day3)} value={this.state.trFormdata.WeeklyItemsData[0][this.WeekNames[0].day3]} id={"0_"+this.WeekNames[0].day3+"_weekrow"} onChange={this.changeTime}  disabled={this.state.isSubmitted || this.state.showBillable || this.WeekHeadings[0].IsWedJoined} ></input>
                                     </td>
                                     <td>
-                                        <input className={"form-control time "+(this.WeekNames[0].day4)} value={this.state.trFormdata.WeeklyItemsData[0].Thu} id="0_Thu_weekrow" onChange={this.changeTime}  disabled={this.state.isSubmitted || this.state.showBillable || this.WeekHeadings[0].IsThuJoined} ></input>
+                                        <input className={"form-control time "+(this.WeekNames[0].day4)} value={this.state.trFormdata.WeeklyItemsData[0][this.WeekNames[0].day4]} id={"0_"+this.WeekNames[0].day4+"_weekrow"} onChange={this.changeTime}  disabled={this.state.isSubmitted || this.state.showBillable || this.WeekHeadings[0].IsThuJoined} ></input>
                                     </td>
                                     <td>
-                                        <input className={"form-control time "+(this.WeekNames[0].day5)} value={this.state.trFormdata.WeeklyItemsData[0].Fri} id="0_Fri_weekrow" onChange={this.changeTime}  disabled={this.state.isSubmitted || this.state.showBillable || this.WeekHeadings[0].IsFriJoined} ></input>
+                                        <input className={"form-control time "+(this.WeekNames[0].day5)} value={this.state.trFormdata.WeeklyItemsData[0][this.WeekNames[0].day5]} id={"0_"+this.WeekNames[0].day5+"_weekrow"} onChange={this.changeTime}  disabled={this.state.isSubmitted || this.state.showBillable || this.WeekHeadings[0].IsFriJoined} ></input>
                                     </td>
                                     <td>
-                                      <input className={"form-control time "+(this.WeekNames[0].day6)} value={this.state.trFormdata.WeeklyItemsData[0].Sat} id="0_Sat_weekrow" onChange={this.changeTime}  disabled={this.state.isSubmitted || this.state.showBillable || this.WeekHeadings[0].IsSatJoined} ></input>
+                                       <input className={"form-control time "+(this.WeekNames[0].day6)}  value={this.state.trFormdata.WeeklyItemsData[0][this.WeekNames[0].day6]} id={"0_"+this.WeekNames[0].day6+"_weekrow"} onChange={this.changeTime}  disabled={this.state.isSubmitted || this.state.showBillable || this.WeekHeadings[0].IsSatJoined} ></input>
                                     </td>
                                     <td>
-                                        <input className={"form-control time "+(this.WeekNames[0].day7)} value={this.state.trFormdata.WeeklyItemsData[0].Sun} id="0_Sun_weekrow" onChange={this.changeTime}  disabled={this.state.isSubmitted || this.state.showBillable || this.WeekHeadings[0].IsSunJoined} ></input>
+                                        <input className={"form-control time "+(this.WeekNames[0].day7)} value={this.state.trFormdata.WeeklyItemsData[0][this.WeekNames[0].day7]} id={"0_"+this.WeekNames[0].day7+"_weekrow"} onChange={this.changeTime}  disabled={this.state.isSubmitted || this.state.showBillable || this.WeekHeadings[0].IsSunJoined} ></input>
                                     </td>
                                     <td>
                                         
@@ -2614,25 +2608,25 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                                         <input className="form-control" value={this.state.trFormdata.OTItemsData[0].ProjectCode}   id="0_ProjectCode_otrow"  onChange={this.changeTime}  disabled={this.state.isSubmitted || this.state.showBillable} ></input>
                                     </td>
                                     <td>
-                                        <input className={"form-control time "+(this.WeekNames[0].day1)} value={this.state.trFormdata.OTItemsData[0].Mon} id="0_Mon_otrow" onChange={this.changeTime}  disabled={this.state.isSubmitted || this.state.showBillable || this.WeekHeadings[0].IsMonJoined} ></input>
+                                        <input className={"form-control time "+(this.WeekNames[0].day1)} value={this.state.trFormdata.OTItemsData[0][this.WeekNames[0].day1]} id={"0_"+this.WeekNames[0].day1+"_otrow"} onChange={this.changeTime}  disabled={this.state.isSubmitted || this.state.showBillable || this.WeekHeadings[0].IsMonJoined} ></input>
                                     </td>
                                     <td>
-                                        <input className={"form-control time "+(this.WeekNames[0].day2)} value={this.state.trFormdata.OTItemsData[0].Tue} id="0_Tue_otrow" onChange={this.changeTime}  disabled={this.state.isSubmitted || this.state.showBillable || this.WeekHeadings[0].IsTueJoined} ></input>
+                                        <input className={"form-control time "+(this.WeekNames[0].day2)} value={this.state.trFormdata.OTItemsData[0][this.WeekNames[0].day2]} id={"0_"+this.WeekNames[0].day2+"_otrow"} onChange={this.changeTime}  disabled={this.state.isSubmitted || this.state.showBillable || this.WeekHeadings[0].IsTueJoined} ></input>
                                     </td>
                                     <td>
-                                        <input className={"form-control time "+(this.WeekNames[0].day3)} value={this.state.trFormdata.OTItemsData[0].Wed} id="0_Wed_otrow" onChange={this.changeTime}  disabled={this.state.isSubmitted || this.state.showBillable || this.WeekHeadings[0].IsWedJoined} ></input>
+                                        <input className={"form-control time "+(this.WeekNames[0].day3)} value={this.state.trFormdata.OTItemsData[0][this.WeekNames[0].day3]} id={"0_"+this.WeekNames[0].day3+"_otrow"} onChange={this.changeTime}  disabled={this.state.isSubmitted || this.state.showBillable || this.WeekHeadings[0].IsWedJoined} ></input>
                                     </td>
                                     <td>
-                                        <input className={"form-control time "+(this.WeekNames[0].day4)} value={this.state.trFormdata.OTItemsData[0].Thu} id="0_Thu_otrow" onChange={this.changeTime}  disabled={this.state.isSubmitted || this.state.showBillable || this.WeekHeadings[0].IsThuJoined} ></input>
+                                        <input className={"form-control time "+(this.WeekNames[0].day4)} value={this.state.trFormdata.OTItemsData[0][this.WeekNames[0].day4]} id={"0_"+this.WeekNames[0].day4+"_otrow"} onChange={this.changeTime}  disabled={this.state.isSubmitted || this.state.showBillable || this.WeekHeadings[0].IsThuJoined} ></input>
                                     </td>
                                     <td>
-                                        <input className={"form-control time "+(this.WeekNames[0].day5)} value={this.state.trFormdata.OTItemsData[0].Fri} id="0_Fri_otrow" onChange={this.changeTime}  disabled={this.state.isSubmitted || this.state.showBillable || this.WeekHeadings[0].IsFriJoined} ></input>
+                                        <input className={"form-control time "+(this.WeekNames[0].day5)} value={this.state.trFormdata.OTItemsData[0][this.WeekNames[0].day5]} id={"0_"+this.WeekNames[0].day5+"_otrow"} onChange={this.changeTime}  disabled={this.state.isSubmitted || this.state.showBillable || this.WeekHeadings[0].IsFriJoined} ></input>
                                     </td>
                                     <td>
-                                        <input className={"form-control time "+(this.WeekNames[0].day6)} value={this.state.trFormdata.OTItemsData[0].Sat} id="0_Sat_otrow" onChange={this.changeTime}  disabled={this.state.isSubmitted || this.state.showBillable || this.WeekHeadings[0].IsSatJoined} ></input>
+                                        <input className={"form-control time "+(this.WeekNames[0].day6)} value={this.state.trFormdata.OTItemsData[0][this.WeekNames[0].day6]} id={"0_"+this.WeekNames[0].day6+"_otrow"} onChange={this.changeTime}  disabled={this.state.isSubmitted || this.state.showBillable || this.WeekHeadings[0].IsSatJoined} ></input>
                                     </td>
                                     <td>
-                                        <input className={"form-control time "+(this.WeekNames[0].day7)} value={this.state.trFormdata.OTItemsData[0].Sun} id="0_Sun_otrow" onChange={this.changeTime}  disabled={this.state.isSubmitted || this.state.showBillable || this.WeekHeadings[0].IsSunJoined} ></input>
+                                        <input className={"form-control time "+(this.WeekNames[0].day7)} value={this.state.trFormdata.OTItemsData[0][this.WeekNames[0].day7]} id={"0_"+this.WeekNames[0].day7+"_otrow"} onChange={this.changeTime}  disabled={this.state.isSubmitted || this.state.showBillable || this.WeekHeadings[0].IsSunJoined} ></input>
                                     </td>
                                     <td>
                                         <span className="c-badge">OT</span>
@@ -2652,25 +2646,25 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                                     <td><textarea className="form-control textareaBorder" rows={1} value={this.state.trFormdata.SynergyOfficeHrs[0].Description} onChange={this.changeTime} id="0_Description_SynOffcHrs"  disabled={this.state.isSubmitted || this.state.showNonBillable} ></textarea></td>
                                     <td><input className="form-control" value={this.state.trFormdata.SynergyOfficeHrs[0].ProjectCode} onChange={this.changeTime} id="0_ProjectCode_SynOffcHrs"   disabled={this.state.isSubmitted || this.state.showNonBillable} ></input></td>
                                     <td>
-                                        <input className={"form-control time "+(this.WeekNames[0].day1)} value={this.state.trFormdata.SynergyOfficeHrs[0].Mon} onChange={this.changeTime} id="0_Mon_SynOffcHrs"  disabled={this.state.isSubmitted || this.state.showNonBillable || this.WeekHeadings[0].IsMonJoined} ></input>
+                                        <input className={"form-control time "+(this.WeekNames[0].day1)} value={this.state.trFormdata.SynergyOfficeHrs[0][this.WeekNames[0].day1]} onChange={this.changeTime} id={"0_"+this.WeekNames[0].day1+"_SynOffcHrs"}  disabled={this.state.isSubmitted || this.state.showNonBillable || this.WeekHeadings[0].IsMonJoined} ></input>
                                     </td>
                                     <td>
-                                        <input className={"form-control time "+(this.WeekNames[0].day2)} value={this.state.trFormdata.SynergyOfficeHrs[0].Tue} onChange={this.changeTime} id="0_Tue_SynOffcHrs"  disabled={this.state.isSubmitted || this.state.showNonBillable || this.WeekHeadings[0].IsTueJoined} ></input>
+                                        <input className={"form-control time "+(this.WeekNames[0].day2)} value={this.state.trFormdata.SynergyOfficeHrs[0][this.WeekNames[0].day2]} onChange={this.changeTime} id={"0_"+this.WeekNames[0].day2+"_SynOffcHrs"}  disabled={this.state.isSubmitted || this.state.showNonBillable || this.WeekHeadings[0].IsTueJoined} ></input>
                                         </td>
                                     <td>
-                                        <input className={"form-control time "+(this.WeekNames[0].day3)} value={this.state.trFormdata.SynergyOfficeHrs[0].Wed} onChange={this.changeTime} id="0_Wed_SynOffcHrs"  disabled={this.state.isSubmitted || this.state.showNonBillable || this.WeekHeadings[0].IsWedJoined} ></input>
+                                        <input className={"form-control time "+(this.WeekNames[0].day3)} value={this.state.trFormdata.SynergyOfficeHrs[0][this.WeekNames[0].day3]} onChange={this.changeTime} id={"0_"+this.WeekNames[0].day3+"_SynOffcHrs"}  disabled={this.state.isSubmitted || this.state.showNonBillable || this.WeekHeadings[0].IsWedJoined} ></input>
                                         </td>
                                     <td>
-                                        <input className={"form-control time "+(this.WeekNames[0].day4)} value={this.state.trFormdata.SynergyOfficeHrs[0].Thu} onChange={this.changeTime} id="0_Thu_SynOffcHrs"  disabled={this.state.isSubmitted || this.state.showNonBillable || this.WeekHeadings[0].IsThuJoined} ></input>
+                                        <input className={"form-control time "+(this.WeekNames[0].day4)} value={this.state.trFormdata.SynergyOfficeHrs[0][this.WeekNames[0].day4]} onChange={this.changeTime} id={"0_"+this.WeekNames[0].day4+"_SynOffcHrs"}  disabled={this.state.isSubmitted || this.state.showNonBillable || this.WeekHeadings[0].IsThuJoined} ></input>
                                         </td>
                                     <td>
-                                        <input className={"form-control time "+(this.WeekNames[0].day5)} value={this.state.trFormdata.SynergyOfficeHrs[0].Fri} onChange={this.changeTime} id="0_Fri_SynOffcHrs"  disabled={this.state.isSubmitted || this.state.showNonBillable || this.WeekHeadings[0].IsFriJoined} ></input>
+                                        <input className={"form-control time "+(this.WeekNames[0].day5)} value={this.state.trFormdata.SynergyOfficeHrs[0][this.WeekNames[0].day5]} onChange={this.changeTime} id={"0_"+this.WeekNames[0].day5+"_SynOffcHrs"}  disabled={this.state.isSubmitted || this.state.showNonBillable || this.WeekHeadings[0].IsFriJoined} ></input>
                                         </td>
                                     <td>
-                                        <input className={"form-control time "+(this.WeekNames[0].day6)} value={this.state.trFormdata.SynergyOfficeHrs[0].Sat} onChange={this.changeTime} id="0_Sat_SynOffcHrs"  disabled={this.state.isSubmitted || this.state.showNonBillable || this.WeekHeadings[0].IsSatJoined} ></input>
+                                        <input className={"form-control time "+(this.WeekNames[0].day6)} value={this.state.trFormdata.SynergyOfficeHrs[0][this.WeekNames[0].day6]} onChange={this.changeTime} id={"0_"+this.WeekNames[0].day6+"_SynOffcHrs"}  disabled={this.state.isSubmitted || this.state.showNonBillable || this.WeekHeadings[0].IsSatJoined} ></input>
                                         </td>
                                     <td>
-                                        <input className={"form-control time "+(this.WeekNames[0].day7)} value={this.state.trFormdata.SynergyOfficeHrs[0].Sun} onChange={this.changeTime} id="0_Sun_SynOffcHrs"  disabled={this.state.isSubmitted || this.state.showNonBillable || this.WeekHeadings[0].IsSunJoined} ></input>
+                                        <input className={"form-control time "+(this.WeekNames[0].day7)} value={this.state.trFormdata.SynergyOfficeHrs[0][this.WeekNames[0].day7]} onChange={this.changeTime} id={"0_"+this.WeekNames[0].day7+"_SynOffcHrs"}  disabled={this.state.isSubmitted || this.state.showNonBillable || this.WeekHeadings[0].IsSunJoined} ></input>
                                         </td>
                                     <td><span className="c-badge">O</span></td>
                                     <td><input className="form-control time WeekTotal" value={this.state.trFormdata.SynergyOfficeHrs[0].Total} onChange={this.changeTime} id="0_Total_SynOffcHrs" type="text"maxLength={5} readOnly></input></td>
@@ -2682,25 +2676,25 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                                     <td><textarea className="form-control textareaBorder" rows={1} value={this.state.trFormdata.ClientHolidayHrs[0].Description} onChange={this.changeTime} id="0_Description_ClientHldHrs"  disabled={this.state.isSubmitted || this.state.showNonBillable} ></textarea></td>
                                     <td><input className="form-control" value={this.state.trFormdata.ClientHolidayHrs[0].ProjectCode} onChange={this.changeTime} id="0_ProjectCode_ClientHldHrs"   disabled={this.state.isSubmitted || this.state.showNonBillable} ></input></td>
                                     <td>
-                                        <input className={"form-control time "+(this.WeekNames[0].day1)+(this.WeekHeadings[0].IsDay1Holiday.isHoliday?" ClientHoliday":"")} value={this.state.trFormdata.ClientHolidayHrs[0].Mon} onChange={this.changeTime} id="0_Mon_ClientHldHrs"  disabled={this.state.isSubmitted || this.state.showNonBillable || this.WeekHeadings[0].IsMonJoined||!this.WeekHeadings[0].IsDay1Holiday.isHoliday} ></input>
+                                        <input className={"form-control time "+(this.WeekNames[0].day1)+(this.WeekHeadings[0].IsDay1Holiday.isHoliday?" ClientHoliday":"")} value={this.state.trFormdata.ClientHolidayHrs[0][this.WeekNames[0].day1]} onChange={this.changeTime} id={"0_"+this.WeekNames[0].day1+"_ClientHldHrs"}  disabled={this.state.isSubmitted || this.state.showNonBillable || this.WeekHeadings[0].IsMonJoined||!this.WeekHeadings[0].IsDay1Holiday.isHoliday} ></input>
                                         </td>
                                     <td>
-                                        <input className={"form-control time "+(this.WeekNames[0].day2)+(this.WeekHeadings[0].IsDay2Holiday.isHoliday?" ClientHoliday":"")} value={this.state.trFormdata.ClientHolidayHrs[0].Tue} onChange={this.changeTime} id="0_Tue_ClientHldHrs"  disabled={this.state.isSubmitted || this.state.showNonBillable || this.WeekHeadings[0].IsTueJoined||!this.WeekHeadings[0].IsDay2Holiday.isHoliday} ></input>
+                                        <input className={"form-control time "+(this.WeekNames[0].day2)+(this.WeekHeadings[0].IsDay2Holiday.isHoliday?" ClientHoliday":"")} value={this.state.trFormdata.ClientHolidayHrs[0][this.WeekNames[0].day2]} onChange={this.changeTime} id={"0_"+this.WeekNames[0].day2+"_ClientHldHrs"}  disabled={this.state.isSubmitted || this.state.showNonBillable || this.WeekHeadings[0].IsTueJoined||!this.WeekHeadings[0].IsDay2Holiday.isHoliday} ></input>
                                         </td>
                                     <td>
-                                        <input className={"form-control time "+(this.WeekNames[0].day3)+(this.WeekHeadings[0].IsDay3Holiday.isHoliday?" ClientHoliday":"")} value={this.state.trFormdata.ClientHolidayHrs[0].Wed} onChange={this.changeTime} id="0_Wed_ClientHldHrs"  disabled={this.state.isSubmitted || this.state.showNonBillable || this.WeekHeadings[0].IsWedJoined||!this.WeekHeadings[0].IsDay3Holiday.isHoliday} ></input>
+                                        <input className={"form-control time "+(this.WeekNames[0].day3)+(this.WeekHeadings[0].IsDay3Holiday.isHoliday?" ClientHoliday":"")} value={this.state.trFormdata.ClientHolidayHrs[0][this.WeekNames[0].day3]} onChange={this.changeTime} id={"0_"+this.WeekNames[0].day3+"_ClientHldHrs"}  disabled={this.state.isSubmitted || this.state.showNonBillable || this.WeekHeadings[0].IsWedJoined||!this.WeekHeadings[0].IsDay3Holiday.isHoliday} ></input>
                                         </td>
                                     <td>
-                                        <input className={"form-control time "+(this.WeekNames[0].day4)+(this.WeekHeadings[0].IsDay4Holiday.isHoliday?" ClientHoliday":"")} value={this.state.trFormdata.ClientHolidayHrs[0].Thu} onChange={this.changeTime} id="0_Thu_ClientHldHrs"  disabled={this.state.isSubmitted || this.state.showNonBillable || this.WeekHeadings[0].IsThuJoined||!this.WeekHeadings[0].IsDay4Holiday.isHoliday} ></input>
+                                        <input className={"form-control time "+(this.WeekNames[0].day4)+(this.WeekHeadings[0].IsDay4Holiday.isHoliday?" ClientHoliday":"")} value={this.state.trFormdata.ClientHolidayHrs[0][this.WeekNames[0].day4]} onChange={this.changeTime} id={"0_"+this.WeekNames[0].day4+"_ClientHldHrs"}  disabled={this.state.isSubmitted || this.state.showNonBillable || this.WeekHeadings[0].IsThuJoined||!this.WeekHeadings[0].IsDay4Holiday.isHoliday} ></input>
                                         </td>
                                     <td>
-                                        <input className={"form-control time "+(this.WeekNames[0].day5)+(this.WeekHeadings[0].IsDay5Holiday.isHoliday?" ClientHoliday":"")} value={this.state.trFormdata.ClientHolidayHrs[0].Fri} onChange={this.changeTime} id="0_Fri_ClientHldHrs"  disabled={this.state.isSubmitted || this.state.showNonBillable || this.WeekHeadings[0].IsFriJoined||!this.WeekHeadings[0].IsDay5Holiday.isHoliday} ></input>
+                                        <input className={"form-control time "+(this.WeekNames[0].day5)+(this.WeekHeadings[0].IsDay5Holiday.isHoliday?" ClientHoliday":"")} value={this.state.trFormdata.ClientHolidayHrs[0][this.WeekNames[0].day5]} onChange={this.changeTime} id={"0_"+this.WeekNames[0].day5+"_ClientHldHrs"}  disabled={this.state.isSubmitted || this.state.showNonBillable || this.WeekHeadings[0].IsFriJoined||!this.WeekHeadings[0].IsDay5Holiday.isHoliday} ></input>
                                         </td>
                                     <td>
-                                        <input className={"form-control time "+(this.WeekNames[0].day6)+(this.WeekHeadings[0].IsDay6Holiday.isHoliday?" ClientHoliday":"")} value={this.state.trFormdata.ClientHolidayHrs[0].Sat} onChange={this.changeTime} id="0_Sat_ClientHldHrs"  disabled={this.state.isSubmitted || this.state.showNonBillable || this.WeekHeadings[0].IsSatJoined||!this.WeekHeadings[0].IsDay6Holiday.isHoliday} ></input>
+                                        <input className={"form-control time "+(this.WeekNames[0].day6)+(this.WeekHeadings[0].IsDay6Holiday.isHoliday?" ClientHoliday":"")} value={this.state.trFormdata.ClientHolidayHrs[0][this.WeekNames[0].day6]} onChange={this.changeTime} id={"0_"+this.WeekNames[0].day6+"_ClientHldHrs"}  disabled={this.state.isSubmitted || this.state.showNonBillable || this.WeekHeadings[0].IsSatJoined||!this.WeekHeadings[0].IsDay6Holiday.isHoliday} ></input>
                                         </td>
                                     <td>
-                                        <input className={"form-control time "+(this.WeekNames[0].day7)+(this.WeekHeadings[0].IsDay7Holiday.isHoliday?" ClientHoliday":"")} value={this.state.trFormdata.ClientHolidayHrs[0].Sun} onChange={this.changeTime} id="0_Sun_ClientHldHrs"  disabled={this.state.isSubmitted || this.state.showNonBillable || this.WeekHeadings[0].IsSunJoined||!this.WeekHeadings[0].IsDay7Holiday.isHoliday} ></input>
+                                        <input className={"form-control time "+(this.WeekNames[0].day7)+(this.WeekHeadings[0].IsDay7Holiday.isHoliday?" ClientHoliday":"")} value={this.state.trFormdata.ClientHolidayHrs[0][this.WeekNames[0].day7]} onChange={this.changeTime} id={"0_"+this.WeekNames[0].day7+"_ClientHldHrs"}  disabled={this.state.isSubmitted || this.state.showNonBillable || this.WeekHeadings[0].IsSunJoined||!this.WeekHeadings[0].IsDay7Holiday.isHoliday} ></input>
                                         </td>
                                     <td><span className="c-badge">H</span></td>
                                     <td><input className="form-control time WeekTotal" value={this.state.trFormdata.ClientHolidayHrs[0].Total} onChange={this.changeTime} id="0_Total_ClientHldHrs" type="text" maxLength={5} readOnly></input></td>
@@ -2711,25 +2705,25 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                                     <td><textarea className="form-control textareaBorder" rows={1} value={this.state.trFormdata.PTOHrs[0].Description} onChange={this.changeTime} id="0_Description_PTOHrs"  disabled={this.state.isSubmitted || this.state.showNonBillable}></textarea></td>
                                     <td><input className="form-control" value={this.state.trFormdata.PTOHrs[0].ProjectCode} onChange={this.changeTime} id="0_ProjectCode_PTOHrs"   disabled={this.state.isSubmitted || this.state.showNonBillable} ></input></td>
                                     <td>
-                                            <input className={"form-control time "+(this.WeekNames[0].day1)} value={this.state.trFormdata.PTOHrs[0].Mon} onChange={this.changeTime} id="0_Mon_PTOHrs"  disabled={this.state.isSubmitted || this.state.showNonBillable || this.WeekHeadings[0].IsMonJoined} ></input>
+                                            <input className={"form-control time "+(this.WeekNames[0].day1)} value={this.state.trFormdata.PTOHrs[0][this.WeekNames[0].day1]} onChange={this.changeTime} id={"0_"+this.WeekNames[0].day1+"_PTOHrs"}  disabled={this.state.isSubmitted || this.state.showNonBillable || this.WeekHeadings[0].IsMonJoined} ></input>
                                             </td>
                                     <td>
-                                        <input className={"form-control time "+(this.WeekNames[0].day2)} value={this.state.trFormdata.PTOHrs[0].Tue} onChange={this.changeTime} id="0_Tue_PTOHrs"  disabled={this.state.isSubmitted || this.state.showNonBillable || this.WeekHeadings[0].IsTueJoined} ></input>
+                                        <input className={"form-control time "+(this.WeekNames[0].day2)} value={this.state.trFormdata.PTOHrs[0][this.WeekNames[0].day2]} onChange={this.changeTime} id={"0_"+this.WeekNames[0].day2+"_PTOHrs"}  disabled={this.state.isSubmitted || this.state.showNonBillable || this.WeekHeadings[0].IsTueJoined} ></input>
                                         </td>
                                     <td>
-                                        <input className={"form-control time "+(this.WeekNames[0].day3)} value={this.state.trFormdata.PTOHrs[0].Wed} onChange={this.changeTime} id="0_Wed_PTOHrs"  disabled={this.state.isSubmitted || this.state.showNonBillable || this.WeekHeadings[0].IsWedJoined} ></input>
+                                        <input className={"form-control time "+(this.WeekNames[0].day3)} value={this.state.trFormdata.PTOHrs[0][this.WeekNames[0].day3]} onChange={this.changeTime} id={"0_"+this.WeekNames[0].day3+"_PTOHrs"}  disabled={this.state.isSubmitted || this.state.showNonBillable || this.WeekHeadings[0].IsWedJoined} ></input>
                                         </td>
                                     <td>
-                                        <input className={"form-control time "+(this.WeekNames[0].day4)} value={this.state.trFormdata.PTOHrs[0].Thu} onChange={this.changeTime} id="0_Thu_PTOHrs"  disabled={this.state.isSubmitted || this.state.showNonBillable || this.WeekHeadings[0].IsThuJoined} ></input>
+                                        <input className={"form-control time "+(this.WeekNames[0].day4)} value={this.state.trFormdata.PTOHrs[0][this.WeekNames[0].day4]} onChange={this.changeTime} id={"0_"+this.WeekNames[0].day4+"_PTOHrs"}  disabled={this.state.isSubmitted || this.state.showNonBillable || this.WeekHeadings[0].IsThuJoined} ></input>
                                         </td>
                                     <td>
-                                        <input className={"form-control time "+(this.WeekNames[0].day5)} value={this.state.trFormdata.PTOHrs[0].Fri} onChange={this.changeTime} id="0_Fri_PTOHrs"  disabled={this.state.isSubmitted || this.state.showNonBillable || this.WeekHeadings[0].IsFriJoined} ></input>
+                                        <input className={"form-control time "+(this.WeekNames[0].day5)} value={this.state.trFormdata.PTOHrs[0][this.WeekNames[0].day5]} onChange={this.changeTime} id={"0_"+this.WeekNames[0].day5+"_PTOHrs"}  disabled={this.state.isSubmitted || this.state.showNonBillable || this.WeekHeadings[0].IsFriJoined} ></input>
                                         </td>
                                     <td>
-                                        <input className={"form-control time "+(this.WeekNames[0].day6)} value={this.state.trFormdata.PTOHrs[0].Sat} onChange={this.changeTime} id="0_Sat_PTOHrs"  disabled={this.state.isSubmitted || this.state.showNonBillable || this.WeekHeadings[0].IsSatJoined} ></input>
+                                        <input className={"form-control time "+(this.WeekNames[0].day6)} value={this.state.trFormdata.PTOHrs[0][this.WeekNames[0].day6]} onChange={this.changeTime} id={"0_"+this.WeekNames[0].day6+"_PTOHrs"}  disabled={this.state.isSubmitted || this.state.showNonBillable || this.WeekHeadings[0].IsSatJoined} ></input>
                                         </td>
                                     <td>
-                                        <input className={"form-control time "+(this.WeekNames[0].day7)} value={this.state.trFormdata.PTOHrs[0].Sun} onChange={this.changeTime} id="0_Sun_PTOHrs"  disabled={this.state.isSubmitted || this.state.showNonBillable || this.WeekHeadings[0].IsSunJoined} ></input>
+                                        <input className={"form-control time "+(this.WeekNames[0].day7)} value={this.state.trFormdata.PTOHrs[0][this.WeekNames[0].day7]} onChange={this.changeTime} id={"0_"+this.WeekNames[0].day7+"_PTOHrs"}  disabled={this.state.isSubmitted || this.state.showNonBillable || this.WeekHeadings[0].IsSunJoined} ></input>
                                         </td>
                                     <td><span className="c-badge">PTO</span></td>
                                     <td><input className="form-control time WeekTotal" value={this.state.trFormdata.PTOHrs[0].Total} onChange={this.changeTime} id="0_Total_PTOHrs" type="text" maxLength={5} readOnly></input></td>
@@ -2749,25 +2743,25 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                                     {/* <td>   
                                     </td> */}
                                     <td>
-                                        <input className="form-control time DayTotal" id="BillableTotalMon" value={this.state.trFormdata.BillableSubTotal[0].Mon} type="text" maxLength={5} readOnly></input>
+                                        <input className="form-control time DayTotal" id={"BillableTotal"+this.WeekNames[0].day1} value={this.state.trFormdata.BillableSubTotal[0][this.WeekNames[0].day1]} type="text" maxLength={5} readOnly></input>
                                     </td>
                                     <td>
-                                        <input className="form-control time DayTotal" id="BillableTotalTue" value={this.state.trFormdata.BillableSubTotal[0].Tue} type="text" maxLength={5} readOnly></input>
+                                        <input className="form-control time DayTotal" id={"BillableTotal"+this.WeekNames[0].day2} value={this.state.trFormdata.BillableSubTotal[0][this.WeekNames[0].day2]} type="text" maxLength={5} readOnly></input>
                                     </td>
                                     <td>
-                                        <input className="form-control time DayTotal" id="BillableTotalWed" value={this.state.trFormdata.BillableSubTotal[0].Wed} type="text" maxLength={5} readOnly></input>
+                                        <input className="form-control time DayTotal" id={"BillableTotal"+this.WeekNames[0].day3} value={this.state.trFormdata.BillableSubTotal[0][this.WeekNames[0].day3]} type="text" maxLength={5} readOnly></input>
                                     </td>
                                     <td>
-                                        <input className="form-control time DayTotal" id="BillableTotalThu" value={this.state.trFormdata.BillableSubTotal[0].Thu} type="text" maxLength={5} readOnly></input>
+                                        <input className="form-control time DayTotal" id={"BillableTotal"+this.WeekNames[0].day4} value={this.state.trFormdata.BillableSubTotal[0][this.WeekNames[0].day4]} type="text" maxLength={5} readOnly></input>
                                     </td>
                                     <td>
-                                        <input className="form-control time DayTotal" id="BillableTotalFri" value={this.state.trFormdata.BillableSubTotal[0].Fri} type="text" maxLength={5} readOnly></input>
+                                        <input className="form-control time DayTotal" id={"BillableTotal"+this.WeekNames[0].day5} value={this.state.trFormdata.BillableSubTotal[0][this.WeekNames[0].day5]} type="text" maxLength={5} readOnly></input>
                                     </td>
                                     <td>
-                                        <input className="form-control time DayTotal" id="BillableTotalSat" value={this.state.trFormdata.BillableSubTotal[0].Sat} type="text" maxLength={5} readOnly></input>
+                                        <input className="form-control time DayTotal" id={"BillableTotal"+this.WeekNames[0].day6} value={this.state.trFormdata.BillableSubTotal[0][this.WeekNames[0].day6]} type="text" maxLength={5} readOnly></input>
                                     </td>
                                     <td>
-                                        <input className="form-control time DayTotal" id="BillableTotalSat" value={this.state.trFormdata.BillableSubTotal[0].Sun} type="text" maxLength={5} readOnly></input>
+                                        <input className="form-control time DayTotal" id={"BillableTotal"+this.WeekNames[0].day7} value={this.state.trFormdata.BillableSubTotal[0][this.WeekNames[0].day7]} type="text" maxLength={5} readOnly></input>
                                     </td>
                                     <td>
                                         <span className="c-badge">BT</span>
@@ -2788,25 +2782,25 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                                     <td colSpan={2}></td>
                                     {/* <td></td> */}
                                     <td>
-                                        <input className="form-control time DayTotal" id="TotalMon" value={this.state.trFormdata.Total[0].Mon} type="text" maxLength={5} readOnly></input>
+                                        <input className="form-control time DayTotal" id={"Total"+[this.WeekNames[0].day1]} value={this.state.trFormdata.Total[0][this.WeekNames[0].day1]} type="text" maxLength={5} readOnly></input>
                                     </td>
                                     <td>
-                                        <input className="form-control time DayTotal" id="TotalTue" value={this.state.trFormdata.Total[0].Tue} type="text" maxLength={5} readOnly></input>
+                                        <input className="form-control time DayTotal" id={"Total"+[this.WeekNames[0].day2]} value={this.state.trFormdata.Total[0][this.WeekNames[0].day2]} type="text" maxLength={5} readOnly></input>
                                     </td>
                                     <td>
-                                        <input className="form-control time DayTotal" id="TotalWed" value={this.state.trFormdata.Total[0].Wed} type="text" maxLength={5} readOnly></input>
+                                        <input className="form-control time DayTotal" id={"Total"+[this.WeekNames[0].day3]} value={this.state.trFormdata.Total[0][this.WeekNames[0].day3]} type="text" maxLength={5} readOnly></input>
                                     </td>
                                     <td>
-                                        <input className="form-control time DayTotal" id="TotalThu" value={this.state.trFormdata.Total[0].Thu} type="text" maxLength={5} readOnly></input>
+                                        <input className="form-control time DayTotal" id={"Total"+[this.WeekNames[0].day4]} value={this.state.trFormdata.Total[0][this.WeekNames[0].day4]} type="text" maxLength={5} readOnly></input>
                                     </td>
                                     <td> 
-                                        <input className="form-control time DayTotal" id="TotalFri" value={this.state.trFormdata.Total[0].Fri} type="text" maxLength={5} readOnly></input>
+                                        <input className="form-control time DayTotal" id={"Total"+[this.WeekNames[0].day5]} value={this.state.trFormdata.Total[0][this.WeekNames[0].day5]} type="text" maxLength={5} readOnly></input>
                                     </td>
                                     <td>
-                                        <input className="form-control time DayTotal" id="TotalSat" value={this.state.trFormdata.Total[0].Sat} type="text" maxLength={5} readOnly></input>
+                                        <input className="form-control time DayTotal" id={"Total"+[this.WeekNames[0].day6]} value={this.state.trFormdata.Total[0][this.WeekNames[0].day6]} type="text" maxLength={5} readOnly></input>
                                     </td>
                                     <td>
-                                        <input className="form-control time DayTotal" id="TotalSun" value={this.state.trFormdata.Total[0].Sun} type="text" maxLength={5} readOnly></input>
+                                        <input className="form-control time DayTotal" id={"Total"+[this.WeekNames[0].day7]} value={this.state.trFormdata.Total[0][this.WeekNames[0].day7]} type="text" maxLength={5} readOnly></input>
                                     </td>
                                     <td><span className="c-badge">T</span></td>
                                     <td>
