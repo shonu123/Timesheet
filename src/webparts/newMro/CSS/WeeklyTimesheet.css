@@ -239,8 +239,8 @@
        }
 
     #weekstartAndweekEnd{
-        margin-left: 20px;
-        color: #0d2f4b;
+        margin-left: 10px;
+        color: #1b9ccf;
         font-weight: 400;
         font-size: 18px;
         position: relative;
@@ -251,10 +251,10 @@
         align-items: center;
     }
     #BillableTotal{
-     background-color: #e3a5a5 !important;   
+     background-color: #f5d8d8 !important;   
     }
     .headerClient{
-        font-size: 33px;
+        font-size: 22px;
         color: #0d2f4b;
     }
     /*.ClientHoliday .TimeInput-input

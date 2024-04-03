@@ -62,9 +62,9 @@ class AllRequests extends React.Component<AllRequestsProps,AllRequestsState> {
                     {
                         for(let r of d.ReportingManager){
                             Rm += "<div>"+r.Title+"</div>"
-                            ExcelRm += r.Title+","
+                            ExcelRm += r.Title+"\n"
                         }
-                        ExcelRm = ExcelRm.substring(0, ExcelRm.lastIndexOf(","));
+                        // ExcelRm = ExcelRm.substring(0, ExcelRm.lastIndexOf("\n"));
                     }
                     let date = new Date(d.WeekStartDate)
                     Data.push({
@@ -254,7 +254,7 @@ class AllRequests extends React.Component<AllRequestsProps,AllRequestsState> {
                         </button></NavLink>
                 </div></div>
                 <div className='c-v-table table-head-1st-td'>
-                    <TableGenerator columns={columns} data={this.state.AllRequests} fileName={'All Requests'} showExportExcel={true} ExportExcelCustomisedColumns={Exportcolumns} ExportExcelCustomisedData={this.state.ExportExcelData} ></TableGenerator>
+                    <TableGenerator columns={columns} data={this.state.AllRequests} fileName={'All Requests'} showExportExcel={true} ExportExcelCustomisedColumns={Exportcolumns} ExportExcelCustomisedData={this.state.ExportExcelData} wrapColumns={["RM","Client"]}></TableGenerator>
                 </div>
             </div>
             {this.state.loading && <Loader />}

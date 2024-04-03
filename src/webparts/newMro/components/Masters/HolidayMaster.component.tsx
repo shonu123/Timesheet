@@ -580,10 +580,6 @@ class HolidaysList extends Component<HolidaysListProps, HolidaysListState> {
     public render() {
         let ExportExcelreportColumns = [
             {
-                name: "Edit",
-                selector: "Id",
-            },
-            {
                 name: "Client Name",
                 selector: "ClientName",
             },

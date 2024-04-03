@@ -5,7 +5,7 @@ import Search from './Search';
 import { NavLink } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPlus } from '@fortawesome/free-solid-svg-icons';
-
+import ExportExcelwithStyles from './ExportExcelwithStyles'
 const customStyles = {
   rows: {
     style: {
@@ -53,9 +53,10 @@ interface TableGeneratorProps {
   btnCaption?:string;
   customBtnClass?:string;
   searchBoxLeft?:boolean;
+  wrapColumns?:any;
 }
 
-const TableGenerator = ({ columns, data, fileName,showExportExcel, ExportExcelCustomisedColumns,ExportExcelCustomisedData, prvPageNumber,prvSort,prvDirection,onChange,onSortChange,onSortDirection,showAddButton,btnSpanID,btnTitle,navigateOnBtnClick,btnCaption,customBtnClass,btnDivID,searchBoxLeft}: TableGeneratorProps) => {
+const TableGenerator = ({ columns, data, fileName,showExportExcel, ExportExcelCustomisedColumns,ExportExcelCustomisedData, prvPageNumber,prvSort,prvDirection,onChange,onSortChange,onSortDirection,showAddButton,btnSpanID,btnTitle,navigateOnBtnClick,btnCaption,customBtnClass,btnDivID,searchBoxLeft,wrapColumns}: TableGeneratorProps) => {
   //let lsMyrequests = localStorage.getItem('PrvData');
  // const tableData = { columns, data };
   const [totalData, setData] = useState([]);
@@ -100,7 +101,8 @@ const TableGenerator = ({ columns, data, fileName,showExportExcel, ExportExcelCu
         </div>}
         {showExportExcel &&
           <div className="col-6 text-right">
-            <ExportExcel tableData={ExportExcelCustomisedData ? ExportExcelCustomisedData : data} filename={fileName} columns={ExportExcelCustomisedColumns ? ExportExcelCustomisedColumns : columns}></ExportExcel>
+            {/* <ExportExcel tableData={ExportExcelCustomisedData ? ExportExcelCustomisedData : data} filename={fileName} columns={ExportExcelCustomisedColumns ? ExportExcelCustomisedColumns : columns}></ExportExcel> */}
+            <ExportExcelwithStyles tableData={ExportExcelCustomisedData ? ExportExcelCustomisedData : data} filename={fileName} columns={ExportExcelCustomisedColumns ? ExportExcelCustomisedColumns : columns} wrapColumnsArray={wrapColumns}></ExportExcelwithStyles>
           </div> 
         }
       </div>
