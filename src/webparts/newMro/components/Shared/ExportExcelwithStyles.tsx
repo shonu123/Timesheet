@@ -10,7 +10,9 @@ const exportToexcel = (dataTable,) => {
     for (const c of columns) {
         columnOrder.push(c.selector)
     }
-
+    if(wrapColumnsArray==undefined){
+        wrapColumnsArray = []
+    }
     const wb = XLSX.utils.book_new();
     const workSheetRows = []
     let headerRow = []
