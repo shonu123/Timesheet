@@ -232,6 +232,9 @@
         background-color: #ffebd6 !important;
         box-shadow: inset 0px 0px 3px #f9a954;
     }
+    .ClientHoliday:disabled {
+        background-color: #ffebd6 !important;
+    }
     .time{
         text-align: center !important;
         border: none !important;
@@ -240,9 +243,9 @@
 
     #weekstartAndweekEnd{
         margin-left: 10px;
-        color: #008cc3;
+        color: #ab4890;
         font-weight: 400;
-        font-size: 18px;
+        font-size: 14px;
         position: relative;
         top: -4px;
     }

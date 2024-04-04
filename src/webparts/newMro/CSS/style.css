@@ -390,7 +390,7 @@ span.comments-name {
   display: inline-block;
 }
 .form-control-box input, .form-control-box select {
-  border: 1px solid #ced4da !important;
+  border: 1px solid #a19f9d !important;
   font-size: 14px!important;
 }
 ::-ms-clear {
@@ -740,11 +740,11 @@ input.c-input-readonly {
   top: 10px;
   width: 100%;
   z-index: 0;
-  border: 1px solid #ced4da !important;
+  border: 1px solid #a19f9d !important;
   /* padding: .575rem .75rem; */
 }
 .light-text input{
-  padding-left: 7px;
+  padding-left: 7px!important;
   padding-top: 4px;
   border-radius: .25rem;
   font-size: 12px;
@@ -1390,6 +1390,7 @@ div[id^="_TopSpan_NotificationSpan"]{
   border-radius: 3px;
   border: 1px solid #e4e4e4;
 }
+
 .mandatoryhastrick{
   /* color: red; */
   color: #e73e3e;

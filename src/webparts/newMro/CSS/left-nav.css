@@ -50,7 +50,7 @@ color: #666666!important;
 .ul-leftnav li a{
   list-style-type: none;
   padding: 5px 4px;
-  color: #444;
+  color: #000;
   margin: 0 7px;
   display: inline-block;
 }
@@ -59,10 +59,9 @@ color: #666666!important;
   text-decoration: none;
 }
 .nav-click a{
-  background-color: #0d2f4b !important;
   border-bottom: 2px solid #2b81c7;
-  font-weight: bold;
-  color: white !important;
+  font-weight: 700;
+  color: #000 !important;
 }
 #sidebar .h6 {
   color: #fff;
