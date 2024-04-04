@@ -55,13 +55,14 @@ color: #666666!important;
   display: inline-block;
 }
 .ul-leftnav li a:hover{
-  border-bottom: 2px solid rgb(13 47 75);
+  border-bottom: 2px solid #2b81c7;
   text-decoration: none;
 }
 .nav-click a{
-  background-color: #f1f1f1 !important;
-  border-bottom: 2px solid rgb(13 47 75);
+  background-color: #0d2f4b !important;
+  border-bottom: 2px solid #2b81c7;
   font-weight: bold;
+  color: white !important;
 }
 #sidebar .h6 {
   color: #fff;
