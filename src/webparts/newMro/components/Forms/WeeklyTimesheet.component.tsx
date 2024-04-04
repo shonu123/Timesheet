@@ -695,6 +695,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
         Formdata.WeekStartDate=this.getCurrentWeekStartDate(Formdata.WeekStartDay);
         //For restricting  of incorrect WeekstarDay binding in DatePicker
         //this.setState({trFormdata:Formdata});
+       this.GetHolidayMasterDataByClientName(Formdata.WeekStartDate,Formdata.HolidayType,Formdata);
        this.validateDuplicateRecord(Formdata.WeekStartDate,clientVal,Formdata);
     
     }
@@ -1422,7 +1423,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
     }
     private InsertorUpdatedata(formdata,formObject) {
         this.setState({ loading: true });
-        let tableContent = {'Name':this.state.trFormdata.Name,'Client':this.state.trFormdata.ClientName,'Submitted Date':`${this.state.trFormdata.DateSubmitted.getMonth() + 1}/${this.state.trFormdata.DateSubmitted.getDate()}/${this.state.trFormdata.DateSubmitted.getFullYear()}`,'Billable Hours':formObject.WeeklyItemsTotalTime,'OT Hours':formObject.OTItemsTotalTime,'Total Billable Hours':this.state.trFormdata.BillableSubTotal[0].Total,'Total Non-Billable Hours':this.state.trFormdata.NonBillableSubTotal[0].Total,'Total Hours':this.state.trFormdata.Total[0].Total}
+        let tableContent = {'Name':this.state.trFormdata.Name,'Client':this.state.trFormdata.ClientName,'Submitted Date':`${this.state.trFormdata.DateSubmitted.getMonth() + 1}/${this.state.trFormdata.DateSubmitted.getDate()}/${this.state.trFormdata.DateSubmitted.getFullYear()}`,'Billable Hours':formObject.WeeklyItemsTotalTime,'OT Hours':formObject.OTItemsTotalTime,'Total Billable Hours':this.state.trFormdata.BillableSubTotal[0].Total,'Holiday Hours':this.state.trFormdata.ClientHolidayHrs[0].Total,'PTO Hours':this.state.trFormdata.PTOHrs[0].Total,'Grand Total Hours':this.state.trFormdata.Total[0].Total}
         let sub='';
         let emaildetails={};
         let CC=[];
@@ -2776,7 +2777,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                                 <tr className="" id="GrandTotalRow">
                                     <td className="fw-bold text-start"> 
                                         <div className="p-2 fw-bold">
-                                            <i className="fas fa-business-time color-gray"></i> Total
+                                            <i className="fas fa-business-time color-gray"></i>Grand Total
                                         </div>
                                     </td>
                                     <td colSpan={2}></td>
@@ -2843,9 +2844,9 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                     </div> 
                             {this.state.showApproveRejectbtn&&!this.state.IsReviewer?<button type="button" id="btnApprove" onClick={this.showConfirmApprove} className="SubmitButtons btn">Approve</button>:''}
                             {this.state.showApproveRejectbtn?<button type="button" id="btnReject" onClick={this.showConfirmReject}  className="RejectButtons btn">Reject</button>:''}
-                            {this.state.isSubmitted?'': <button type="button" id="btnSubmit" onClick={this.showConfirmSubmit} className="SubmitButtons btn">Submit</button>}
                             {(this.state.trFormdata.Status==StatusType.Submit||this.state.trFormdata.Status==StatusType.Approved)&&!this.state.showApproveRejectbtn?<button type="button" id="btnRevoke" onClick={this.showConfirmRevoke} className="txt-white CancelButtons bc-burgundy btn">Revoke</button>:''}
                             {this.state.isSubmitted?'':  <button type="button" id="btnSave" onClick={this.handleSubmitorSave} className="SaveButtons btn">Save</button>}
+                            {this.state.isSubmitted?'': <button type="button" id="btnSubmit" onClick={this.showConfirmSubmit} className="SubmitButtons btn">Submit</button>}
                             <button type="button" id="btnCancel" onClick={this.handleCancel} className="CancelButtons btn">Cancel</button>
                         </div>
                         
