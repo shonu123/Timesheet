@@ -232,7 +232,7 @@
         background-color: #ffebd6 !important;
         box-shadow: inset 0px 0px 3px #f9a954;
     }
-    .ClientHoliday:disabled {
+    .ClientHoliday.form-control:disabled {
         background-color: #ffebd6 !important;
     }
     .time{

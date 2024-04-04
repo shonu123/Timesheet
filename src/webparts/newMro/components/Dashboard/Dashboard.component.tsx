@@ -90,7 +90,10 @@ class Dashboard extends React.Component<DashboardProps, DashboardState> {
                             break;
                         case StatusType.Reject:
                             customToaster('toster-success',ToasterTypes.Success,'Weekly timesheet '+StatusType.Reject.toLowerCase()+ ' succesfully',2000)
-                            break;                    
+                            break; 
+                        case "Invalid":
+                            customToaster('toster-error',ToasterTypes.Error,'No data found!',4000)
+                            break; 
                         default:
                             break;
                     }
