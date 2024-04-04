@@ -319,25 +319,25 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
         {
             ClientNames = await this.oweb.lists.getByTitle('EmployeeMaster').items.filter(" Employee/Id eq "+currentUserId+"and IsActive eq 1").select("ClientName ,DateOfJoining,Employee/Title,Employee/Id,Employee/EMail,ReportingManager/Id,Reviewers/Id,Notifiers/Id,ReportingManager/Title,Reviewers/Title,Notifiers/Title,ReportingManager/EMail,Reviewers/EMail,Notifiers/EMail,*").expand("Employee,ReportingManager,Reviewers,Notifiers").orderBy("ClientName",true).getAll();
 
-            // if(userGroups.includes('Timesheet Members')){
-            //     this.setState({isSubmitted : false,loading:false});
-            // }
-            // else{
-            //     this.setState({isSubmitted : true,loading:false});
-            // }
-            // if(userGroups.includes('Timesheet Administrators')){
-            //     this.setState({isAdmin:true,isSubmitted: false})
-            // }
+            if(userGroups.includes('Timesheet Members')){
+                this.setState({isSubmitted : false,loading:false});
+            }
+            else{
+                this.setState({isSubmitted : true,loading:false});
+            }
+            if(userGroups.includes('Timesheet Administrators')){
+                this.setState({isAdmin:true,isSubmitted: false})
+            }
         }
-        if(userGroups.includes('Timesheet Members')){
-            this.setState({isSubmitted : false,loading:false});
-        }
-        else{
-            this.setState({isSubmitted : true,loading:false});
-        }
-        if(userGroups.includes('Timesheet Administrators')){
-            this.setState({isAdmin:true,isSubmitted: false})
-        }
+        // if(userGroups.includes('Timesheet Members')){
+        //     this.setState({isSubmitted : false,loading:false});
+        // }
+        // else{
+        //     this.setState({isSubmitted : true,loading:false});
+        // }
+        // if(userGroups.includes('Timesheet Administrators')){
+        //     this.setState({isAdmin:true,isSubmitted: false})
+        // }
         console.log(ClientNames);
         if(ClientNames.length<1 && !this.state.isAdmin){
             this.setState({modalTitle:'Invalid Employee configuration',modalText:'Employee not configured in Approval Matrix,Please contact Administrator',isSuccess: false,showHideModal:true})
@@ -347,6 +347,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
         ClientsFromClientMaster =clientMaster;
         this.setState({EmployeeEmail:[],ClientNames:[],Clients_DateOfJoinings:[],SuperviserNames:[],Reviewers:[],Notifiers:[]});
         this.state.EmployeeEmail.push(ClientNames[0].Employee.EMail);
+        
         ClientNames.filter(item => {
               Client.push({"ClientName":item.ClientName});
               this.state.Clients_DateOfJoinings.push({"ClientName":item.ClientName,"DOJ":item.DateOfJoining,"IsDescriptionMandatory":item.MandatoryDescription,"IsProjectCodeMandatory":item.MandatoryProjectCode,"WeekStartDay":item.WeekStartDay,"HolidayType":item.HolidayType})
@@ -1935,7 +1936,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
             return newDate;
         }
     }
-    //functions related to approval process
+    //this function is used to hide and show Approve/Reject buttons based on logged in user and current record respective users
     private showApproveAndRejectButton() {
         let value = this.state.trFormdata.Status != StatusType.Save ? true : false;
         if(value){
@@ -1943,13 +1944,20 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
         let RMEmails = this.state.trFormdata.ReportingManagersEmail
         let RevEmails = this.state.trFormdata.ReviewersEmail
         let userEmail = this.props.spContext.userEmail
-
+        let isAdmin = false;
         if(userEmail == this.state.EmployeeEmail){
             value = false;
         }
-        if(userEmail == this.state.EmployeeEmail||this.state.isAdmin)
+        if(userGroups.includes('Timesheet Administrators')){
+            isAdmin = true
+        }
+        if(userEmail == this.state.EmployeeEmail|| isAdmin)
         {
-            this.setState({showSubmitSavebtn:true})
+            let Approve = StatusType.Approved.toString()
+            let submit = StatusType.Submit.toString()
+            if(![Approve,submit].includes(this.state.trFormdata.Status)){
+                this.setState({showSubmitSavebtn:true})
+            }
         }
 
         // trFormdata.ReportingManagersEmail=RMEmail;
@@ -1985,7 +1993,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
         this.setState({ showApproveRejectbtn: value,IsReviewer:false  })
     }
     else{
-        this.setState({ showApproveRejectbtn: value,IsReviewer:false  })  
+        this.setState({ showApproveRejectbtn: value,showSubmitSavebtn:true,IsReviewer:false})  
     }
     }
      private userAccessableRecord(){
