@@ -104,6 +104,7 @@ export interface WeeklyTimesheetState {
     showBillable: boolean;
     showNonBillable : boolean;
     showApproveRejectbtn: boolean;
+    showSubmitSavebtn:boolean;
     IsReviewer:boolean;
     isRecordAcessable:boolean;
     UserGoups : any;
@@ -220,6 +221,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
             showBillable:true,
             showNonBillable :true,
             showApproveRejectbtn : false,
+            showSubmitSavebtn:false,
             ConfirmPopupMessage:'',
             ActionToasterMessage:"",
             ActionButtonId:'',
@@ -324,7 +326,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                 this.setState({isSubmitted : true,loading:false});
             }
             if(userGroups.includes('Timesheet Administrators')){
-                this.setState({isAdmin:true,isSubmitted: true})
+                this.setState({isAdmin:true,isSubmitted: false})
             }
         }
         console.log(ClientNames);
@@ -398,8 +400,8 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
          "IsDay7Holiday":this.IsHoliday(WeekStartDate,trFormdata.HolidayType),
          "IsDay7SynergyHoliday":this.IsHoliday(WeekStartDate,"synergy"),
          })
-        this.setState({UserGoups:userGroups,trFormdata,ClientNames: this.state.ClientNames,EmployeeEmail:this.state.EmployeeEmail,showToaster: true});
-        if(this.state.ClientNames.length==1){
+        this.setState({UserGoups:userGroups,trFormdata,ClientNames: this.state.ClientNames,EmployeeEmail:this.state.EmployeeEmail,currentUserId:ClientNames[0].Employee.Id,showToaster: true});
+        if(this.state.ClientNames.length==1&&this.props.match.params.id==undefined){
             trFormdata.ClientName=ClientNames[0].ClientName;
             this.handleClientChange(ClientNames[0].ClientName);
         }
@@ -1376,7 +1378,8 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
             this.InsertorUpdatedata(postObject,formdata);
     }
     private handleRevoke=async ()=>
-    {
+    {  
+        this.setState({showConfirmDeletePopup:false})
         var formdata = { ...this.state.trFormdata };
         formdata=this.Calculate_Indvidual_OT_Weekly_TotalTime(formdata);
         formdata=this.GetRequiredEmails(formdata.ClientName,formdata);
@@ -1930,6 +1933,10 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
         if(userEmail == this.state.EmployeeEmail){
             value = false;
         }
+        if(userEmail == this.state.EmployeeEmail||this.state.isAdmin)
+        {
+            this.setState({showSubmitSavebtn:true})
+        }
 
         // trFormdata.ReportingManagersEmail=RMEmail;
         //     trFormdata.ReviewersEmail=ReviewEmail;
@@ -2308,28 +2315,15 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
         let body=[];
         if(this.state.trFormdata.CommentsHistoryData.length>0)
         {
-        //     this.state.trFormdata.CommentsHistoryData.map((option) => (
-        //         body.push(<tr>
-        //         {/* <td className="" >{option["Action"]==StatusType.InProgress?"Approved by Manager":
-        //         option["Action"]==StatusType.Approved?"Approved by Reviewer":
-        //         option["Action"]==StatusType.Reject?"Rejected":"Pending with initiator"}</td> */}
-        //         <td className="" >{option["Role"]}</td>
-        //         <td className="" >{option["Action"]}</td>
-        //         <td className="" >{option["User"]}</td>
-        //         <td className="" >{option["Comments"]}</td>
-        //         <td className="" >{(new Date(option["Date"]).getMonth().toString().length==1?"0"+(new Date(option["Date"]).getMonth()+1):new Date(option["Date"]).getMonth()+1)+"/"+(new Date(option["Date"]).getDate().toString().length==1?"0"+new Date(option["Date"]).getDate():new Date(option["Date"]).getDate())+"/"+new Date(option["Date"]).getFullYear()}  {"  "+new Date(option["Date"]).toLocaleTimeString()}</td>
-        //     </tr>)
-        //    ))
-        //    this.state.trFormdata.CommentsHistoryData.map((option) => (
             var History=this.state.trFormdata.CommentsHistoryData;
             for(let i=History.length-1;i>=0;i--)
             {
             body.push(<tr>
-            <td className="" >{History[i]["Role"]}</td>
-            <td className="" >{History[i]["Action"]}</td>
+            {/* <td className="" >{History[i]["Role"]}</td> */}
             <td className="" >{History[i]["User"]}</td>
+            <td className="" >{History[i]["Action"]}</td>
+            <td className="" >{(new Date(History[i]["Date"]).getMonth().toString().length==1?"0"+(new Date(History[i]["Date"]).getMonth()+1):new Date(History[i]["Date"]).getMonth()+1)+"/"+(new Date(History[i]["Date"]).getDate().toString().length==1?"0"+new Date(History[i]["Date"]).getDate():new Date(History[i]["Date"]).getDate())+"/"+new Date(History[i]["Date"]).getFullYear()}  {"  "+new Date(History[i]["Date"]).toUTCString().split(" ")[4]+" "+new Date(History[i]["Date"]).toUTCString().split(" ")[5]}</td>
             <td className="" >{History[i]["Comments"]}</td>
-            <td className="" >{(new Date(History[i]["Date"]).getMonth().toString().length==1?"0"+(new Date(History[i]["Date"]).getMonth()+1):new Date(History[i]["Date"]).getMonth()+1)+"/"+(new Date(History[i]["Date"]).getDate().toString().length==1?"0"+new Date(History[i]["Date"]).getDate():new Date(History[i]["Date"]).getDate())+"/"+new Date(History[i]["Date"]).getFullYear()}  {"  "+new Date(History[i]["Date"]).toLocaleTimeString()}</td>
         </tr>)
             }
         }
@@ -2777,7 +2771,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                                 <tr className="" id="GrandTotalRow">
                                     <td className="fw-bold text-start"> 
                                         <div className="p-2 fw-bold">
-                                            <i className="fas fa-business-time color-gray"></i>Grand Total
+                                            <i className="fas fa-business-time color-gray"></i> Grand Total
                                         </div>
                                     </td>
                                     <td colSpan={2}></td>
@@ -2845,8 +2839,8 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                             {this.state.showApproveRejectbtn&&!this.state.IsReviewer?<button type="button" id="btnApprove" onClick={this.showConfirmApprove} className="SubmitButtons btn">Approve</button>:''}
                             {this.state.showApproveRejectbtn?<button type="button" id="btnReject" onClick={this.showConfirmReject}  className="RejectButtons btn">Reject</button>:''}
                             {(this.state.trFormdata.Status==StatusType.Submit||this.state.trFormdata.Status==StatusType.Approved)&&!this.state.showApproveRejectbtn?<button type="button" id="btnRevoke" onClick={this.showConfirmRevoke} className="txt-white CancelButtons bc-burgundy btn">Revoke</button>:''}
-                            {this.state.isSubmitted?'':  <button type="button" id="btnSave" onClick={this.handleSubmitorSave} className="SaveButtons btn">Save</button>}
-                            {this.state.isSubmitted?'': <button type="button" id="btnSubmit" onClick={this.showConfirmSubmit} className="SubmitButtons btn">Submit</button>}
+                            {!this.state.isSubmitted&&this.state.showSubmitSavebtn?<button type="button" id="btnSave" onClick={this.handleSubmitorSave} className="SaveButtons btn">Save</button>:''}
+                            {!this.state.isSubmitted&&this.state.showSubmitSavebtn? <button type="button" id="btnSubmit" onClick={this.showConfirmSubmit} className="SubmitButtons btn">Submit</button>:''}
                             <button type="button" id="btnCancel" onClick={this.handleCancel} className="CancelButtons btn">Cancel</button>
                         </div>
                         
@@ -2858,11 +2852,12 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                                                 <table className="table table-bordered m-0 timetable">
                                                     <thead style={{ borderBottom: "4px solid #444444" }}>
                                                         <tr>
+                                                            {/* <th className="">Action By</th> */}
                                                             <th className="">Action By</th>
                                                             <th className="">Status</th>
-                                                            <th className="">User Name</th>
-                                                            <th className="">Comments</th>
                                                             <th className="">Date & Time</th>
+                                                            <th className="">Comments</th>
+                                                          
                                                         </tr>
                                                     </thead>
                                                     <tbody>
