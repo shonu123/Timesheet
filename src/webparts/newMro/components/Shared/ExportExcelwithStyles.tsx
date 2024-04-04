@@ -12,16 +12,21 @@ const exportToexcel = (dataTable,) => {
     }
 
     const wb = XLSX.utils.book_new();
-    const ws1 = []
+    const workSheetRows = []
     let headerRow = []
 
     // STEP 2: Create data rows and styles
     for (const h of columns) {
-        let obj1 = {v:h.name,t:"s",s:{font: { bold: true}}}
-        headerRow.push(obj1);
+        let obj = {}
+        if(wrapColumnsArray.includes(h.selector)){
+            obj= { v: h.name, t: "s", s: {alignment: { wrapText: true },font: { bold: true},outerWidth:250} };
+        }
+        else{
+            obj = {v:h.name,t:"s",s:{font: { bold: true},outerWidth:250}}
+        }
+        headerRow.push(obj);
     }
-    headerRow.sort()
-    ws1.push(headerRow)
+    workSheetRows.push(headerRow)
     wrapColumnsArray = wrapColumnsArray==null? []:wrapColumnsArray
     dataTable.forEach((item) => {
         let tempArr = [];
@@ -30,19 +35,19 @@ const exportToexcel = (dataTable,) => {
                 let value = item[key];
                 let cellObj = {}
                 if(wrapColumnsArray.includes(key)){
-                    cellObj= { v: value, t: "s", s: {alignment: { wrapText: true },font: { bold: false } } };
+                    cellObj= { v: value, t: "s", s: {alignment: { wrapText: true },font: { bold: false },outerWidth:250 } };
                 }
                 else{
-                    cellObj= { v: value, t: "s", s: { font: { bold: false } } };          
+                    cellObj= { v: value, t: "s", s: { font: { bold: false } },outerWidth:250 };          
                 }
                 tempArr.push(cellObj);
             }
         });
-        ws1.push(tempArr);
+        workSheetRows.push(tempArr);
     });
 
 // STEP 3: Create worksheet with rows; Add worksheet to workbook
-const finalWorkshetData =   XLSX.utils.aoa_to_sheet(ws1)
+const finalWorkshetData =   XLSX.utils.aoa_to_sheet(workSheetRows)
 XLSX.utils.book_append_sheet(wb, finalWorkshetData, `${filename}`);
 
 // STEP 4: Write Excel file to browser

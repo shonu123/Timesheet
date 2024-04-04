@@ -82,7 +82,9 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
                         BillableHrs: d.WeeklyTotalHrs,
                         OTTotalHrs : d.OTTotalHrs,
                         TotalBillableHours: d.BillableTotalHrs,
-                        NonBillableTotalHrs: d.NonBillableTotalHrs,
+                        // NonBillableTotalHrs: d.NonBillableTotalHrs,
+                        HolidayHrs:JSON.parse(d.ClientHolidayHrs)[0].Total,
+                        PTOHrs:JSON.parse(d.PTOHrs)[0].Total,
                         WeeklyTotalHrs: d.GrandTotal
                     })
                 }
@@ -385,13 +387,18 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
                     sortable: true,
                 },
                 {
-                    name: "Non-Billable",
-                    selector: (row, i) => row.NonBillableTotalHrs,
+                    name: "Holiday",
+                    selector: (row, i) => row.HolidayHrs,
                     sortable: true,
                 },
                 {
-                    name: "Total",
-                    selector: (row, i) => row.WeeklyTotalHrs,
+                    name: "PTO",
+                    selector: (row, i) => row.PTOHrs,
+                    sortable: true,
+                },
+                {
+                    name: "Grand Total",
+                    selector: (row, i) => row.GrandTotal,
                     sortable: true
                 },
                 // {

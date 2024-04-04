@@ -78,7 +78,9 @@ class AllRequests extends React.Component<AllRequestsProps,AllRequestsState> {
                         BillableHours: d.WeeklyTotalHrs,
                         OTTotalHrs : d.OTTotalHrs,
                         TotalBillableHrs: d.BillableTotalHrs,
-                        NonBillableTotalHrs: d.NonBillableTotalHrs,
+                        // NonBillableTotalHrs: d.NonBillableTotalHrs,
+                        HolidayHrs:JSON.parse(d.ClientHolidayHrs)[0].Total,
+                        PTOHrs:JSON.parse(d.PTOHrs)[0].Total,
                         TotalHours: d.GrandTotal,
                         RM : Rm
                     })
@@ -93,7 +95,9 @@ class AllRequests extends React.Component<AllRequestsProps,AllRequestsState> {
                         BillableHours: d.WeeklyTotalHrs,
                         OTTotalHrs : d.OTTotalHrs,
                         TotalBillableHrs: d.BillableTotalHrs,
-                        NonBillableTotalHrs: d.NonBillableTotalHrs,
+                        // NonBillableTotalHrs: d.NonBillableTotalHrs,
+                        HolidayHrs:JSON.parse(d.ClientHolidayHrs)[0].Total,
+                        PTOHrs:JSON.parse(d.PTOHrs)[0].Total,
                         TotalHours: d.GrandTotal,
                         RM : ExcelRm
                     })
@@ -173,12 +177,22 @@ class AllRequests extends React.Component<AllRequestsProps,AllRequestsState> {
                 sortable: true,
             },
             {
-                name: "Non-Billable",
-                selector: (row, i) => row.NonBillableTotalHrs,
+                name: "Holiday",
+                selector: (row, i) =>row.HolidayHrs,
                 sortable: true,
             },
             {
-                name: "Total",
+                name: "PTO",
+                selector: (row, i) =>row.PTOHrs,
+                sortable: true,
+            },
+            // {
+            //     name: "Non-Billable",
+            //     selector: (row, i) => row.NonBillableTotalHrs,
+            //     sortable: true,
+            // },
+            {
+                name: "Grand Total",
                 selector: (row, i) => row.TotalHours,
                 width:'140px',
                 sortable: true
@@ -232,13 +246,23 @@ class AllRequests extends React.Component<AllRequestsProps,AllRequestsState> {
                 selector: "TotalBillableHrs",
                 sortable: true,
             },
+            // {
+            //     name: "Non-Billable Hours",
+            //     selector: "NonBillableTotalHrs",
+            //     sortable: true,
+            // },
             {
-                name: "Non-Billable Hours",
-                selector: "NonBillableTotalHrs",
+                name: "Holiday Hours",
+                selector: "HolidayHrs",
                 sortable: true,
             },
             {
-                name: "Total Hours",
+                name: "PTO Hours",
+                selector: "PTOHrs",
+                sortable: true,
+            },
+            {
+                name: "Grand Total Hours",
                 selector: "TotalHours",
                 width:'140px',
                 sortable: true

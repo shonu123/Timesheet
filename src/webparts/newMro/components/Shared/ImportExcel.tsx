@@ -1,5 +1,6 @@
 import React from 'react';
-import * as XLSX from 'xlsx';
+// import * as XLSX from 'xlsx';
+import * as XLSX from 'xlsx-js-style';
 
 const ImportExcel = ({ onDataFetch, submitData, filename, columns, ErrorFileSelect }) => {
 
@@ -54,18 +55,24 @@ const ImportExcel = ({ onDataFetch, submitData, filename, columns, ErrorFileSele
   };
 
   const onTemplateClick = () => {
-    var Heading = [
-      columns
-    ];
+    var Heading = [];
+    var row =[]
+for (const c of columns) {
+  let obj = {}
+  obj = {v:c,t:"s",s:{font: { bold: true}}}
+  row.push(obj)
+}
+Heading.push(row);
 
     var ws = XLSX.utils.aoa_to_sheet(Heading);
-    XLSX.utils.sheet_add_json(ws, [], {
-      skipHeader: true,
-      origin: -1
-    });
+    // XLSX.utils.sheet_add_json(ws, [], {
+    //   skipHeader: true,
+    //   origin: -1
+    // });
     var wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "SheetJS");
-    exportExcelFile(wb);
+    XLSX.writeFile(wb, `${filename}.xlsx`);
+    // exportExcelFile(wb);
 
   };
 
