@@ -410,7 +410,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
          "IsDay7SynergyHoliday":this.IsHoliday(WeekStartDate,"synergy"),
          })
          this.showApproveAndRejectButton();
-         this.userAccessableRecord();
+        // this.userAccessableRecord();
          
         this.setState({UserGoups:userGroups,trFormdata,ClientNames: this.state.ClientNames,EmployeeEmail:this.state.EmployeeEmail,currentUserId:ClientNames[0].Employee.Id,showToaster: true});
         if(this.state.ClientNames.length==1&&this.props.match.params.id==undefined){
@@ -566,8 +566,8 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
         }
         this.setState({UserGoups:userGroups})
 
-       // this.showApproveAndRejectButton();
-        //this.userAccessableRecord();
+       this.showApproveAndRejectButton();
+       this.userAccessableRecord();
 
         ClientNames = await this.oweb.lists.getByTitle('EmployeeMaster').items.filter(" Employee/Id eq "+data[0].InitiatorId+"and IsActive eq 1").select("ClientName ,DateOfJoining,Employee/Title,Employee/Id,Employee/EMail,ReportingManager/Id,Reviewers/Id,Notifiers/Id,ReportingManager/Title,Reviewers/Title,Notifiers/Title,ReportingManager/EMail,Reviewers/EMail,Notifiers/EMail,*").orderBy("ClientName",true).expand("Employee,ReportingManager,Reviewers,Notifiers").getAll();
         
@@ -2097,7 +2097,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                      }
                      for( let key in formdata.WeeklyItemsData[i]) //validation for individual day working hours of Weekly 
                      {
-                        if(!["Description","ProjectCode","Total"].includes(key))
+                        if(!["Description","ProjectCode","Total","Sat","Sun"].includes(key))
                         {
                             if(formdata.WeeklyItemsData[i][key]=="")
                             {
@@ -2135,7 +2135,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                          {
                             for( let key in formdata.OTItemsData[i]) 
                             {
-                               if(!["Description","ProjectCode","Total"].includes(key))
+                               if(!["Description","ProjectCode","Total","Sat","Sun"].includes(key))
                                {
                                    if(formdata.OTItemsData[i][key]=="")
                                    {
