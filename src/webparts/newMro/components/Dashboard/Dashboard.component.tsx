@@ -245,11 +245,11 @@ class Dashboard extends React.Component<DashboardProps, DashboardState> {
                                 <ul className="nav nav-tabs nav-fill" id="myTab" role="tablist">
 
                                 {this.state.showAllRequestsTab &&<li className="nav-item" role="presentation" onClick={() => this.onHandleClick('AllRequests')} >
-                                        <a className="nav-link" id="AllRequests-tab" data-toggle="tab" href="#/AllRequests" role="tab" aria-controls="AdminRequests" aria-selected="false">All Requests</a>
+                                        <a className="nav-link" id="AllRequests-tab" data-toggle="tab" href="#/AllTimesheets" role="tab" aria-controls="AdminRequests" aria-selected="false">All Timesheets</a>
                                     </li>}
 
                                     {this.state.isEmployeeConfigured &&this.state.showRequestTab  &&  <li className="nav-item" role="presentation" onClick={() => this.onHandleClick('MyRequests')} >
-                                        <a className="nav-link" id="MyRequests-tab" data-toggle="tab" href="#/MyRequests" role="tab" aria-controls="profile" aria-selected="false">My Requests</a>
+                                        <a className="nav-link" id="MyRequests-tab" data-toggle="tab" href="#/MyTimesheets" role="tab" aria-controls="profile" aria-selected="false">My Timesheets</a>
                                     </li>}
 
                                     {this.state.isEmployeeConfigured && this.state.showMyApprovalsTab &&   <li className="nav-item" role="presentation" onClick={() => this.onHandleClick('Approvers')} >
