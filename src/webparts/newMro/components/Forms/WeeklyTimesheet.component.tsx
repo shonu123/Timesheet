@@ -244,15 +244,15 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
          const trFormdata = { ...this.state.trFormdata };
          trFormdata.WeeklyItemsData.push({Description:'',ProjectCode:'',Mon: '',Tue: '',Wed:'',Thu: '',Fri: '',Sat: '',Sun: '',Total: '0.00',});
          trFormdata.OTItemsData.push({Description:'',ProjectCode:'',Mon: '',Tue: '',Wed:'',Thu: '',Fri: '',Sat: '',Sun: '',Total: '0.00',});
-         trFormdata.BillableSubTotal.push({Mon: '0.00',Tue: '0.00',Wed:'0.00',Thu: '0.00',Fri: '0.00',Sat: '0.00',Sun: '0.00',Total: '0.00',});
-         trFormdata.SynergyOfficeHrs.push({Description:'',ProjectCode:'',Mon: '',Tue: '',Wed:'',Thu: '',Fri: '',Sat: '',Sun: '',Total: '0.00',});
+         trFormdata.BillableSubTotal.push({Type:"Billable Total",Mon: '0.00',Tue: '0.00',Wed:'0.00',Thu: '0.00',Fri: '0.00',Sat: '0.00',Sun: '0.00',Total: '0.00',});
+         trFormdata.SynergyOfficeHrs.push({Type:"Office Hours",Description:'',ProjectCode:'',Mon: '',Tue: '',Wed:'',Thu: '',Fri: '',Sat: '',Sun: '',Total: '0.00',});
          trFormdata.SynergyHolidayHrs.push({Description:'',ProjectCode:'',Mon: '',Tue: '',Wed:'',Thu: '',Fri: '',Sat: '',Sun: '',Total: '0.00',});
-         trFormdata.ClientHolidayHrs.push({Description:'',ProjectCode:'',Mon: '',Tue: '',Wed:'',Thu: '',Fri: '',Sat: '',Sun: '',Total: '0.00',});
-         trFormdata.PTOHrs.push({Description:'',ProjectCode:'',Mon: '',Tue: '',Wed:'',Thu: '',Fri: '',Sat: '',Sun: '',Total: '0.00',});
+         trFormdata.ClientHolidayHrs.push({Type:"Holiday",Description:'',ProjectCode:'',Mon: '',Tue: '',Wed:'',Thu: '',Fri: '',Sat: '',Sun: '',Total: '0.00',});
+         trFormdata.PTOHrs.push({Type:"PTO",Description:'',ProjectCode:'',Mon: '',Tue: '',Wed:'',Thu: '',Fri: '',Sat: '',Sun: '',Total: '0.00',});
          trFormdata.NonBillableSubTotal.push({Mon: '',Tue: '',Wed:'',Thu: '',Fri: '',Sat: '',Sun: '',Total: '0.00',});
-         trFormdata.WeeklySubTotalHrs.push({Mon: '0.00',Tue: '0.00',Wed:'0.00',Thu: '0.00',Fri: '0.00',Sat: '0.00',Sun: '0.00',Total: '0.00',});
-         trFormdata.OTSubTotalHrs.push({Mon: '0.00',Tue: '0.00',Wed:'0.00',Thu: '0.00',Fri: '0.00',Sat: '0.00',Sun: '0.00',Total: '0.00',});
-         trFormdata.Total.push({Mon: '0.00',Tue: '0.00',Wed:'0.00',Thu: '0.00',Fri: '0.00',Sat: '0.00',Sun: '0.00',Total: '0.00',});
+         trFormdata.WeeklySubTotalHrs.push({Type:"Billable",Mon: '0.00',Tue: '0.00',Wed:'0.00',Thu: '0.00',Fri: '0.00',Sat: '0.00',Sun: '0.00',Total: '0.00',});
+         trFormdata.OTSubTotalHrs.push({Type:"OT",Mon: '0.00',Tue: '0.00',Wed:'0.00',Thu: '0.00',Fri: '0.00',Sat: '0.00',Sun: '0.00',Total: '0.00',});
+         trFormdata.Total.push({Type:"Total",Mon: '0.00',Tue: '0.00',Wed:'0.00',Thu: '0.00',Fri: '0.00',Sat: '0.00',Sun: '0.00',Total: '0.00',});
         
         this.WeekHeadings.push({"Mon":"",
         "IsMonJoined":true,
@@ -738,11 +738,8 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                 return false
            }
         }
-
         //FOR ROW WISE CALCULATION
         let TotalRowMins=0;
-        let Rowhrs=0;
-        let RowMins=0;
             if(rowType=="weekrow")
             {
                 trFormdata.WeeklyItemsData[index][prop]=value.toString();
@@ -755,9 +752,6 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                     TotalRowMins=TotalRowMins+(parseFloat(val)); 
                 }
               })
-
-              //Rowhrs=Math.floor(TotalRowMins/60);
-              //RowMins=Math.floor(TotalRowMins%60);
               trFormdata.WeeklyItemsData[index]["Total"]=TotalRowMins.toFixed(2);
             }
             else if(rowType=="otrow")
@@ -772,9 +766,6 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                     TotalRowMins=TotalRowMins+(parseFloat(val)); 
                 }
               })
-
-            //Rowhrs=Math.floor(TotalRowMins/60);
-            //RowMins=Math.floor(TotalRowMins%60);
               trFormdata.OTItemsData[index]["Total"]=TotalRowMins.toFixed(2);
             }
             else if(rowType=="SynOffcHrs")
@@ -784,14 +775,11 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                   Object.keys(trFormdata.SynergyOfficeHrs[index]).forEach(key =>{
                     let val=trFormdata.SynergyOfficeHrs[index][key].toString();
                     [undefined,null,"","."].includes(val.trim())? val="0" :  val;
-                    if(!["Description","ProjectCode","Total"].includes(key))
+                    if(!["Description","ProjectCode","Total","Type"].includes(key))
                     {
                         TotalRowMins=TotalRowMins+(parseFloat(val)); 
                     }
                   })
-    
-                  //Rowhrs=Math.floor(TotalRowMins/60);
-                 // RowMins=Math.floor(TotalRowMins%60);
                   trFormdata.SynergyOfficeHrs[index]["Total"]=TotalRowMins.toFixed(2);
             }
             else if(rowType=="SynHldHrs")
@@ -801,14 +789,11 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
               Object.keys(trFormdata.SynergyHolidayHrs[index]).forEach(key =>{
                 let val=trFormdata.SynergyHolidayHrs[index][key].toString();
                 [undefined,null,"","."].includes(val.trim())? val="0" :  value;
-                if(!["Description","ProjectCode","Total"].includes(key))
+                if(!["Description","ProjectCode","Total",,"Type"].includes(key))
                 {
                     TotalRowMins=TotalRowMins+( parseFloat(val)); 
                 }
               })
-
-              //Rowhrs=Math.floor(TotalRowMins/60);
-              //RowMins=Math.floor(TotalRowMins%60);
               trFormdata.SynergyHolidayHrs[index]["Total"]=TotalRowMins.toFixed(2);
            }
            else if(rowType=="ClientHldHrs")
@@ -818,14 +803,11 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
               Object.keys(trFormdata.ClientHolidayHrs[index]).forEach(key =>{
                 let val=trFormdata.ClientHolidayHrs[index][key].toString();
                 [undefined,null,"","."].includes(val.trim())? val="0" :  val;
-                if(!["Description","ProjectCode","Total"].includes(key))
+                if(!["Description","ProjectCode","Total","Type"].includes(key))
                 {
                     TotalRowMins=TotalRowMins+( parseFloat(val)); 
                 }
               })
-
-              //Rowhrs=Math.floor(TotalRowMins/60);
-              //RowMins=Math.floor(TotalRowMins%60);
               trFormdata.ClientHolidayHrs[index]["Total"]=TotalRowMins.toFixed(2);
            }
             else if(rowType=="PTOHrs")
@@ -835,22 +817,17 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
               Object.keys(trFormdata.PTOHrs[index]).forEach(key =>{
                 let val=trFormdata.PTOHrs[index][key].toString();
                 [undefined,null,"","."].includes(val.trim())? val="0" :  val;
-                if(!["Description","ProjectCode","Total"].includes(key))
+                if(!["Description","ProjectCode","Total","Type"].includes(key))
                 {
                     TotalRowMins=TotalRowMins+( parseFloat(val)); 
                 }
               })
-
-              //Rowhrs=Math.floor(TotalRowMins/60);
-              //RowMins=Math.floor(TotalRowMins%60);
               trFormdata.PTOHrs[index]["Total"]=TotalRowMins.toFixed(2);
            }
            this.setState({ trFormdata});
            //FOR COLUMN WISE CALCULATION
            let WeeklyTotal=0;
-           let WeeklyColHrs=0;
-           let WeeklyColMins=0;
-           let [Total,TotalColHrs,TotalColMins]=[0,0,0];
+           let [Total]=[0];
            let [WeekTotal,OTTotal]=[0,0];
             //BILLABLE SUB TOTAL COLUMN WISE
             // to iterate Weekly hrs
@@ -866,13 +843,8 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                 Total= Total+(parseFloat(TotalVal));
                 WeekTotal= WeekTotal+(parseFloat(TotalVal));
             }
-            let H=Math.floor(WeekTotal/60);
-            let M=Math.floor(WeekTotal%60);
-            //trFormdata.WeeklyItemsTotalTime=(H.toString().length==1?"0"+H:H)+"."+(M.toString().length==1?"0"+M:M);
             trFormdata.WeeklyItemsTotalTime=WeeklyTotal.toFixed(2).toString();
             // to iterate OT hrs
-              H=0;
-              M=0;
             for(var item of trFormdata.OTItemsData)
             {
                  //For weekly calculation
@@ -885,23 +857,15 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                  Total= Total+( parseFloat(TotalVal));
                  OTTotal= OTTotal+( parseFloat(TotalVal));
             }
-             //H=Math.floor(OTTotal/60);
-             //M=Math.floor(OTTotal%60);
             trFormdata.OTItemsTotalTime=OTTotal.toFixed(2).toString();
 
-            //WeeklyColHrs=Math.floor(WeeklyTotal/60);
-            //WeeklyColMins=Math.floor(WeeklyTotal%60);
-            //TotalColHrs=Math.floor(Total/60);
-            //TotalColMins=Math.floor(Total%60);
             if(!["Description","ProjectCode"].includes(prop))
             trFormdata.BillableSubTotal[0][prop]=WeeklyTotal.toFixed(2).toString();
             trFormdata.BillableSubTotal[0]["Total"]=Total.toFixed(2).toString();
 
              // NON BILLABLE SUBTOTAL COLUMN WISE
              WeeklyTotal=0;
-             WeeklyColHrs=0;
-             WeeklyColMins=0;
-            [Total,TotalColHrs,TotalColMins]=[0,0,0];
+            [Total]=[0];
              let NonBillableColValue=trFormdata.SynergyOfficeHrs[0][prop].toString();
              [undefined,null,"","."].includes(NonBillableColValue.trim())? NonBillableColValue="0" : NonBillableColValue;
              let TotalVal=trFormdata.SynergyOfficeHrs[0]["Total"];
@@ -930,19 +894,12 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
              WeeklyTotal=WeeklyTotal+( parseFloat(NonBillableColValue)); 
              Total=Total+( parseFloat(TotalVal)); 
 
-            // WeeklyColHrs=Math.floor(WeeklyTotal/60);
-             //WeeklyColMins=Math.floor(WeeklyTotal%60);
-             //TotalColHrs=Math.floor(Total/60);
-             //TotalColMins=Math.floor(Total%60);
              if(!["Description","ProjectCode"].includes(prop))
              trFormdata.NonBillableSubTotal[0][prop]=WeeklyTotal.toFixed(2).toString();
              trFormdata.NonBillableSubTotal[0]["Total"]=Total.toFixed(2).toString();
-
              //GRAND TOTAL COLUMN WISE
              WeeklyTotal=0;
-             WeeklyColHrs=0;
-             WeeklyColMins=0;
-             [Total,TotalColHrs,TotalColMins]=[0,0,0];
+             [Total]=[0];
              if(!["Description","ProjectCode"].includes(prop))
              {
              let TotalColVal=trFormdata.BillableSubTotal[0][prop].toString();
@@ -958,11 +915,6 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
             [undefined,null,"","."].includes(BillableTotalVal.trim())? BillableTotalVal="0" : BillableTotalVal;
              WeeklyTotal=WeeklyTotal+( parseFloat(TotalColVal));
              Total=Total+( parseFloat(BillableTotalVal)); 
-             
-             //WeeklyColHrs=Math.floor(WeeklyTotal/60);
-             //WeeklyColMins=Math.floor(WeeklyTotal%60);
-             //TotalColHrs=Math.floor(Total/60);
-             //TotalColMins=Math.floor(Total%60);
              }
              if(!["Description","ProjectCode"].includes(prop))
              {
@@ -980,7 +932,6 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
         const trFormdata =Data;
         let TableColumns=["Mon","Tue","Wed","Thu","Fri","Sat","Sun","Total"];
           //FOR COLUMN WISE CALCULATION
-       
         for(var prop of TableColumns)
         {
             let [WeeklyTotal]=[0,0,0];
@@ -1035,8 +986,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                      
                         trFormdata.Total[0][prop]=WeeklyTotal.toFixed(2).toString();
         }
-        return trFormdata;
-       
+        return trFormdata;  
     }
     private CancelDeleteRow =() =>
     {
@@ -1442,9 +1392,14 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
     }
     private InsertorUpdatedata(formdata,formObject) {
         this.setState({ loading: true });
-        let tableContent = {'Name':this.state.trFormdata.Name,'Client':this.state.trFormdata.ClientName,'Submitted Date':`${this.state.trFormdata.DateSubmitted.getMonth() + 1}/${this.state.trFormdata.DateSubmitted.getDate()}/${this.state.trFormdata.DateSubmitted.getFullYear()}`,'Billable Hours':formObject.WeeklyItemsTotalTime,'OT Hours':formObject.OTItemsTotalTime,'Total Billable Hours':this.state.trFormdata.BillableSubTotal[0].Total,'Holiday Hours':this.state.trFormdata.ClientHolidayHrs[0].Total,'PTO Hours':this.state.trFormdata.PTOHrs[0].Total,'Grand Total Hours':this.state.trFormdata.Total[0].Total}
+        let tableContent;
+        if(formObject.ClientName.toLowerCase().includes("synergy"))
+    tableContent = {'Name':this.state.trFormdata.Name,'Client':this.state.trFormdata.ClientName,'Submitted Date':`${this.state.trFormdata.DateSubmitted.getMonth() + 1}/${this.state.trFormdata.DateSubmitted.getDate()}/${this.state.trFormdata.DateSubmitted.getFullYear()}`,'Office  Hours':this.state.trFormdata.SynergyOfficeHrs[0].Total,'Holiday Hours':this.state.trFormdata.ClientHolidayHrs[0].Total,'PTO Hours':this.state.trFormdata.PTOHrs[0].Total,'Grand Total Hours':this.state.trFormdata.Total[0].Total}
+        else 
+      tableContent = {'Name':this.state.trFormdata.Name,'Client':this.state.trFormdata.ClientName,'Submitted Date':`${this.state.trFormdata.DateSubmitted.getMonth() + 1}/${this.state.trFormdata.DateSubmitted.getDate()}/${this.state.trFormdata.DateSubmitted.getFullYear()}`,'Billable Hours':formObject.WeeklyItemsTotalTime,'OT Hours':formObject.OTItemsTotalTime,'Total Billable Hours':this.state.trFormdata.BillableSubTotal[0].Total,'Holiday Hours':this.state.trFormdata.ClientHolidayHrs[0].Total,'PTO Hours':this.state.trFormdata.PTOHrs[0].Total,'Grand Total Hours':this.state.trFormdata.Total[0].Total}
         let sub='';
         let emaildetails={};
+
         let CC=[];
         if (this.state.ItemID!=0) { //update existing record
             sp.web.lists.getByTitle(this.listName).items.getById(this.state.ItemID).update(formdata).then((res) => {
@@ -1760,19 +1715,20 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                 trFormdata.Total=[];
                 trFormdata.Status=StatusType.Save;
                 trFormdata.CommentsHistoryData=[];
+                trFormdata.Comments="";
                 trFormdata.SuperviserNames=[];
                 trFormdata.Pendingwith="NA";
                 trFormdata.WeeklyItemsData.push({Description:'',ProjectCode:'',Mon: '',Tue: '',Wed:'',Thu: '',Fri: '',Sat: '',Sun: '',Total: '0.00',});
                 trFormdata.OTItemsData.push({Description:'',ProjectCode:'',Mon: '',Tue: '',Wed:'',Thu: '',Fri: '',Sat: '',Sun: '',Total: '0.00',});
-                trFormdata.BillableSubTotal.push({Mon: '0.00',Tue: '0.00',Wed:'0.00',Thu: '0.00',Fri: '0.00',Sat: '0.00',Sun: '0.00',Total: '0.00',});
-                trFormdata.SynergyOfficeHrs.push({Description:'',ProjectCode:'',Mon: '',Tue: '',Wed:'',Thu: '',Fri: '',Sat: '',Sun: '',Total: '0.00',});
+                trFormdata.BillableSubTotal.push({Type:"Billable Total",Mon: '0.00',Tue: '0.00',Wed:'0.00',Thu: '0.00',Fri: '0.00',Sat: '0.00',Sun: '0.00',Total: '0.00',});
+                trFormdata.SynergyOfficeHrs.push({Type:"Office Hours",Description:'',ProjectCode:'',Mon: '',Tue: '',Wed:'',Thu: '',Fri: '',Sat: '',Sun: '',Total: '0.00',});
                 trFormdata.SynergyHolidayHrs.push({Description:'',ProjectCode:'',Mon: '',Tue: '',Wed:'',Thu: '',Fri: '',Sat: '',Sun: '',Total: '0',});
-                trFormdata.ClientHolidayHrs.push({Description:'',ProjectCode:'',Mon: '',Tue: '',Wed:'',Thu: '',Fri: '',Sat: '',Sun: '',Total: '0.00',});
-                trFormdata.PTOHrs.push({Description:'',ProjectCode:'',Mon: '',Tue: '',Wed:'',Thu: '',Fri: '',Sat: '',Sun: '',Total: '0.00',});
+                trFormdata.ClientHolidayHrs.push({Type:"Holiday",Description:'',ProjectCode:'',Mon: '',Tue: '',Wed:'',Thu: '',Fri: '',Sat: '',Sun: '',Total: '0.00',});
+                trFormdata.PTOHrs.push({Type:"PTO",Description:'',ProjectCode:'',Mon: '',Tue: '',Wed:'',Thu: '',Fri: '',Sat: '',Sun: '',Total: '0.00',});
                 trFormdata.NonBillableSubTotal.push({Mon: '',Tue: '',Wed:'',Thu: '',Fri: '',Sat: '',Sun: '',Total: '0.00',});
-                trFormdata.WeeklySubTotalHrs.push({Mon: '0.00',Tue: '0.00',Wed:'0.00',Thu: '0.00',Fri: '0.00',Sat: '0.00',Sun: '0.00',Total: '0.00',});
-                trFormdata.OTSubTotalHrs.push({Mon: '0.00',Tue: '0.00',Wed:'0.00',Thu: '0.00',Fri: '0.00',Sat: '0.00',Sun: '0.00',Total: '0.00',});
-                trFormdata.Total.push({Mon: '0.00',Tue: '0.00',Wed:'0.00',Thu: '0.00',Fri: '0.00',Sat: '0.00',Sun: '0.00',Total: '0.00',});
+                trFormdata.WeeklySubTotalHrs.push({Type:"Billable",Mon: '0.00',Tue: '0.00',Wed:'0.00',Thu: '0.00',Fri: '0.00',Sat: '0.00',Sun: '0.00',Total: '0.00',});
+                trFormdata.OTSubTotalHrs.push({Type:"OT",Mon: '0.00',Tue: '0.00',Wed:'0.00',Thu: '0.00',Fri: '0.00',Sat: '0.00',Sun: '0.00',Total: '0.00',});
+                trFormdata.Total.push({Type:"Total",Mon: '0.00',Tue: '0.00',Wed:'0.00',Thu: '0.00',Fri: '0.00',Sat: '0.00',Sun: '0.00',Total: '0.00',});
                 trFormdata.ReportingManagersEmail=[];
                 trFormdata.ReviewersEmail=[];
                 trFormdata.NotifiersEmail=[];
@@ -1849,7 +1805,24 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                 }
                 this.setState({ trFormdata:trFormdata,currentWeeklyRowsCount:trFormdata.WeeklyItemsData.length,currentOTRowsCount: trFormdata.OTItemsData.length,ItemID:0,EmployeeEmail:this.state.EmployeeEmail,isSubmitted:false,errorMessage:'',showBillable:false,loading:false});
             }
-            this.showApproveAndRejectButton()
+        this.showApproveAndRejectButton()
+        //To remove mandatory-FormContent-focus
+        if (trFormdata.ClientName.toLowerCase().includes("synergy")) {
+            document.getElementById("0_Description_SynOffcHrs").classList.remove('mandatory-FormContent-focus');
+            document.getElementById("0_ProjectCode_SynOffcHrs").classList.remove('mandatory-FormContent-focus');
+            document.getElementById("0_"+this.WeekNames[0].day1+"_SynOffcHrs").classList.remove('mandatory-FormContent-focus');
+        }
+        document.getElementById("0_Description_ClientHldHrs").classList.remove('mandatory-FormContent-focus');
+        document.getElementById("0_ProjectCode_ClientHldHrs").classList.remove('mandatory-FormContent-focus');
+        document.getElementById("0_Description_PTOHrs").classList.remove('mandatory-FormContent-focus');
+        document.getElementById("0_ProjectCode_PTOHrs").classList.remove('mandatory-FormContent-focus');
+
+     Object.keys(trFormdata.Total[0]).forEach(key =>{
+      if(!["Total","Description","ProjectCode","Type"].includes(key))
+      document.getElementById("Total"+key).classList.remove('mandatory-FormContent-focus');        
+     })
+     document.getElementById("GrandTotal").classList.remove('mandatory-FormContent-focus');
+     document.getElementById("txtComments").classList.remove('mandatory-FormContent-focus');
     }
     private ClearTimesheetControls=(trFormdata)=>{
        
@@ -1873,19 +1846,20 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
             trFormdata.Total=[];
             trFormdata.Status=StatusType.Save;
             trFormdata.CommentsHistoryData=[];
+            trFormdata.Comments="";
             trFormdata.SuperviserNames=[];
             trFormdata.Pendingwith="NA";
             trFormdata.WeeklyItemsData.push({Description:'',ProjectCode:'',Mon: '',Tue: '',Wed:'',Thu: '',Fri: '',Sat: '',Sun: '',Total: '0.00',});
             trFormdata.OTItemsData.push({Description:'',ProjectCode:'',Mon: '',Tue: '',Wed:'',Thu: '',Fri: '',Sat: '',Sun: '',Total: '0.00',});
-            trFormdata.BillableSubTotal.push({Mon: '0.00',Tue: '0.00',Wed:'0.00',Thu: '0.00',Fri: '0.00',Sat: '0.00',Sun: '0.00',Total: '0.00',});
-            trFormdata.SynergyOfficeHrs.push({Description:'',ProjectCode:'',Mon: '',Tue: '',Wed:'',Thu: '',Fri: '',Sat: '',Sun: '',Total: '0.00',});
+            trFormdata.BillableSubTotal.push({Type:"Billable Total",Mon: '0.00',Tue: '0.00',Wed:'0.00',Thu: '0.00',Fri: '0.00',Sat: '0.00',Sun: '0.00',Total: '0.00',});
+            trFormdata.SynergyOfficeHrs.push({Type:"Office Hours",Description:'',ProjectCode:'',Mon: '',Tue: '',Wed:'',Thu: '',Fri: '',Sat: '',Sun: '',Total: '0.00',});
             trFormdata.SynergyHolidayHrs.push({Description:'',ProjectCode:'',Mon: '',Tue: '',Wed:'',Thu: '',Fri: '',Sat: '',Sun: '',Total: '0.00',});
-            trFormdata.ClientHolidayHrs.push({Description:'',ProjectCode:'',Mon: '',Tue: '',Wed:'',Thu: '',Fri: '',Sat: '',Sun: '',Total: '0.00',});
-            trFormdata.PTOHrs.push({Description:'',ProjectCode:'',Mon: '',Tue: '',Wed:'',Thu: '',Fri: '',Sat: '',Sun: '',Total: '0.00',});
+            trFormdata.ClientHolidayHrs.push({Type:"Holiday",Description:'',ProjectCode:'',Mon: '',Tue: '',Wed:'',Thu: '',Fri: '',Sat: '',Sun: '',Total: '0.00',});
+            trFormdata.PTOHrs.push({Type:"PTO",Description:'',ProjectCode:'',Mon: '',Tue: '',Wed:'',Thu: '',Fri: '',Sat: '',Sun: '',Total: '0.00',});
             trFormdata.NonBillableSubTotal.push({Mon: '',Tue: '',Wed:'',Thu: '',Fri: '',Sat: '',Sun: '',Total: '0.00',});
-            trFormdata.WeeklySubTotalHrs.push({Mon: '0.00',Tue: '0.00',Wed:'0.00',Thu: '0.00',Fri: '0.00',Sat: '0.00',Sun: '0.00',Total: '0.00',});
-            trFormdata.OTSubTotalHrs.push({Mon: '0.00',Tue: '0.00',Wed:'0.00',Thu: '0.00',Fri: '0.00',Sat: '0.00',Sun: '0.00',Total: '0.00',});
-            trFormdata.Total.push({Mon: '0.00',Tue: '0.00',Wed:'0.00',Thu: '0.000',Fri: '0.00',Sat: '0.00',Sun: '0.00',Total: '0.00',});
+            trFormdata.WeeklySubTotalHrs.push({Type:"Billable",Mon: '0.00',Tue: '0.00',Wed:'0.00',Thu: '0.00',Fri: '0.00',Sat: '0.00',Sun: '0.00',Total: '0.00',});
+            trFormdata.OTSubTotalHrs.push({Type:"OT",Mon: '0.00',Tue: '0.00',Wed:'0.00',Thu: '0.00',Fri: '0.00',Sat: '0.00',Sun: '0.00',Total: '0.00',});
+            trFormdata.Total.push({Type:"Total",Mon: '0.00',Tue: '0.00',Wed:'0.00',Thu: '0.000',Fri: '0.00',Sat: '0.00',Sun: '0.00',Total: '0.00',});
             trFormdata.ReportingManagersEmail=[];
             trFormdata.ReviewersEmail=[];
             trFormdata.NotifiersEmail=[];
@@ -1921,7 +1895,26 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
            
             this.setState({ trFormdata:trFormdata,currentWeeklyRowsCount:trFormdata.WeeklyItemsData.length,currentOTRowsCount: trFormdata.OTItemsData.length,ItemID:0,EmployeeEmail:this.state.EmployeeEmail,isSubmitted:true,errorMessage:'',showBillable:false,loading:false});
       
-        this.showApproveAndRejectButton()
+        this.showApproveAndRejectButton();
+         //To remove mandatory-FormContent-focus
+         if (trFormdata.ClientName.toLowerCase().includes("synergy")) {
+            document.getElementById("0_Description_SynOffcHrs").classList.remove('mandatory-FormContent-focus');
+            document.getElementById("0_ProjectCode_SynOffcHrs").classList.remove('mandatory-FormContent-focus');
+            document.getElementById("0_"+this.WeekNames[0].day1+"_SynOffcHrs").classList.remove('mandatory-FormContent-focus');
+        }
+        document.getElementById("0_Description_ClientHldHrs").classList.remove('mandatory-FormContent-focus');
+        document.getElementById("0_ProjectCode_ClientHldHrs").classList.remove('mandatory-FormContent-focus');
+        document.getElementById("0_Description_PTOHrs").classList.remove('mandatory-FormContent-focus');
+        document.getElementById("0_ProjectCode_PTOHrs").classList.remove('mandatory-FormContent-focus');
+
+     Object.keys(trFormdata.Total[0]).forEach(key =>{
+      if(!["Total","Description","ProjectCode","Type"].includes(key))
+      document.getElementById("Total"+key).classList.remove('mandatory-FormContent-focus');        
+     })
+     document.getElementById("GrandTotal").classList.remove('mandatory-FormContent-focus');
+     document.getElementById("txtComments").classList.remove('mandatory-FormContent-focus');
+     document.getElementById("ddlClient").classList.remove('mandatory-FormContent-focus');
+     document.getElementById("dateWeeklyTimesheet").classList.remove('mandatory-FormContent-focus');
 
     }
     private handlefullClose = () => {
@@ -2027,11 +2020,12 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
         let isValid={status:true,message:''};
          let val;
          let Time;
+         var isAllDaysEmpty;
         for(let key in formdata.Total[0])
         {
             val=formdata.Total[0][key];
                 let DayTime=0;
-                if(!["Description","ProjectCode","Total"].includes(key))
+                if(!["Description","ProjectCode","Total","Type"].includes(key))
                 {
                     DayTime=parseFloat(val);
                     if(DayTime>24)
@@ -2046,14 +2040,16 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
         }
            val=formdata.Total[0].Total;
            Time=parseFloat(val);
-        //    if(Time==0)
-        //    {
-        //     isValid.message="Total working hours in a week cannot be blank";
-        //     isValid.status=false;
-        //     document.getElementById("GrandTotal").focus();
-        //     document.getElementById("GrandTotal").classList.add('mandatory-FormContent-focus');
-        //     return isValid;
-        //    }
+           if(Time==0&&formdata.Comments.trim()=="")
+           {
+            isValid.message="For entered hours, Please provide a reason in comments";
+            isValid.status=false;
+            document.getElementById("txtComments").focus();
+            document.getElementById("txtComments").classList.add('mandatory-FormContent-focus');
+           //document.getElementById("GrandTotal").focus();
+           //document.getElementById("GrandTotal").classList.add('mandatory-FormContent-focus');
+            return isValid;
+           }
         if(Action=="Submit")
         {
             if(formdata.ClientName.toLowerCase().includes("synergy"))
@@ -2072,6 +2068,26 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                      isValid.status=false;
                      document.getElementById("0_ProjectCode_SynOffcHrs").focus();
                      document.getElementById("0_ProjectCode_SynOffcHrs").classList.add('mandatory-FormContent-focus');
+                     return isValid;
+                 }
+                 isAllDaysEmpty=true;
+                 for( let key in formdata.SynergyOfficeHrs[0]) //validation if entire row Empty of  Synergy Office Hrs 
+                 {
+                    if(!["Description","ProjectCode","Total","Type"].includes(key))
+                    {
+                        if(formdata.SynergyOfficeHrs[0][key]!="")
+                        {
+                            isAllDaysEmpty=false;
+                            break;
+                        }
+                    }
+                 }
+                 if(isAllDaysEmpty)
+                 {
+                     isValid.message="Cannot submit the hours as blank";
+                     isValid.status=false;
+                     document.getElementById("0_"+this.WeekNames[0].day1+"_SynOffcHrs").focus();
+                     document.getElementById("0_"+this.WeekNames[0].day1+"_SynOffcHrs").classList.add('mandatory-FormContent-focus');
                      return isValid;
                  }
             }
@@ -2095,25 +2111,31 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                          document.getElementById(i+"_ProjectCode_weekrow").classList.add('mandatory-FormContent-focus');
                          return isValid;
                      }
-                     for( let key in formdata.WeeklyItemsData[i]) //validation for individual day working hours of Weekly 
+                      isAllDaysEmpty=true;
+                     for( let key in formdata.WeeklyItemsData[i]) //validation if entire row Empty of Weekly Hrs 
                      {
-                        if(!["Description","ProjectCode","Total","Sat","Sun"].includes(key))
+                        if(!["Description","ProjectCode","Total"].includes(key))
                         {
-                            if(formdata.WeeklyItemsData[i][key]=="")
+                            if(formdata.WeeklyItemsData[i][key]!="")
                             {
-                                isValid.message="Working hours cannot be blank";
-                                isValid.status=false;
-                                document.getElementById(i+"_"+key+"_weekrow").focus();
-                                document.getElementById(i+"_"+key+"_weekrow").classList.add('mandatory-FormContent-focus');
-                                return isValid;
+                                isAllDaysEmpty=false;
+                                break;
                             }
                         }
+                     }
+                     if(isAllDaysEmpty)
+                     {
+                         isValid.message="Cannot submit the hours as blank";
+                         isValid.status=false;
+                         document.getElementById(i+"_"+this.WeekNames[0].day1+"_weekrow").focus();
+                         document.getElementById(i+"_"+this.WeekNames[0].day1+"_weekrow").classList.add('mandatory-FormContent-focus');
+                         return isValid;
                      }
  
                   }
                  // if(formdata.OTItemsData.length>1)
                   //{
-                      for(let i in formdata.OTItemsData)
+                  for(let i in formdata.OTItemsData)
                       { 
                          if(formdata.OTItemsData[i].Description.trim()=="" && formdata.IsDescriptionMandatory&&parseFloat(formdata.OTItemsData[i].Total)!=0)
                          {
@@ -2131,23 +2153,26 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                              document.getElementById(i+"_ProjectCode_otrow").classList.add('mandatory-FormContent-focus');
                              return isValid;
                          }
-                         if(formdata.OTItemsData.length>1)//validation for individual day working hours of OT 
+                         if(formdata.OTItemsData.length>1)//validation if entire row Empty of OT Hrs And OT rows greater than 1 
                          {
-                            for( let key in formdata.OTItemsData[i]) 
-                            {
-                               if(!["Description","ProjectCode","Total","Sat","Sun"].includes(key))
-                               {
-                                   if(formdata.OTItemsData[i][key]=="")
-                                   {
-                                       isValid.message="Working hours cannot be blank";
-                                       isValid.status=false;
-                                       document.getElementById(i+"_"+key+"_otrow").focus();
-                                       document.getElementById(i+"_"+key+"_otrow").classList.add('mandatory-FormContent-focus');
-                                       return isValid;
-                                   }
-                               }
-                            }
-                         }
+                            isAllDaysEmpty=true;
+                             for (let key in formdata.OTItemsData[i]) {
+                                 if (!["Description","ProjectCode","Total"].includes(key)) {
+                                     if (formdata.OTItemsData[i][key] != "")
+                                     {
+                                         isAllDaysEmpty = false;
+                                          break;
+                                     }
+                                 }
+                             } 
+                             if (isAllDaysEmpty) {
+                                 isValid.message = "Cannot submit the hours as blank";
+                                 isValid.status = false;
+                                 document.getElementById(i+"_"+this.WeekNames[0].day1+"_otrow").focus();
+                                 document.getElementById(i+"_"+this.WeekNames[0].day1+"_otrow").classList.add('mandatory-FormContent-focus');
+                                 return isValid;
+
+                             }
                       }
                  // }
             }
@@ -2191,33 +2216,40 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                  }
              }
             }
-         //is isValid true remove all 'mandatory-FormContent-focus' classes
+          }
+           //if isValid true remove all 'mandatory-FormContent-focus' classes
          if (!formdata.ClientName.toLowerCase().includes("synergy")) {
-             for (let i in formdata.WeeklyItemsData) {
-                 document.getElementById(i + "_Description_weekrow").classList.remove('mandatory-FormContent-focus');
-                 document.getElementById(i + "_ProjectCode_weekrow").classList.remove('mandatory-FormContent-focus');
-             }
-             for (let i in formdata.OTItemsData) {
-                 document.getElementById(i + "_Description_otrow").classList.remove('mandatory-FormContent-focus');
-                 document.getElementById(i + "_ProjectCode_otrow").classList.remove('mandatory-FormContent-focus');
-             }
-         }
-         else {
-             document.getElementById("0_Description_SynOffcHrs").classList.remove('mandatory-FormContent-focus');
-             document.getElementById("0_ProjectCode_SynOffcHrs").classList.remove('mandatory-FormContent-focus');
-         }
+            for (let i in formdata.WeeklyItemsData) {
+                document.getElementById(i + "_Description_weekrow").classList.remove('mandatory-FormContent-focus');
+                document.getElementById(i + "_ProjectCode_weekrow").classList.remove('mandatory-FormContent-focus');
+                document.getElementById(i + "_"+this.WeekNames[0].day1+"_weekrow").classList.remove('mandatory-FormContent-focus');
+            }
+            for (let i in formdata.OTItemsData) {
+                document.getElementById(i + "_Description_otrow").classList.remove('mandatory-FormContent-focus');
+                document.getElementById(i + "_ProjectCode_otrow").classList.remove('mandatory-FormContent-focus');
+                document.getElementById(i + "_"+this.WeekNames[0].day1+"_otrow").classList.remove('mandatory-FormContent-focus');
+            }
+        }
+        else {
+            document.getElementById("0_Description_SynOffcHrs").classList.remove('mandatory-FormContent-focus');
+            document.getElementById("0_ProjectCode_SynOffcHrs").classList.remove('mandatory-FormContent-focus');
+            document.getElementById("0_"+this.WeekNames[0].day1+"_SynOffcHrs").classList.remove('mandatory-FormContent-focus');
         }
               document.getElementById("0_Description_ClientHldHrs").classList.remove('mandatory-FormContent-focus');
               document.getElementById("0_ProjectCode_ClientHldHrs").classList.remove('mandatory-FormContent-focus');
               document.getElementById("0_Description_PTOHrs").classList.remove('mandatory-FormContent-focus');
               document.getElementById("0_ProjectCode_PTOHrs").classList.remove('mandatory-FormContent-focus');
+
            Object.keys(formdata.Total[0]).forEach(key =>{
-            if(!["Total","Description","ProjectCode"].includes(key))
+            if(!["Total","Description","ProjectCode","Type"].includes(key))
             document.getElementById("Total"+key).classList.remove('mandatory-FormContent-focus');        
            })
            document.getElementById("GrandTotal").classList.remove('mandatory-FormContent-focus');
+           document.getElementById("txtComments").classList.remove('mandatory-FormContent-focus');
            return isValid;
     }
+    return isValid;
+}
     //Functions related to HolidayMaster
     private GetHolidayMasterDataByClientName= async (WeekStartDate,selectedClientName,trFormdata)=>
     {
@@ -2342,7 +2374,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                     <input className={"form-control time "+(this.WeekNames[0].day7)} value={Obj[i][this.WeekNames[0].day7]} id={i+"_"+this.WeekNames[0].day7+"_"+rowType} onChange={this.changeTime}  disabled={this.state.isSubmitted || this.state.showBillable || this.WeekHeadings[0].IsSunJoined} ></input>
                 </td>
                 <td>
-                {this.getOTBadge(rowType)}
+                {rowType.toLowerCase()=="otrow"?<span className="c-badge">OT</span>:""}
                 </td>
                 <td>
                     <input className="form-control time WeekTotal" value={Obj[i].Total} id={i+"_Total_"+rowType} onChange={this.changeTime} type="text" maxLength={5} readOnly></input>
@@ -2354,15 +2386,6 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
             </tr>);
         }   
         return section;
-    }
-    private getOTBadge=(rowType)=>
-    {
-        let badge=[]
-        if(rowType.toLowerCase()=="otrow")
-        {
-            badge.push(<span className="c-badge">OT</span>)
-        }
-          return badge;
     }
     private bindComments=()=>{
         let body=[];
@@ -2381,77 +2404,6 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
             }
         }
        return body;
-    }
-    private getClientNames=()=>
-    {
-        var Formdata=this.state.trFormdata;
-        let section=[];
-        //code commented for single client binding
-    //    if(this.state.ClientNames.length==1)
-    //    {
-    //        Formdata.ClientName= this.state.ClientNames[0];
-    //        this.state.ClientNames.map((option) => (
-    //            section.push(
-    //                <><option value={option} selected={Formdata.ClientName == option} disabled>{option}</option></>
-    //        )))
-    //        //For getting Dateofjoining of selected client
-    //      for( var item of this.state.Clients_DateOfJoinings)
-    //      {
-    //          if(item.ClientName.toLowerCase()== Formdata.ClientName.toLowerCase())
-    //          {
-    //              Formdata.DateOfJoining=new Date(item.DOJ);
-    //              Formdata.IsDescriptionMandatory=item.IsDescriptionMandatory;
-    //              Formdata.IsProjectCodeMandatory=item.IsProjectCodeMandatory;
-    //              Formdata.WeekStartDay=item.WeekStartDay;
-    //              Formdata.WeekStartDate = this.getCurrentWeekStartDate(item.WeekStartDay)
-    //              Formdata.HolidayType=item.HolidayType;
-    //             // this.setState({isSubmitted:false})
-    //              this.WeekNames=[];
-    //              switch(Formdata.WeekStartDay)
-    //              {
-    //                  case "Monday":
-    //                      this.WeekNames.push({"day1":"Mon","day2":"Tue","day3":"Wed","day4":"Thu","day5":"Fri","day6":"Sat","day7":"Sun","dayCode":"Monday"});
-    //                      break;
-    //                  case "Tuesday":
-    //                      this.WeekNames.push({"day1":"Tue","day2":"Wed","day3":"Thu","day4":"Fri","day5":"Sat","day6":"Sun","day7":"Mon","dayCode":"Tuesday"});
-    //                      break;
-    //                  case "Wednesday":
-    //                      this.WeekNames.push({"day1":"Wed","day2":"Thu","day3":"Fri","day4":"Sat","day5":"Sun","day6":"Mon","day7":"Tue","dayCode":"Wednesday"});
-    //                      break;
-    //                  case "Thursday":
-    //                      this.WeekNames.push({"day1":"Thu","day2":"Fri","day3":"Sat","day4":"Sun","day5":"Mon","day6":"Tue","day7":"Wed","dayCode":"Thursday"});
-    //                      break;
-    //                  case "Friday":
-    //                      this.WeekNames.push({"day1":"Fri","day2":"Sat","day3":"Sun","day4":"Mon","day5":"Tue","day6":"Wed","day7":"Thu","dayCode":"Friday"});
-    //                      break;
-    //                  case "Saturday":
-    //                      this.WeekNames.push({"day1":"Sat","day2":"Sun","day3":"Mon","day4":"Tue","day5":"Wed","day6":"Thu","day7":"Fri","dayCode":"Saturday"});
-    //                      break;
-    //                  case "Sunday":
-    //                      this.WeekNames.push({"day1":"Sun","day2":"Mon","day3":"Tue","day4":"Wed","day5":"Thu","day6":"Fri","day7":"Sat","dayCode":"Sunday"});
-    //                      break;
-    //              }
-    //              break;
-    //          }
-    //      }
-         
-    //    }
-    //else if(this.state.ClientNames.length>1){
-           section.push(<option value=''>None</option>)
-               this.state.ClientNames.map((option) => (
-                   section.push(
-                       <><option value={option} selected={this.state.trFormdata.ClientName == option}>{option}</option></>
-               )))
-      // }
-       //this.setState({trFormdata:Formdata})
-        return section;
-    }
-    private getRevisedLabel=(formdata)=>
-    {
-        let label=""
-        if(formdata.Revised)
-        label="-Revised";
-        return label;
     }
    private getWeekstartAndWeekEnd=(formdata)=>
    {
@@ -2476,7 +2428,6 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
         }
         return date;
     }
-    
     public render() {
 
         if (!this.state.isRecordAcessable) {
@@ -2506,7 +2457,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
             <div className="container-fluid">
             <div className='FormContent'>
                 <div className="mt-3 mb-1 media-p-1 Billable Hours">
-                <div className="title">Weekly Timesheet {this.getRevisedLabel(this.state.trFormdata)}
+                <div className="title">Weekly Timesheet {this.state.trFormdata.Revised?" -Revised":""}
                                         <div className='mandatory-note'>
                                             <span className='mandatoryhastrick'>*</span> indicates a required field
                                         </div>
@@ -2550,7 +2501,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                         <div className={this.state.isAdmin?"col-md-3":"col-md-4"}>
                                 <div className="light-text clientName">
                                     <label className='lblClient'>Client Name <span className="mandatoryhastrick">*</span></label>
-                                    <select className="ddlClient" required={true}  name="ClientName" title="Client Name" onChange={this.handleClientChange} ref={this.Client} disabled={(this.state.ClientNames.length==1?true:this.currentUser==this.state.trFormdata.Name?false: this.state.isSubmitted)}>
+                                    <select className="ddlClient" required={true} id='ddlClient' name="ClientName" title="Client Name" onChange={this.handleClientChange} ref={this.Client} disabled={(this.state.ClientNames.length==1?true:this.currentUser==this.state.trFormdata.Name?false: this.state.isSubmitted)}>
                                     <option value=''>None</option>
                                         {this.state.ClientNames.map((option) => <option value={option} selected={option == this.state.trFormdata.ClientName}>{option}</option>)}
                                                 {/* {this.getClientNames()} */}
@@ -2778,7 +2729,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                                     <td></td>
                                 </tr>
         
-                                 {this.state.trFormdata.ClientName.toLowerCase()=="synergy"||this.state.trFormdata.ClientName.toLowerCase()==""?"":
+                                 {this.state.trFormdata.ClientName.toLowerCase().includes("synergy")||this.state.trFormdata.ClientName.toLowerCase()==""?"":
                                  <tr className="">
                                     <td className="fw-bold text-start">
                                         <div className="p-2 fw-bold">
