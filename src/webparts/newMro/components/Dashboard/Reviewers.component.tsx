@@ -273,8 +273,14 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
                 toEmail.push(user.EMail);
             }
             // this.setState({comments : comments })
+            let tableContent = {}
             let date = new Date(data[0].DateSubmitted)
-            let tableContent = {'Name':data[0].Name,'Client Name':data[0].ClientName,'Submitted Date':`${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`,'Billable Hours':data[0].WeeklyTotalHrs,'OT Hours':data[0].OTTotalHrs,'Total Billable Hours':data[0].BillableTotalHrs,'Grand Total Hours':data[0].GrandTotal}
+            if(data[0].ClientName.toLowerCase().includes("synergy")){
+                tableContent = {'Name':data[0].Name,'Client Name':data[0].ClientName,'Submitted Date':`${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`,'Office Hours':data[0].SynergyOfficeHrs,'Holiday Hours':JSON.parse(data[0].ClientHolidayHrs)[0].Total,'PTO Hours':JSON.parse(data[0].PTOHrs)[0].Total,'Grand Total Hours':data[0].GrandTotal}
+            }
+            else{
+                tableContent = {'Name':data[0].Name,'Client Name':data[0].ClientName,'Submitted Date':`${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`,'Billable Hours':data[0].WeeklyTotalHrs,'OT Hours':data[0].OTTotalHrs,'Total Billable Hours':data[0].BillableTotalHrs,'Holiday Hours':JSON.parse(data[0].ClientHolidayHrs)[0].Total,'PTO Hours':JSON.parse(data[0].PTOHrs)[0].Total,'Grand Total Hours':data[0].GrandTotal}
+            }
             console.log(tableContent)
 
             this.updateStatus(recordId,'Rejected by Synergy',commentsObj,toEmail,ccEmail,tableContent)
