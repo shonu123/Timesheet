@@ -66,6 +66,7 @@ class TimesheetReport extends React.Component<TimesheetReportProps, TimesheetRep
         InitiatorId: '0',
         isHavingClients: true,
         isHavingEmployees: true,
+        ResultExcelData : []
     }
 
     public componentDidMount() {
@@ -249,14 +250,14 @@ class TimesheetReport extends React.Component<TimesheetReportProps, TimesheetRep
                 filterQuery = "ClientName eq'" + client + "' and InitiatorId eq '" + Employee + "' and WeekStartDate gt '" + prev + "' and WeekStartDate lt '" + next + "'"
             }
         }
-        filterQuery+="and Status eq '"+StatusType.Approved+"'"
-        let reportData = await sp.web.lists.getByTitle('WeeklyTimeSheet').items.filter(filterQuery).expand('Initiator').select('Initiator/Title,TotalHrs,ClientName,WeekStartDate').orderBy('WeekStartDate,ClientName,Initiator/Title', true).getAll()
+        filterQuery+="and Status ne '"+StatusType.Save+"'"
+        let reportData = await sp.web.lists.getByTitle('WeeklyTimeSheet').items.filter(filterQuery).expand('Initiator').select('Initiator/Title,TotalHrs,ClientName,WeekStartDate,Status').orderBy('WeekStartDate,ClientName,Initiator/Title', true).getAll()
         if (reportData.length > 0) {
             console.log(reportData)
             let ExcelData = []
             let headerDates = []
             reportData.forEach(report => {
-                let { Initiator, WeekStartDate, TotalHrs, ClientName } = report;
+                let { Initiator, WeekStartDate, TotalHrs, ClientName, Status } = report;
                 const startDate = new Date(WeekStartDate);
                 let startDay = startDate.getDay()
 
@@ -281,12 +282,14 @@ class TimesheetReport extends React.Component<TimesheetReportProps, TimesheetRep
                         Initiator: '',
                         Client: '',
                         Date: '',
-                        Hours: ''
+                        Hours: '',
+                        Status:''
                     };
                     obj.Initiator = Initiator.Title,
                         obj.Client = ClientName,
                          obj.Date= d,
-                        obj.Hours = arrangedWeekDays[new Date(d).getDay()]
+                        obj.Hours = arrangedWeekDays[new Date(d).getDay()],
+                        obj.Status = Status
                         // obj[""+d] = arrangedWeekDays[new Date(d).getDay()]
                     ExcelData.push(obj);
                     // if (!headerDates.includes(d))//in a single if user submits timesheet for two clients
@@ -310,7 +313,7 @@ class TimesheetReport extends React.Component<TimesheetReportProps, TimesheetRep
             console.log(ExcelData)
             console.log(headerDates)
             // this.generateExcel(ExcelData, headerDates);
-
+            this.state.ResultExcelData = ExcelData;
             let finalArray = [];
 
 // Process the original array
@@ -357,6 +360,45 @@ console.log(finalArray);
 
 
     }
+
+    private getStatusFromExcelData(client, initiator, date) {
+        let ExcelData = this.state.ResultExcelData
+        const item = ExcelData.find(entry => entry.Client === client && entry.Initiator === initiator && entry.Date === date);
+        if(item){
+            if([StatusType.ManagerReject.toString(),StatusType.ReviewerReject.toString()].includes(item.Status))
+                return StatusType.Reject;
+            else if(StatusType.Submit.toString()==item.Status)
+                return StatusType.Submit;
+            else if(StatusType.Revoke.toString()==item.Status)
+                return StatusType.Revoke;
+            else
+            return "" ;
+        }
+        else{
+            return ""
+        }
+    }
+    
+private Test(){
+    // STEP 1: Create a new workbook
+const wb = XLSX.utils.book_new();
+
+// STEP 2: Create data rows and styles
+let row = [
+	{ v: "Submitted", t: "s", s: { fill: { fgColor: { rgb: "fafac5" } } } },
+	{ v: "Rejected", t: "s", s: { fill: { fgColor: { rgb: "f7b5b5" } } } },
+	{ v: "Revoked", t: "s", s: { fill: { fgColor: { rgb: "ffd6e2" } } } },
+    { v: "Revoked Lite", t: "s", s: { fill: { fgColor: { rgb: "fae3ea" } } } },
+	{ v: "Approved", t: "s", s: { fill: { fgColor: { rgb: "fffafb" } } } },
+];
+
+// STEP 3: Create worksheet with rows; Add worksheet to workbook
+const ws = XLSX.utils.aoa_to_sheet([row]);
+XLSX.utils.book_append_sheet(wb, ws, "readme demo");
+
+// STEP 4: Write Excel file to browser
+XLSX.writeFile(wb, "xlsx-js-style-demo.xlsx");
+}
     private generateExcel(dataTable, headerDates,startDate,endDate) {
         const wb = XLSX.utils.book_new();
         const workSheetRows = []
@@ -379,24 +421,64 @@ console.log(finalArray);
             headerRow.push(obj);
         }
         workSheetRows.push(headerRow)
+        // dataTable.forEach((item) => {
+        //     let tempArr = [];
+        //     columnOrder.forEach((key) => {
+        //         if (key !== "Id" && item.hasOwnProperty(key)) {
+        //             let value = item[key];
+        //             let cellObj = {}
+        //             if (wrapColumnsArray.includes(key)) {
+        //                 cellObj = { v: value, t: "s", s: { alignment: { wrapText: true }, font: { bold: false }} };
+        //             }
+        //             else {
+        //                 cellObj = { v: value, t: "s", s: { font: { bold: false } }};
+        //             }
+        //             tempArr.push(cellObj);
+        //         }
+        //     });
+        //     workSheetRows.push(tempArr);
+        // });
+        // STEP 3: Create worksheet with rows; Add worksheet to workbook
+        
+        //-------------------new code starts---------------
         dataTable.forEach((item) => {
             let tempArr = [];
             columnOrder.forEach((key) => {
                 if (key !== "Id" && item.hasOwnProperty(key)) {
                     let value = item[key];
-                    let cellObj = {}
-                    if (wrapColumnsArray.includes(key)) {
-                        cellObj = { v: value, t: "s", s: { alignment: { wrapText: true }, font: { bold: false }, outerWidth: 250 } };
+                    let cellObj = {};
+                    
+                    // Get the status from ExcelData based on the current item's Client, Initiator, and Date
+                    let status = this.getStatusFromExcelData(item.Client, item.Initiator, key);
+        
+                    // Set color based on status
+                    let color = "";
+                    switch (status) {
+                        case "Submitted":
+                            color = "fafac5"; // Color for Submitted
+                            break;
+                        case StatusType.Reject:
+                            color = 'f7b5b5'; // Color for Rejected
+                            break;
+                        case "Revoked":
+                            color = "fae3ea"; // Color for Revoked
+                            break;
+                        default:
+                            color = "ffffff"; // Default color
                     }
-                    else {
-                        cellObj = { v: value, t: "s", s: { font: { bold: false } }, outerWidth: 250 };
+        
+                    if (wrapColumnsArray.includes(key)) {
+                        cellObj = { v: value, t: "s", s: { alignment: { wrapText: true }, font: { bold: false}, fill: { fgColor: { rgb: color } } } };
+                    } else {
+                        cellObj = { v: value, t: "s", s: { font: { bold: false,color:'1a1818'}, fill: { fgColor: { rgb: color } }} };
                     }
                     tempArr.push(cellObj);
                 }
             });
             workSheetRows.push(tempArr);
         });
-        // STEP 3: Create worksheet with rows; Add worksheet to workbook
+        
+        //--------------new codes ends----------------------
         const finalWorkshetData = XLSX.utils.aoa_to_sheet(workSheetRows)
         finalWorkshetData['!autofilter'] = { ref: 'A1:B1' };
         XLSX.utils.book_append_sheet(wb, finalWorkshetData, `${filename}`);
@@ -542,6 +624,9 @@ console.log(finalArray);
                                     <div className="col-sm-12 text-center my-2" id="">
                                         <button type="button" className="DownloadButtons btn" onClick={this.handleSubmit}>
                                         <FontAwesomeIcon icon={faCloudDownload} className=''></FontAwesomeIcon>Download</button>
+                                        {/* <button type="button" className="DownloadButtons btn" onClick={this.Test}>
+                                        <FontAwesomeIcon icon={faCloudDownload} className=''></FontAwesomeIcon>Test</button> */}
+
                                     </div>
                                 </div>
                             </div>

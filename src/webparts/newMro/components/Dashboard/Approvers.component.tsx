@@ -72,7 +72,7 @@ class ApproversApprovals extends React.Component<ApproversProps, ApproversState>
                         // NonBillableTotalHrs: d.NonBillableTotalHrs,
                         HolidayHrs:JSON.parse(d.ClientHolidayHrs)[0].Total,
                         PTOHrs:JSON.parse(d.PTOHrs)[0].Total,
-                        WeeklyTotalHrs: d.GrandTotal
+                        GrandTotal: d.GrandTotal
                     })
                 }
                 console.log(Data);

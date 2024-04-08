@@ -85,7 +85,7 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
                         // NonBillableTotalHrs: d.NonBillableTotalHrs,
                         HolidayHrs:JSON.parse(d.ClientHolidayHrs)[0].Total,
                         PTOHrs:JSON.parse(d.PTOHrs)[0].Total,
-                        WeeklyTotalHrs: d.GrandTotal
+                        GrandTotal: d.GrandTotal
                     })
                 }
                 this.setState({ExportExcelData:Data})
