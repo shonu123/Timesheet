@@ -22,8 +22,9 @@ import customToaster from '../Shared/Toaster.component';
 import { ToasterTypes } from '../../Constants/Constants';
 import { addDays } from 'office-ui-fabric-react';
 import * as XLSX from 'xlsx-js-style';
-import { faDownload,faFileDownload,faCloudDownload,faCloudDownloadAlt } from '@fortawesome/free-solid-svg-icons';
+import { faCloudDownload } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { StatusType } from '../../Constants/Constants';
 export interface TimesheetReportProps {
     match: any;
     spContext: any;
@@ -248,6 +249,7 @@ class TimesheetReport extends React.Component<TimesheetReportProps, TimesheetRep
                 filterQuery = "ClientName eq'" + client + "' and InitiatorId eq '" + Employee + "' and WeekStartDate gt '" + prev + "' and WeekStartDate lt '" + next + "'"
             }
         }
+        filterQuery+="and Status eq '"+StatusType.Approved+"'"
         let reportData = await sp.web.lists.getByTitle('WeeklyTimeSheet').items.filter(filterQuery).expand('Initiator').select('Initiator/Title,TotalHrs,ClientName,WeekStartDate').orderBy('WeekStartDate,ClientName,Initiator/Title', true).getAll()
         if (reportData.length > 0) {
             console.log(reportData)
@@ -504,7 +506,7 @@ console.log(finalArray);
                                         <div className="col-md-3">
                                             <div className="light-text ">
                                                 <label>Employee<span className="mandatoryhastrick">*</span></label>
-                                                <select className="" required={true} name="InitiatorId" title="Employee" onChange={this.handleChangeEvents} ref={this.EmployeeDropdown}>
+                                                <select className="form-control" required={true} name="InitiatorId" title="Employee" onChange={this.handleChangeEvents} ref={this.EmployeeDropdown}>
                                                     {this.state.isHavingEmployees ? <option value='0'>All Employees</option> : <option value='-1'>None</option>}
                                                     {this.state.EmployeesObj.map((option) => (
                                                         <option value={option.ID} selected={this.state.InitiatorId == option.ID}>{option.Title}</option>
