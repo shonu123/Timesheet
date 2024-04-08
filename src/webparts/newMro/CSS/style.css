@@ -155,6 +155,18 @@
 .btn {
   border-radius: 0!important;
 }
+.DownloadButtons {
+  background: #0d2f4b !important;
+  color: #fff !important;
+  width: 130px;
+  padding: 10px 6px !important;
+}
+.DownloadButtons:hover{
+  opacity: .7;
+}
+.DownloadButtons svg{
+  margin-right: 5px;
+}
 .btn-print{
   position: fixed;
   right: 0;

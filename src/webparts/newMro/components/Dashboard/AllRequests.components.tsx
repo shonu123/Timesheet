@@ -148,6 +148,7 @@ class AllRequests extends React.Component<AllRequestsProps,AllRequestsState> {
                 name: "Reporting Manager",
                 selector: (row, i) => row.RM,
                 cell: row => <div dangerouslySetInnerHTML={{ __html: row.RM }} />,
+                width: '375px',
                 sortable: true
             },
             {

@@ -490,7 +490,7 @@ console.log(finalArray);
                             <div className="media-m-2 media-p-1">
                                 <div className="my-2">
                                     <div className="row pt-2 px-2">
-                                        <div className="col-md-4">
+                                        <div className="col-md-3">
                                             <div className="light-text">
                                                 <label>Client<span className="mandatoryhastrick">*</span></label>
                                                 <select className="form-control" required={true} name="ClientName" title="Client" id='client' ref={this.client} onChange={this.handleClientChange}>
@@ -501,10 +501,10 @@ console.log(finalArray);
                                                 </select>
                                             </div>
                                         </div>
-                                        <div className="col-md-4">
+                                        <div className="col-md-3">
                                             <div className="light-text ">
                                                 <label>Employee<span className="mandatoryhastrick">*</span></label>
-                                                <select className="ddlEmployee ddlClient" required={true} name="InitiatorId" title="Employee" onChange={this.handleChangeEvents} ref={this.EmployeeDropdown}>
+                                                <select className="" required={true} name="InitiatorId" title="Employee" onChange={this.handleChangeEvents} ref={this.EmployeeDropdown}>
                                                     {this.state.isHavingEmployees ? <option value='0'>All Employees</option> : <option value='-1'>None</option>}
                                                     {this.state.EmployeesObj.map((option) => (
                                                         <option value={option.ID} selected={this.state.InitiatorId == option.ID}>{option.Title}</option>
@@ -513,7 +513,7 @@ console.log(finalArray);
                                             </div>
                                         </div>
 
-                                        <div className="col-md-4">
+                                        <div className="col-md-3">
                                             <div className="light-text div-readonly">
                                                 <label className="z-in-9">Start Date<span className="mandatoryhastrick">*</span></label>
                                                 <div className="custom-datepicker" id="divDateofJoining">
@@ -523,7 +523,7 @@ console.log(finalArray);
                                             </div>
                                         </div>
 
-                                        <div className="col-md-4">
+                                        <div className="col-md-3">
                                             <div className="light-text div-readonly">
                                                 <label className="z-in-9">End Date<span className="mandatoryhastrick">*</span></label>
                                                 <div className="custom-datepicker" id="divDateofJoining">
@@ -538,8 +538,8 @@ console.log(finalArray);
                                 </div>
                                 <div className="row mx-1" id="">
                                     <div className="col-sm-12 text-center my-2" id="">
-                                        <button type="button" className="SubmitButtons btn" onClick={this.handleSubmit}>
-                                        <FontAwesomeIcon icon={faCloudDownload} className='btn upload-btn'></FontAwesomeIcon>Download</button>
+                                        <button type="button" className="DownloadButtons btn" onClick={this.handleSubmit}>
+                                        <FontAwesomeIcon icon={faCloudDownload} className=''></FontAwesomeIcon>Download</button>
                                     </div>
                                 </div>
                             </div>
