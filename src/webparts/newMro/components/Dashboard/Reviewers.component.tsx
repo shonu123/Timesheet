@@ -357,6 +357,7 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
                 {
                     name: "Employee Name",
                     selector: (row, i) => row.EmployeName,
+                    width: '300px',
                     sortable: true
                 },
                 {
@@ -367,6 +368,7 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
                 {
                     name: "Pending With",
                     selector: (row, i) => row.PendingWith,
+                    width: '180px',
                     sortable: true
 
                 },

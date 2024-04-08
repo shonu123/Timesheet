@@ -110,6 +110,7 @@ class ApproversApprovals extends React.Component<ApproversProps, ApproversState>
             {
                 name: "Employee Name",
                 selector: (row, i) => row.EmployeName,
+                width: '300px',
                 sortable: true
             },
             {
