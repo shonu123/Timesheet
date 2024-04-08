@@ -2232,6 +2232,14 @@ li {
   min-width: 80px;
   max-width: 80px;
 }
+.rdt_TableCol:nth-child(1) {
+  width: 75px;
+  min-width: 75px;
+  max-width: 75px;
+}
+
+
+
 #cell-1-undefined{
   width: 80px;
   min-width: 80px;

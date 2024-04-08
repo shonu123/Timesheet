@@ -2038,18 +2038,6 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                     } 
                 } 
         }
-           val=formdata.Total[0].Total;
-           Time=parseFloat(val);
-           if(Time==0&&formdata.Comments.trim()=="")
-           {
-            isValid.message="For entered hours, Please provide a reason in comments";
-            isValid.status=false;
-            document.getElementById("txtComments").focus();
-            document.getElementById("txtComments").classList.add('mandatory-FormContent-focus');
-           //document.getElementById("GrandTotal").focus();
-           //document.getElementById("GrandTotal").classList.add('mandatory-FormContent-focus');
-            return isValid;
-           }
         if(Action=="Submit")
         {
             if(formdata.ClientName.toLowerCase().includes("synergy"))
@@ -2084,7 +2072,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                  }
                  if(isAllDaysEmpty)
                  {
-                     isValid.message="Cannot submit the hours as blank";
+                     isValid.message="Hours cannot be blank, Please provide atleast  with 0's";
                      isValid.status=false;
                      document.getElementById("0_"+this.WeekNames[0].day1+"_SynOffcHrs").focus();
                      document.getElementById("0_"+this.WeekNames[0].day1+"_SynOffcHrs").classList.add('mandatory-FormContent-focus');
@@ -2125,7 +2113,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                      }
                      if(isAllDaysEmpty)
                      {
-                         isValid.message="Cannot submit the hours as blank";
+                         isValid.message="Hours cannot be blank, Please provide atleast  with 0's";
                          isValid.status=false;
                          document.getElementById(i+"_"+this.WeekNames[0].day1+"_weekrow").focus();
                          document.getElementById(i+"_"+this.WeekNames[0].day1+"_weekrow").classList.add('mandatory-FormContent-focus');
@@ -2166,7 +2154,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                                  }
                              } 
                              if (isAllDaysEmpty) {
-                                 isValid.message = "Cannot submit the hours as blank";
+                                 isValid.message = "Hours cannot be blank, Please provide atleast  with 0's";
                                  isValid.status = false;
                                  document.getElementById(i+"_"+this.WeekNames[0].day1+"_otrow").focus();
                                  document.getElementById(i+"_"+this.WeekNames[0].day1+"_otrow").classList.add('mandatory-FormContent-focus');
@@ -2216,7 +2204,17 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                  }
              }
             }
-          }
+            }
+            val=formdata.Total[0].Total;
+            Time=parseFloat(val);
+            if(Time==0&&formdata.Comments.trim()=="")
+            {
+             isValid.message="For entered hours, Please provide a reason in comments";
+             isValid.status=false;
+             document.getElementById("txtComments").focus();
+             document.getElementById("txtComments").classList.add('mandatory-FormContent-focus');
+             return isValid;
+            }
            //if isValid true remove all 'mandatory-FormContent-focus' classes
          if (!formdata.ClientName.toLowerCase().includes("synergy")) {
             for (let i in formdata.WeeklyItemsData) {
