@@ -1039,7 +1039,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
         {  
             if(parseFloat(trFormdata.WeeklyItemsData[i].Total)==0)
             {
-                isValid.message="Total working hours in a week cannot be 0 hours";
+                isValid.message="Total working hours in a week cannot be 0";
                 isValid.status=false;
                 document.getElementById(i+"_Total_weekrow").focus();
                 document.getElementById(i+"_Total_weekrow").classList.add('mandatory-FormContent-focus');
@@ -1070,7 +1070,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
         {
             if(parseFloat(trFormdata.OTItemsData[i].Total)==0)
             {
-                isValid.message="Total working hours in a week cannot be 0 hours";
+                isValid.message="Total working hours in a week cannot be 0";
                 isValid.status=false;
                 document.getElementById(i+"_Total_otrow").focus();
                 document.getElementById(i+"_Total_otrow").classList.add('mandatory-FormContent-focus');
@@ -1932,18 +1932,24 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
     //this function is used to hide and show Approve/Reject buttons based on logged in user and current record respective users
     private showApproveAndRejectButton() {
         let value = this.state.trFormdata.Status != StatusType.Save ? true : false;
-        if(value){
-        let userGroups = this.state.UserGoups
-        let RMEmails = this.state.trFormdata.ReportingManagersEmail
-        let RevEmails = this.state.trFormdata.ReviewersEmail
+        let userGroups = this.state.UserGoups;
         let userEmail = this.props.spContext.userEmail
         let isAdmin = false;
-        if(userEmail == this.state.EmployeeEmail){
-            value = false;
-        }
         if(userGroups.includes('Timesheet Administrators')){
             isAdmin = true
         }
+        if(value){
+        //let userGroups = this.state.UserGoups
+        let RMEmails = this.state.trFormdata.ReportingManagersEmail
+        let RevEmails = this.state.trFormdata.ReviewersEmail
+        //let userEmail = this.props.spContext.userEmail
+       // let isAdmin = false;
+        if(userEmail == this.state.EmployeeEmail){
+            value = false;
+        }
+        // if(userGroups.includes('Timesheet Administrators')){
+        //     isAdmin = true
+        // }
         if(userEmail == this.state.EmployeeEmail|| isAdmin)
         {
             let Approve = StatusType.Approved.toString()
@@ -1986,7 +1992,19 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
         this.setState({ showApproveRejectbtn: value,IsReviewer:false  })
     }
     else{
-        this.setState({ showApproveRejectbtn: value,showSubmitSavebtn:true,IsReviewer:false})  
+        //this.setState({ showApproveRejectbtn: value,showSubmitSavebtn:false,IsReviewer:false})  
+        this.setState({ showApproveRejectbtn: value,IsReviewer:false})  
+        if(userEmail == this.state.EmployeeEmail||isAdmin)
+        {
+            let Approve = StatusType.Approved.toString()
+            let submit = StatusType.Submit.toString()
+            if(![Approve,submit].includes(this.state.trFormdata.Status)){
+                this.setState({showSubmitSavebtn:true})
+            }
+        }
+        else{
+        this.setState({showSubmitSavebtn:false})  
+        }
     }
     }
      private userAccessableRecord(){
@@ -2072,7 +2090,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                  }
                  if(isAllDaysEmpty)
                  {
-                     isValid.message="Hours cannot be blank, Please provide atleast  with 0's";
+                     isValid.message="Hours cannot be blank, Please provide atleast 0";
                      isValid.status=false;
                      document.getElementById("0_"+this.WeekNames[0].day1+"_SynOffcHrs").focus();
                      document.getElementById("0_"+this.WeekNames[0].day1+"_SynOffcHrs").classList.add('mandatory-FormContent-focus');
@@ -2113,7 +2131,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                      }
                      if(isAllDaysEmpty)
                      {
-                         isValid.message="Hours cannot be blank, Please provide atleast  with 0's";
+                         isValid.message="Hours cannot be blank, Please provide atleast 0";
                          isValid.status=false;
                          document.getElementById(i+"_"+this.WeekNames[0].day1+"_weekrow").focus();
                          document.getElementById(i+"_"+this.WeekNames[0].day1+"_weekrow").classList.add('mandatory-FormContent-focus');
@@ -2154,7 +2172,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                                  }
                              } 
                              if (isAllDaysEmpty) {
-                                 isValid.message = "Hours cannot be blank, Please provide atleast  with 0's";
+                                 isValid.message = "Hours cannot be blank, Please provide atleast 0";
                                  isValid.status = false;
                                  document.getElementById(i+"_"+this.WeekNames[0].day1+"_otrow").focus();
                                  document.getElementById(i+"_"+this.WeekNames[0].day1+"_otrow").classList.add('mandatory-FormContent-focus');
@@ -2499,7 +2517,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                         <div className={this.state.isAdmin?"col-md-3":"col-md-4"}>
                                 <div className="light-text clientName">
                                     <label className='lblClient'>Client Name <span className="mandatoryhastrick">*</span></label>
-                                    <select className="ddlClient" required={true} id='ddlClient' name="ClientName" title="Client Name" onChange={this.handleClientChange} ref={this.Client} disabled={(this.state.ClientNames.length==1?true:this.currentUser==this.state.trFormdata.Name?false: this.state.isSubmitted)}>
+                                    <select className="ddlClient" required={true} id='ddlClient' name="ClientName" title="Client Name" onChange={this.handleClientChange} ref={this.Client} disabled={(this.state.ClientNames.length==1?true:this.currentUser==this.state.trFormdata.Name||this.state.isAdmin?false:true)}>
                                     <option value=''>None</option>
                                         {this.state.ClientNames.map((option) => <option value={option} selected={option == this.state.trFormdata.ClientName}>{option}</option>)}
                                                 {/* {this.getClientNames()} */}
@@ -2516,7 +2534,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                                                     selectedDate={this.state.trFormdata.WeekStartDate}
                                                     className='dateWeeklyTimesheet'
                                                     labelName='Weekly Start Date'
-                                                    isDisabled = {(this.currentUser==this.state.trFormdata.Name?false: this.state.isSubmitted)}
+                                                    isDisabled = {(this.currentUser==this.state.trFormdata.Name||this.state.isAdmin?false:true)}
                                                     ref={this.weekStartDate}
                                                     Day={this.WeekNames[0].dayCode}
                                                 />

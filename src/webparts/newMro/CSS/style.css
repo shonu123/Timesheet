@@ -864,6 +864,10 @@ input.c-input-readonly {
 .WeekTotal.form-control[readonly],.DayTotal.form-control[readonly],.BillableSubTotal.form-control[readonly],.GrandTotal.form-control[readonly] {
   color: #000;
 }
+.GrandTotal.form-control[readonly] {
+  color: #000;
+  font-weight: bold;
+}
 .attachment-list .fa-window-close{
   position: absolute;
   top: 9px;
@@ -2515,7 +2519,7 @@ li {
     border-bottom: 1px solid #dee2e6;
     border-top-left-radius: calc(.3rem - 1px);
     border-top-right-radius: calc(.3rem - 1px);
-    background: #ff18022b;
+    /* background: #ff18022b; */
     color: red;
 }
 .modal{
