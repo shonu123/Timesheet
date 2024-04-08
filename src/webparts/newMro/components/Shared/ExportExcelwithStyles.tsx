@@ -50,6 +50,9 @@ const exportToexcel = (dataTable,) => {
 
 // STEP 3: Create worksheet with rows; Add worksheet to workbook
 const finalWorkshetData =   XLSX.utils.aoa_to_sheet(workSheetRows)
+
+// Enable below code to add filters
+// finalWorkshetData['!autofilter'] = { ref: 'A1:C1' };
 XLSX.utils.book_append_sheet(wb, finalWorkshetData, `${filename}`);
 
 // STEP 4: Write Excel file to browser

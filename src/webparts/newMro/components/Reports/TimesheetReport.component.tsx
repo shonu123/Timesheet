@@ -21,6 +21,9 @@ import { Toaster } from 'react-hot-toast';
 import customToaster from '../Shared/Toaster.component';
 import { ToasterTypes } from '../../Constants/Constants';
 import { addDays } from 'office-ui-fabric-react';
+import * as XLSX from 'xlsx-js-style';
+import { faDownload,faFileDownload,faCloudDownload,faCloudDownloadAlt } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 export interface TimesheetReportProps {
     match: any;
     spContext: any;
@@ -98,7 +101,7 @@ class TimesheetReport extends React.Component<TimesheetReportProps, TimesheetRep
             }
         }
         if (Clients.length > 0)
-            this.setState({AllEmployees: EmpObj,EmployeesObj: EmpObj, ClientsObject: Clients, loading: false, isHavingClients: true, showToaster: true })
+            this.setState({ AllEmployees: EmpObj, EmployeesObj: EmpObj, ClientsObject: Clients, loading: false, isHavingClients: true, showToaster: true })
         else
             this.setState({ AllEmployees: EmpObj, EmployeesObj: EmpObj, ClientsObject: Clients, loading: false, isHavingClients: false, showToaster: true })
     }
@@ -125,14 +128,14 @@ class TimesheetReport extends React.Component<TimesheetReportProps, TimesheetRep
                 }
             }
             if (EmpObj.length > 0)
-                this.setState({ EmployeesObj: EmpObj, loading: false, isHavingEmployees: true,InitiatorId:'0' })
+                this.setState({ EmployeesObj: EmpObj, loading: false, isHavingEmployees: true, InitiatorId: '0' })
             else {
-                this.setState({ EmployeesObj: EmpObj, loading: false, isHavingEmployees: false,InitiatorId:'-1' })
+                this.setState({ EmployeesObj: EmpObj, loading: false, isHavingEmployees: false, InitiatorId: '-1' })
                 customToaster('toster-error', ToasterTypes.Error, 'There are no employees associated with this client', 4000);
             }
         }
         else {
-            this.setState({ EmployeesObj: this.state.AllEmployees, loading: false, isHavingEmployees: true,InitiatorId:'0'})
+            this.setState({ EmployeesObj: this.state.AllEmployees, loading: false, isHavingEmployees: true, InitiatorId: '0' })
         }
     }
     private handleChangeEvents = (event) => {
@@ -158,37 +161,37 @@ class TimesheetReport extends React.Component<TimesheetReportProps, TimesheetRep
             this.setState({ endDate: date });
         }
     }
-    private checkIsvalid =(data,selectedStartDate,selectedEndDate)=>{
+    private checkIsvalid = (data, selectedStartDate, selectedEndDate) => {
         let isvalid = {
-            status:true,
-            message:''
+            status: true,
+            message: ''
         }
         let isValid = Formvalidator.checkValidations(data)
-        if(!isValid.status){
+        if (!isValid.status) {
             isvalid.status = false;
             isvalid.message = isValid.message
         }
-        else if(this.state.startDate==null){
+        else if (this.state.startDate == null) {
             isvalid.status = false;
             isvalid.message = 'Start Date cannot be blank'
         }
-        else if(this.state.endDate==null){
+        else if (this.state.endDate == null) {
             isvalid.status = false;
             isvalid.message = 'End Date cannot be blank'
         }
-        else if(new Date(selectedStartDate)>new Date(selectedEndDate)){
+        else if (new Date(selectedStartDate) > new Date(selectedEndDate)) {
             isvalid.status = false;
             isvalid.message = 'Start Date cannot be greater than End Date'
         }
         return isvalid;
     }
-    private handleSubmit = ()=>{
-        let data ={
-            Client:{val: this.state.ClientName, required: true, Name: 'Client', Type: ControlType.string,Focusid:this.client},
-            Employee:{val: parseInt(this.state.InitiatorId), required: true, Name: 'Employee', Type: ControlType.number,Focusid:this.EmployeeDropdown},
+    private handleSubmit = () => {
+        let data = {
+            Client: { val: this.state.ClientName, required: true, Name: 'Client', Type: ControlType.string, Focusid: this.client },
+            Employee: { val: parseInt(this.state.InitiatorId), required: true, Name: 'Employee', Type: ControlType.number, Focusid: this.EmployeeDropdown },
         }
-        let isValid = this.checkIsvalid(data,this.state.startDate,this.state.endDate)
-        if(!isValid.status){
+        let isValid = this.checkIsvalid(data, this.state.startDate, this.state.endDate)
+        if (!isValid.status) {
             customToaster('toster-error', ToasterTypes.Error, isValid.message, 4000);
             return false
         }
@@ -197,17 +200,28 @@ class TimesheetReport extends React.Component<TimesheetReportProps, TimesheetRep
         date = new Date(this.state.endDate)
         let selectedEndDate = `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`
 
-        let postObject={
-            Client:this.state.ClientName,
-            Employee:parseInt(this.state.InitiatorId),
+        let postObject = {
+            Client: this.state.ClientName,
+            Employee: parseInt(this.state.InitiatorId),
             StartDate: selectedStartDate,
-            EndDate:selectedEndDate
+            EndDate: selectedEndDate
         }
         console.log(postObject)
-        this.generateExcel(postObject)
+        this.generateExcelData(postObject)
     }
+    private generateDateRange = (startDate,endDate) => {
+        const dateRangeArray: string[] = [];
+        const start = new Date(startDate);
+        const end = new Date(endDate);
 
-    private  generateExcel = async (postObject)=>{
+        for (let date = new Date(start); date <= end; date.setDate(date.getDate() + 1)) {
+            const formattedDate = `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`
+            dateRangeArray.push(formattedDate);
+        }
+
+        return dateRangeArray;
+    };
+    private generateExcelData = async (postObject) => {
         let client = postObject.Client
         let Employee = postObject.Employee
         let startDate = postObject.StartDate
@@ -215,35 +229,36 @@ class TimesheetReport extends React.Component<TimesheetReportProps, TimesheetRep
         let prevDate = addDays(new Date(startDate), -7);
         let nextDate = addDays(new Date(EndDate), 1);
         let prev = `${prevDate.getMonth() + 1}/${prevDate.getDate()}/${prevDate.getFullYear()}`
-         let next = `${nextDate.getMonth() + 1}/${nextDate.getDate()}/${nextDate.getFullYear()}`
+        let next = `${nextDate.getMonth() + 1}/${nextDate.getDate()}/${nextDate.getFullYear()}`
 
-        let filterQuery=''
-        if(client=="All"){
-            if(Employee==0){
-                filterQuery = "WeekStartDate gt '" + prev + "' and WeekStartDate lt '" +next+ "'"
+        let filterQuery = ''
+        if (client == "All") {
+            if (Employee == 0) {
+                filterQuery = "WeekStartDate gt '" + prev + "' and WeekStartDate lt '" + next + "'"
             }
-            else{
-                filterQuery = "InitiatorId eq '"+Employee+"' and WeekStartDate gt '" + prev + "' and WeekStartDate lt '" +next+ "'"
+            else {
+                filterQuery = "InitiatorId eq '" + Employee + "' and WeekStartDate gt '" + prev + "' and WeekStartDate lt '" + next + "'"
             }
         }
-        else{
-            if(Employee==0){
-                filterQuery = "ClientName eq'"+client+"' and WeekStartDate gt '" + prev + "' and WeekStartDate lt '" +next+ "'"
+        else {
+            if (Employee == 0) {
+                filterQuery = "ClientName eq'" + client + "' and WeekStartDate gt '" + prev + "' and WeekStartDate lt '" + next + "'"
             }
-            else{
-                filterQuery = "ClientName eq'"+client+"' and InitiatorId eq '"+Employee+"' and WeekStartDate gt '" + prev + "' and WeekStartDate lt '" +next+ "'"
+            else {
+                filterQuery = "ClientName eq'" + client + "' and InitiatorId eq '" + Employee + "' and WeekStartDate gt '" + prev + "' and WeekStartDate lt '" + next + "'"
             }
         }
         let reportData = await sp.web.lists.getByTitle('WeeklyTimeSheet').items.filter(filterQuery).expand('Initiator').select('Initiator/Title,TotalHrs,ClientName,WeekStartDate').orderBy('WeekStartDate,ClientName,Initiator/Title', true).getAll()
-        if(reportData.length>0){
-            console.log(reportData) 
-            let ExcelData =[]
+        if (reportData.length > 0) {
+            console.log(reportData)
+            let ExcelData = []
+            let headerDates = []
             reportData.forEach(report => {
                 let { Initiator, WeekStartDate, TotalHrs, ClientName } = report;
                 const startDate = new Date(WeekStartDate);
                 let startDay = startDate.getDay()
 
-                let  weekDays = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat']
+                let weekDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
                 TotalHrs = JSON.parse(TotalHrs)
                 let dates = []
                 const currentDate = new Date(startDate);
@@ -251,50 +266,209 @@ class TimesheetReport extends React.Component<TimesheetReportProps, TimesheetRep
                     let date = new Date(currentDate)
                     dates.push(`${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`);
                     currentDate.setDate(currentDate.getDate() + 1);
-                  }
+                }
                 const arrangedWeekDays = [];
 
                 weekDays.forEach(day => {
                     arrangedWeekDays.push(TotalHrs[0][day]);
-                  });
+                });
                 console.log(arrangedWeekDays)
 
                 for (const d of dates) {
-                    let obj= {
+                    let obj = {
                         Initiator: '',
-                            Client: '',
-                            Date: '',
-                            Hours:''
+                        Client: '',
+                        Date: '',
+                        Hours: ''
                     };
-                     obj.Initiator= Initiator.Title,
-                     obj.Client= ClientName,
-                     obj.Date= d,
-                     obj.Hours=arrangedWeekDays[new Date(d).getDay()]
+                    obj.Initiator = Initiator.Title,
+                        obj.Client = ClientName,
+                         obj.Date= d,
+                        obj.Hours = arrangedWeekDays[new Date(d).getDay()]
+                        // obj[""+d] = arrangedWeekDays[new Date(d).getDay()]
                     ExcelData.push(obj);
+                    // if (!headerDates.includes(d))//in a single if user submits timesheet for two clients
+                    //     headerDates.push(d)
                 }
-           
-                // Object.keys(TotalHrs).forEach(day => {
-                //   const dayDate = new Date(startDate);
-                //   dayDate.setDate(startDate.getDate() + (["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].indexOf(day) + 1 - startDate.getDay()) % 7);
-                //   let formmatedDate = `${dayDate.getMonth() + 1}/${dayDate.getDate()}/${dayDate.getFullYear()}`
-                //   const obj = {
-                //     Initiator: Initiator.Title,
-                //     Client: ClientName,
-                //     Date: formmatedDate,
-                //     Hours: TotalHrs[day]
-                //   };
-           
-                //   ExcelData.push(obj);
-                // });
-              });
-              console.log(ExcelData)
+            });
+            console.log(ExcelData)
+            headerDates = this.generateDateRange(startDate,EndDate)
+            console.log(headerDates)
+            ExcelData.sort((a, b) => {
+                const dateA = new Date(a.Date).getTime();
+                const dateB = new Date(b.Date).getTime();
+                return dateA - dateB;
+            });
+            headerDates.sort((a, b) => {
+                const dateA = new Date(a.Date).getTime();
+                const dateB = new Date(b.Date).getTime();
+                return dateA - dateB;
+            });
+            console.log("After sorting")
+            console.log(ExcelData)
+            console.log(headerDates)
+            // this.generateExcel(ExcelData, headerDates);
+
+            let finalArray = [];
+
+// Process the original array
+for (const item of ExcelData) {
+    // Ensure that the Date and Hours properties are present and valid
+    if (item.Date && item.Hours) {
+        // Find if there is an existing entry in finalArray for the same client and initiator
+        const existingEntryIndex = finalArray.findIndex(entry => entry.Client === item.Client && entry.Initiator === item.Initiator);
+        
+        // If there is no existing entry, create a new one
+        if (existingEntryIndex === -1) {
+            const newObj = { Client: item.Client, Initiator: item.Initiator };
+            // Initialize all dates with empty string
+            for (const date of headerDates) {
+                newObj[date] = '';
+            }
+            newObj[item.Date] = item.Hours;
+            finalArray.push(newObj);
+        } else {
+            // If there is an existing entry, update the working hours for the corresponding date
+            finalArray[existingEntryIndex][item.Date] = item.Hours;
         }
-        else{
-            customToaster('toster-error', ToasterTypes.Error,'No data found!', 4000);
+    } else {
+        console.log(`Invalid item encountered: ${JSON.stringify(item)}`);
+    }
+}
+
+// Sort the final array based on client and initiator
+finalArray.sort((a, b) => {
+    if (a.Client !== b.Client) {
+        return a.Client.localeCompare(b.Client);
+    } else {
+        return a.Initiator.localeCompare(b.Initiator);
+    }
+});
+
+// Output the final array
+console.log(finalArray);
+ this.generateExcel(finalArray, headerDates,startDate,EndDate);
+        }
+        else {
+            customToaster('toster-error', ToasterTypes.Error, 'No data found!', 4000);
         }
 
 
     }
+    private generateExcel(dataTable, headerDates,startDate,endDate) {
+        const wb = XLSX.utils.book_new();
+        const workSheetRows = []
+        let filename = 'Timesheet Daily Report'
+        let wrapColumnsArray = []
+        let headerRow = []
+        headerRow.push({ v: 'Client Name', t: "s", s: { font: { bold: true } } });
+        headerRow.push({ v: 'Employee Name', t: "s", s: { font: { bold: true } } })
+        let columnOrder = []
+        columnOrder.push("Client")
+        columnOrder.push("Initiator")
+        // columnOrder.concat(headerDates)
+        for (const d of headerDates) {
+            columnOrder.push(d)
+        }
+
+        for (const h of headerDates) {
+            let obj = {}
+            obj = { v: h, t: "s", s: { font: { bold: true } } }
+            headerRow.push(obj);
+        }
+        workSheetRows.push(headerRow)
+        dataTable.forEach((item) => {
+            let tempArr = [];
+            columnOrder.forEach((key) => {
+                if (key !== "Id" && item.hasOwnProperty(key)) {
+                    let value = item[key];
+                    let cellObj = {}
+                    if (wrapColumnsArray.includes(key)) {
+                        cellObj = { v: value, t: "s", s: { alignment: { wrapText: true }, font: { bold: false }, outerWidth: 250 } };
+                    }
+                    else {
+                        cellObj = { v: value, t: "s", s: { font: { bold: false } }, outerWidth: 250 };
+                    }
+                    tempArr.push(cellObj);
+                }
+            });
+            workSheetRows.push(tempArr);
+        });
+        // STEP 3: Create worksheet with rows; Add worksheet to workbook
+        const finalWorkshetData = XLSX.utils.aoa_to_sheet(workSheetRows)
+        finalWorkshetData['!autofilter'] = { ref: 'A1:B1' };
+        XLSX.utils.book_append_sheet(wb, finalWorkshetData, `${filename}`);
+        // STEP 4: Write Excel file to browser
+        XLSX.writeFile(wb, `${filename}(${startDate} to ${endDate}).xlsx`);
+
+    }
+
+    // private generateExcel(dataTable){
+    //         const wb = XLSX.utils.book_new();
+    //         const workSheetRows = []
+    //         let filename ='Timesheet Daily Report'
+    //         let wrapColumnsArray  =['Client','Initiator']
+    //         let headerRow = []
+    //         let columnOrder =[]
+    //         // STEP 2: Create data rows and styles
+    //         let columns = [
+    //             {
+    //                 name: "Client Name",
+    //                 selector: "Client",
+    //             },
+    //             {
+    //                 name: "Employee Name",
+    //                 selector: "Initiator",
+    //             },
+    //             {
+    //                 name: "Date",
+    //                 selector: "Date",
+    //             },
+    //             {
+    //                 name: "Hours Worked",
+    //                 selector: "Hours",
+    //                 sortable: true
+    //             },
+    //         ]
+    //         for (const h of columns) {
+    //             let obj = {}
+
+    //                 obj = {v:h.name,t:"s",s:{font: { bold: true},outerWidth:250}}
+
+    //             headerRow.push(obj);
+    //         }
+    //         for (const c of columns) {
+    //             columnOrder.push(c.selector)
+    //         }
+    //         workSheetRows.push(headerRow)
+    //         wrapColumnsArray = wrapColumnsArray==null? []:wrapColumnsArray
+    //         dataTable.forEach((item) => {
+    //             let tempArr = [];
+    //             columnOrder.forEach((key) => { 
+    //                 if (key !== "Id" && item.hasOwnProperty(key)) { 
+    //                     let value = item[key];
+    //                     let cellObj = {}
+    //                     if(wrapColumnsArray.includes(key)){
+    //                         cellObj= { v: value, t: "s", s: {alignment: { wrapText: true },font: { bold: false },outerWidth:250 } };
+    //                     }
+    //                     else{
+    //                         cellObj= { v: value, t: "s", s: { font: { bold: false } },outerWidth:250 };          
+    //                     }
+    //                     tempArr.push(cellObj);
+    //                 }
+    //             });
+    //             workSheetRows.push(tempArr);
+    //         });
+
+    //     // STEP 3: Create worksheet with rows; Add worksheet to workbook
+    //     const finalWorkshetData =   XLSX.utils.aoa_to_sheet(workSheetRows)
+    //     finalWorkshetData['!autofilter'] = { ref: 'A1:B1' };
+    //     XLSX.utils.book_append_sheet(wb, finalWorkshetData, `${filename}`);
+
+    //     // STEP 4: Write Excel file to browser
+    //     XLSX.writeFile(wb, `${filename}.xlsx`);
+
+    // }
 
     public render() {
         if (!this.state.isPageAccessable) {
@@ -307,7 +481,7 @@ class TimesheetReport extends React.Component<TimesheetReportProps, TimesheetRep
                 <React.Fragment>
                     <div className='container-fluid'>
                         <div className='FormContent'>
-                            <div className="title">Timesheet Report
+                            <div className="title">Timesheet Daily Report
                                 <div className='mandatory-note'>
                                     <span className='mandatoryhastrick'>*</span> indicates a required field
                                 </div>
@@ -364,7 +538,8 @@ class TimesheetReport extends React.Component<TimesheetReportProps, TimesheetRep
                                 </div>
                                 <div className="row mx-1" id="">
                                     <div className="col-sm-12 text-center my-2" id="">
-                                        <button type="button" className="SubmitButtons btn" onClick={this.handleSubmit}>Download Excel</button>
+                                        <button type="button" className="SubmitButtons btn" onClick={this.handleSubmit}>
+                                        <FontAwesomeIcon icon={faCloudDownload} className='btn upload-btn'></FontAwesomeIcon>Download</button>
                                     </div>
                                 </div>
                             </div>
