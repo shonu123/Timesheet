@@ -365,13 +365,13 @@ console.log(finalArray);
         let ExcelData = this.state.ResultExcelData
         const item = ExcelData.find(entry => entry.Client === client && entry.Initiator === initiator && entry.Date === date);
         if(item){
-            if([StatusType.ManagerReject.toString(),StatusType.ReviewerReject.toString()].includes(item.Status))
+            if([StatusType.ManagerReject.toString().toLowerCase(),StatusType.ReviewerReject.toString().toLowerCase()].includes(item.Status.toLowerCase()))
                 return StatusType.Reject;
-            else if(StatusType.Submit.toString()==item.Status)
+            else if(StatusType.Submit.toString().toLowerCase()==item.Status.toLowerCase())
                 return StatusType.Submit;
-            else if(StatusType.Revoke.toString()==item.Status)
+            else if(StatusType.Revoke.toString().toLowerCase()==item.Status.toLowerCase())
                 return StatusType.Revoke;
-            else if(StatusType.Approved.toString()==item.Status)
+            else if(StatusType.Approved.toString().toLowerCase()==item.Status.toLowerCase())
                 return StatusType.Approved;
             else
             return "" ;
