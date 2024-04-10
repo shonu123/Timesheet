@@ -20,7 +20,8 @@ import { SPHttpClient, SPHttpClientResponse, SPHttpClientConfiguration } from '@
 import sitePermissions from './Routing.module';
 import EmployeeMasterView from '../Masters/EmployeeMasterView.component';
 import Clients from '../Masters/ClientMaster.component';
-import TimesheetReport from '../Reports/TimesheetReport.component'
+import TimesheetReport from '../Reports/TimesheetReport.component';
+import DailyTimesheetReport from '../Reports/DailyTimesheetReport.component';
 export interface RoutesProps {
     spContext: any;
     spHttpClient: SPHttpClient;
@@ -79,10 +80,14 @@ class Routesitems extends Component<RoutesProps, RoutesState> {
           const WrapperDashboard = (props) => {
             let params =useParams();
             return <Dashboard {...this.context}{...this.props}  {...{...props, match: {params}} } />
-          }//TimesheetReport
+          }
           const TimesheetReports = (props) => {
             let params =useParams();
             return <TimesheetReport {...this.context}{...this.props}  {...{...props, match: {params}} } />
+          }
+          const DailyTimesheetReports = (props) => {
+            let params =useParams();
+            return <DailyTimesheetReport {...this.context}{...this.props}  {...{...props, match: {params}} } />
           }
         return (
             <Suspense fallback={<div></div>}>
@@ -96,6 +101,7 @@ class Routesitems extends Component<RoutesProps, RoutesState> {
                    <Route path='/ClientMaster/:id?' element ={<WrapperClientMaster/>} />
                     <Route path='/purchaserequest/:id?' element={<Wrapper />} />
                     <Route path='/TimesheetReport/' element ={<TimesheetReports/>} />
+                    <Route path='/DailyTimesheetReport/' element ={<DailyTimesheetReports/>} />
                     {/* <Route path='/TimesheetReport' element={(matchprops) => <TimesheetReport {...matchprops}{...this.props} />} /> */}
                     {/* <Route path='/requisitionreport' element={(matchprops) => <RequisitionReport {...matchprops}{...this.props} />} /> */}
                     {/* <Route path='/Dashboard/:message?' element={<Dashboard {...this.context} {...this.props} />} /> */}
