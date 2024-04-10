@@ -67,6 +67,10 @@ class AllRequests extends React.Component<AllRequestsProps,AllRequestsState> {
                         // ExcelRm = ExcelRm.substring(0, ExcelRm.lastIndexOf("\n"));
                     }
                     let date = new Date(d.WeekStartDate)
+                    let isBillable = true;
+                    if(d.ClientName.toLowerCase().includes('synergy')){
+                        isBillable = false
+                    }
                     Data.push({
                         Id : d.Id,
                         Date : `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`,
@@ -75,7 +79,7 @@ class AllRequests extends React.Component<AllRequestsProps,AllRequestsState> {
                         Status : d.Status=='rejected by Synergy'?'Rejected by Synergy':d.Status=='rejected by Manager'?'Rejected by Reporting Manager':d.Status,
                         Client: d.ClientName,
                         PendingWith: d.PendingWith == "Approver" ||d.PendingWith == "Manager" ?"Reporting Manager":d.PendingWith,
-                        BillableHours: d.WeeklyTotalHrs,
+                        BillableHours: isBillable?d.WeeklyTotalHrs:JSON.parse(d.SynergyOfficeHrs)[0].Total,
                         OTTotalHrs : d.OTTotalHrs,
                         TotalBillableHrs: d.BillableTotalHrs,
                         // NonBillableTotalHrs: d.NonBillableTotalHrs,
@@ -92,7 +96,7 @@ class AllRequests extends React.Component<AllRequestsProps,AllRequestsState> {
                         Status : d.Status=='rejected by Synergy'?'Rejected by Synergy':d.Status=='rejected by Manager'?'Rejected by Reporting Manager':d.Status,
                         Client: d.ClientName,
                         PendingWith: d.PendingWith == "Approver" ||d.PendingWith == "Manager" ?"Reporting Manager":d.PendingWith,
-                        BillableHours: d.WeeklyTotalHrs,
+                        BillableHours: isBillable?d.WeeklyTotalHrs:JSON.parse(d.SynergyOfficeHrs)[0].Total,
                         OTTotalHrs : d.OTTotalHrs,
                         TotalBillableHrs: d.BillableTotalHrs,
                         // NonBillableTotalHrs: d.NonBillableTotalHrs,
@@ -101,7 +105,6 @@ class AllRequests extends React.Component<AllRequestsProps,AllRequestsState> {
                         TotalHours: d.GrandTotal,
                         RM : ExcelRm
                     })
-
                 }
                 console.log(Data);
                 this.setState({ AllRequests: Data,ExportExcelData:ExcelData,loading: false });
@@ -148,7 +151,7 @@ class AllRequests extends React.Component<AllRequestsProps,AllRequestsState> {
                 name: "Reporting Manager",
                 selector: (row, i) => row.RM,
                 cell: row => <div dangerouslySetInnerHTML={{ __html: row.RM }} />,
-                width: '290px',
+                width: '250px',
                 sortable: true
             },
             {
@@ -162,7 +165,7 @@ class AllRequests extends React.Component<AllRequestsProps,AllRequestsState> {
                 sortable: true
             },
             {
-                name: "Billable",
+                name: "Hours",
                 selector: (row, i) => row.BillableHours,
                 sortable: true,
             },
@@ -232,7 +235,7 @@ class AllRequests extends React.Component<AllRequestsProps,AllRequestsState> {
                 sortable: true
             },
             {
-                name: "Billable Hours",
+                name: "Hours",
                 selector: "BillableHours",
                 sortable: true,
             },

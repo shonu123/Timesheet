@@ -66,12 +66,16 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
 
         var filterString = "Reviewers/Id eq '"+userId+"' and PendingWith eq 'NA' and Status eq '"+StatusType.Approved+"'"
 
-        sp.web.lists.getByTitle('WeeklyTimeSheet').items.top(2000).filter(filterString+filterQuery).expand("Reviewers").select('Reviewers/Title','*').orderBy('Modified', false).get()
+        sp.web.lists.getByTitle('WeeklyTimeSheet').items.top(5000).filter(filterString+filterQuery).expand("Reviewers").select('Reviewers/Title','*').orderBy('Modified', false).get()
             .then((response) => {
                 console.log(response)
                 let Data = [];
                 for (const d of response) {
                     let date = new Date(d.WeekStartDate)
+                    let isBillable = true;
+                    if(d.ClientName.toLowerCase().includes('synergy')){
+                        isBillable = false
+                    }
                     Data.push({
                         Id : d.Id,
                         Date : `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`,
@@ -79,7 +83,7 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
                         Company : d.ClientName,
                         PendingWith: d.PendingWith,
                         Status : d.Status=='rejected by Synergy'?'Rejected by Synergy':d.Status=='rejected by Manager'?'Rejected by Reporting Manager':d.Status,
-                        BillableHrs: d.WeeklyTotalHrs,
+                        BillableHrs: isBillable?d.WeeklyTotalHrs:JSON.parse(d.SynergyOfficeHrs)[0].Total,
                         OTTotalHrs : d.OTTotalHrs,
                         TotalBillableHours: d.BillableTotalHrs,
                         // NonBillableTotalHrs: d.NonBillableTotalHrs,
@@ -276,7 +280,7 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
             let tableContent = {}
             let date = new Date(data[0].DateSubmitted)
             if(data[0].ClientName.toLowerCase().includes("synergy")){
-                tableContent = {'Name':data[0].Name,'Client Name':data[0].ClientName,'Submitted Date':`${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`,'Office Hours':data[0].SynergyOfficeHrs,'Holiday Hours':JSON.parse(data[0].ClientHolidayHrs)[0].Total,'PTO Hours':JSON.parse(data[0].PTOHrs)[0].Total,'Grand Total Hours':data[0].GrandTotal}
+                tableContent = {'Name':data[0].Name,'Client Name':data[0].ClientName,'Submitted Date':`${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`,'Office Hours':JSON.parse(data[0].SynergyOfficeHrs)[0].Total,'Holiday Hours':JSON.parse(data[0].ClientHolidayHrs)[0].Total,'PTO Hours':JSON.parse(data[0].PTOHrs)[0].Total,'Grand Total Hours':data[0].GrandTotal}
             }
             else{
                 tableContent = {'Name':data[0].Name,'Client Name':data[0].ClientName,'Submitted Date':`${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`,'Billable Hours':data[0].WeeklyTotalHrs,'OT Hours':data[0].OTTotalHrs,'Total Billable Hours':data[0].BillableTotalHrs,'Holiday Hours':JSON.parse(data[0].ClientHolidayHrs)[0].Total,'PTO Hours':JSON.parse(data[0].PTOHrs)[0].Total,'Grand Total Hours':data[0].GrandTotal}
@@ -357,7 +361,7 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
                 {
                     name: "Employee Name",
                     selector: (row, i) => row.EmployeName,
-                    width: '300px',
+                    width: '250px',
                     sortable: true
                 },
                 {
@@ -379,7 +383,7 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
 
                 },
                 {
-                    name: "Billable",
+                    name: "Hours",
                     selector: (row, i) => row.BillableHrs,
                     sortable: true,
                 },

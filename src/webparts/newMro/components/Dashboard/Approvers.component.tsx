@@ -60,13 +60,17 @@ class ApproversApprovals extends React.Component<ApproversProps, ApproversState>
                 let Data = [];
                 for (const d of response) {
                     let date = new Date(d.WeekStartDate)
+                    let isBillable = true;
+                    if(d.ClientName.toLowerCase().includes('synergy')){
+                        isBillable = false
+                    }
                     Data.push({
                         Id : d.Id,
                         Date : `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`,
                         EmployeName: d.Name,
                         PendingWith: d.PendingWith == "Approver" ||d.PendingWith == "Manager" ?"Reporting Manager":d.PendingWith,
                         Status : d.Status==StatusType.ReviewerReject?'Rejected by Synergy':d.Status==StatusType.ManagerReject?'Rejected by Reporting Manager':d.Status,
-                        BillableTotalHrs: d.WeeklyTotalHrs,
+                        BillableTotalHrs: isBillable?d.WeeklyTotalHrs:JSON.parse(d.SynergyOfficeHrs)[0].Total,
                         OTTotalHrs : d.OTTotalHrs,
                         TotalBillable:d.BillableTotalHrs,
                         // NonBillableTotalHrs: d.NonBillableTotalHrs,
@@ -110,7 +114,7 @@ class ApproversApprovals extends React.Component<ApproversProps, ApproversState>
             {
                 name: "Employee Name",
                 selector: (row, i) => row.EmployeName,
-                width: '300px',
+                width: '250px',
                 sortable: true
             },
             {
@@ -124,8 +128,8 @@ class ApproversApprovals extends React.Component<ApproversProps, ApproversState>
                 sortable: true
             },
             {
-                name: "Billable",
-                selector: (row, i) => row.WeeklyTotalHrs,
+                name: "Hours",
+                selector: (row, i) => row.BillableTotalHrs,
                 sortable: true,
             },
             {
