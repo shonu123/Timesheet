@@ -409,10 +409,51 @@ let legend = [
     { v: 'Approved', t: "s", s: { font: { bold: true },fill: { fgColor: { rgb: 'a9e6fc' } },border: allBorders } },
     { v: 'Rejected', t: "s", s: { font: { bold: true },fill: { fgColor: { rgb: 'f7b5b5' } },border: allBorders } }
 ]
+let LegendRow = []
+let position = (columnOrder.length - 5)/2+""
+// position = parseInt(position)+""
 
-workSheetRows.push(legend)
-workSheetRows.push([])// giving a line of gap after Legend
-workSheetRows.push([])// giving a line gap after legend with this we get two lines of gap
+for(let i=0;i<=parseInt(position);i++){
+    LegendRow.push({ v: '', t: "s", s: { font: { bold: true },fill: { fgColor: { rgb: 'ffffff' },border: allBorders }} })
+}
+// LegendRow.concat(legend)
+for (const h of legend) {
+    LegendRow.push(h)
+}
+workSheetRows.push(LegendRow)
+let heading = [{ v: `Timesheet(${startDate} to ${endDate})`, t: "s", s: { alignment: { vertical: "center",horizontal:"center" },font: { bold: true,sz: 20 },fill: { fgColor: { rgb: 'ffffff' } },border: {
+    top: { style: 'thin', color: { rgb: "000000" } },
+    left: { style: 'thin', color: { rgb: "000000" } },
+    bottom: { style: 'thin', color: { rgb: "000000" } },
+    right: { style: 'thin', color: { rgb: "000000" } },
+} } }];
+
+for(let i=1;i<=columnOrder.length-2;i++){
+    if(columnOrder.length-2!=i){
+        heading.push({ v: '', t: "s", s: {alignment: { vertical: "center",horizontal:"center" }, font: { bold: true,sz: 20 },fill: { fgColor: { rgb: 'ffffff' } },border: {
+             top: { style: 'thin', color: { rgb: "000000" } },
+             left: { style: 'thin', color: { rgb: "000000" } },
+             bottom: { style: 'thin', color: { rgb: "000000" } },
+             right: { style: '', color: { rgb: "000000" } },
+         } } })
+    }
+    else{
+        heading.push({ v: '', t: "s", s: {alignment: { vertical: "center",horizontal:"center" }, font: { bold: true,sz: 20 },fill: { fgColor: { rgb: 'ffffff' } },border: {
+            top: { style: 'thin', color: { rgb: "000000" } },
+            left: { style: 'thin', color: { rgb: "000000" } },
+            bottom: { style: 'thin', color: { rgb: "000000" } },
+            right: { style: 'thin', color: { rgb: "000000" } },
+        } } })
+    }
+}
+heading.push({ v: '', t: "s", s: {alignment: { vertical: "center",horizontal:"center" }, font: { bold: true,sz: 20 },fill: { fgColor: { rgb: 'ffffff' } },border: {
+    top: { style: '', color: { rgb: "000000" } },
+    left: { style: 'thin', color: { rgb: "000000" } },
+    bottom: { style: '', color: { rgb: "000000" } },
+    right: { style: '', color: { rgb: "000000" } },
+} } })
+workSheetRows.push(heading)// header 
+workSheetRows.push([])// giving a line gap
         for (const h of headerDates) {
             let obj = {}
             obj = { v: h, t: "s", s: { font: { bold: true },border: allBorders } }
@@ -460,10 +501,14 @@ workSheetRows.push([])// giving a line gap after legend with this we get two lin
             });
             workSheetRows.push(tempArr);
         });
-        
+        let lastColumn = columnOrder.length-1
         //--------------new codes ends----------------------
         const finalWorkshetData = XLSX.utils.aoa_to_sheet(workSheetRows)
         finalWorkshetData['!autofilter'] = { ref: 'A4:B4' };
+        const merge = [
+            { s: { r: 1, c: 0 }, e: { r: 1, c: lastColumn } }
+          ];
+          finalWorkshetData["!merges"] = merge;
         XLSX.utils.book_append_sheet(wb, finalWorkshetData, `${filename}`);
         // STEP 4: Write Excel file to browser
         XLSX.writeFile(wb, `${filename}(${startDate} to ${endDate}).xlsx`);
