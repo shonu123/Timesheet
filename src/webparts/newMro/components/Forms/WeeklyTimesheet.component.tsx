@@ -450,6 +450,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
         trFormdata.Total=JSON.parse(data[0].TotalHrs);
         trFormdata.Status=data[0].Status;
         trFormdata.CommentsHistoryData=JSON.parse(data[0].CommentsHistory);
+        trFormdata.Comments='';
         trFormdata.SuperviserNames=JSON.parse(data[0].SuperviserName);
         trFormdata.Pendingwith=data[0].PendingWith;
         trFormdata.IsClientApprovalNeeded=false;//default value as false
@@ -1126,29 +1127,33 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
         this.setState({showConfirmDeletePopup:true,ConfirmPopupMessage:'Are you sure you want to approve?',ActionButtonId:event.target.id});
     }
     private showConfirmReject=(event)=>{
-        let data = {
-            Comments:{val:this.state.trFormdata.Comments,required:true, Name: 'Comments', Type: ControlType.string, Focusid:this.Comments},
-        };
-        let isValid = Formvalidator.checkValidations(data);
-        if (isValid.status) {
-        this.setState({showConfirmDeletePopup:true,ConfirmPopupMessage:'Are you sure you want to reject?',ActionButtonId:event.target.id});
+        // let data = {
+        //     Comments:{val:this.state.trFormdata.Comments,required:true, Name: 'Comments', Type: ControlType.string, Focusid:this.Comments},
+        // };
+        // let isValid = Formvalidator.checkValidations(data);
+        if ([null,undefined,""].includes(this.state.trFormdata.Comments.trim())) {
+            customToaster('toster-error',ToasterTypes.Error,'Comments cannot be blank.',4000)
+            document.getElementById("txtComments").focus();
+            document.getElementById("txtComments").classList.add('mandatory-FormContent-focus');
         }
         else
         {
-        customToaster('toster-error',ToasterTypes.Error,isValid.message,4000)
+            this.setState({showConfirmDeletePopup:true,ConfirmPopupMessage:'Are you sure you want to reject?',ActionButtonId:event.target.id});
         }
     }
     private showConfirmRevoke=(event)=>{
-        let data = {
-            Comments:{val:this.state.trFormdata.Comments,required:true, Name: 'Comments', Type: ControlType.string, Focusid:this.Comments},
-        };
-        let isValid = Formvalidator.checkValidations(data);
-        if (isValid.status) {
-        this.setState({showConfirmDeletePopup:true,ConfirmPopupMessage:'Are you sure you want to revoke?',ActionButtonId:event.target.id});
+        // let data = {
+        //     Comments:{val:this.state.trFormdata.Comments,required:true, Name: 'Comments', Type: ControlType.string, Focusid:this.Comments},
+        // };
+        // let isValid = Formvalidator.checkValidations(data);
+        if ([null,undefined,""].includes(this.state.trFormdata.Comments.trim())) {
+            customToaster('toster-error',ToasterTypes.Error,'Comments cannot be blank.',4000)
+            document.getElementById("txtComments").focus();
+            document.getElementById("txtComments").classList.add('mandatory-FormContent-focus');
         }
         else
         {
-        customToaster('toster-error',ToasterTypes.Error,isValid.message,4000)
+        this.setState({showConfirmDeletePopup:true,ConfirmPopupMessage:'Are you sure you want to revoke?',ActionButtonId:event.target.id});
         }
        
     }
@@ -1636,6 +1641,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                 trFormdata.Total=JSON.parse(ExistRecordData[0].TotalHrs);
                 trFormdata.Status=ExistRecordData[0].Status;
                 trFormdata.CommentsHistoryData=JSON.parse(ExistRecordData[0].CommentsHistory);
+                trFormdata.Comments="";
                 trFormdata.SuperviserNames=JSON.parse(ExistRecordData[0].SuperviserName);
                 trFormdata.Pendingwith=ExistRecordData[0].PendingWith;
                 trFormdata.IsClientApprovalNeeded=false;
