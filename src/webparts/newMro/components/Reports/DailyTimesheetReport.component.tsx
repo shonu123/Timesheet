@@ -251,7 +251,7 @@ class DailyTimesheetReport extends React.Component<DailyTimesheetReportProps, Da
             }
         }
         filterQuery+="and Status ne '"+StatusType.Save+"'"
-        let reportData = await sp.web.lists.getByTitle('WeeklyTimeSheet').items.filter(filterQuery).expand('Initiator').select('Initiator/Title,TotalHrs,ClientName,WeekStartDate,Status').orderBy('WeekStartDate,ClientName,Initiator/Title', true).getAll()
+        let reportData = await sp.web.lists.getByTitle('WeeklyTimeSheet').items.filter(filterQuery).expand('Initiator').select('Initiator/Title,TotalHrs,ClientName,WeekStartDate,Status').top(5000).orderBy('WeekStartDate,ClientName,Initiator/Title', true).getAll()
         if (reportData.length > 0) {
             console.log(reportData)
             let ExcelData = []
