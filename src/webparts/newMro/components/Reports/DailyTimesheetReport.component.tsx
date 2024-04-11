@@ -259,8 +259,6 @@ class DailyTimesheetReport extends React.Component<DailyTimesheetReportProps, Da
             reportData.forEach(report => {
                 let { Initiator, WeekStartDate, TotalHrs, ClientName, Status } = report;
                 const startDate = new Date(WeekStartDate);
-                let startDay = startDate.getDay()
-
                 let weekDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
                 TotalHrs = JSON.parse(TotalHrs)
                 let dates = []
@@ -290,10 +288,7 @@ class DailyTimesheetReport extends React.Component<DailyTimesheetReportProps, Da
                          obj.Date= d,
                         obj.Hours = arrangedWeekDays[new Date(d).getDay()],
                         obj.Status = Status
-                        // obj[""+d] = arrangedWeekDays[new Date(d).getDay()]
                     ExcelData.push(obj);
-                    // if (!headerDates.includes(d))//in a single if user submits timesheet for two clients
-                    //     headerDates.push(d)
                 }
             });
             console.log(ExcelData)
@@ -316,7 +311,7 @@ class DailyTimesheetReport extends React.Component<DailyTimesheetReportProps, Da
             this.state.ResultExcelData = ExcelData;
             let finalArray = [];
 
-// Process the original array
+//Process the original array
 for (const item of ExcelData) {
     // Ensure that the Date and Hours properties are present and valid
     if (item.Date && item.Hours) {
@@ -381,6 +376,31 @@ console.log(finalArray);
         }
     }
 
+    private constructMergedCellsData(headermessage,length,fontsize){
+        let heading = [{ v: headermessage, t: "s", s: { alignment: { vertical: "center",horizontal:"center" },font: { bold: true,sz: fontsize },fill: { fgColor: { rgb: 'ffffff' } },border: {
+            top: { style: 'thin', color: { rgb: "000000" } },
+            left: { style: 'thin', color: { rgb: "000000" } },
+            bottom: { style: 'thin', color: { rgb: "000000" } },
+            right: { style: 'thin', color: { rgb: "000000" } },
+        } } }];
+        
+        for(let i=1;i<=length;i++){
+                heading.push({ v: '', t: "s", s: {alignment: { vertical: "center",horizontal:"center" }, font: { bold: true,sz: fontsize },fill: { fgColor: { rgb: 'ffffff' } },border: {
+                     top: { style: 'thin', color: { rgb: "000000" } },
+                     left: { style: 'thin', color: { rgb: "000000" } },
+                     bottom: { style: 'thin', color: { rgb: "000000" } },
+                     right: { style: '', color: { rgb: "000000" } },
+                 } } })
+        }
+        heading.push({ v: '', t: "s", s: {alignment: { vertical: "center",horizontal:"center" }, font: { bold: true,sz: fontsize },fill: { fgColor: { rgb: 'ffffff' } },border: {
+            top: { style: 'thin', color: { rgb: "000000" } },
+            left: { style: 'thin', color: { rgb: "000000" } },
+            bottom: { style: 'thin', color: { rgb: "000000" } },
+            right: { style: 'thin', color: { rgb: "000000" } },
+        } } })
+        return heading
+    }
+
     private generateExcel(dataTable, headerDates,startDate,endDate) {
         const wb = XLSX.utils.book_new();
         const workSheetRows = []
@@ -398,67 +418,37 @@ console.log(finalArray);
         let columnOrder = []
         columnOrder.push("Client")
         columnOrder.push("Initiator")
-        // columnOrder.concat(headerDates) color: { rgb: "FF0000" }
         for (const d of headerDates) {
             columnOrder.push(d)
         }
+        // columnOrder.push("Total")
 let legend = [
+    { v: '', t: "s", s: { font: { bold: true },fill: { fgColor: { rgb: 'ffffff' },border: allBorders }} },
+    { v: '', t: "s", s: { font: { bold: true },fill: { fgColor: { rgb: 'ffffff' },border: allBorders }} },
+    { v: '', t: "s", s: { font: { bold: true },fill: { fgColor: { rgb: 'ffffff' },border: allBorders }} },
+    { v: '', t: "s", s: { font: { bold: true },fill: { fgColor: { rgb: 'ffffff' },border: allBorders }} },
     { v: 'Legend', t: "s", s: { font: { bold: true },fill: { fgColor: { rgb: 'ffffff' } },border: allBorders } },
     { v: 'Submitted', t: "s", s: { font: { bold: true },fill: { fgColor: { rgb: 'fafac5' } },border: allBorders } },
     { v: 'Revoked', t: "s", s: { font: { bold: true },fill: { fgColor: { rgb: 'fae3ea' } },border: allBorders } },
     { v: 'Approved', t: "s", s: { font: { bold: true },fill: { fgColor: { rgb: 'a9e6fc' } },border: allBorders } },
     { v: 'Rejected', t: "s", s: { font: { bold: true },fill: { fgColor: { rgb: 'f7b5b5' } },border: allBorders } }
 ]
-let LegendRow = []
-let position = (columnOrder.length - 5)/2+""
-// position = parseInt(position)+""
+workSheetRows.push(legend)
+workSheetRows.push([])
+let headingRow = this.constructMergedCellsData(`Synergy Computer Solutions, Inc.`,columnOrder.length-2,28);
 
-for(let i=0;i<=parseInt(position);i++){
-    LegendRow.push({ v: '', t: "s", s: { font: { bold: true },fill: { fgColor: { rgb: 'ffffff' },border: allBorders }} })
-}
-// LegendRow.concat(legend)
-for (const h of legend) {
-    LegendRow.push(h)
-}
-workSheetRows.push(LegendRow)
-let heading = [{ v: `Timesheet(${startDate} to ${endDate})`, t: "s", s: { alignment: { vertical: "center",horizontal:"center" },font: { bold: true,sz: 20 },fill: { fgColor: { rgb: 'ffffff' } },border: {
-    top: { style: 'thin', color: { rgb: "000000" } },
-    left: { style: 'thin', color: { rgb: "000000" } },
-    bottom: { style: 'thin', color: { rgb: "000000" } },
-    right: { style: 'thin', color: { rgb: "000000" } },
-} } }];
-
-for(let i=1;i<=columnOrder.length-2;i++){
-    if(columnOrder.length-2!=i){
-        heading.push({ v: '', t: "s", s: {alignment: { vertical: "center",horizontal:"center" }, font: { bold: true,sz: 20 },fill: { fgColor: { rgb: 'ffffff' } },border: {
-             top: { style: 'thin', color: { rgb: "000000" } },
-             left: { style: 'thin', color: { rgb: "000000" } },
-             bottom: { style: 'thin', color: { rgb: "000000" } },
-             right: { style: '', color: { rgb: "000000" } },
-         } } })
-    }
-    else{
-        heading.push({ v: '', t: "s", s: {alignment: { vertical: "center",horizontal:"center" }, font: { bold: true,sz: 20 },fill: { fgColor: { rgb: 'ffffff' } },border: {
-            top: { style: 'thin', color: { rgb: "000000" } },
-            left: { style: 'thin', color: { rgb: "000000" } },
-            bottom: { style: 'thin', color: { rgb: "000000" } },
-            right: { style: 'thin', color: { rgb: "000000" } },
-        } } })
-    }
-}
-heading.push({ v: '', t: "s", s: {alignment: { vertical: "center",horizontal:"center" }, font: { bold: true,sz: 20 },fill: { fgColor: { rgb: 'ffffff' } },border: {
-    top: { style: '', color: { rgb: "000000" } },
-    left: { style: 'thin', color: { rgb: "000000" } },
-    bottom: { style: '', color: { rgb: "000000" } },
-    right: { style: '', color: { rgb: "000000" } },
-} } })
-workSheetRows.push(heading)// header 
+workSheetRows.push(headingRow)// header 
 workSheetRows.push([])// giving a line gap
+ headingRow = this.constructMergedCellsData(`Timesheet(${startDate} to ${endDate})`,columnOrder.length-2,20);
+ workSheetRows.push(headingRow)// header 
+ workSheetRows.push([])// giving a line gap
+
         for (const h of headerDates) {
             let obj = {}
             obj = { v: h, t: "s", s: { font: { bold: true },border: allBorders } }
             headerRow.push(obj);
         }
+        headerRow.push({ v: 'Total', t: "s", s: { font: { bold: true },border: allBorders } })
         workSheetRows.push(headerRow)
         
         //-------------------new code starts---------------
@@ -499,16 +489,42 @@ workSheetRows.push([])// giving a line gap
                     tempArr.push(cellObj);
                 }
             });
+            let Total =0
+            for(let t of tempArr){
+                // console.log(t.s.fill.fgColor.rgb)
+                if(t.s.fill.fgColor.rgb == 'a9e6fc'){
+                    Total += parseFloat(t.v)
+                }
+            } console.log("Approved Total = "+Total)
+            tempArr.push({ v: Total, t: "s", s: { alignment: { wrapText: true },border: allBorders, font: { bold: false}, fill: { fgColor: { rgb: 'a9e6fc' }} } })
             workSheetRows.push(tempArr);
         });
         let lastColumn = columnOrder.length-1
         //--------------new codes ends----------------------
+
+
         const finalWorkshetData = XLSX.utils.aoa_to_sheet(workSheetRows)
-        finalWorkshetData['!autofilter'] = { ref: 'A4:B4' };
+        finalWorkshetData['!autofilter'] = { ref: 'A7:B7' };
+        // mention the range of merge for individual row/item according
         const merge = [
-            { s: { r: 1, c: 0 }, e: { r: 1, c: lastColumn } }
+            { s: { r: 2, c: 0 }, e: { r: 2, c: lastColumn } },{ s: { r: 4, c: 0 }, e: { r: 4, c: lastColumn } }
           ];
           finalWorkshetData["!merges"] = merge;
+          finalWorkshetData['!images'] = [
+            {
+                name: 'logo.jpg',
+                data: require('../Images/logo.jpg'),
+                opts: { base64: true },
+                position: {
+                    // type: 'twoCellAnchor',
+                    // attrs: { editAs: 'oneCell' },
+                    // tl: { col: 2, row : 18 },
+                    // ext: { col: 8, row: 22 }
+                    from: { col: 2, row : 18 },
+                    to: { col: 8, row: 22 }
+                }
+            }
+          ]
         XLSX.utils.book_append_sheet(wb, finalWorkshetData, `${filename}`);
         // STEP 4: Write Excel file to browser
         XLSX.writeFile(wb, `${filename}(${startDate} to ${endDate}).xlsx`);
