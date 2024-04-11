@@ -224,7 +224,7 @@ class Dashboard extends React.Component<DashboardProps, DashboardState> {
         return (
             <React.Fragment>
             
-            <div id="content" className="content p-2 pt-2">
+            {this.state.isEmployeeConfigured&&<div id="content" className="content p-2 pt-2">
                 <div id="clickMenu" className="menu-icon-outer" onClick={(event) => this.onMenuItemClick(event)}>
                     <div className="menu-icon">
                         <span>
@@ -248,15 +248,15 @@ class Dashboard extends React.Component<DashboardProps, DashboardState> {
                                         <a className="nav-link" id="AllRequests-tab" data-toggle="tab" href="#/AllTimesheets" role="tab" aria-controls="AdminRequests" aria-selected="false">All Timesheets</a>
                                     </li>}
 
-                                    {this.state.isEmployeeConfigured &&this.state.showRequestTab  &&  <li className="nav-item" role="presentation" onClick={() => this.onHandleClick('MyRequests')} >
+                                    {this.state.showRequestTab  &&  <li className="nav-item" role="presentation" onClick={() => this.onHandleClick('MyRequests')} >
                                         <a className="nav-link" id="MyRequests-tab" data-toggle="tab" href="#/MyTimesheets" role="tab" aria-controls="profile" aria-selected="false">My Timesheets</a>
                                     </li>}
 
-                                    {this.state.isEmployeeConfigured && this.state.showMyApprovalsTab &&   <li className="nav-item" role="presentation" onClick={() => this.onHandleClick('Approvers')} >
+                                    {this.state.showMyApprovalsTab &&   <li className="nav-item" role="presentation" onClick={() => this.onHandleClick('Approvers')} >
                                         <a className="nav-link active" id="Approvers-tab" data-toggle="tab" href="#/Approvers" role="tab" aria-controls="home" aria-selected="true">My Approvals</a>
                                     </li>}
                                   
-                                    {this.state.isEmployeeConfigured && this.state.showMyReviewersTab &&<li className="nav-item" role="presentation" onClick={() => this.onHandleClick('Reviewers')} >
+                                    {this.state.showMyReviewersTab &&<li className="nav-item" role="presentation" onClick={() => this.onHandleClick('Reviewers')} >
                                         <a className="nav-link" id="ReviewersApprovals-tab" data-toggle="tab" href="#/Reviewers" role="tab" aria-controls="profile" aria-selected="false">My Reviews</a>
                                     </li>}
                                     
@@ -290,7 +290,7 @@ class Dashboard extends React.Component<DashboardProps, DashboardState> {
                     </div>
                 </div>
              </div>
-            </div>
+            </div>}
             {!this.state.isEmployeeConfigured&&<div className='noConfiguration'>
                 <div className='ImgUnLink'><img src={require('../Images/unLink.png')} alt="" className=''/></div>
                 <b>You are not configured in Approval Matrix.</b>Please contact Administrator.</div>}
