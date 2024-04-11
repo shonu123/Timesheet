@@ -287,7 +287,7 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
             }
             console.log(tableContent)
 
-            this.updateStatus(recordId,'Rejected by Synergy',commentsObj,toEmail,ccEmail,tableContent)
+            this.updateStatus(recordId,StatusType.ReviewerReject,commentsObj,toEmail,ccEmail,tableContent)
         }
     }
     //This function is used to close popup
