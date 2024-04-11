@@ -69,7 +69,7 @@ const DatePickercontrol = (props) => {
     dateFormat={'MM/dd/yyyy'} 
           showBorder ={true}       
           onChange={handlechangeevent}
-          placeholder={''}
+          placeholder={'MM/DD/YYYY '}
           className="form-control DatePicker"//{props.isDisabled ? "form-control DatePicker c-input-readonly" : "form-control DatePicker"}//"form-control DatePicker" // custom class
          
         />

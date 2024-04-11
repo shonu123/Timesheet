@@ -1997,12 +1997,14 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
         if (userEmail == this.state.EmployeeEmail || isAdmin) {
             let Approve = StatusType.Approved.toString()
             let submit = StatusType.Submit.toString()
-            if (![Approve, submit].includes(this.state.trFormdata.Status)) {
-                this.setState({ showSubmitSavebtn: true })
-            }
-            if ([Approve, submit].includes(this.state.trFormdata.Status)) {
+            if (![Approve, submit].includes(this.state.trFormdata.Status)) 
+                this.setState({ showSubmitSavebtn: true})
+            else
+            this.setState({ showSubmitSavebtn: false})
+            if ([Approve, submit].includes(this.state.trFormdata.Status))
                 this.setState({showRevokebtn: true })
-            }
+            else
+            this.setState({showRevokebtn:false })
         }
         else {
             this.setState({ showSubmitSavebtn: false,showRevokebtn:false })
