@@ -383,7 +383,6 @@ console.log(finalArray);
             bottom: { style: 'thin', color: { rgb: "000000" } },
             right: { style: 'thin', color: { rgb: "000000" } },
         } } }];
-        
         for(let i=1;i<=length;i++){
                 heading.push({ v: '', t: "s", s: {alignment: { vertical: "center",horizontal:"center" }, font: { bold: true,sz: fontsize },fill: { fgColor: { rgb: 'ffffff' } },border: {
                      top: { style: 'thin', color: { rgb: "000000" } },
@@ -435,11 +434,11 @@ let legend = [
 ]
 workSheetRows.push(legend)
 workSheetRows.push([])
-let headingRow = this.constructMergedCellsData(`Synergy Computer Solutions, Inc.`,columnOrder.length-2,28);
+let headingRow = this.constructMergedCellsData(`Synergy Computer Solutions, Inc.`,columnOrder.length-1>6?columnOrder.length-1:6,28);
 
 workSheetRows.push(headingRow)// header 
 workSheetRows.push([])// giving a line gap
- headingRow = this.constructMergedCellsData(`Timesheet(${startDate} to ${endDate})`,columnOrder.length-2,20);
+ headingRow = this.constructMergedCellsData(`Timesheet(${startDate} to ${endDate})`,columnOrder.length-1>6?columnOrder.length-1:6,20);
  workSheetRows.push(headingRow)// header 
  workSheetRows.push([])// giving a line gap
 
@@ -499,16 +498,16 @@ workSheetRows.push([])// giving a line gap
             tempArr.push({ v: Total, t: "s", s: { alignment: { wrapText: true },border: allBorders, font: { bold: false}, fill: { fgColor: { rgb: 'a9e6fc' }} } })
             workSheetRows.push(tempArr);
         });
-        let lastColumn = columnOrder.length-1
+        let lastColumn = columnOrder.length
         //--------------new codes ends----------------------
-
 
         const finalWorkshetData = XLSX.utils.aoa_to_sheet(workSheetRows)
         finalWorkshetData['!autofilter'] = { ref: 'A7:B7' };
         // mention the range of merge for individual row/item according
         const merge = [
-            { s: { r: 2, c: 0 }, e: { r: 2, c: lastColumn } },{ s: { r: 4, c: 0 }, e: { r: 4, c: lastColumn } }
-          ];
+                { s: { r: 2, c: 0 }, e: { r: 2, c: lastColumn>7?lastColumn:7 } },{ s: { r: 4, c: 0 }, e: { r: 4, c: lastColumn>7?lastColumn:7 } }
+              ];
+
           finalWorkshetData["!merges"] = merge;
           finalWorkshetData['!images'] = [
             {
@@ -516,10 +515,8 @@ workSheetRows.push([])// giving a line gap
                 data: require('../Images/logo.jpg'),
                 opts: { base64: true },
                 position: {
-                    // type: 'twoCellAnchor',
-                    // attrs: { editAs: 'oneCell' },
-                    // tl: { col: 2, row : 18 },
-                    // ext: { col: 8, row: 22 }
+                    type: 'twoCellAnchor',
+                    attrs: { editAs: 'oneCell' },
                     from: { col: 2, row : 18 },
                     to: { col: 8, row: 22 }
                 }
@@ -668,9 +665,6 @@ workSheetRows.push([])// giving a line gap
                                     <div className="col-sm-12 text-center my-2" id="">
                                         <button type="button" className="DownloadButtons btn" onClick={this.handleSubmit}>
                                         <FontAwesomeIcon icon={faCloudDownload} className=''></FontAwesomeIcon>Download</button>
-                                        {/* <button type="button" className="DownloadButtons btn" onClick={this.Test}>
-                                        <FontAwesomeIcon icon={faCloudDownload} className=''></FontAwesomeIcon>Test</button> */}
-
                                     </div>
                                 </div>
                             </div>
@@ -684,23 +678,3 @@ workSheetRows.push([])// giving a line gap
     }
 }
 export default DailyTimesheetReport
-
-// reportData.forEach(report => {
-//     let { Initiator, WeekStartDate, TotalHrs, ClientName } = report;
-//     const startDate = new Date(WeekStartDate);
-//     let startDay = startDate.getDay()
-//     TotalHrs = JSON.parse(TotalHrs)
-//     Object.keys(TotalHrs).forEach(day => {
-//       const dayDate = new Date(startDate);
-//       dayDate.setDate(startDate.getDate() + (["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].indexOf(day) + 1 - startDate.getDay()) % 7);
-//       let formmatedDate = `${dayDate.getMonth() + 1}/${dayDate.getDate()}/${dayDate.getFullYear()}`
-//       const obj = {
-//         Initiator: Initiator.Title,
-//         Client: ClientName,
-//         Date: formmatedDate,
-//         Hours: TotalHrs[day]
-//       };
-
-//       ExcelData.push(obj);
-//     });
-//   });
