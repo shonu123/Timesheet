@@ -73,6 +73,7 @@ export interface WeeklyTimesheetState {
         ReviewersEmail:any,
         NotifiersEmail:any,
         IsClientApprovalNeeded:boolean,
+        IsClientApprovalNeededUI:boolean,
         Revised:boolean,
         IsSubmitted:boolean
 
@@ -192,6 +193,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                 ReviewersEmail:[],
                 NotifiersEmail:[],
                 IsClientApprovalNeeded:false,
+                IsClientApprovalNeededUI:false,
                 Revised:false,
                 IsSubmitted:false
             },
@@ -453,7 +455,8 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
         trFormdata.Comments='';
         trFormdata.SuperviserNames=JSON.parse(data[0].SuperviserName);
         trFormdata.Pendingwith=data[0].PendingWith;
-        trFormdata.IsClientApprovalNeeded=false;//default value as false
+        trFormdata.IsClientApprovalNeeded=data[0].IsClientApprovalNeed;//default value as false
+        trFormdata.IsClientApprovalNeededUI=false;//default value as false
         trFormdata.Revised=data[0].Revised;
         trFormdata.IsSubmitted=data[0].IsSubmitted;
         let EmpEmail=[];
@@ -1042,7 +1045,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
         {  
             if(parseFloat(trFormdata.WeeklyItemsData[i].Total)==0)
             {
-                isValid.message="Total working hours in a week cannot be 0";
+                isValid.message="Total working hours in a week cannot be 0 .";
                 isValid.status=false;
                 document.getElementById(i+"_Total_weekrow").focus();
                 document.getElementById(i+"_Total_weekrow").classList.add('mandatory-FormContent-focus');
@@ -1073,7 +1076,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
         {
             if(parseFloat(trFormdata.OTItemsData[i].Total)==0)
             {
-                isValid.message="Total working hours in a week cannot be 0";
+                isValid.message="Total working hours in a week cannot be 0 .";
                 isValid.status=false;
                 document.getElementById(i+"_Total_otrow").focus();
                 document.getElementById(i+"_Total_otrow").classList.add('mandatory-FormContent-focus');
@@ -1207,7 +1210,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                 ReportingManagerId:{"results":formdata.SuperviserIds},
                 ReviewersId:{"results":formdata.ReviewerIds},
                 NotifiersId:{"results":formdata.NotifierIds},
-               IsClientApprovalNeed:formdata.IsClientApprovalNeeded,
+               IsClientApprovalNeed:formdata.IsClientApprovalNeededUI,
                Revised:formdata.Revised
             }
             if(Action.toLowerCase()=="btnsave")
@@ -1399,7 +1402,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
             }
             postObject['PendingWith']="Initiator";
             postObject["CommentsHistory"]=JSON.stringify(formdata.CommentsHistoryData),
-            postObject['IsClientApprovalNeed']=formdata.IsClientApprovalNeeded;
+            postObject['IsClientApprovalNeed']=formdata.IsClientApprovalNeededUI;
             this.setState({errorMessage : '',trFormdata:formdata});
             this.InsertorUpdatedata(postObject,formdata);
     }
@@ -1644,7 +1647,8 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                 trFormdata.Comments="";
                 trFormdata.SuperviserNames=JSON.parse(ExistRecordData[0].SuperviserName);
                 trFormdata.Pendingwith=ExistRecordData[0].PendingWith;
-                trFormdata.IsClientApprovalNeeded=false;
+                trFormdata.IsClientApprovalNeeded=ExistRecordData[0].IsClientApprovalNeed;
+                trFormdata.IsClientApprovalNeededUI=false;
                 trFormdata.Revised=ExistRecordData[0].Revised;
                 trFormdata.IsSubmitted=ExistRecordData[0].IsSubmitted;
                 let EmpEmail=[];
@@ -1752,6 +1756,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                 trFormdata.ReviewersEmail=[];
                 trFormdata.NotifiersEmail=[];
                 trFormdata.IsClientApprovalNeeded=false;
+                trFormdata.IsClientApprovalNeededUI=false;
                 trFormdata.Revised=false;
                 trFormdata.IsSubmitted=false;
 
@@ -1883,6 +1888,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
             trFormdata.ReviewersEmail=[];
             trFormdata.NotifiersEmail=[];
             trFormdata.IsClientApprovalNeeded=false;
+            trFormdata.IsClientApprovalNeededUI=false;
             trFormdata.Revised=false;
             trFormdata.IsSubmitted=false;
 
@@ -2057,7 +2063,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                     DayTime=parseFloat(val);
                     if(DayTime>24)
                     {
-                         isValid.message="Total working hours in a day must not exceed 24 hours";
+                         isValid.message="Total working hours in a day must not exceed 24 hours.";
                           isValid.status=false;
                         document.getElementById("Total"+key).focus();
                         document.getElementById("Total"+key).classList.add('mandatory-FormContent-focus');
@@ -2071,7 +2077,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
             {
                 if(formdata.SynergyOfficeHrs[0].Description.trim()=="" && formdata.IsDescriptionMandatory)
                  {
-                     isValid.message="Description cannot be blank";
+                     isValid.message="Description cannot be blank.";
                      isValid.status=false;
                      document.getElementById("0_Description_SynOffcHrs").focus();
                      document.getElementById("0_Description_SynOffcHrs").classList.add('mandatory-FormContent-focus');
@@ -2079,7 +2085,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                  }
                  else if(formdata.SynergyOfficeHrs[0].ProjectCode.trim()=="" && formdata.IsProjectCodeMandatory)
                  {
-                     isValid.message="Project Code cannot be blank";
+                     isValid.message="Project Code cannot be blank.";
                      isValid.status=false;
                      document.getElementById("0_ProjectCode_SynOffcHrs").focus();
                      document.getElementById("0_ProjectCode_SynOffcHrs").classList.add('mandatory-FormContent-focus');
@@ -2099,7 +2105,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                  }
                  if(isAllDaysEmpty)
                  {
-                     isValid.message="Hours cannot be blank, Please provide atleast 0";
+                     isValid.message="Hours cannot be blank, Please provide atleast 0 .";
                      isValid.status=false;
                      document.getElementById("0_"+this.WeekNames[0].day1+"_SynOffcHrs").focus();
                      document.getElementById("0_"+this.WeekNames[0].day1+"_SynOffcHrs").classList.add('mandatory-FormContent-focus');
@@ -2112,7 +2118,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                   { 
                      if(formdata.WeeklyItemsData[i].Description.trim()=="" && formdata.IsDescriptionMandatory)
                      {
-                         isValid.message="Description cannot be blank";
+                         isValid.message="Description cannot be blank.";
                          isValid.status=false;
                          document.getElementById(i+"_Description_weekrow").focus();
                          document.getElementById(i+"_Description_weekrow").classList.add('mandatory-FormContent-focus');
@@ -2120,7 +2126,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                      }
                      else if(formdata.WeeklyItemsData[i].ProjectCode.trim()=="" && formdata.IsProjectCodeMandatory)
                      {
-                         isValid.message="Project Code cannot be blank";
+                         isValid.message="Project Code cannot be blank.";
                          isValid.status=false;
                          document.getElementById(i+"_ProjectCode_weekrow").focus();
                          document.getElementById(i+"_ProjectCode_weekrow").classList.add('mandatory-FormContent-focus');
@@ -2140,7 +2146,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                      }
                      if(isAllDaysEmpty)
                      {
-                         isValid.message="Hours cannot be blank, Please provide atleast 0";
+                         isValid.message="Hours cannot be blank, Please provide atleast 0 .";
                          isValid.status=false;
                          document.getElementById(i+"_"+this.WeekNames[0].day1+"_weekrow").focus();
                          document.getElementById(i+"_"+this.WeekNames[0].day1+"_weekrow").classList.add('mandatory-FormContent-focus');
@@ -2154,7 +2160,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                       { 
                          if(formdata.OTItemsData[i].Description.trim()=="" && formdata.IsDescriptionMandatory&&parseFloat(formdata.OTItemsData[i].Total)!=0)
                          {
-                             isValid.message="Description cannot be blank";
+                             isValid.message="Description cannot be blank.";
                              isValid.status=false;
                              document.getElementById(i+"_Description_otrow").focus();
                              document.getElementById(i+"_Description_otrow").classList.add('mandatory-FormContent-focus');
@@ -2162,7 +2168,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                          }
                          else if(formdata.OTItemsData[i].ProjectCode.trim()=="" && formdata.IsProjectCodeMandatory&&parseFloat(formdata.OTItemsData[i].Total)!=0)
                          {
-                             isValid.message="Project Code cannot be blank";
+                             isValid.message="Project Code cannot be blank.";
                              isValid.status=false;
                              document.getElementById(i+"_ProjectCode_otrow").focus();
                              document.getElementById(i+"_ProjectCode_otrow").classList.add('mandatory-FormContent-focus');
@@ -2181,7 +2187,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                                  }
                              } 
                              if (isAllDaysEmpty) {
-                                 isValid.message = "Hours cannot be blank, Please provide atleast 0";
+                                 isValid.message = "Hours cannot be blank, Please provide atleast 0 .";
                                  isValid.status = false;
                                  document.getElementById(i+"_"+this.WeekNames[0].day1+"_otrow").focus();
                                  document.getElementById(i+"_"+this.WeekNames[0].day1+"_otrow").classList.add('mandatory-FormContent-focus');
@@ -2197,7 +2203,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
              {
                  if(formdata.ClientHolidayHrs[0].Description.trim()=="" && formdata.IsDescriptionMandatory)
                  {
-                     isValid.message="Description cannot be blank";
+                     isValid.message="Description cannot be blank.";
                      isValid.status=false;
                      document.getElementById("0_Description_ClientHldHrs").focus();
                      document.getElementById("0_Description_ClientHldHrs").classList.add('mandatory-FormContent-focus');
@@ -2205,7 +2211,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                  }
                  else if(formdata.ClientHolidayHrs[0].ProjectCode.trim()=="" && formdata.IsProjectCodeMandatory)
                  {
-                     isValid.message="Project Code cannot be blank";
+                     isValid.message="Project Code cannot be blank.";
                      isValid.status=false;
                      document.getElementById("0_ProjectCode_ClientHldHrs").focus();
                      document.getElementById("0_ProjectCode_ClientHldHrs").classList.add('mandatory-FormContent-focus');
@@ -2215,7 +2221,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
              if(parseFloat(formdata.PTOHrs[0].Total)!=0){
                  if(formdata.PTOHrs[0].Description.trim()=="" && formdata.IsDescriptionMandatory)
                  {
-                     isValid.message="Description cannot be blank";
+                     isValid.message="Description cannot be blank.";
                      isValid.status=false;
                      document.getElementById("0_Description_PTOHrs").focus();
                      document.getElementById("0_Description_PTOHrs").classList.add('mandatory-FormContent-focus');
@@ -2223,7 +2229,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                  }
                  else if(formdata.PTOHrs[0].ProjectCode.trim()=="" && formdata.IsProjectCodeMandatory)
                  {
-                     isValid.message="Project Code cannot be blank";
+                     isValid.message="Project Code cannot be blank.";
                      isValid.status=false;
                      document.getElementById("0_ProjectCode_PTOHrs").focus();
                      document.getElementById("0_ProjectCode_PTOHrs").classList.add('mandatory-FormContent-focus');
@@ -2236,7 +2242,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
             Time=parseFloat(val);
             if(Time==0&&formdata.Comments.trim()=="")
             {
-             isValid.message="For entered hours, Please provide a reason in comments";
+             isValid.message="'Comments' required for '0' hours.";
              isValid.status=false;
              document.getElementById("txtComments").focus();
              document.getElementById("txtComments").classList.add('mandatory-FormContent-focus');
@@ -2849,8 +2855,8 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                                                     <div className="light-text" id='chkIsClientApprovalNeed'>
                                                         <InputCheckBox
                                                         label={"Is Client Approval Needed?"}
-                                                        name={"IsClientApprovalNeeded"}
-                                                        checked={this.state.trFormdata.IsClientApprovalNeeded}
+                                                        name={"IsClientApprovalNeededUI"}
+                                                        checked={this.state.trFormdata.IsClientApprovalNeededUI}
                                                         onChange={this.handleChange}
                                                         isforMasters={false}
                                                         isdisable={false}
