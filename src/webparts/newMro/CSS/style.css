@@ -2557,6 +2557,8 @@ li {
 }
 .iconApprove,.iconReject{
   cursor: pointer;
+  width: 20px;
+  /* height: 15px; */
 }
 .fa-xmark{
   position: relative;
