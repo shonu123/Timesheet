@@ -140,7 +140,7 @@ class HolidaysList extends Component<HolidaysListProps, HolidaysListState> {
     }
     private UpdateDate = (dateprops) => {
         let formData = {...this.state.formData}
-        console.log(dateprops)
+        // console.log(dateprops)
         let date = new Date()
         if(dateprops[0]!= null){
             date = new Date(dateprops[0])
@@ -289,7 +289,7 @@ class HolidaysList extends Component<HolidaysListProps, HolidaysListState> {
     private async loadListData() {
         var Clients = await  sp.web.lists.getByTitle('Client').items.filter("IsActive eq 1").select('*').orderBy('Title').get()
         this.setState({ClientsObj : Clients,isRedirect:false})
-        console.log(Clients);
+        // console.log(Clients);
         
         sp.web.lists.getByTitle('HolidaysList').items.select('Title,*').orderBy("Id", false).getAll()
             .then((response) => {
@@ -319,7 +319,7 @@ class HolidaysList extends Component<HolidaysListProps, HolidaysListState> {
             });
     }
     private async onEditClickHandler(id) {
-        console.log('edit clicked', id);
+        // console.log('edit clicked', id);
 
         try {
             var response = await sp.web.lists.getByTitle('HolidaysList').items.getById(id).get();
@@ -373,7 +373,7 @@ class HolidaysList extends Component<HolidaysListProps, HolidaysListState> {
     }
 
     public fetchImportedExcelData = (data) => {
-        console.log(data);
+        // console.log(data);
         if (data.length > 0) {
             this.setState({ ImportedExcelData: data });
         }
@@ -482,7 +482,7 @@ class HolidaysList extends Component<HolidaysListProps, HolidaysListState> {
                         isSuccess: true
                     });
                     this.resetImportField();
-                    console.log(res);
+                    // console.log(res);
                     this.loadListData();
                 }else{
                     this.loadListData();

@@ -110,7 +110,7 @@ class Dashboard extends React.Component<DashboardProps, DashboardState> {
             sp.web.currentUser.groups(),
             sp.web.lists.getByTitle("EmployeeMaster").items.filter(filterQuery).select('Employee/ID,ReportingManager/ID,Reviewers/ID,*').expand("Employee,ReportingManager,Reviewers").get()
           ]);
-        console.log(EmployeeMaster)
+        // console.log(EmployeeMaster)
         let isEmployee = false,isManager = false,isReviewer = false;
  
         EmployeeMaster.forEach(obj => {
@@ -127,11 +127,11 @@ class Dashboard extends React.Component<DashboardProps, DashboardState> {
             }
         });
         let EmployeeConfigured = isEmployee || isManager ||isReviewer
-        console.log("Is Employee Configured: "+EmployeeConfigured)
-        console.log("current user deatils")
-        console.log(this.props.context.pageContext)
+        // console.log("Is Employee Configured: "+EmployeeConfigured)
+        // console.log("current user deatils")
+        // console.log(this.props.context.pageContext)
         let userGroup = []
-        console.log(groups)
+        // console.log(groups)
         for(let grp of groups){
             userGroup.push(grp.Title)
         }

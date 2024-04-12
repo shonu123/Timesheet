@@ -68,7 +68,7 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
 
         sp.web.lists.getByTitle('WeeklyTimeSheet').items.top(5000).filter(filterString+filterQuery).expand("Reviewers").select('Reviewers/Title','*').orderBy('Modified', false).get()
             .then((response) => {
-                console.log(response)
+                // console.log(response)
                 let Data = [];
                 for (const d of response) {
                     let date = new Date(d.WeekStartDate)
@@ -93,7 +93,7 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
                     })
                 }
                 this.setState({ExportExcelData:Data})
-                console.log(Data);
+                // console.log(Data);
                 this.setState({ Reviewers: Data,loading: false});
             }).catch(err => {
                 console.log('Failed to fetch data.', err);
@@ -147,7 +147,7 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
             IsClientApprovalNeed : clinetApproval,
             Revised: true,
         }
-        console.log(postObject);
+        // console.log(postObject);
         this.setState({comments  :''})
         sp.web.lists.getByTitle('WeeklyTimeSheet').items.getById(recordId).update(postObject).then((res) => {
             let sub=''; 
@@ -172,7 +172,7 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
 // This function is used to bind comments to comments input feild
     private handleComments = async (e) =>{
        let value = e.target.type == 'checkbox' ? e.target.checked : e.target.value;
-       console.log(value);
+    //    console.log(value);
        let  {name}  = e.target;
        if(name =="comments")
        this.setState({comments : value})
@@ -187,7 +187,7 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
         var filterString = "Id eq '"+recordId+"'"
         this.setState({ loading: true });
         let data =  await sp.web.lists.getByTitle('WeeklyTimeSheet').items.filter(filterString).select('Initiator/ID,Initiator/Title,*').expand('Initiator').get()
-        console.log(data)
+        // console.log(data)
         let commentsObj = JSON.parse(data[0].CommentsHistory)
         if(commentsObj == null)
         commentsObj = [];
@@ -202,7 +202,7 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
         var filterString = "Employee/ID eq '"+data[0].Initiator.ID+"' and ClientName eq '"+data[0].ClientName+"'"
         var selectString = 'Employee/EMail,Reviewers/EMail,ReportingManager/EMail,Notifiers/EMail,*'
         let emailData = await sp.web.lists.getByTitle('EmployeeMaster').items.filter(filterString).select(selectString).expand('Employee,Reviewers,ReportingManager,Notifiers').get();
-        console.log(emailData)
+        // console.log(emailData)
         let toEmail = [];
         let ccEmail = [];
         toEmail.push(emailData[0].Employee.EMail);
@@ -225,7 +225,7 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
         // this.setState({comments : comments })
         let date = new Date(data[0].DateSubmitted)
         let tableContent = {'Name':data[0].Name,'Client':data[0].ClientName,'Submitted Date':`${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`,'Billable Hours':data[0].WeeklyTotalHrs,'OT Hours':data[0].OTTotalHrs,'Total Billable Hours':data[0].BillableTotalHrs,'Holiday Hours':JSON.parse(data[0].ClientHolidayHrs)[0].Total,'PTO Hours':JSON.parse(data[0].PTOHrs)[0].Total,'Total Hours':data[0].GrandTotal}
-        console.log(tableContent)
+        // console.log(tableContent)
         this.updateStatus(recordId,StatusType.Approved,commentsObj,toEmail,ccEmail,tableContent)
     }
 
@@ -242,7 +242,7 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
             var filterString = "Id eq '"+recordId+"'"
             this.setState({showHideModal:false, successPopUp:false,loading: true });
             let data =  await sp.web.lists.getByTitle('WeeklyTimeSheet').items.filter(filterString).select('Initiator/ID,Initiator/Title,*').expand('Initiator').orderBy('WeekStartDate,DateSubmitted', false).get()
-            console.log(data)
+            // console.log(data)
             let commentsObj = JSON.parse(data[0].CommentsHistory)
             commentsObj.push({
                 Action : StatusType.Reject,
@@ -255,7 +255,7 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
             // var filterString = "Employee/ID eq '"+data[0].Initiator.ID+"' and ClientName eq '"+data[0].ClientName+"'"
             var selectString = 'Initiator/EMail,Reviewers/EMail,ReportingManager/EMail,Notifiers/EMail,*'
             let emailData = await sp.web.lists.getByTitle('WeeklyTimeSheet').items.filter(filterString).select(selectString).expand('Initiator,Reviewers,ReportingManager,Notifiers').get();
-            console.log(emailData)
+            // console.log(emailData)
             let toEmail = [];
             let ccEmail = [];
             toEmail.push(emailData[0].Initiator.EMail);
@@ -285,7 +285,7 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
             else{
                 tableContent = {'Name':data[0].Name,'Client Name':data[0].ClientName,'Submitted Date':`${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`,'Billable Hours':data[0].WeeklyTotalHrs,'OT Hours':data[0].OTTotalHrs,'Total Billable Hours':data[0].BillableTotalHrs,'Holiday Hours':JSON.parse(data[0].ClientHolidayHrs)[0].Total,'PTO Hours':JSON.parse(data[0].PTOHrs)[0].Total,'Grand Total Hours':data[0].GrandTotal}
             }
-            console.log(tableContent)
+            // console.log(tableContent)
 
             this.updateStatus(recordId,StatusType.ReviewerReject,commentsObj,toEmail,ccEmail,tableContent)
         }
@@ -301,9 +301,9 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
     }
 // This function is used to Display confirm popup based on Approve/Reject
     private showPopUp = (e) =>{
-        console.log(e.target.id);
-        console.log(e.target.dataset);
-        console.log(e.target.dataset.name)
+        // console.log(e.target.id);
+        // console.log(e.target.dataset);
+        // console.log(e.target.dataset.name)
         let recordId = parseInt(e.target.id);
         this.setState({ItemID : recordId})
         let name = e.target.dataset.name

@@ -18,15 +18,17 @@ function validate(data){
             status = false;
             break;
         }
-        else if(![undefined,null,''].includes(value) && propertieTypes.People!=type && propertieTypes.Date!=type && propertieTypes.String==type && value.includes(','))
-        {
-            let prpel =data[key].Focusid;
-            message ="Commas(,) are not allowed in "+ data[key].Name +".";
-            prpel.current.focus();
-            prpel.current.classList.add('mandatory-FormContent-focus');
-            status = false;
-            break;
-        }
+        //--- Commented on 4/12/2024 start
+        // else if(![undefined,null,''].includes(value) && propertieTypes.People!=type && propertieTypes.Date!=type && propertieTypes.String==type && value.includes(','))
+        // {
+        //     let prpel =data[key].Focusid;
+        //     message ="Commas(,) are not allowed in "+ data[key].Name +".";
+        //     prpel.current.focus();
+        //     prpel.current.classList.add('mandatory-FormContent-focus');
+        //     status = false;
+        //     break;
+        // }
+        //---End
         // else if(propertieTypes.People!=type && propertieTypes.Date!=type && value.includes(','))
         // {
         //     let prpel =data[key].Focusid;

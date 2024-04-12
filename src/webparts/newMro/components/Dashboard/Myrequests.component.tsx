@@ -39,10 +39,10 @@ class MyRequests extends React.Component<MyRequestsProps, MyRequestsState> {
     }
 
     public componentDidMount() {
-        this.ReviewerApproval();
+        this.MyRequests();
     }
 // this function is used to get 1 month records of weeklytime data of the current logged in user from weeklytimesheet list
-    private ReviewerApproval = async () => {
+    private MyRequests = async () => {
         this.setState({ loading: true });
         const userId = this.props.spContext.userId;
         let dateFilter = new Date()
@@ -54,7 +54,7 @@ class MyRequests extends React.Component<MyRequestsProps, MyRequestsState> {
 
         sp.web.lists.getByTitle('WeeklyTimeSheet').items.top(2000).filter(filterString).expand("Initiator").select('Initiator/Title','*').orderBy('Modified', false).get()
             .then((response) => {
-                console.log(response)
+                // console.log(response)
                 let Data = [];
                 for (const d of response) {
                     let date;
@@ -71,7 +71,7 @@ class MyRequests extends React.Component<MyRequestsProps, MyRequestsState> {
                         Status : d.Status=='rejected by Synergy'?'Rejected by Synergy':d.Status=='rejected by Manager'?'Rejected by Reporting Manager':d.Status,
                     })
                 }
-                console.log(Data);
+                // console.log(Data);
                 this.setState({ Requests: Data,loading: false });
                 // document.getElementById('txtTableSearch').style.display = 'none';
             }).catch(err => {

@@ -52,7 +52,7 @@ class AllRequests extends React.Component<AllRequestsProps,AllRequestsState> {
         var filterString = "WeekStartDate ge '"+date+"'"
         sp.web.lists.getByTitle('WeeklyTimeSheet').items.top(5000).filter(filterString).expand("ReportingManager").select('ReportingManager/Title','*').orderBy('WeekStartDate,DateSubmitted', false).getAll()
             .then((response) => {
-                console.log(response)
+                // console.log(response)
                 let Data = [];
                 let ExcelData  =[]
                 for (const d of response) {
@@ -106,7 +106,7 @@ class AllRequests extends React.Component<AllRequestsProps,AllRequestsState> {
                         RM : ExcelRm
                     })
                 }
-                console.log(Data);
+                // console.log(Data);
                 this.setState({ AllRequests: Data,ExportExcelData:ExcelData,loading: false });
             }).catch(err => {
                 console.log('Failed to fetch data.', err);

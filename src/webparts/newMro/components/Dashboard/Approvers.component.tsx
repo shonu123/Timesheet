@@ -56,7 +56,7 @@ class ApproversApprovals extends React.Component<ApproversProps, ApproversState>
 
         sp.web.lists.getByTitle('WeeklyTimeSheet').items.top(2000).filter(filterString+filterQuery).expand("ReportingManager").select('ReportingManager/Title','*').orderBy('WeekStartDate,DateSubmitted', false).get()
             .then((response) => {
-                console.log(response)
+                // console.log(response)
                 let Data = [];
                 for (const d of response) {
                     let date = new Date(d.WeekStartDate)
@@ -79,7 +79,7 @@ class ApproversApprovals extends React.Component<ApproversProps, ApproversState>
                         GrandTotal: d.GrandTotal
                     })
                 }
-                console.log(Data);
+                // console.log(Data);
                 this.setState({ ReportingManager: Data,loading: false });
             }).catch(err => {
                 console.log('Failed to fetch data.', err);

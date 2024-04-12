@@ -141,14 +141,14 @@ class DailyTimesheetReport extends React.Component<DailyTimesheetReportProps, Da
         }
     }
     private handleChangeEvents = (event) => {
-        console.log(this.state);
+        // console.log(this.state);
         let value = event.target.type == 'checkbox' ? event.target.checked : event.target.value.trim();
-        console.log(value);
+        // console.log(value);
         let { name } = event.target;
         this.setState({ [name]: value });
     }
     private handleStartDate = (dateprops) => {
-        console.log(dateprops)
+        // console.log(dateprops)
         let date = new Date()
         if (dateprops[0] != null) {
             date = new Date(dateprops[0])
@@ -156,7 +156,7 @@ class DailyTimesheetReport extends React.Component<DailyTimesheetReportProps, Da
         }
     }
     private handleEndDate = (dateprops) => {
-        console.log(dateprops)
+        // console.log(dateprops)
         let date = new Date()
         if (dateprops[0] != null) {
             date = new Date(dateprops[0])
@@ -208,7 +208,7 @@ class DailyTimesheetReport extends React.Component<DailyTimesheetReportProps, Da
             StartDate: selectedStartDate,
             EndDate: selectedEndDate
         }
-        console.log(postObject)
+        // console.log(postObject)
         this.generateExcelData(postObject)
     }
     private generateDateRange = (startDate,endDate) => {
@@ -250,10 +250,10 @@ class DailyTimesheetReport extends React.Component<DailyTimesheetReportProps, Da
                 filterQuery = "ClientName eq'" + client + "' and InitiatorId eq '" + Employee + "' and WeekStartDate gt '" + prev + "' and WeekStartDate lt '" + next + "'"
             }
         }
-        filterQuery+="and Status ne '"+StatusType.Save+"'"
+        filterQuery+="and Status ne '"+StatusType.Save+"' and Status ne '"+StatusType.Revoke+"'"
         let reportData = await sp.web.lists.getByTitle('WeeklyTimeSheet').items.top(5000).filter(filterQuery).expand('Initiator').select('Initiator/Title,TotalHrs,ClientName,WeekStartDate,Status').orderBy('WeekStartDate,ClientName,Initiator/Title', true).getAll()
         if (reportData.length > 0) {
-            console.log(reportData)
+            // console.log(reportData)
             let ExcelData = []
             let headerDates = []
             reportData.forEach(report => {
@@ -273,7 +273,7 @@ class DailyTimesheetReport extends React.Component<DailyTimesheetReportProps, Da
                 weekDays.forEach(day => {
                     arrangedWeekDays.push(TotalHrs[0][day]);
                 });
-                console.log(arrangedWeekDays)
+                // console.log(arrangedWeekDays)
 
                 for (const d of dates) {
                     let obj = {
@@ -291,9 +291,9 @@ class DailyTimesheetReport extends React.Component<DailyTimesheetReportProps, Da
                     ExcelData.push(obj);
                 }
             });
-            console.log(ExcelData)
+            // console.log(ExcelData)
             headerDates = this.generateDateRange(startDate,EndDate)
-            console.log(headerDates)
+            // console.log(headerDates)
             ExcelData.sort((a, b) => {
                 const dateA = new Date(a.Date).getTime();
                 const dateB = new Date(b.Date).getTime();
@@ -304,9 +304,9 @@ class DailyTimesheetReport extends React.Component<DailyTimesheetReportProps, Da
                 const dateB = new Date(b.Date).getTime();
                 return dateA - dateB;
             });
-            console.log("After sorting")
-            console.log(ExcelData)
-            console.log(headerDates)
+            // console.log("After sorting")
+            // console.log(ExcelData)
+            // console.log(headerDates)
             // this.generateExcel(ExcelData, headerDates);
             this.state.ResultExcelData = ExcelData;
             let finalArray = [];
@@ -346,7 +346,7 @@ finalArray.sort((a, b) => {
 });
 
 // Output the final array
-console.log(finalArray);
+// console.log(finalArray);
  this.generateExcel(finalArray, headerDates,startDate,EndDate);
         }
         else {
@@ -424,11 +424,9 @@ console.log(finalArray);
 let legend = [
     { v: '', t: "s", s: { font: { bold: true },fill: { fgColor: { rgb: 'ffffff' },border: allBorders }} },
     { v: '', t: "s", s: { font: { bold: true },fill: { fgColor: { rgb: 'ffffff' },border: allBorders }} },
-    { v: '', t: "s", s: { font: { bold: true },fill: { fgColor: { rgb: 'ffffff' },border: allBorders }} },
-    { v: '', t: "s", s: { font: { bold: true },fill: { fgColor: { rgb: 'ffffff' },border: allBorders }} },
-    { v: 'Legend', t: "s", s: { font: { bold: true },fill: { fgColor: { rgb: 'ffffff' } },border: allBorders } },
+    // { v: 'Legend', t: "s", s: { font: { bold: true },fill: { fgColor: { rgb: 'ffffff' } },border: allBorders } },
     { v: 'Submitted', t: "s", s: { font: { bold: true },fill: { fgColor: { rgb: 'fafac5' } },border: allBorders } },
-    { v: 'Revoked', t: "s", s: { font: { bold: true },fill: { fgColor: { rgb: 'fae3ea' } },border: allBorders } },
+    // { v: 'Revoked', t: "s", s: { font: { bold: true },fill: { fgColor: { rgb: 'fae3ea' } },border: allBorders } },
     { v: 'Approved', t: "s", s: { font: { bold: true },fill: { fgColor: { rgb: 'a9e6fc' } },border: allBorders } },
     { v: 'Rejected', t: "s", s: { font: { bold: true },fill: { fgColor: { rgb: 'f7b5b5' } },border: allBorders } }
 ]
@@ -494,7 +492,8 @@ workSheetRows.push([])// giving a line gap
                 if(t.s.fill.fgColor.rgb == 'a9e6fc'){
                     Total += parseFloat(t.v)
                 }
-            } console.log("Approved Total = "+Total)
+            } 
+            // console.log("Approved Total = "+Total)
             tempArr.push({ v: Total, t: "s", s: { alignment: { wrapText: true },border: allBorders, font: { bold: false}, fill: { fgColor: { rgb: 'a9e6fc' }} } })
             workSheetRows.push(tempArr);
         });
@@ -643,7 +642,7 @@ workSheetRows.push([])// giving a line gap
                                                 <label className="z-in-9">Start Date<span className="mandatoryhastrick">*</span></label>
                                                 <div className="custom-datepicker" id="divDateofJoining">
 
-                                                    <DatePicker onDatechange={this.handleStartDate} selectedDate={this.state.startDate} />
+                                                    <DatePicker onDatechange={this.handleStartDate} selectedDate={this.state.startDate} placeholderText='MM/DD/YYYY'/>
                                                 </div>
                                             </div>
                                         </div>

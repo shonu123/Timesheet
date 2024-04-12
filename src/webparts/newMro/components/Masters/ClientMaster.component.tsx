@@ -267,7 +267,7 @@ class Clients extends Component<ClientProps, ClientState> {
             });
     }
     private async onEditClickHandler(id) {
-        console.log('edit clicked', id);
+        // console.log('edit clicked', id);
 
         try {
             var response = await sp.web.lists.getByTitle('Client').items.getById(id).get();

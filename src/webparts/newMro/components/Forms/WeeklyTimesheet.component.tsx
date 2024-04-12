@@ -303,8 +303,8 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
             this.oweb.lists.getByTitle('Client').items.filter("IsActive eq 1").select("Title,*").orderBy("Title",true).getAll(),
             sp.web.currentUser.groups()
         ]);
-        console.log("current user deatils")
-        console.log(this.props.context.pageContext)
+        // console.log("current user deatils")
+        // console.log(this.props.context.pageContext)
         //------new-----
         let userGroups = []
         for (const grp of groups) {
@@ -340,7 +340,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
         // if(userGroups.includes('Timesheet Administrators')){
         //     this.setState({isAdmin:true,isSubmitted: false})
         // }
-        console.log(ClientNames);
+        // console.log(ClientNames);
         if(ClientNames.length<1 && !this.state.isAdmin){
             this.setState({modalTitle:'Invalid Employee configuration',modalText:'Employee not configured in Approval Matrix,Please contact Administrator',isSuccess: false,showHideModal:true})
             this.setState({loading:false,isSubmitted:true});
@@ -426,7 +426,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
         let filterQuery = "ID eq '"+TimesheetID+"'";
         let selectQuery = "Initiator/EMail,Reviewers/EMail,ReportingManager/EMail,Notifiers/EMail,*";
         let data = await sp.web.lists.getByTitle(this.listName).items.filter(filterQuery).select(selectQuery).expand("Initiator,Reviewers,ReportingManager,Notifiers").get();
-        console.log(data);
+        // console.log(data);
         if(data.length==0){   //for deleted or not founded record
             this.setState({ActionToasterMessage:'Success-Invalid',redirect:true});
             return false;
@@ -654,7 +654,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
             this.GetHolidayMasterDataByClientName(date,Formdata.HolidayType,Formdata);
             this.validateDuplicateRecord(date,Formdata.ClientName,Formdata);
         //this.setState({trFormdata:Formdata});
-        console.log(this.state);
+        // console.log(this.state);
        
     }
     private handleClientChange=(event)=>{
@@ -666,7 +666,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
             Formdata.SuperviserIds=[];
             Formdata.ReviewerIds=[];
             Formdata.NotifierIds=[];
-        console.log(this.state);
+        // console.log(this.state);
         if(clientVal == 'None'){
                  this.setState({showBillable : true, showNonBillable: true})
              }
@@ -1179,7 +1179,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
             }
         }
         if (isValid.status) {
-            console.log(this.state);
+            // console.log(this.state);
             formdata=this.GetRequiredEmails(formdata.ClientName,formdata);
             this.setState({trFormdata:formdata})
             var postObject = {
@@ -1278,7 +1278,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
             let RMEmail=[];
             let ReviewEmail=[];
             let NotifyEmail=[];
-        console.log(this.state);
+        // console.log(this.state);
         for( var item of this.state.SuperviserNames)
         {
             if(item.ClientName.toLowerCase()==clientVal.toLowerCase())
@@ -1618,7 +1618,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
          let filterQuery2 = " and ClientName eq '" + ClientName + "' and Initiator/ID eq '" + this.state.currentUserId + "'"
          filterQuery += filterQuery2;
           ExistRecordData = await sp.web.lists.getByTitle('WeeklyTimeSheet').items.filter(filterQuery).select(selectQuery).expand('Initiator,Reviewers,ReportingManager,Notifiers').get();
-         console.log(ExistRecordData);
+        //  console.log(ExistRecordData);
         }
         //const trFormdata= this.state.trFormdata;
             if(ExistRecordData.length>=1)
@@ -1965,7 +1965,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
         }
         // trFormdata.ReportingManagersEmail=RMEmail;
         //     trFormdata.ReviewersEmail=ReviewEmail;
-        console.log(this.props.spContext)
+        // console.log(this.props.spContext)
 
         if (RMEmails.includes(userEmail)) {
             if (this.state.trFormdata.Pendingwith == "Manager") {
@@ -2285,7 +2285,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
         let filterQuery="ClientName eq '"+selectedClientName+"' and HolidayDate gt '"+WeekStart+"' and HolidayDate lt '"+WeekEnd+"'";
         let selectQuery="ClientName,HolidayName,HolidayDate,Year,*";
         let HolidaysListData = await sp.web.lists.getByTitle('HolidaysList').items.filter(filterQuery).select(selectQuery).getAll();
-        console.log(HolidaysListData);
+        // console.log(HolidaysListData);
         if(HolidaysListData.length>=1)
         {
              let HolidayData=[];

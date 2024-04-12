@@ -67,7 +67,7 @@ class EmployeeMasterView extends React.Component<EmployeeMasterViewProps, Employ
         var expandQuery = "Employee,ReportingManager,Approvers,Reviewers,Notifiers";
         sp.web.lists.getByTitle('EmployeeMaster').items.top(2000).expand(expandQuery).select(selectQuery).orderBy('Modified', false).get()
             .then((response) => {
-                console.log(response)
+                // console.log(response)
                 let Data = [];
                 for (const d of response) {
                     let ReportingManagerString = '',ReviewersString = '',NotifiersString ='';
@@ -101,7 +101,7 @@ class EmployeeMasterView extends React.Component<EmployeeMasterViewProps, Employ
                         IsActive: d.IsActive
                     })
                 }
-                console.log(Data);
+                // console.log(Data);
                 this.setState({ Details: Data,loading: false});
                 // document.getElementById('txtTableSearch').style.display = 'none';
             }).catch(err => {

@@ -110,11 +110,11 @@ class EmployeeMasterForm extends React.Component<EmployeeMasterFormProps, Employ
             sp.web.lists.getByTitle('HolidaysList').items.top(2000).filter("Year eq '"+Year+"'").select('*').orderBy('ClientName').get()
         ])
         // this.setState({ClientsObject : clients})
-        console.log(clients);
+        // console.log(clients);
         // this.setState({ loading: false});        this.setState({showToaster:true})
         if(this.props.match.params.id != undefined){
             // this.setState({ loading: true});
-            console.log(this.props.match.params.id)
+            // console.log(this.props.match.params.id)
             // this.setState({ItemID : this.props.match.params.id})
             let ItemID = this.props.match.params.id
             this.getData(ItemID,Holidays,clients)
@@ -123,8 +123,8 @@ class EmployeeMasterForm extends React.Component<EmployeeMasterFormProps, Employ
             // let filterdHolidays = this.getHolidays(Holidays,'None')
             this.setState({ClientsObject : clients,GlobalHolidayList:Holidays,HolidaysObject:[],loading:false})
         }
-        console.log("current user deatils")
-        console.log(this.props.context.pageContext)
+        // console.log("current user deatils")
+        // console.log(this.props.context.pageContext)
 
         let userGroups = []
         for (const grp of groups) {
@@ -146,7 +146,7 @@ class EmployeeMasterForm extends React.Component<EmployeeMasterFormProps, Employ
         let data = await sp.web.lists.getByTitle(this.listName).items.filter(filterQuery).select(selectQuery).expand('Employee,ReportingManager,Approvers,Reviewers,Notifiers').get()
         // let Holidays = await  sp.web.lists.getByTitle('HolidaysList').items.top(2000).filter("Year eq '"+Year+"'").select('*').orderBy('ClientName').get()
 
-        console.log(data)
+        // console.log(data)
         let date = new Date(data[0].DateOfJoining)
         let ReportingManagersEmail = []
         let ReportingManagerIds = {results:[]}
@@ -210,7 +210,7 @@ class EmployeeMasterForm extends React.Component<EmployeeMasterFormProps, Employ
         return lowerCaseItem.includes(selectedClient) || lowerCaseItem.includes('synergy');
       });
 
-      console.log(filteredData);
+    //   console.log(filteredData);
             for (const client of filteredData) {
                     if(!HolidayClients.includes(client.ClientName)){
                         HolidayClients.push(client.ClientName)
@@ -222,9 +222,9 @@ class EmployeeMasterForm extends React.Component<EmployeeMasterFormProps, Employ
 
     // this function is used to bind and set values to respect form feilds
     private handleChangeEvents=(event)=>{
-        console.log(this.state);
+        // console.log(this.state);
         let value = event.target.type == 'checkbox' ? event.target.checked : event.target.value.trim();
-        console.log(value);
+        // console.log(value);
         let  {name}  = event.target;
         this.setState({[name] : value});
         if(name == 'ClientName'){
@@ -240,7 +240,7 @@ class EmployeeMasterForm extends React.Component<EmployeeMasterFormProps, Employ
     
     // this function is used to set date to the date feild
     private UpdateDate = (dateprops) => {
-        console.log(dateprops)
+        // console.log(dateprops)
         let date = new Date()
         if(dateprops[0]!= null){
             date = new Date(dateprops[0])
@@ -259,8 +259,8 @@ private async validateDuplicateRecord () {
         let filterQuery = "Employee/Id eq '"+this.state.EmployeeId+"' and ClientName eq '"+this.state.ClientName+"' and IsActive eq 1"
         let selectQuery = "Employee/Title,Employee/ID,*"
         let duplicateRecord = await sp.web.lists.getByTitle(this.listName).items.filter(filterQuery).select(selectQuery).expand('Employee').orderBy('Title').get()
-        console.log(duplicateRecord);
-        console.log("length = "+duplicateRecord.length)
+        // console.log(duplicateRecord);
+        // console.log("length = "+duplicateRecord.length)
         return duplicateRecord.length;
     }
 }
@@ -294,7 +294,7 @@ private async validateDuplicateRecord () {
             // Notifier : { val: this.state.NotifierId, required: true, Name: 'Notifier', Type: ControlType.people,Focusid:'divNotifier' },
         }
         isValid = isValid.status?Formvalidator.multiplePeoplePickerValidation(pdata):isValid
-        console.log(isValid)
+        // console.log(isValid)
         let Rm = []
         for(let manager of this.state.ReportingManagerId.results){
             Rm.push(manager)
@@ -309,7 +309,7 @@ private async validateDuplicateRecord () {
             customToaster('toster-error',ToasterTypes.Error,errMsg,4000)
         }
         else{
-            console.log(data);
+            // console.log(data);
             let postObject = {
                 EmployeeId : this.state.EmployeeId,
                 ReportingManagerId : this.state.ReportingManagerId,
@@ -326,7 +326,7 @@ private async validateDuplicateRecord () {
             }
            let duplicate = await this.validateDuplicateRecord()
            if(duplicate>0){
-               console.log("duplicate record found");
+            //    console.log("duplicate record found");
             //    this.setState({showToaster:true})
             customToaster('toster-error',ToasterTypes.Error,'Current Employee is already associated with '+this.state.ClientName+" client",4000)
            }
@@ -352,7 +352,7 @@ private async validateDuplicateRecord () {
             try {
                 this.setState({ loading: true });
                 sp.web.lists.getByTitle(this.listName).items.add(formdata).then((res) => {
-                    console.log(res);
+                    // console.log(res);
                     this.setState({ loading: false});
                     // alert('Data inserted sucessfully')
                     this.setState({message:'Success-Added',Homeredirect: true})

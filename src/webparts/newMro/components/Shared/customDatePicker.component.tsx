@@ -24,7 +24,7 @@ function App(joinDate) {
 
   // assignMondayOfjoiningDate(joinDate);
      const [selectedDate,setDate] = useState(new Date())
-     console.log(selectedDate);
+    //  console.log(selectedDate);
      const  state = {
         startDate: new Date(),
         mindate : new Date().setDate(new Date().getDate() - 14)
