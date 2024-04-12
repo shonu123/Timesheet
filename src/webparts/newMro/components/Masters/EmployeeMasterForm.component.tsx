@@ -230,10 +230,10 @@ class EmployeeMasterForm extends React.Component<EmployeeMasterFormProps, Employ
         if(name == 'ClientName'){
             if(value!=''){
                let HolidayClients = this.getHolidays(this.state.GlobalHolidayList,value)
-               this.setState({HolidaysObject : HolidayClients})
+               this.setState({HolidaysObject : HolidayClients,HolidayType:''})
             }
             else{
-                this.setState({HolidaysObject : []})
+                this.setState({HolidaysObject : [],HolidayType:''})
             }
         }
     }
@@ -304,7 +304,7 @@ private async validateDuplicateRecord () {
             customToaster('toster-error',ToasterTypes.Error,isValid.message,4000)
         }
         else if(Rm.includes(this.state.EmployeeId)){
-            let errMsg = 'The selected Employee cannot be assigned as their own Manager';
+            let errMsg = 'The selected Employee cannot be assigned as their own Manager.';
             // this.setState({showToaster:true})
             customToaster('toster-error',ToasterTypes.Error,errMsg,4000)
         }

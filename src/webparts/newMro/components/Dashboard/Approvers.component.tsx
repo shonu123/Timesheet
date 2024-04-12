@@ -120,6 +120,7 @@ class ApproversApprovals extends React.Component<ApproversProps, ApproversState>
             {
                 name: "Pending With",
                 selector: (row, i) => row.PendingWith,
+                width: '180px',
                 sortable: true
             },
             {
@@ -151,6 +152,7 @@ class ApproversApprovals extends React.Component<ApproversProps, ApproversState>
             {
                 name: "Grand Total",
                 selector: (row, i) => row.GrandTotal,
+                width: '140px',
                 sortable: true
             }
         ];

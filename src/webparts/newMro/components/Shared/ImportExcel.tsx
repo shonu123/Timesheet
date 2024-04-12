@@ -70,7 +70,7 @@ Heading.push(row);
     //   origin: -1
     // });
     var wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "SheetJS");
+    XLSX.utils.book_append_sheet(wb, ws, "Holidays List");
     XLSX.writeFile(wb, `${filename}.xlsx`);
     // exportExcelFile(wb);
 

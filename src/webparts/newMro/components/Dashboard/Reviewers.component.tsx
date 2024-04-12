@@ -236,7 +236,7 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
         if(['',undefined,null].includes(this.state.comments.trim())){
             // this.setState({errorMessage : 'Comments cannot be Blank',loading : false})
             this.setState({loading:false})
-            customToaster('toster-error',ToasterTypes.Error,'Comments cannot be Blank',4000)
+            customToaster('toster-error',ToasterTypes.Error,'Comments cannot be Blank.',4000)
         }
         else{
             var filterString = "Id eq '"+recordId+"'"
@@ -396,6 +396,7 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
                 {
                     name: "Total Billable",
                     selector: (row, i) => row.TotalBillableHours,
+                    width: '150px',
                     sortable: true,
                 },
                 {
@@ -411,6 +412,7 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
                 {
                     name: "Grand Total",
                     selector: (row, i) => row.GrandTotal,
+                    width: '140px',
                     sortable: true
                 },
                 // {

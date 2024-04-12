@@ -140,6 +140,7 @@ class AllRequests extends React.Component<AllRequestsProps,AllRequestsState> {
             {
                 name: "Employee Name",
                 selector: (row, i) => row.EmployeName,
+                width: '250px',
                 sortable: true
             },
             {
@@ -162,6 +163,7 @@ class AllRequests extends React.Component<AllRequestsProps,AllRequestsState> {
             {
                 name: "Pending With",
                 selector: (row, i) => row.PendingWith,
+                width: '180px',
                 sortable: true
             },
             {
@@ -172,12 +174,13 @@ class AllRequests extends React.Component<AllRequestsProps,AllRequestsState> {
             {
                 name: "OT",
                 selector: (row, i) => row.OTTotalHrs,
-                width: '120px',
+                width: '100px',
                 sortable: true,
             },
             {
                 name: "Total Billable",
                 selector: (row, i) => row.TotalBillableHrs,
+                width: '150px',
                 sortable: true,
             },
             {

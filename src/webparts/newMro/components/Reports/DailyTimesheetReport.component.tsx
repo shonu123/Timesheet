@@ -154,6 +154,9 @@ class DailyTimesheetReport extends React.Component<DailyTimesheetReportProps, Da
             date = new Date(dateprops[0])
             this.setState({ startDate: date });
         }
+        else{
+            this.setState({ startDate: null });
+        }
     }
     private handleEndDate = (dateprops) => {
         // console.log(dateprops)
@@ -161,6 +164,9 @@ class DailyTimesheetReport extends React.Component<DailyTimesheetReportProps, Da
         if (dateprops[0] != null) {
             date = new Date(dateprops[0])
             this.setState({ endDate: date });
+        }
+        else{
+            this.setState({ endDate: null });
         }
     }
     private checkIsvalid = (data, selectedStartDate, selectedEndDate) => {
@@ -186,6 +192,9 @@ class DailyTimesheetReport extends React.Component<DailyTimesheetReportProps, Da
             isvalid.message = 'Start Date cannot be greater than End Date'
         }
         return isvalid;
+    }
+    private handleCancel = async (e)=>{
+        this.setState({Homeredirect : true});
     }
     private handleSubmit = () => {
         let data = {
@@ -599,7 +608,10 @@ workSheetRows.push([])// giving a line gap
             let url = `https://synergycomcom.sharepoint.com/sites/Billing.Timesheet/SitePages/AccessDenied.aspx?`
             window.location.href = url
         }
-
+        if (this.state.Homeredirect) {
+             let url = `/Dashboard/`
+             return (<Navigate to={url}/>);
+         }
         else {
             return (
                 <React.Fragment>
@@ -664,6 +676,7 @@ workSheetRows.push([])// giving a line gap
                                     <div className="col-sm-12 text-center my-2" id="">
                                         <button type="button" className="DownloadButtons btn" onClick={this.handleSubmit}>
                                         <FontAwesomeIcon icon={faCloudDownload} className=''></FontAwesomeIcon>Download</button>
+                                        <button type="button" className="CancelButtons btn" onClick={this.handleCancel}>Cancel</button>
                                     </div>
                                 </div>
                             </div>
