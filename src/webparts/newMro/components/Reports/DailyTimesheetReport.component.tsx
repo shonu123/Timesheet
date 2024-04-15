@@ -676,7 +676,7 @@ workSheetRows.push([])// giving a line gap
                                     <div className="col-sm-12 text-center my-2" id="">
                                         <button type="button" className="DownloadButtons btn" onClick={this.handleSubmit}>
                                         <FontAwesomeIcon icon={faCloudDownload} className=''></FontAwesomeIcon>Download</button>
-                                        <button type="button" className="CancelButtons btn" onClick={this.handleCancel}>Cancel</button>
+                                        <button type="button" className="ReportCancelButtons btn" onClick={this.handleCancel}>Cancel</button>
                                     </div>
                                 </div>
                             </div>

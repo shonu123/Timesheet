@@ -142,17 +142,19 @@ class ApproversApprovals extends React.Component<ApproversProps, ApproversState>
             {
                 name: "Holiday",
                 selector: (row, i) => row.HolidayHrs,
+                width: '130px',
                 sortable: true,
             },
             {
                 name: "PTO",
                 selector: (row, i) => row.PTOHrs,
+                width: '110px',
                 sortable: true,
             },
             {
                 name: "Grand Total",
                 selector: (row, i) => row.GrandTotal,
-                width: '140px',
+                // width: '140px',
                 sortable: true
             }
         ];

@@ -160,6 +160,11 @@
   color: #fff !important;
   width: 130px;
   padding: 10px 6px !important;
+  
+}
+.ReportCancelButtons{
+  width: 130px;
+  padding: 10px 6px !important;
 }
 .DownloadButtons:hover{
   opacity: .7;
@@ -1191,15 +1196,31 @@ a:active {
   margin-left: inherit;
   font-family: inherit;
   font-size: inherit;    
-
   border-radius: 0px;
   -webkit-border-radius: 0px;            
 }    
+.ReportCancelButtons{
+  color: #fff;
+  background-color: #6c757d;
+  border-color: #6c757d;
+  transition: all .15s ease-in-out;
+  margin-bottom: 25px;
+  padding: 6px 18px;
+  border: 1px solid rgba(138, 137, 137, 0.63);
+  margin-left: inherit;
+  font-family: inherit;
+  font-size: inherit;    
+  border-radius: 0px;
+  -webkit-border-radius: 0px;
+}
 .CancelButtons:hover{
   background-color: #4e565d;
   color: white;
 }
-
+.ReportCancelButtons:hover{
+  background-color: #4e565d;
+  color: white;
+}
 .AcceptButtons, 
 .SaveButtons, 
 .SubmitButtons, 

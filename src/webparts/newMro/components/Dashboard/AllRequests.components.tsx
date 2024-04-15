@@ -146,13 +146,14 @@ class AllRequests extends React.Component<AllRequestsProps,AllRequestsState> {
             {
                 name: "Client",
                 selector: (row, i) => row.Client,
+                width: '130px',
                 sortable: true
             },
             {
                 name: "Reporting Manager",
                 selector: (row, i) => row.RM,
                 cell: row => <div dangerouslySetInnerHTML={{ __html: row.RM }} />,
-                width: '250px',
+                width: '230px',
                 sortable: true
             },
             {
@@ -169,6 +170,7 @@ class AllRequests extends React.Component<AllRequestsProps,AllRequestsState> {
             {
                 name: "Hours",
                 selector: (row, i) => row.BillableHours,
+                width: '110px',
                 sortable: true,
             },
             {
@@ -186,11 +188,13 @@ class AllRequests extends React.Component<AllRequestsProps,AllRequestsState> {
             {
                 name: "Holiday",
                 selector: (row, i) =>row.HolidayHrs,
+                width: '130px',
                 sortable: true,
             },
             {
                 name: "PTO",
                 selector: (row, i) =>row.PTOHrs,
+                width: '110px',
                 sortable: true,
             },
             // {
@@ -201,7 +205,7 @@ class AllRequests extends React.Component<AllRequestsProps,AllRequestsState> {
             {
                 name: "Grand Total",
                 selector: (row, i) => row.TotalHours,
-                width:'140px',
+                // width:'140px',
                 sortable: true
             }
         ];
