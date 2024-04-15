@@ -190,9 +190,9 @@ class HolidaysList extends Component<HolidaysListProps, HolidaysListState> {
 
         try {
             if (id == 0)
-                filterString = `ClientName eq '${formData.ClientName}' and ${filterQuery}`;
+                filterString = `ClientName eq '${formData.ClientName}' and ${filterQuery} and IsActive eq'1'`;
             else
-                filterString = `ClientName eq '${formData.ClientName}' and ${filterQuery} and Id ne ` + id;
+                filterString = `ClientName eq '${formData.ClientName}' and ${filterQuery} and IsActive eq'1' and Id ne ` + id;
             sp.web.lists.getByTitle(HolidaysList).items.filter(filterString).get().
                 then((response: any[]) => {
                     if (response.length > 0) {
