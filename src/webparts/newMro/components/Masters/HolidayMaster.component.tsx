@@ -39,6 +39,7 @@ interface HolidaysListState {
         HolidayName: string,
         HolidayDate: Date,
         Year:string,
+        IsActive:boolean;
     };
     SaveUpdateText: string;
     ClientsObj: any[];
@@ -79,6 +80,7 @@ class HolidaysList extends Component<HolidaysListProps, HolidaysListState> {
                 HolidayName:'',
                 HolidayDate: new Date(),
                 Year:'',
+                IsActive:true,
             },
             SaveUpdateText: 'Submit',
             ClientsObj: [],
@@ -118,6 +120,7 @@ class HolidaysList extends Component<HolidaysListProps, HolidaysListState> {
                     HolidayName: '',
                     HolidayDate: new Date(),
                     Year:'',
+                    IsActive:true,
                 }, SaveUpdateText: 'Submit', addNewClient: false
             });
     }
@@ -291,13 +294,14 @@ class HolidaysList extends Component<HolidaysListProps, HolidaysListState> {
         this.setState({ClientsObj : Clients,isRedirect:false})
         // console.log(Clients);
         
-        sp.web.lists.getByTitle('HolidaysList').items.select('Title,*').orderBy("Id", false).getAll()
+        sp.web.lists.getByTitle('HolidaysList').items.select('Title,*').orderBy("Id,IsActive", false).getAll()
             .then((response) => {
                 response.sort((a, b) => b.Id - a.Id);
                 this.setState({
                     HolidayListObj: response.map(o => ({
                         Id: o.Id, ClientName: o.ClientName, HolidayName: o.HolidayName,
-                         HolidayDate: `${new Date(o.HolidayDate).getMonth() + 1}/${new Date(o.HolidayDate).getDate()}/${new Date(o.HolidayDate).getFullYear()}`
+                         HolidayDate: `${new Date(o.HolidayDate).getMonth() + 1}/${new Date(o.HolidayDate).getDate()}/${new Date(o.HolidayDate).getFullYear()}`,
+                         IsActive:o.IsActive?"Active":"In-Active"
                     })),
                     SaveUpdateText: 'Submit',
                     showLabel: false,
@@ -309,6 +313,7 @@ class HolidaysList extends Component<HolidaysListProps, HolidaysListState> {
                 //   }, 100);
             }).catch(err => {
                 console.log('Failed to fetch data.');
+                console.log(err)
                 this.setState({
                     loading: false,
                     modalTitle: 'Error',
@@ -330,7 +335,8 @@ class HolidaysList extends Component<HolidaysListProps, HolidaysListState> {
                   ClientName: response.ClientName,
                   HolidayName: response.HolidayName,
                   HolidayDate: response.HolidayDate, 
-                  Year: response.Year
+                  Year: response.Year,
+                  IsActive:response.IsActive,
                 },
                 SaveUpdateText: 'Update',
                 showLabel: false,
@@ -354,6 +360,7 @@ class HolidaysList extends Component<HolidaysListProps, HolidaysListState> {
                 // HolidayDate:`${new Date().getMonth() + 1}/${new Date().getDate()}/${new Date().getFullYear()}`,
                 HolidayDate: new Date(),
                 Year:'',
+                IsActive:true,
             }, SaveUpdateText: 'Submit', addNewClient: false,
         });
         // () => this.props.history.push('/HolidayMaster');
@@ -396,20 +403,20 @@ class HolidaysList extends Component<HolidaysListProps, HolidaysListState> {
                 for (var j = 0; j < HolidayListData.length; j++) {
                    // VendorsData[j].Title= VendorsData[j].Title!=null?VendorsData[j].Title:"";
                    HolidayListData[j].ClientName=HolidayListData[j].ClientName!=null?HolidayListData[j].ClientName:"";
-
+                //    console.log(i+","+j)
                     if (excelData[i] && (excelData[i]["Client Name"].toLowerCase().trim() == HolidayListData[j].ClientName.toLowerCase().trim()) &&(excelData[i]["Holiday Name"].toLowerCase().trim() == HolidayListData[j].HolidayName.toLowerCase().trim())) {
-
                         let excelDataDate = `${new Date(excelData[i]["Holiday Date"]).getMonth() + 1}/${new Date(excelData[i]["Holiday Date"]).getDate()}/${new Date(excelData[i]["Holiday Date"]).getFullYear()}`
-                        let holidayListDate =`${new Date(HolidayListData[j].HolidayDate).getMonth() + 1}/${new Date(HolidayListData[j].HolidayDate).getDate()}/${new Date(HolidayListData[j].HolidayDate).getFullYear()}`
-
-                         if (excelDataDate == holidayListDate) {
-                            excelData.splice(i, 1);
-                         } 
-                         else if (excelDataDate != holidayListDate) {
-                            HolidayListData[j].HolidayDate = excelDataDate;
-                                statusChangedRec.push(HolidayListData[j]);
+                        let holidayListDate =`${new Date(HolidayListData[j].HolidayDate).getMonth() + 1}/${new Date(HolidayListData[j].HolidayDate).getDate()}/${new Date(HolidayListData[j].HolidayDate).getFullYear()}`     
+                        if(excelDataDate == holidayListDate){
+                            if(excelData[i]["Status"].toLowerCase()==HolidayListData[j].IsActive.toLowerCase()){
                                 excelData.splice(i, 1);
-                         }
+                            }
+                            else if(excelData[i]["Status"].toLowerCase()!=HolidayListData[j].IsActive.toLowerCase()) {
+                                HolidayListData[j].IsActive = excelData[i].Status == "Active" ? true : false;
+                                    statusChangedRec.push(HolidayListData[j]);
+                                    excelData.splice(i, 1);
+                             }
+                        }
                     }
                 }
             }
@@ -420,6 +427,7 @@ class HolidaysList extends Component<HolidaysListProps, HolidaysListState> {
                     obj["HolidayName"] = item["Holiday Name"].trim();
                     obj["HolidayDate"] = new Date(item["Holiday Date"].trim());
                     obj["Year"] = `${new Date(obj["HolidayDate"]).getFullYear()}`,
+                    obj["IsActive"] = item["Status"] == "Active" ? true : false;
                     nonDuplicateRec.push(obj);
                 });
             } else if (!excelData.length && !statusChangedRec.length) {
@@ -591,6 +599,10 @@ class HolidaysList extends Component<HolidaysListProps, HolidaysListState> {
                 name: "Holiday Date",
                 selector: "HolidayDate",
             },
+            {
+                name: "Status",
+                selector: "IsActive",
+            },
         ];
         const columns = [
             {
@@ -639,6 +651,13 @@ class HolidaysList extends Component<HolidaysListProps, HolidaysListState> {
                 header: 'Holiday Date',
                 dataKey: 'HolidayDate'
             },
+            {
+                name: "Status",
+                selector: (row, i) => row.IsActive,
+                sortable: true,
+                header: 'Holiday Date',
+                dataKey: 'HolidayDate'
+            },
            
         ];
         if(this.state.isRedirect){
@@ -681,7 +700,7 @@ class HolidaysList extends Component<HolidaysListProps, HolidaysListState> {
 
                                         <div className={this.state.addNewClient ? 'mx-2 activediv' : 'mx-2'}>
                                             <div className="text-right pt-2">
-                                                <ImportExcel ErrorFileSelect={this.ErrorFileSelect} columns={["Client Name", "Holiday Name", "Holiday Date"]} filename="Holidays List" onDataFetch={this.fetchImportedExcelData} submitData={this.submitImportedExcelData}></ImportExcel>
+                                                <ImportExcel ErrorFileSelect={this.ErrorFileSelect} columns={["Client Name", "Holiday Name", "Holiday Date","Status"]} filename="Holidays List" onDataFetch={this.fetchImportedExcelData} submitData={this.submitImportedExcelData}></ImportExcel>
 
                                                 {/* <button type="button" id="btnSubmit" className="add-button btn" onClick={this.addNewHolidayMaster}> */}
                                                 <button type="button" id="btnSubmit" title='Add New Holiday' className="SubmitButtons btn" onClick={this.addNewHolidayMaster}>
@@ -753,6 +772,15 @@ class HolidaysList extends Component<HolidaysListProps, HolidaysListState> {
                                                                 </div>
                                                                 </div>
                                                             </div>
+
+                                                            <InputCheckBox
+                                                            label={"IsActive"}
+                                                            name={"IsActive"}
+                                                            checked={this.state.formData.IsActive}
+                                                            onChange={this.handleChange}
+                                                            isforMasters={true}
+                                                            isdisable={false}
+                                                        />
                                                             
                                                         </div>
                                                     </div>
