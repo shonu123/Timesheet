@@ -1415,9 +1415,19 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
         this.setState({ loading: true });
         let tableContent;
         if(formObject.ClientName.toLowerCase().includes("synergy"))
-    tableContent = {'Name':this.state.trFormdata.Name,'Client':this.state.trFormdata.ClientName,'Submitted Date':`${this.state.trFormdata.DateSubmitted.getMonth() + 1}/${this.state.trFormdata.DateSubmitted.getDate()}/${this.state.trFormdata.DateSubmitted.getFullYear()}`,'Office  Hours':this.state.trFormdata.SynergyOfficeHrs[0].Total,'Holiday Hours':this.state.trFormdata.ClientHolidayHrs[0].Total,'PTO Hours':this.state.trFormdata.PTOHrs[0].Total,'Grand Total Hours':this.state.trFormdata.Total[0].Total}
+        {   
+            if(formObject.Comments.trim()=="")
+            tableContent = {'Name':this.state.trFormdata.Name,'Client':this.state.trFormdata.ClientName,'Submitted Date':`${this.state.trFormdata.DateSubmitted.getMonth() + 1}/${this.state.trFormdata.DateSubmitted.getDate()}/${this.state.trFormdata.DateSubmitted.getFullYear()}`,'Office  Hours':this.state.trFormdata.SynergyOfficeHrs[0].Total,'Holiday Hours':this.state.trFormdata.ClientHolidayHrs[0].Total,'PTO Hours':this.state.trFormdata.PTOHrs[0].Total,'Grand Total Hours':this.state.trFormdata.Total[0].Total}
+            else
+            tableContent = {'Name':this.state.trFormdata.Name,'Client':this.state.trFormdata.ClientName,'Submitted Date':`${this.state.trFormdata.DateSubmitted.getMonth() + 1}/${this.state.trFormdata.DateSubmitted.getDate()}/${this.state.trFormdata.DateSubmitted.getFullYear()}`,'Office  Hours':this.state.trFormdata.SynergyOfficeHrs[0].Total,'Holiday Hours':this.state.trFormdata.ClientHolidayHrs[0].Total,'PTO Hours':this.state.trFormdata.PTOHrs[0].Total,'Grand Total Hours':this.state.trFormdata.Total[0].Total,'Comments':formObject.Comments}
+        }
         else 
-      tableContent = {'Name':this.state.trFormdata.Name,'Client':this.state.trFormdata.ClientName,'Submitted Date':`${this.state.trFormdata.DateSubmitted.getMonth() + 1}/${this.state.trFormdata.DateSubmitted.getDate()}/${this.state.trFormdata.DateSubmitted.getFullYear()}`,'Billable Hours':formObject.WeeklyItemsTotalTime,'OT Hours':formObject.OTItemsTotalTime,'Total Billable Hours':this.state.trFormdata.BillableSubTotal[0].Total,'Holiday Hours':this.state.trFormdata.ClientHolidayHrs[0].Total,'PTO Hours':this.state.trFormdata.PTOHrs[0].Total,'Grand Total Hours':this.state.trFormdata.Total[0].Total}
+        {
+            if(formObject.Comments.trim()=="")
+            tableContent = {'Name':this.state.trFormdata.Name,'Client':this.state.trFormdata.ClientName,'Submitted Date':`${this.state.trFormdata.DateSubmitted.getMonth() + 1}/${this.state.trFormdata.DateSubmitted.getDate()}/${this.state.trFormdata.DateSubmitted.getFullYear()}`,'Billable Hours':formObject.WeeklyItemsTotalTime,'OT Hours':formObject.OTItemsTotalTime,'Total Billable Hours':this.state.trFormdata.BillableSubTotal[0].Total,'Holiday Hours':this.state.trFormdata.ClientHolidayHrs[0].Total,'PTO Hours':this.state.trFormdata.PTOHrs[0].Total,'Grand Total Hours':this.state.trFormdata.Total[0].Total}
+            else
+            tableContent = {'Name':this.state.trFormdata.Name,'Client':this.state.trFormdata.ClientName,'Submitted Date':`${this.state.trFormdata.DateSubmitted.getMonth() + 1}/${this.state.trFormdata.DateSubmitted.getDate()}/${this.state.trFormdata.DateSubmitted.getFullYear()}`,'Billable Hours':formObject.WeeklyItemsTotalTime,'OT Hours':formObject.OTItemsTotalTime,'Total Billable Hours':this.state.trFormdata.BillableSubTotal[0].Total,'Holiday Hours':this.state.trFormdata.ClientHolidayHrs[0].Total,'PTO Hours':this.state.trFormdata.PTOHrs[0].Total,'Grand Total Hours':this.state.trFormdata.Total[0].Total,'Comments':formObject.Comments}
+        }
         let sub='';
         let emaildetails={};
 
@@ -1459,7 +1469,18 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                else if(StatusType.Save==formObject.Status)  //save after submit case.
             {
                  sub="Weekly Time Sheet has been "+StatusType.Submit+"."
-                 emaildetails ={toemail:formObject.ReportingManagersEmail,ccemail:this.state.EmployeeEmail,subject:sub,bodyString:sub,body:'' };
+                 if(formObject.IsClientApprovalNeeded)
+                 {
+                     for(const mail of formObject.ReportingManagersEmail)
+                     {
+                         CC.push(mail);
+                     }
+                 }
+                for(const mail of formObject.ReviewersEmail)
+                {
+                    CC.push(mail);
+                }
+                 emaildetails ={toemail:CC,ccemail:this.state.EmployeeEmail,subject:sub,bodyString:sub,body:'' };
                  var DashboardURl = 'https://synergycomcom.sharepoint.com/sites/Billing.Timesheet/SitePages/TimeSheet.aspx';
                  emaildetails['body'] = this.emailBodyPreparation(this.siteURL+'/SitePages/TimeSheet.aspx#/WeeklyTimesheet/'+this.state.ItemID,tableContent,emaildetails['bodyString'],this.props.spContext.userDisplayName,DashboardURl);
                  this.sendemail(emaildetails,StatusType.Submit);
@@ -1467,7 +1488,6 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
               else if(StatusType.ReviewerReject==formObject.Status) //Reviewer rejected but client Approval not needed or not depends on IsClientApprovalNeeded
             {
                 sub="Weekly Time Sheet has been "+StatusType.Submit+"."
-                CC=this.state.EmployeeEmail;
                 if(formObject.IsClientApprovalNeeded)
                 {
                     for(const mail of formObject.ReportingManagersEmail)
@@ -1475,12 +1495,11 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                         CC.push(mail);
                     }
                 }
-               
                for(const mail of formObject.ReviewersEmail)
                {
                    CC.push(mail);
                }
-               emaildetails ={toemail:this.state.EmployeeEmail,ccemail:CC,subject:sub,bodyString:sub,body:'' };
+               emaildetails ={toemail:CC,ccemail:this.state.EmployeeEmail,subject:sub,bodyString:sub,body:'' };
                var DashboardURl = 'https://synergycomcom.sharepoint.com/sites/Billing.Timesheet/SitePages/TimeSheet.aspx';
                emaildetails['body'] = this.emailBodyPreparation(this.siteURL+'/SitePages/TimeSheet.aspx#/WeeklyTimesheet/'+this.state.ItemID,tableContent,emaildetails['bodyString'],this.props.spContext.userDisplayName,DashboardURl);
                this.sendemail(emaildetails,StatusType.Submit);
