@@ -2307,7 +2307,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
         let End = addDays(new Date(WeekStartDate), 7);
         let WeekStart = `${Start.getMonth() + 1}/${Start.getDate()}/${Start.getFullYear()}`
         let WeekEnd = `${End.getMonth() + 1}/${End.getDate()}/${End.getFullYear()}`
-        let filterQuery="ClientName eq '"+selectedClientName+"' and HolidayDate gt '"+WeekStart+"' and HolidayDate lt '"+WeekEnd+"'";
+        let filterQuery="ClientName eq '"+selectedClientName+"' and HolidayDate gt '"+WeekStart+"' and HolidayDate lt '"+WeekEnd+"' and IsActive eq 1";
         let selectQuery="ClientName,HolidayName,HolidayDate,Year,*";
         let HolidaysListData = await sp.web.lists.getByTitle('HolidaysList').items.filter(filterQuery).select(selectQuery).getAll();
         // console.log(HolidaysListData);
