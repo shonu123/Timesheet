@@ -129,12 +129,12 @@ class AllRequests extends React.Component<AllRequestsProps,AllRequestsState> {
                         </React.Fragment>
                     );
                 },
-                width: '100px'
+                width: '80px'
             },
             {
                 name: "Date",
                 selector: (row, i) => row.Date,
-                width: '120px',
+                width: '150px',
                 sortable: true
             },
             {
