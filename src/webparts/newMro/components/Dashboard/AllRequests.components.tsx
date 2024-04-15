@@ -158,6 +158,7 @@ class AllRequests extends React.Component<AllRequestsProps,AllRequestsState> {
             {
                 name: "Status",
                 selector: (row, i) => row.Status,
+                width: '100px',
                 sortable: true
             },
             {
@@ -169,6 +170,7 @@ class AllRequests extends React.Component<AllRequestsProps,AllRequestsState> {
             {
                 name: "Hours",
                 selector: (row, i) => row.BillableHours,
+                width: '100px',
                 sortable: true,
             },
             {
@@ -186,11 +188,13 @@ class AllRequests extends React.Component<AllRequestsProps,AllRequestsState> {
             {
                 name: "Holiday",
                 selector: (row, i) =>row.HolidayHrs,
+                width: '100px',
                 sortable: true,
             },
             {
                 name: "PTO",
                 selector: (row, i) =>row.PTOHrs,
+                width: '100px',
                 sortable: true,
             },
             // {
