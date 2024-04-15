@@ -1773,7 +1773,13 @@ div[id^="_TopSpan_NotificationSpan"]{
           display: none;
       }
   }
-
+  /* 4/15/2024 start*/
+  @media only screen and (max-width: 1920px) {
+    .dataTables_wrapper-overflow{
+        width: 92vw!important;
+    }
+  }
+  /* 4/15/2024 end */
   @media only screen and (max-width: 1540px) {
     .dataTables_wrapper-overflow{
         width: 92vw!important;
@@ -1801,6 +1807,15 @@ div[id^="_TopSpan_NotificationSpan"]{
       /* width: 94vw!important;  */
   }
 }
+/* 4/15/2024 start*/
+@media only screen and (max-width: 1275px) {
+  .dataTables_wrapper-overflow{
+      width: 86vw!important; 
+      /* commented by sri */
+      /* width: 94vw!important;  */
+  }
+}
+/* 4/15/2024 end*/
 @media only screen and (max-width: 1260px) {
   .dataTables_wrapper-overflow{
       width: 91vw!important; 
@@ -1813,6 +1828,13 @@ div[id^="_TopSpan_NotificationSpan"]{
       width: 90vw!important;
   }
 }
+/* 4/15/2024 start*/
+@media only screen and (max-width: 1030px) {
+  .dataTables_wrapper-overflow,.table-NoScroll{
+      width: 86vw!important;
+  }
+}
+/* 4/15/2024 end*/
 @media only screen and (max-width: 800px) {
   .dataTables_wrapper-overflow,.table-NoScroll{
       width: 88vw!important;
