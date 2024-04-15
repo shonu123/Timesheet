@@ -141,12 +141,6 @@ class EmployeeMasterView extends React.Component<EmployeeMasterViewProps, Employ
                 width: '250px',
                 sortable: true
             },
-            {
-                name: "Client",
-                selector: (row, i) => row.Company,
-                width: '200px',
-                sortable: true
-            },
             // {
             //     name: "Approvers",
             //     selector: (row, i) => row.Approvers,
@@ -159,6 +153,12 @@ class EmployeeMasterView extends React.Component<EmployeeMasterViewProps, Employ
                 sortable: true,
                 width: '250px',
                 cell: row => <div dangerouslySetInnerHTML={{ __html: row.Reviewers }} />
+            },
+            {
+                name: "Client",
+                selector: (row, i) => row.Company,
+                // width: '200px',
+                sortable: true
             },
             // { ------Notifiers--------
             //     name: "Notifiers",

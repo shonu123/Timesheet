@@ -280,10 +280,10 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
             let tableContent = {}
             let date = new Date(data[0].DateSubmitted)
             if(data[0].ClientName.toLowerCase().includes("synergy")){
-                tableContent = {'Name':data[0].Name,'Client Name':data[0].ClientName,'Submitted Date':`${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`,'Office Hours':JSON.parse(data[0].SynergyOfficeHrs)[0].Total,'Holiday Hours':JSON.parse(data[0].ClientHolidayHrs)[0].Total,'PTO Hours':JSON.parse(data[0].PTOHrs)[0].Total,'Grand Total Hours':data[0].GrandTotal}
+                tableContent = {'Name':data[0].Name,'Client Name':data[0].ClientName,'Submitted Date':`${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`,'Office Hours':JSON.parse(data[0].SynergyOfficeHrs)[0].Total,'Holiday Hours':JSON.parse(data[0].ClientHolidayHrs)[0].Total,'PTO Hours':JSON.parse(data[0].PTOHrs)[0].Total,'Grand Total Hours':data[0].GrandTotal,'Comments':this.state.comments}
             }
             else{
-                tableContent = {'Name':data[0].Name,'Client Name':data[0].ClientName,'Submitted Date':`${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`,'Billable Hours':data[0].WeeklyTotalHrs,'OT Hours':data[0].OTTotalHrs,'Total Billable Hours':data[0].BillableTotalHrs,'Holiday Hours':JSON.parse(data[0].ClientHolidayHrs)[0].Total,'PTO Hours':JSON.parse(data[0].PTOHrs)[0].Total,'Grand Total Hours':data[0].GrandTotal}
+                tableContent = {'Name':data[0].Name,'Client Name':data[0].ClientName,'Submitted Date':`${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`,'Billable Hours':data[0].WeeklyTotalHrs,'OT Hours':data[0].OTTotalHrs,'Total Billable Hours':data[0].BillableTotalHrs,'Holiday Hours':JSON.parse(data[0].ClientHolidayHrs)[0].Total,'PTO Hours':JSON.parse(data[0].PTOHrs)[0].Total,'Grand Total Hours':data[0].GrandTotal,'Comments':this.state.comments}
             }
             // console.log(tableContent)
 
@@ -446,7 +446,7 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
                         </React.Fragment>
                         );
                     },
-                    width: '100px'
+                    // width: '100px'
                 }
             ];
             return (
