@@ -379,14 +379,12 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
                 {
                     name: "Status",
                     selector: (row, i) => row.Status,
-                    width: '100px',
                     sortable: true
 
                 },
                 {
                     name: "Hours",
                     selector: (row, i) => row.BillableHrs,
-                    width: '100px',
                     sortable: true,
                 },
                 {
@@ -404,13 +402,11 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
                 {
                     name: "Holiday",
                     selector: (row, i) => row.HolidayHrs,
-                    width: '100px',
                     sortable: true,
                 },
                 {
                     name: "PTO",
                     selector: (row, i) => row.PTOHrs,
-                    width: '100px',
                     sortable: true,
                 },
                 {

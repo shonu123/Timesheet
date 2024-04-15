@@ -114,43 +114,39 @@ class ApproversApprovals extends React.Component<ApproversProps, ApproversState>
             {
                 name: "Employee Name",
                 selector: (row, i) => row.EmployeName,
-                // width: '250px',
+                width: '250px',
                 sortable: true
             },
             {
                 name: "Pending With",
                 selector: (row, i) => row.PendingWith,
-                // width: '180px',
+                width: '180px',
                 sortable: true
             },
             {
                 name: "Status",
                 selector: (row, i) => row.Status,
-                // width: '100px',
                 sortable: true
             },
             {
                 name: "Hours",
                 selector: (row, i) => row.BillableTotalHrs,
-                width: '100px',
                 sortable: true,
             },
             {
                 name: "OT",
                 selector: (row, i) => row.OTTotalHrs,
-                width: '100px',
+                width: '110px',
                 sortable: true,
             },
             {
                 name: "Holiday",
                 selector: (row, i) => row.HolidayHrs,
-                width: '100px',
                 sortable: true,
             },
             {
                 name: "PTO",
                 selector: (row, i) => row.PTOHrs,
-                width: '100px',
                 sortable: true,
             },
             {
