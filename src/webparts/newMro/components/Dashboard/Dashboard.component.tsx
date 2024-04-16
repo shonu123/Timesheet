@@ -105,7 +105,7 @@ class Dashboard extends React.Component<DashboardProps, DashboardState> {
     private getUserGroups = async () => {
         // let groups = await sp.web.currentUser.groups();
         let userID = this.props.spContext.userId
-        let filterQuery = "ReportingManager/ID eq '"+userID+"' or Employee/ID eq '"+userID+"' or Reviewers/ID eq '"+userID+"' and IsActive eq 1"
+        let filterQuery = "(ReportingManager/ID eq '"+userID+"' or Employee/ID eq '"+userID+"' or Reviewers/ID eq '"+userID+"') and IsActive eq '1'"
         let [groups,EmployeeMaster] = await Promise.all([
             sp.web.currentUser.groups(),
             sp.web.lists.getByTitle("EmployeeMaster").items.filter(filterQuery).select('Employee/ID,ReportingManager/ID,Reviewers/ID,*').expand("Employee,ReportingManager,Reviewers").get()

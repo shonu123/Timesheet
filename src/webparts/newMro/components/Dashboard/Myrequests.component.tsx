@@ -50,7 +50,7 @@ class MyRequests extends React.Component<MyRequestsProps, MyRequestsState> {
         let date = `${dateFilter.getMonth() + 1}/${dateFilter.getDate()}/${dateFilter.getFullYear()}`
         var filterQuery = "and WeekStartDate ge '"+date+"'"
 
-        var filterString = "Initiator/Id eq '"+userId+"'"+filterQuery
+        var filterString = "Initiator/Id eq '"+userId+"' "+filterQuery
 
         sp.web.lists.getByTitle('WeeklyTimeSheet').items.top(2000).filter(filterString).expand("Initiator").select('Initiator/Title','*').orderBy('Modified', false).get()
             .then((response) => {
