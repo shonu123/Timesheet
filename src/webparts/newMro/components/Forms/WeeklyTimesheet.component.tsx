@@ -2829,7 +2829,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                         </div>
                     </div>                       
                     <div className="row">
-                        <div className="col-md-12 text-center">
+                        <div className="col-md-12 text-center my-2">
                             {/* Error Message */}
                         {/* <div className='text-left'>
                         <span className='text-validator'> {this.state.errorMessage}</span>
