@@ -1926,6 +1926,22 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
         if(userGroups.includes('Timesheet Administrators')){
             isAdmin = true
         }
+        //for show/hide of SubmitSave Revoke buttons
+        if (userEmail == this.state.EmployeeEmail || isAdmin) {
+            let Approve = StatusType.Approved.toString()
+            let submit = StatusType.Submit.toString()
+            if (![Approve, submit].includes(this.state.trFormdata.Status)) 
+                this.setState({ showSubmitSavebtn: true})
+            else
+            this.setState({ showSubmitSavebtn: false})
+            if ([Approve, submit].includes(this.state.trFormdata.Status))
+                this.setState({showRevokebtn: true })
+            else
+            this.setState({showRevokebtn:false })
+        }
+        else {
+            this.setState({ showSubmitSavebtn: false,showRevokebtn:false })
+        }
         if(value){
         let RMEmails = this.state.trFormdata.ReportingManagersEmail
         let RevEmails = this.state.trFormdata.ReviewersEmail
@@ -1968,22 +1984,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
         //this.setState({ showApproveRejectbtn: value,showSubmitSavebtn:false,IsReviewer:false})  
         this.setState({ showApproveRejectbtn: value,IsReviewer:false})  
        }
-       //for show/hide of SubmitSave Revoke buttons
-        if (userEmail == this.state.EmployeeEmail || isAdmin) {
-            let Approve = StatusType.Approved.toString()
-            let submit = StatusType.Submit.toString()
-            if (![Approve, submit].includes(this.state.trFormdata.Status)) 
-                this.setState({ showSubmitSavebtn: true})
-            else
-            this.setState({ showSubmitSavebtn: false})
-            if ([Approve, submit].includes(this.state.trFormdata.Status))
-                this.setState({showRevokebtn: true })
-            else
-            this.setState({showRevokebtn:false })
-        }
-        else {
-            this.setState({ showSubmitSavebtn: false,showRevokebtn:false })
-        }
+       
     }
      private userAccessableRecord(){
         let currentUserEmail = this.props.spContext.userEmail;
