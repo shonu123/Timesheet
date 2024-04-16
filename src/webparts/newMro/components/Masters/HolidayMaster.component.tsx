@@ -784,12 +784,6 @@ class HolidaysList extends Component<HolidaysListProps, HolidaysListState> {
                                                             
                                                         </div>
                                                     </div>
-
-                                                    {this.state.showLabel &&
-                                                        <div>
-                                                            <span className='text-validator'> {this.state.errorMessage}</span>
-                                                        </div>
-                                                    }
                                                     <div className="row mx-1" id="">
                                                         <div className="col-sm-12 text-center my-2" id="">
                                                             <button type="button" onClick={this.handleSubmit} id="btnSubmit" className="SubmitButtons btn">{this.state.SaveUpdateText}</button>

@@ -389,16 +389,6 @@ else {
                 <React.Fragment>
                 <ModalPopUp title={this.state.modalTitle} modalText={this.state.modalText} isVisible={this.state.showHideModal} onClose={this.handleClose} isSuccess={true}></ModalPopUp>
                     <div id="content" className="content p-2 pt-2">
-                        <div id="clickMenu" className="menu-icon-outer">
-                            <div className="menu-icon">
-                                <span>
-                                </span>
-                                <span>
-                                </span>
-                                <span>
-                                </span>
-                            </div>
-                        </div>
                         <div className='container-fluid'>
                             <div className='FormContent'>
                                 <div className="title">Approval Matrix
@@ -606,10 +596,6 @@ else {
                                             </div>
                                     </div>
 
-                                </div>
-                                {/* Error Message */}
-                                <div>
-                                    <span className='text-validator'> {this.state.errorMessage}</span>
                                 </div>
                                 <div className="row mx-1" id="">
                                     <div className="col-sm-12 text-center my-2" id="">
