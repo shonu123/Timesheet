@@ -40,6 +40,8 @@ class DailyTimesheetReport extends React.Component<DailyTimesheetReportProps, Da
     private siteURL: string;
     private client;
     private EmployeeDropdown;
+    private startDate;
+    private endDate;
     constructor(props: DailyTimesheetReportProps) {
         super(props);
         this.siteURL = this.props.spContext.webAbsoluteUrl;
@@ -48,6 +50,8 @@ class DailyTimesheetReport extends React.Component<DailyTimesheetReportProps, Da
         });
         this.client = React.createRef();
         this.EmployeeDropdown = React.createRef();
+        this.startDate = React.createRef();
+        this.endDate = React.createRef();
     }
 
     public state = {
@@ -182,14 +186,30 @@ class DailyTimesheetReport extends React.Component<DailyTimesheetReportProps, Da
         else if (this.state.startDate == null) {
             isvalid.status = false;
             isvalid.message = 'Start Date cannot be blank'
+            let prpel =  this.startDate
+            prpel.current.input.focus();
+            setTimeout(function (){
+                prpel.current.input.classList.add('mandatory-FormContent-focus');
+            },0)
         }
         else if (this.state.endDate == null) {
             isvalid.status = false;
             isvalid.message = 'End Date cannot be blank'
+            let prpel =  this.endDate
+            prpel.current.input.focus();
+            setTimeout(function (){
+                prpel.current.input.classList.add('mandatory-FormContent-focus');
+            },0)
+
         }
         else if (new Date(selectedStartDate) > new Date(selectedEndDate)) {
             isvalid.status = false;
             isvalid.message = 'Start Date cannot be greater than End Date'
+            let prpel =  this.startDate
+            prpel.current.input.focus();
+            setTimeout(function (){
+                prpel.current.input.classList.add('mandatory-FormContent-focus');
+            },0)
         }
         return isvalid;
     }
@@ -654,7 +674,7 @@ workSheetRows.push([])// giving a line gap
                                                 <label className="z-in-9">Start Date<span className="mandatoryhastrick">*</span></label>
                                                 <div className="custom-datepicker" id="divDateofJoining">
 
-                                                    <DatePicker onDatechange={this.handleStartDate} selectedDate={this.state.startDate} placeholderText='MM/DD/YYYY'/>
+                                                    <DatePicker onDatechange={this.handleStartDate} selectedDate={this.state.startDate} ref={this.startDate} placeholderText='MM/DD/YYYY'/>
                                                 </div>
                                             </div>
                                         </div>
@@ -664,7 +684,7 @@ workSheetRows.push([])// giving a line gap
                                                 <label className="z-in-9">End Date<span className="mandatoryhastrick">*</span></label>
                                                 <div className="custom-datepicker" id="divDateofJoining">
 
-                                                    <DatePicker onDatechange={this.handleEndDate} selectedDate={this.state.endDate} />
+                                                    <DatePicker onDatechange={this.handleEndDate} ref={this.endDate} selectedDate={this.state.endDate} />
                                                 </div>
                                             </div>
                                         </div>

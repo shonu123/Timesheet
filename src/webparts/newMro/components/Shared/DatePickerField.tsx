@@ -2,10 +2,11 @@ import React, { useState } from "react";
 import DatePicker from 'react-datepicker';
 import "react-datepicker/dist/react-datepicker.css";
 //import 'bootstrap/dist/css/bootstrap.min.css';
-const DatePickercontrol = (props) => {
+const DatePickercontrol = (props,ref) => {
     var [selectedDay,setDate] = useState(null);
     let selectedDate = props.selectedDate!=null?props.selectedDate:null;
     let selDate=null;
+    let reference = ref
     if(selectedDate !=null)
     {
     //   let month =selectedDate.getMonth()+1;
@@ -71,9 +72,9 @@ const DatePickercontrol = (props) => {
           onChange={handlechangeevent}
           placeholder={'MM/DD/YYYY '}
           className="form-control DatePicker"//{props.isDisabled ? "form-control DatePicker c-input-readonly" : "form-control DatePicker"}//"form-control DatePicker" // custom class
-         
+         ref={reference}
         />
      );
   };
 
-  export default DatePickercontrol;
+  export default React.forwardRef(DatePickercontrol);
