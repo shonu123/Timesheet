@@ -333,16 +333,6 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                 this.setState({isAdmin:true,isSubmitted: false})
             }
         }
-        // if(userGroups.includes('Timesheet Members')){
-        //     this.setState({isSubmitted : false,loading:false});
-        // }
-        // else{
-        //     this.setState({isSubmitted : true,loading:false});
-        // }
-        // if(userGroups.includes('Timesheet Administrators')){
-        //     this.setState({isAdmin:true,isSubmitted: false})
-        // }
-        // console.log(ClientNames);
         if(ClientNames.length<1 && !this.state.isAdmin){
             this.setState({modalTitle:'Invalid Employee configuration',modalText:'Employee not configured in Approval Matrix,Please contact Administrator',isSuccess: false,showHideModal:true})
             this.setState({loading:false,isSubmitted:true});
@@ -511,59 +501,13 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
         {
             this.setState({isSubmitted:false});
         }
-        if([StatusType.ReviewerReject].includes(data[0].Status))
+        if([StatusType.ReviewerReject,StatusType.Save].includes(data[0].Status))
         {
             if(data[0].IsClientApprovalNeed)
             this.setState({showBillable:false})
             else
             this.setState({showBillable:true})
         }
-        //For getting Dateofjoining,DescriptionMandatory,ProjectCOde Mandatory,WeekStartday of selected client
-        //   for( var item of this.state.Clients_DateOfJoinings)
-        //   {
-        //       if(item.ClientName.toLowerCase()==data[0].ClientName.toLowerCase())
-        //       {
-        //           trFormdata.DateOfJoining=new Date(item.DOJ);
-        //           trFormdata.IsDescriptionMandatory=item.IsDescriptionMandatory;
-        //           trFormdata.IsProjectCodeMandatory=item.IsProjectCodeMandatory;
-        //           trFormdata.WeekStartDay=item.WeekStartDay;
-        //           trFormdata.HolidayType=item.HolidayType;
-        //           break;
-        //       }
-        //   }
-        // this.GetHolidayMasterDataByClientName( trFormdata.WeekStartDate,trFormdata.HolidayType,trFormdata);
-        // let WeekStartDate=new Date(new Date(data[0].WeekStartDate).getMonth()+1+"/"+new Date(data[0].WeekStartDate).getDate()+"/"+new Date(data[0].WeekStartDate).getFullYear());
-        // let DateOfjoining=new Date(trFormdata.DateOfJoining.getMonth()+1+"/"+trFormdata.DateOfJoining.getDate()+"/"+trFormdata.DateOfJoining.getFullYear());
-        // this.WeekHeadings=[];
-        // this.WeekHeadings.push({"Mon":(new Date(WeekStartDate).getDate().toString().length == 1 ? "0" +WeekStartDate.getDate() :WeekStartDate.getDate()),
-        // "IsMonJoined":WeekStartDate<DateOfjoining,
-        // "IsDay1Holiday":this.IsHoliday(WeekStartDate,trFormdata.HolidayType),
-        // "IsDay1SynergyHoliday":this.IsHoliday(WeekStartDate,"synergy"),
-        // "Tue":(new Date(WeekStartDate.setDate(WeekStartDate.getDate()+1)).getDate().toString().length == 1 ? "0" +WeekStartDate.getDate() :WeekStartDate.getDate()),
-        // "IsTueJoined":WeekStartDate<DateOfjoining,
-        // "IsDay2Holiday":this.IsHoliday(WeekStartDate,trFormdata.HolidayType),
-        // "IsDay2SynergyHoliday":this.IsHoliday(WeekStartDate,"synergy"),
-        // "Wed":(new Date(WeekStartDate.setDate(WeekStartDate.getDate()+1)).getDate().toString().length == 1 ? "0" +WeekStartDate.getDate() :WeekStartDate.getDate()),
-        // "IsWedJoined":WeekStartDate<DateOfjoining,
-        // "IsDay3Holiday":this.IsHoliday(WeekStartDate,trFormdata.HolidayType),
-        // "IsDay3SynergyHoliday":this.IsHoliday(WeekStartDate,"synergy"),
-        // "Thu":(new Date(WeekStartDate.setDate(WeekStartDate.getDate()+1)).getDate().toString().length == 1 ? "0" +WeekStartDate.getDate() :WeekStartDate.getDate()),
-        // "IsThuJoined":WeekStartDate<DateOfjoining,
-        // "IsDay4Holiday":this.IsHoliday(WeekStartDate,trFormdata.HolidayType),
-        // "IsDay4SynergyHoliday":this.IsHoliday(WeekStartDate,"synergy"),
-        // "Fri":(new Date(WeekStartDate.setDate(WeekStartDate.getDate()+1)).getDate().toString().length == 1 ? "0" +WeekStartDate.getDate() :WeekStartDate.getDate()),
-        // "IsFriJoined":WeekStartDate<DateOfjoining,
-        // "IsDay5Holiday":this.IsHoliday(WeekStartDate,trFormdata.HolidayType),
-        // "IsDay5SynergyHoliday":this.IsHoliday(WeekStartDate,"synergy"),
-        // "Sat":(new Date(WeekStartDate.setDate(WeekStartDate.getDate()+1)).getDate().toString().length == 1 ? "0" +WeekStartDate.getDate() :WeekStartDate.getDate()),
-        // "IsSatJoined":WeekStartDate<DateOfjoining,
-        // "IsDay6Holiday":this.IsHoliday(WeekStartDate,trFormdata.HolidayType),
-        // "IsDay6SynergyHoliday":this.IsHoliday(WeekStartDate,"synergy"),
-        // "Sun":(new Date(WeekStartDate.setDate(WeekStartDate.getDate()+1)).getDate().toString().length == 1 ? "0" +WeekStartDate.getDate() :WeekStartDate.getDate()),
-        // "IsSunJoined":WeekStartDate<DateOfjoining,
-        // "IsDay7Holiday":this.IsHoliday(WeekStartDate,trFormdata.HolidayType),
-        // "IsDay7SynergyHoliday":this.IsHoliday(WeekStartDate,"synergy"),
-        // })
         let groups = await sp.web.currentUser.groups();
         //------new-----
         let userGroups = []
@@ -1270,8 +1214,8 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
             customToaster('toster-error',ToasterTypes.Error,isValid.message,4000)
         }
     }
-    private GetRequiredEmails=(ClentName,formdata)=>{
-        let clientVal=ClentName;
+    private GetRequiredEmails=(ClientName,formdata)=>{
+        let clientVal=ClientName;
         const Formdata =formdata;
             Formdata.ClientName=clientVal;
             Formdata.SuperviserNames=[];
@@ -1696,7 +1640,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                 {
                     this.setState({isSubmitted:false});
                 }
-                if([StatusType.ReviewerReject].includes(ExistRecordData[0].Status))
+                if([StatusType.ReviewerReject,StatusType.Save].includes(ExistRecordData[0].Status))
                 {
                     if(ExistRecordData[0].IsClientApprovalNeed)
                     this.setState({showBillable:false})
