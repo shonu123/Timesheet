@@ -503,10 +503,13 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
         }
         if([StatusType.ReviewerReject,StatusType.Save].includes(data[0].Status))
         {
-            if(data[0].IsClientApprovalNeed)
-            this.setState({showBillable:false})
-            else
-            this.setState({showBillable:true})
+            if(trFormdata.Revised)
+            {
+                if(data[0].IsClientApprovalNeed)
+                this.setState({showBillable:false})
+                else
+                this.setState({showBillable:true})
+            }
         }
         let groups = await sp.web.currentUser.groups();
         //------new-----
@@ -1642,10 +1645,13 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                 }
                 if([StatusType.ReviewerReject,StatusType.Save].includes(ExistRecordData[0].Status))
                 {
-                    if(ExistRecordData[0].IsClientApprovalNeed)
-                    this.setState({showBillable:false})
-                    else
-                    this.setState({showBillable:true})
+                    if(trFormdata.Revised)
+                    {   
+                        if(ExistRecordData[0].IsClientApprovalNeed)
+                        this.setState({showBillable:false})
+                        else
+                        this.setState({showBillable:true})
+                    }
                 }
                 let WeekStartDate=new Date(new Date(ExistRecordData[0].WeekStartDate).getMonth()+1+"/"+new Date(ExistRecordData[0].WeekStartDate).getDate()+"/"+new Date(ExistRecordData[0].WeekStartDate).getFullYear());
                 let DateOfjoining=new Date(trFormdata.DateOfJoining.getMonth()+1+"/"+trFormdata.DateOfJoining.getDate()+"/"+trFormdata.DateOfJoining.getFullYear());
