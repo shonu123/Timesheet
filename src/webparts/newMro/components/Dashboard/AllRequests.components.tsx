@@ -289,7 +289,7 @@ class AllRequests extends React.Component<AllRequestsProps,AllRequestsState> {
                         </button></NavLink>
                 </div></div>
                 <div className='c-v-table table-head-1st-td'>
-                    <TableGenerator columns={columns} data={this.state.AllRequests} fileName={'All Requests'} showExportExcel={true} ExportExcelCustomisedColumns={Exportcolumns} ExportExcelCustomisedData={this.state.ExportExcelData} wrapColumns={["RM","Client"]}></TableGenerator>
+                    <TableGenerator columns={columns} data={this.state.AllRequests} fileName={'All Timesheets'} showExportExcel={true} ExportExcelCustomisedColumns={Exportcolumns} ExportExcelCustomisedData={this.state.ExportExcelData} wrapColumns={["RM","Client"]}></TableGenerator>
                 </div>
             </div>
             {this.state.loading && <Loader />}
