@@ -135,7 +135,7 @@ class EmployeeMasterView extends React.Component<EmployeeMasterViewProps, Employ
                 sortable: true
             },
             {
-                name: "Manager",
+                name: "Reporting Manager",
                 selector: (row, i) => row.ReportingManager,
                 cell: row => <div dangerouslySetInnerHTML={{ __html: row.ReportingManager }} />,
                 width: '250px',
