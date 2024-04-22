@@ -122,7 +122,7 @@ class MyRequests extends React.Component<MyRequestsProps, MyRequestsState> {
             <React.Fragment>
             <div>
                 <div className='table-head-1st-td'>
-                    <TableGenerator columns={columns} data={this.state.Requests} fileName={'My Requests'} showExportExcel={false} showAddButton={true} customBtnClass='px-1 text-right' navigateOnBtnClick={`/WeeklyTimesheet`} btnDivID='divAddNewWeeklyTimeSheet' btnSpanID='newWeeklyTimeSheet' btnCaption=' New' btnTitle='New Weekly Timesheet' searchBoxLeft={false}></TableGenerator>
+                    <TableGenerator columns={columns} data={this.state.Requests} fileName={'My Timesheets'} showExportExcel={false} showAddButton={true} customBtnClass='px-1 text-right' navigateOnBtnClick={`/WeeklyTimesheet`} btnDivID='divAddNewWeeklyTimeSheet' btnSpanID='newWeeklyTimeSheet' btnCaption=' New' btnTitle='New Weekly Timesheet' searchBoxLeft={false}></TableGenerator>
                 </div>
             </div>
             {this.state.loading && <Loader />}
