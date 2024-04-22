@@ -297,6 +297,13 @@ class HolidaysList extends Component<HolidaysListProps, HolidaysListState> {
         sp.web.lists.getByTitle('HolidaysList').items.select('Title,*').orderBy("Id,IsActive", false).getAll()
             .then((response) => {
                 response.sort((a, b) => b.Id - a.Id);
+                response.sort((a, b) => {
+                    if (a.ClientName < b.ClientName) return -1;
+                    if (a.ClientName > b.ClientName) return 1;
+                    const dateA = new Date(a.HolidayDate).getTime();
+                    const dateB = new Date(b.HolidayDate).getTime();
+                    return dateA - dateB;
+                });
                 this.setState({
                     HolidayListObj: response.map(o => ({
                         Id: o.Id, ClientName: o.ClientName, HolidayName: o.HolidayName,
