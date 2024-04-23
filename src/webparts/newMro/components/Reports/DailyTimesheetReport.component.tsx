@@ -333,7 +333,6 @@ class DailyTimesheetReport extends React.Component<DailyTimesheetReportProps, Da
                 const dateB = new Date(b.Date).getTime();
                 return dateA - dateB;
             });
-            // console.log("After sorting")
             // console.log(ExcelData)
             // console.log(headerDates)
             // this.generateExcel(ExcelData, headerDates);
