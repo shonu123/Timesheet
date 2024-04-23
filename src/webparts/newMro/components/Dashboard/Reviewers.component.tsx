@@ -109,7 +109,7 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
             CC: emaildetails.ccemail
           }).then((i) => {  
             this.setState({showHideModal : false,ItemID:0,message:'',title:'',Action:'',loading: false,successPopUp:false,modalTitle:modalTitle});
-            customToaster('toster-success',ToasterTypes.Success,'Timesheet'+StatusType.Reject+'successfully',2000);
+            customToaster('toster-success',ToasterTypes.Success,'Weekly timesheet '+StatusType.Reject.toLowerCase()+ ' succesfully',2000);
             this.ReviewerApproval();
           }).catch((i) => {
             this.setState({showHideModal : false,ItemID:0,message:'',title:'',Action:'',loading: false,successPopUp:false,modalTitle:'Email sending failed',modalText:'Something went wrong please try again'}); 

@@ -135,7 +135,11 @@ class Dashboard extends React.Component<DashboardProps, DashboardState> {
         for(let grp of groups){
             userGroup.push(grp.Title)
         }
-        if(userGroup.includes('Timesheet Members') && isEmployee){
+        let showTab =false;
+        if(userGroup.includes('Timesheet Administrators')||userGroup.includes('Timesheet Members')){
+            showTab =true;
+        }
+        if(showTab && isEmployee){
             this.setState({ showRequestTab: true});
             this.onHandleClick('MyRequests')
         }
