@@ -442,7 +442,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
         trFormdata.Total=JSON.parse(data[0].TotalHrs);
         trFormdata.Status=data[0].Status;
         trFormdata.CommentsHistoryData=JSON.parse(data[0].CommentsHistory);
-        trFormdata.Comments='';
+        trFormdata.Status== StatusType.Save?trFormdata.Comments=data[0].Comments:trFormdata.Comments='';
         trFormdata.SuperviserNames=JSON.parse(data[0].SuperviserName);
         trFormdata.Pendingwith=data[0].PendingWith;
         trFormdata.IsClientApprovalNeeded=data[0].IsClientApprovalNeed;//default value as false
@@ -503,7 +503,19 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
         }
         if([StatusType.ReviewerReject,StatusType.Save].includes(data[0].Status))
         {
-            if(trFormdata.Revised)
+           //Condition for Reviewer reject / Manager reject scenarios changed to save
+            if(trFormdata.Revised&&!data[0].IsClientApprovalNeed)
+            {   
+                this.setState({showBillable:false})
+                if(trFormdata.CommentsHistoryData[trFormdata.CommentsHistoryData.length-1]['Role']=="Reviewer")
+                {
+                    if(data[0].IsClientApprovalNeed)
+                     this.setState({showBillable:false})
+                    else
+                    this.setState({showBillable:true})
+                }
+            }
+            else if(trFormdata.Revised)
             {
                 if(data[0].IsClientApprovalNeed)
                 this.setState({showBillable:false})
@@ -1157,7 +1169,8 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                 ReportingManagerId:{"results":formdata.SuperviserIds},
                 ReviewersId:{"results":formdata.ReviewerIds},
                 NotifiersId:{"results":formdata.NotifierIds},
-               IsClientApprovalNeed:formdata.IsClientApprovalNeededUI,
+                Comments:formdata.Comments,
+            //    IsClientApprovalNeed:formdata.IsClientApprovalNeededUI,
                Revised:formdata.Revised
             }
             if(Action.toLowerCase()=="btnsave")
@@ -1197,9 +1210,21 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                        else{
                         if(StatusType.Save==formdata.Status||StatusType.Revoke==formdata.Status||StatusType.ManagerReject==formdata.Status)
                          {
-                            postObject['Status']=StatusType.Submit;
-                            postObject['PendingWith']="Manager";
-                            postObject['DateSubmitted']=new Date();
+                            // postObject['Status']=StatusType.Submit;
+                            // postObject['PendingWith']="Manager";
+                            // postObject['DateSubmitted']=new Date();
+                            //Condition for Reviewer reject / Manager reject scenarios changed to save
+                            if(formdata.CommentsHistoryData[formdata.CommentsHistoryData.length-2]['Role']=="Reviewer")
+                            {
+                                postObject['Status']=StatusType.Approved;
+                                postObject['PendingWith']="NA";
+                                postObject['DateSubmitted']=new Date();
+                            }else
+                            {
+                                postObject['Status']=StatusType.Submit;
+                                postObject['PendingWith']="Manager";
+                                postObject['DateSubmitted']=new Date();
+                            }
                          }
                          else if(StatusType.ReviewerReject==formdata.Status){
                              postObject['Status']=StatusType.Approved;
@@ -1610,7 +1635,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                 trFormdata.Total=JSON.parse(ExistRecordData[0].TotalHrs);
                 trFormdata.Status=ExistRecordData[0].Status;
                 trFormdata.CommentsHistoryData=JSON.parse(ExistRecordData[0].CommentsHistory);
-                trFormdata.Comments="";
+                trFormdata.Status== StatusType.Save?trFormdata.Comments=ExistRecordData[0].Comments:trFormdata.Comments='';
                 trFormdata.SuperviserNames=JSON.parse(ExistRecordData[0].SuperviserName);
                 trFormdata.Pendingwith=ExistRecordData[0].PendingWith;
                 trFormdata.IsClientApprovalNeeded=ExistRecordData[0].IsClientApprovalNeed;
@@ -1645,7 +1670,18 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                 }
                 if([StatusType.ReviewerReject,StatusType.Save].includes(ExistRecordData[0].Status))
                 {
-                    if(trFormdata.Revised)
+                     //Condition for Reviewer reject / Manager reject scenarios changed to save
+                    if(trFormdata.Revised&&!ExistRecordData[0].IsClientApprovalNeed)
+                    {   
+                        this.setState({showBillable:false})
+                        if (trFormdata.CommentsHistoryData[trFormdata.CommentsHistoryData.length - 1]['Role'] == "Reviewer") {
+                            if (ExistRecordData[0].IsClientApprovalNeed)
+                                this.setState({ showBillable: false })
+                            else
+                                this.setState({ showBillable: true })
+                        }
+                    }
+                    else if(trFormdata.Revised)
                     {   
                         if(ExistRecordData[0].IsClientApprovalNeed)
                         this.setState({showBillable:false})
