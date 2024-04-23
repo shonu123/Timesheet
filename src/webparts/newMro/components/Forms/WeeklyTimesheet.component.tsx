@@ -442,7 +442,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
         trFormdata.Total=JSON.parse(data[0].TotalHrs);
         trFormdata.Status=data[0].Status;
         trFormdata.CommentsHistoryData=JSON.parse(data[0].CommentsHistory);
-        trFormdata.Status== StatusType.Save?trFormdata.Comments=data[0].Comments:trFormdata.Comments='';
+        trFormdata.Status== StatusType.Save?trFormdata.Comments=data[0].Comments==null?'':data[0].Comments:trFormdata.Comments='';
         trFormdata.SuperviserNames=JSON.parse(data[0].SuperviserName);
         trFormdata.Pendingwith=data[0].PendingWith;
         trFormdata.IsClientApprovalNeeded=data[0].IsClientApprovalNeed;//default value as false
@@ -1210,20 +1210,23 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                        else{
                         if(StatusType.Save==formdata.Status||StatusType.Revoke==formdata.Status||StatusType.ManagerReject==formdata.Status)
                          {
-                            // postObject['Status']=StatusType.Submit;
-                            // postObject['PendingWith']="Manager";
-                            // postObject['DateSubmitted']=new Date();
+                            postObject['Status']=StatusType.Submit;
+                            postObject['PendingWith']="Manager";
+                            postObject['DateSubmitted']=new Date();
                             //Condition for Reviewer reject / Manager reject scenarios changed to save
-                            if(formdata.CommentsHistoryData[formdata.CommentsHistoryData.length-2]['Role']=="Reviewer")
+                            if(formdata.CommentsHistoryData.length>2)
                             {
-                                postObject['Status']=StatusType.Approved;
-                                postObject['PendingWith']="NA";
-                                postObject['DateSubmitted']=new Date();
-                            }else
-                            {
-                                postObject['Status']=StatusType.Submit;
-                                postObject['PendingWith']="Manager";
-                                postObject['DateSubmitted']=new Date();
+                                if(formdata.CommentsHistoryData[formdata.CommentsHistoryData.length-2]['Role']=="Reviewer")
+                                {
+                                    postObject['Status']=StatusType.Approved;
+                                    postObject['PendingWith']="NA";
+                                    postObject['DateSubmitted']=new Date();
+                                }else
+                                {
+                                    postObject['Status']=StatusType.Submit;
+                                    postObject['PendingWith']="Manager";
+                                    postObject['DateSubmitted']=new Date();
+                                }
                             }
                          }
                          else if(StatusType.ReviewerReject==formdata.Status){
@@ -1635,7 +1638,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                 trFormdata.Total=JSON.parse(ExistRecordData[0].TotalHrs);
                 trFormdata.Status=ExistRecordData[0].Status;
                 trFormdata.CommentsHistoryData=JSON.parse(ExistRecordData[0].CommentsHistory);
-                trFormdata.Status== StatusType.Save?trFormdata.Comments=ExistRecordData[0].Comments:trFormdata.Comments='';
+                trFormdata.Status== StatusType.Save?trFormdata.Comments=ExistRecordData[0].Comments==null?'':ExistRecordData[0].Comments:trFormdata.Comments='';
                 trFormdata.SuperviserNames=JSON.parse(ExistRecordData[0].SuperviserName);
                 trFormdata.Pendingwith=ExistRecordData[0].PendingWith;
                 trFormdata.IsClientApprovalNeeded=ExistRecordData[0].IsClientApprovalNeed;
