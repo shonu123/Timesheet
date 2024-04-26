@@ -2768,3 +2768,79 @@ flex-direction: column;
   overflow: inherit !important;
   text-wrap: balance !important;
 }
+/* React-Table Css */
+/* .header-cell.frozen,
+.table-cell.frozen {
+  position: sticky;
+  left: 0;
+  z-index: 1;
+  background-color: white;
+} */
+
+.table-container {
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  width: fit-content;
+  border-collapse: collapse;
+}
+
+.header-row {
+  display: flex;
+  background-color: #f0f0f0;
+}
+
+.header-cell,
+.body-cell {
+  padding: 12px;
+  border: 1px solid #ddd;
+}
+
+.body-row:nth-child(even) {
+  background-color: #f9f9f9;
+}
+
+.body-row:hover {
+  background-color: #f5f5f5;
+}
+.header-cell,
+.body-cell {
+  padding: 12px;
+  border: 1px solid #ddd;
+}
+
+.header-cell.frozen,
+.body-cell.frozen {
+  position: sticky;
+  left: 0;
+  z-index: 1;
+  background-color: white;
+}
+
+.header-cell.frozen:first-child,
+.body-cell.frozen:first-child
+{
+  left: 0;
+  z-index: 1;
+}
+.header-cell.frozen:nth-child(2),
+.body-cell.frozen:nth-child(2) {
+  left: var(--width-of-first-column); /* Set the width of the first column here */
+  z-index: 1;
+}
+
+/* colors for Report UI table */
+.R-LRed{
+  background-color: #f7b5b5;
+}
+.R-LYellow{
+  background-color: #fafac5;
+}
+.R-LBlue{
+  background-color: #a9e6fc;
+}
+.R-White{
+  background-color: #ffff;
+}

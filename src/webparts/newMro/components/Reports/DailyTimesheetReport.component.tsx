@@ -25,6 +25,7 @@ import * as XLSX from 'xlsx-js-style';
 import { faCloudDownload } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { StatusType } from '../../Constants/Constants';
+import MyDataTable from '../Shared/customTableFreezePaneTable.comoponent';
 export interface DailyTimesheetReportProps {
     match: any;
     spContext: any;
@@ -70,7 +71,9 @@ class DailyTimesheetReport extends React.Component<DailyTimesheetReportProps, Da
         InitiatorId: '0',
         isHavingClients: true,
         isHavingEmployees: true,
-        ResultExcelData : []
+        ResultExcelData : [],
+        ColumnsHeaders:[],
+        ReportData:[],
     }
 
     public componentDidMount() {
@@ -467,10 +470,11 @@ workSheetRows.push([])// giving a line gap
  headingRow = this.constructMergedCellsData(`Timesheet(${startDate} to ${endDate})`,columnOrder.length-1>6?columnOrder.length-1:6,20);
  workSheetRows.push(headingRow)// header 
  workSheetRows.push([])// giving a line gap
-
+let dataColums = []
         for (const h of headerDates) {
-            let obj = {}
+            let obj = {},dataObj ={}
             obj = { v: h, t: "s", s: { font: { bold: true },border: allBorders } }
+            // dataObj ={ Header: h, accessor: 'col1' }  
             headerRow.push(obj);
         }
         headerRow.push({ v: 'Total', t: "s", s: { font: { bold: true },border: allBorders } })
@@ -527,7 +531,50 @@ workSheetRows.push([])// giving a line gap
         });
         let lastColumn = columnOrder.length
         //--------------new codes ends----------------------
+        let cell = 1;
+        let hColumns = []
+        for(let b of workSheetRows[6]){
+            let obj={};
+            obj ={header:b.v,accessor: `col${cell}`}
+            hColumns.push(obj)
+            cell++;
+        }
+        console.log(cell)
+        let SampleData = [];
 
+         legend = [
+            { v: '', t: "s", s: { font: { bold: true },fill: { fgColor: { rgb: 'ffffff' },border: allBorders }} },
+            { v: '', t: "s", s: { font: { bold: true },fill: { fgColor: { rgb: 'ffffff' },border: allBorders }} },
+            // { v: 'Legend', t: "s", s: { font: { bold: true },fill: { fgColor: { rgb: 'ffffff' } },border: allBorders } },
+            { v: 'Submitted', t: "s", s: { font: { bold: true },fill: { fgColor: { rgb: 'fafac5' } },border: allBorders } },
+            // { v: 'Revoked', t: "s", s: { font: { bold: true },fill: { fgColor: { rgb: 'fae3ea' } },border: allBorders } },
+            { v: 'Approved', t: "s", s: { font: { bold: true },fill: { fgColor: { rgb: 'a9e6fc' } },border: allBorders } },
+            { v: 'Rejected', t: "s", s: { font: { bold: true },fill: { fgColor: { rgb: 'f7b5b5' } },border: allBorders } }
+        ]
+// Assuming workSheetRows[7] contains the row data
+for (let cellValue of workSheetRows[7]) {
+    let dataObj = {};
+
+        // Constructing key like col1, col2, col3, ...
+        // const key = `col${index + 1}`;
+        // dataObj[key] = cellValue.v;
+        dataObj['colorClass'] = cellValue.s.fill.fgColor.rgb == "f7b5b5"?"R-LRed":cellValue.s.fill.fgColor.rgb == "fafac5"?"R-LYellow":cellValue.s.fill.fgColor.rgb=="a9e6fc"?"R-LBlue":"R-White" // Assuming cellValue.v contains the cell value
+
+    SampleData.push(dataObj);
+}
+this.setState({ColumnsHeaders:hColumns,ReportData:SampleData})
+        // for (let header = 7; header < workSheetRows.length; header++) {
+
+        //     for(let b of workSheetRows[header]){
+        //         let obj={};
+              
+        //         obj ={""+'cell'+"col":b.v }
+        //         headerColumns.push(obj)
+        //         cell++;
+        //     // +=b.v+","
+        //     }
+        //     console.log()
+        // }
         const finalWorkshetData = XLSX.utils.aoa_to_sheet(workSheetRows)
         finalWorkshetData['!autofilter'] = { ref: 'A7:B7' };
         // mention the range of merge for individual row/item according
@@ -622,7 +669,48 @@ workSheetRows.push([])// giving a line gap
 
     // }
 
+
     public render() {
+        const SampleColumns = [
+            { Header: 'Column 1', accessor: 'col1' },
+            { Header: 'Column 2', accessor: 'col2' },
+            { Header: 'Column 3', accessor: 'col3' },
+            { Header: 'Column 4', accessor: 'col4' },
+            { Header: 'Column 5', accessor: 'col5' },
+            { Header: 'Column 6', accessor: 'col6' },
+            { Header: 'Column 7', accessor: 'col7' },
+            { Header: 'Column 8', accessor: 'col8' },
+            { Header: 'Column 9', accessor: 'col9' },
+            { Header: 'Column 10', accessor: 'col10' },
+            { Header: 'Column 11', accessor: 'col11' },
+            { Header: 'Column 12', accessor: 'col12' },
+            { Header: 'Column 13', accessor: 'col13' },
+            { Header: 'Column 14', accessor: 'col14' },
+            { Header: 'Column 15', accessor: 'col15' },
+            { Header: 'Column 16', accessor: 'col16' },
+            { Header: 'Column 1', accessor: 'col17' },
+            { Header: 'Column 2', accessor: 'col18' },
+            { Header: 'Column 3', accessor: 'col19' },
+            { Header: 'Column 4', accessor: 'col20' },
+            { Header: 'Column 5', accessor: 'col21' },
+            { Header: 'Column 6', accessor: 'col22' },
+            { Header: 'Column 7', accessor: 'col23' },
+            { Header: 'Column 8', accessor: 'col24' },
+            { Header: 'Column 9', accessor: 'col25' },
+            { Header: 'Column 10', accessor: 'col26' },
+            { Header: 'Column 11', accessor: 'col27' },
+            { Header: 'Column 12', accessor: 'col28' },
+            { Header: 'Column 13', accessor: 'col29' },
+            { Header: 'Column 14', accessor: 'col30' },
+          ];
+          
+          const SampleData = [
+            { col1: 'Data 1-1', col2: 'Data 1-2', col3: 'Data 1-3', col4: 'Data 1-4', col5: 'Data 1-5', col6: 'Data 1-6',col7:'Data 1-7',col8:'Data 1-8',col9:'Data 1-9',col10:'Data 1-10',col11:'Data 1-11',col12:'Data 1-12',col13:'Data 1-13',col14:'Data 1-14',col15:'Data 1-15',col16:'Data 1-16',col17:'sas',col18:'gdkjghd',col19:"gaskgak",col20:'shgsjkgh',col21:'ksjdhgsjk',col22:'dsd' },
+            { col1: 'Data 2-1', col2: 'Data 2-2', col3: 'Data 2-3', col4: 'Data 2-4', col5: 'Data 2-5', col6: 'Data 2-6',col7:'Data 1-7',col8:'Data 1-8',col9:'Data 1-9',col10:'Data 1-10',col11:'Data 1-11',col12:'Data 1-12',col13:'Data 1-13',col14:'Data 1-14',col15:'Data 1-15',col16:'Data 1-16',col17:'sas',col18:'gdkjghd',col19:"gaskgak",col20:'shgsjkgh',col21:'ksjdhgsjk',col22:'dsd',col23:'fdfs',col24:'ghkgk',col25:'fsf',col26:'fghjgf',col27:'gkjasg',col28:'dasd',col29:'dfad',col30:'jhj' },
+            { col1: 'Data 3-1', col2: 'Data 3-2', col3: 'Data 3-3', col4: 'Data 3-4', col5: 'Data 3-5', col6: 'Data 3-6',col7:'Data 1-7',col8:'Data 1-8',col9:'Data 1-9',col10:'Data 1-10',col11:'Data 1-11',col12:'Data 1-12',col13:'Data 1-13',col14:'Data 1-14',col15:'Data 1-15',col16:'Data 1-16',col17:'sas',col18:'gdkjghd',col19:"gaskgak",col20:'shgsjkgh',col21:'ksjdhgsjk',col22:'dsd',col23:'fdfs',col24:'ghkgk',col25:'fsf',col26:'fghjgf',col27:'gkjasg',col28:'dasd',col29:'dfad',col30:'jhj' },
+            { col1: 'Data 4-1', col2: 'Data 4-2', col3: 'Data 4-3', col4: 'Data 4-4', col5: 'Data 4-5', col6: 'Data 4-6',col7:'Data 1-7',col8:'Data 1-8',col9:'Data 1-9',col10:'Data 1-10',col11:'Data 1-11',col12:'Data 1-12',col13:'Data 1-13',col14:'Data 1-14',col15:'Data 1-15',col16:'Data 1-16',col17:'sas',col18:'gdkjghd',col19:"gaskgak",col20:'shgsjkgh',col21:'ksjdhgsjk',col22:'dsd',col23:'fdfs',col24:'ghkgk',col25:'fsf',col26:'fghjgf',col27:'gkjasg',col28:'dasd',col29:'dfad',col30:'jhj' },
+            { col1: 'Data 5-1', col2: 'Data 5-2', col3: 'Data 5-3', col4: 'Data 5-4', col5: 'Data 5-5', col6: 'Data 5-6',col7:'Data 1-7',col8:'Data 1-8',col9:'Data 1-9',col10:'Data 1-10',col11:'Data 1-11',col12:'Data 1-12',col13:'Data 1-13',col14:'Data 1-14',col15:'Data 1-15',col16:'Data 1-16',col17:'sas',col18:'gdkjghd',col19:"gaskgak",col20:'shgsjkgh',col21:'ksjdhgsjk',col22:'dsd',col23:'fdfs',col24:'ghkgk',col25:'fsf',col26:'fghjgf',col27:'gkjasg',col28:'dasd',col29:'dfad',col30:'jhj'},
+          ];
         if (!this.state.isPageAccessable) {
             let url = `https://synergycomcom.sharepoint.com/sites/Billing.Timesheet/SitePages/AccessDenied.aspx?`
             window.location.href = url
@@ -643,7 +731,7 @@ workSheetRows.push([])// giving a line gap
                             </div>
                             <div className="after-title"></div>
                             <div className="media-m-2 media-p-1">
-                                <div className="my-2">
+                <div className="my-2">
                                     <div className="row pt-2 px-2">
                                         <div className="col-md-3">
                                             <div className="light-text">
@@ -698,6 +786,7 @@ workSheetRows.push([])// giving a line gap
                                         <button type="button" className="ReportCancelButtons btn" onClick={this.handleCancel}>Cancel</button>
                                     </div>
                                 </div>
+                                <MyDataTable columns={this.state.ColumnsHeaders} data={this.state.ReportData}></MyDataTable>
                             </div>
                         </div>
                     </div>
