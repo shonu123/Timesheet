@@ -49,7 +49,7 @@ const MyDataTable = ({ columns, data }) => {
         <span className='RIndiactor R-LPurple'>Approved</span>
         <span className='RIndiactor R-LRed'>Rejected</span>
       </div>
-      <div {...getTableProps()} className="table">
+      <div {...getTableProps()} className="ReportTable">
         <div className="header">
           {headerGroups.map(headerGroup => (
             <div {...headerGroup.getHeaderGroupProps()} className="Reportheader-row">
@@ -60,7 +60,7 @@ const MyDataTable = ({ columns, data }) => {
                 >
                   {column.render('Header')}
                   <span>
-                    {column.isSorted ? (column.isSortedDesc ? " "+<FontAwesomeIcon className='iconArrow' icon={faArrowUp}  size="lg" ></FontAwesomeIcon> :" "+ <FontAwesomeIcon className='iconArrow' icon={faArrowDown}  size="lg" ></FontAwesomeIcon>) : ''}
+                    {column.isSorted ? (column.isSortedDesc ? <FontAwesomeIcon className='iconArrow' icon={faArrowUp}  size="lg" ></FontAwesomeIcon> : <FontAwesomeIcon className='iconArrow' icon={faArrowDown}  size="lg" ></FontAwesomeIcon>) : ''}
                   </span>
                 </div>
               ))}
