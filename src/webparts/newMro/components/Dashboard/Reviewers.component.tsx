@@ -64,7 +64,7 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
         let date = `${dateFilter.getMonth() + 1}/${dateFilter.getDate()}/${dateFilter.getFullYear()}`
         var filterQuery = "and WeekStartDate ge '"+date+"'"
 
-        var filterString = "Reviewers/Id eq '"+userId+"' and PendingWith eq 'NA' and Status eq '"+StatusType.Approved+"'"
+        var filterString = "Reviewers/Id eq '"+userId+"' and PendingWith eq 'Reviewer' and Status eq '"+StatusType.ManagerApprove+"'"
 
         sp.web.lists.getByTitle('WeeklyTimeSheet').items.top(5000).filter(filterString+filterQuery).expand("Reviewers").select('Reviewers/Title','*').orderBy('Modified', false).get()
             .then((response) => {
@@ -166,7 +166,7 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
         sp.web.lists.getByTitle('WeeklyTimeSheet').items.getById(recordId).update(postObject).then((res) => {
             let sub=''; 
             if(Status==StatusType.Approved){
-                sub = "Weekly Time Sheet has been approved by Reviewer"
+                sub = "Weekly Time Sheet has been "+StatusType.ReviewerApprove+"."
                 // this.setState({ModalHeader:'modal-header-Approve'})
             }
             else{

@@ -493,7 +493,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                 break;
         }
         this.setState({ trFormdata:trFormdata,currentWeeklyRowsCount:trFormdata.WeeklyItemsData.length,currentOTRowsCount: trFormdata.OTItemsData.length,EmployeeEmail:EmpEmail,loading:false,showBillable : false, showNonBillable: false});
-        if([StatusType.Submit,StatusType.Approved,StatusType.InProgress].includes(data[0].Status))
+        if([StatusType.Submit,StatusType.Approved,StatusType.ManagerApprove].includes(data[0].Status))
         {
             this.setState({isSubmitted:true});
         }
@@ -1218,8 +1218,10 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                             {
                                 if(formdata.CommentsHistoryData[formdata.CommentsHistoryData.length-2]['Role']=="Reviewer")
                                 {
-                                    postObject['Status']=StatusType.Approved;
-                                    postObject['PendingWith']="NA";
+                                    //postObject['Status']=StatusType.Approved;
+                                    //postObject['PendingWith']="NA";
+                                    postObject['Status']=StatusType.ManagerApprove;
+                                    postObject['PendingWith']="Reviewer";
                                     postObject['DateSubmitted']=new Date();
                                 }else
                                 {
@@ -1230,8 +1232,10 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                             }
                          }
                          else if(StatusType.ReviewerReject==formdata.Status){
-                             postObject['Status']=StatusType.Approved;
-                             postObject['PendingWith']="NA";
+                            // postObject['Status']=StatusType.Approved;
+                            // postObject['PendingWith']="NA";
+                             postObject['Status']=StatusType.ManagerApprove;
+                             postObject['PendingWith']="Reviewer";
                              postObject['DateSubmitted']=new Date();
                          }
                        }
@@ -1325,12 +1329,14 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
         {
             case StatusType.Submit:
                 formdata.CommentsHistoryData.push({"Action":StatusType.Approved,"Role":"Manager","User":this.props.spContext.userDisplayName,"Comments":this.state.trFormdata.Comments,"Date":new Date().toISOString()})
-                postObject['Status']=StatusType.Approved;
-                postObject['PendingWith']="NA";
+                //postObject['Status']=StatusType.Approved;
+                //postObject['PendingWith']="NA";
+                postObject['Status']=StatusType.ManagerApprove;
+                postObject['PendingWith']="Reviewer";
                 break;
-            case StatusType.InProgress:
+            //case StatusType.InProgress:
+            case StatusType.ManagerApprove:
                 formdata.CommentsHistoryData.push({"Action":StatusType.Approved,"Role":"Reviewer","User":this.props.spContext.userDisplayName,"Comments":this.state.trFormdata.Comments,"Date":new Date().toISOString()})
-               
                 postObject['Status']=StatusType.Approved;
                 postObject['PendingWith']="NA";
                 break;
@@ -1351,7 +1357,8 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                 formdata.CommentsHistoryData.push({"Action":StatusType.Revoke,"Role":user,"User":this.props.spContext.userDisplayName,"Comments":this.state.trFormdata.Comments,"Date":new Date().toISOString()})
                 postObject['Status']=StatusType.Revoke;
                 postObject['PendingWith']="Initiator";
-                if(formdata.Status==StatusType.Approved)
+                //if(formdata.Status==StatusType.Approved)
+                if(formdata.Status==StatusType.ManagerApprove)
                 postObject['Revised']=true;
            
              postObject["CommentsHistory"]=JSON.stringify(formdata.CommentsHistoryData),
@@ -1370,7 +1377,8 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                 formdata.CommentsHistoryData.push({"Action":StatusType.Reject,"Role":"Manager","User":this.props.spContext.userDisplayName,"Comments":this.state.trFormdata.Comments,"Date":new Date().toISOString()})
                 postObject['Status']=StatusType.ManagerReject;
             }
-            else if(formdata.Status==StatusType.Approved){
+           // else if(formdata.Status==StatusType.Approved){
+            else if(formdata.Status==StatusType.ManagerApprove){
                 formdata.CommentsHistoryData.push({"Action":StatusType.Reject,"Role":"Reviewer","User":this.props.spContext.userDisplayName,"Comments":this.state.trFormdata.Comments,"Date":new Date().toISOString()})
                 postObject['Status']=StatusType.ReviewerReject;
                 postObject['Revised']=true;
@@ -1479,9 +1487,26 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                emaildetails['body'] = this.emailBodyPreparation(this.siteURL+'/SitePages/TimeSheet.aspx#/WeeklyTimesheet/'+this.state.ItemID,tableContent,emaildetails['bodyString'],this.props.spContext.userDisplayName,DashboardURl);
                this.sendemail(emaildetails,StatusType.Submit);
               }
-               else if(StatusType.Approved==formdata.Status)
+            //    else if(StatusType.Approved==formdata.Status)
+            //    {
+            //         sub="Weekly Time Sheet has been approved by Manager."
+            //         CC=this.state.EmployeeEmail;
+            //         for(const mail of formObject.ReportingManagersEmail)
+            //         {
+            //             CC.push(mail);
+            //         }
+            //         for(const mail of formObject.ReviewersEmail)
+            //         {
+            //             CC.push(mail);
+            //         }
+            //         emaildetails ={toemail:this.state.EmployeeEmail,ccemail:CC,subject:sub,bodyString:sub,body:'' };
+            //         var DashboardURl = 'https://synergycomcom.sharepoint.com/sites/Billing.Timesheet/SitePages/TimeSheet.aspx';
+            //         emaildetails['body'] = this.emailBodyPreparation(this.siteURL+'/SitePages/TimeSheet.aspx#/WeeklyTimesheet/'+this.state.ItemID,tableContent,emaildetails['bodyString'],this.props.spContext.userDisplayName,DashboardURl);
+            //         this.sendemail(emaildetails,formdata.Status);
+            //    }
+            else if([StatusType.ManagerApprove,StatusType.Approved].includes(formdata.Status))
                {
-                    sub="Weekly Time Sheet has been approved by Manager."
+                    sub=formdata.Status==StatusType.Approved?"Weekly Time Sheet has been "+StatusType.ReviewerApprove+".":"Weekly Time Sheet has been "+formdata.Status+".";
                     CC=this.state.EmployeeEmail;
                     for(const mail of formObject.ReportingManagersEmail)
                     {
@@ -1494,7 +1519,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                     emaildetails ={toemail:this.state.EmployeeEmail,ccemail:CC,subject:sub,bodyString:sub,body:'' };
                     var DashboardURl = 'https://synergycomcom.sharepoint.com/sites/Billing.Timesheet/SitePages/TimeSheet.aspx';
                     emaildetails['body'] = this.emailBodyPreparation(this.siteURL+'/SitePages/TimeSheet.aspx#/WeeklyTimesheet/'+this.state.ItemID,tableContent,emaildetails['bodyString'],this.props.spContext.userDisplayName,DashboardURl);
-                    this.sendemail(emaildetails,formdata.Status);
+                    this.sendemail(emaildetails,StatusType.Approved);
                }
                else if([StatusType.ManagerReject,StatusType.ReviewerReject].includes(formdata.Status))
                {
@@ -1663,7 +1688,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                 trFormdata.ReviewersEmail=ReviewEmail;
                 trFormdata.NotifiersEmail=NotifyEmail;
                 this.setState({ trFormdata:trFormdata,currentWeeklyRowsCount:trFormdata.WeeklyItemsData.length,currentOTRowsCount: trFormdata.OTItemsData.length,ItemID:ExistRecordData[0].ID,EmployeeEmail:EmpEmail,errorMessage:'',loading:false,showBillable : false, showNonBillable: false});
-                if([StatusType.Submit,StatusType.Approved,StatusType.InProgress].includes(ExistRecordData[0].Status))
+                if([StatusType.Submit,StatusType.Approved,StatusType.ManagerApprove].includes(ExistRecordData[0].Status))
                 {
                     this.setState({isSubmitted:true});
                 }
@@ -1973,16 +1998,35 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
         }
         //for show/hide of SubmitSave Revoke buttons
         if (userEmail == this.state.EmployeeEmail || isAdmin) {
+            let managerApprove= StatusType.ManagerApprove.toString()
             let Approve = StatusType.Approved.toString()
             let submit = StatusType.Submit.toString()
-            if (![Approve, submit].includes(this.state.trFormdata.Status)) 
+            // if (![Approve, submit].includes(this.state.trFormdata.Status)) 
+            //     this.setState({ showSubmitSavebtn: true})
+            // else
+            //     this.setState({ showSubmitSavebtn: false})
+
+            // if ([Approve,submit].includes(this.state.trFormdata.Status))
+            //     this.setState({showRevokebtn: true })
+            // else
+            //     this.setState({showRevokebtn:false })
+            if (![managerApprove,Approve, submit].includes(this.state.trFormdata.Status)) 
                 this.setState({ showSubmitSavebtn: true})
             else
-            this.setState({ showSubmitSavebtn: false})
-            if ([Approve, submit].includes(this.state.trFormdata.Status))
+                this.setState({ showSubmitSavebtn: false})
+
+            if ([submit].includes(this.state.trFormdata.Status))
                 this.setState({showRevokebtn: true })
             else
-            this.setState({showRevokebtn:false })
+                this.setState({showRevokebtn:false })
+
+            if(isAdmin)  //to show revoke button only for admin if status is Submit/ManagerApproved/Approved
+            {
+                if ([Approve, submit].includes(this.state.trFormdata.Status))
+                    this.setState({showRevokebtn: true })
+                else
+                   this.setState({showRevokebtn:false })
+            }
         }
         else {
             this.setState({ showSubmitSavebtn: false,showRevokebtn:false })
@@ -2438,7 +2482,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
             {/* <td className="" >{History[i]["Role"]}</td> */}
             <td className="" >{History[i]["User"]}</td>
             <td className="" >{History[i]["Action"]}</td>
-            <td className="" >{(new Date(History[i]["Date"]).getMonth().toString().length==1?"0"+(new Date(History[i]["Date"]).getMonth()+1):new Date(History[i]["Date"]).getMonth()+1)+"/"+(new Date(History[i]["Date"]).getDate().toString().length==1?"0"+new Date(History[i]["Date"]).getDate():new Date(History[i]["Date"]).getDate())+"/"+new Date(History[i]["Date"]).getFullYear()}  {"  "+new Date(History[i]["Date"]).toUTCString().split(" ")[4]+" "+new Date(History[i]["Date"]).toUTCString().split(" ")[5]}</td>
+            <td className="" >{(new Date(History[i]["Date"]).getMonth().toString().length==1?"0"+(new Date(History[i]["Date"]).getMonth()+1):new Date(History[i]["Date"]).getMonth()+1)+"/"+(new Date(History[i]["Date"]).getDate().toString().length==1?"0"+new Date(History[i]["Date"]).getDate():new Date(History[i]["Date"]).getDate())+"/"+new Date(History[i]["Date"]).getFullYear()}  {"  "+new Date(History[i]["Date"]).toLocaleString('en-US', { timeZone: 'America/New_York',hour12:false }).split(",")[1]}</td>
             <td className="" >{History[i]["Comments"]}</td>
         </tr>)
             }
@@ -2740,7 +2784,8 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                                     <td></td>
                                 </tr>
                                 <tr id="PTOHrs">
-                                    <td className="text-start"><div className="p-1">PTO (Paid Time Off)</div></td>
+                                    {/* <td className="text-start"><div className="p-1">PTO (Paid Time Off)</div></td> */}
+                                    <td className="text-start"><div className="p-1">Time Off</div></td>
                                     <td><textarea className="form-control textareaBorder" rows={1} value={this.state.trFormdata.PTOHrs[0].Description} onChange={this.changeTime} id="0_Description_PTOHrs"  disabled={this.state.isSubmitted || this.state.showNonBillable}></textarea></td>
                                     <td><input className="form-control" value={this.state.trFormdata.PTOHrs[0].ProjectCode} onChange={this.changeTime} id="0_ProjectCode_PTOHrs"   disabled={this.state.isSubmitted || this.state.showNonBillable} ></input></td>
                                     <td>
@@ -2764,7 +2809,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                                     <td>
                                         <input className={"form-control time "+(this.WeekNames[0].day7)} value={this.state.trFormdata.PTOHrs[0][this.WeekNames[0].day7]} onChange={this.changeTime} id={"0_"+this.WeekNames[0].day7+"_PTOHrs"}  disabled={this.state.isSubmitted || this.state.showNonBillable || this.WeekHeadings[0].IsSunJoined} ></input>
                                         </td>
-                                    <td><span className="c-badge">PTO</span></td>
+                                    <td><span className="c-badge">TO</span></td>
                                     <td><input className="form-control time WeekTotal" value={this.state.trFormdata.PTOHrs[0].Total} onChange={this.changeTime} id="0_Total_PTOHrs" type="text" maxLength={5} readOnly></input></td>
                                     <td></td>
                                 </tr>
@@ -2880,9 +2925,9 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                         {/* <div className='text-left'>
                         <span className='text-validator'> {this.state.errorMessage}</span>
                         </div>  */}
-                            {this.state.showApproveRejectbtn&&!this.state.IsReviewer?<button type="button" id="btnApprove" onClick={this.showConfirmApprove} className="SubmitButtons btn">Approve</button>:''}
+                            {/* {this.state.showApproveRejectbtn&&!this.state.IsReviewer?<button type="button" id="btnApprove" onClick={this.showConfirmApprove} className="SubmitButtons btn">Approve</button>:''} */}
+                            {this.state.showApproveRejectbtn?<button type="button" id="btnApprove" onClick={this.showConfirmApprove} className="SubmitButtons btn">Approve</button>:''}
                             {this.state.showApproveRejectbtn?<button type="button" id="btnReject" onClick={this.showConfirmReject}  className="RejectButtons btn">Reject</button>:''}
-                            {/* {(this.state.trFormdata.Status==StatusType.Submit||this.state.trFormdata.Status==StatusType.Approved)&&!this.state.showApproveRejectbtn?<button type="button" id="btnRevoke" onClick={this.showConfirmRevoke} className="txt-white CancelButtons bc-burgundy btn">Revoke</button>:''} */}
                             {this.state.showRevokebtn?<button type="button" id="btnRevoke" onClick={this.showConfirmRevoke} className="txt-white CancelButtons bc-burgundy btn">Revoke</button>:''}
                             {!this.state.isSubmitted&&this.state.showSubmitSavebtn?<button type="button" id="btnSave" onClick={this.handleSubmitorSave} className="SaveButtons btn">Save</button>:''}
                             {!this.state.isSubmitted&&this.state.showSubmitSavebtn? <button type="button" id="btnSubmit" onClick={this.showConfirmSubmit} className="SubmitButtons btn">Submit</button>:''}
@@ -2900,7 +2945,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                                                             {/* <th className="">Action By</th> */}
                                                             <th className="" style={{width:'250px'}}>Action By</th>
                                                             <th className="" style={{width:'150px'}}>Status</th>
-                                                            <th className="" style={{width:'250px'}}>Date & Time</th>
+                                                            <th className="" style={{width:'250px'}}>Date & Time (EST)</th>
                                                             <th className="">Comments</th>
                                                           
                                                         </tr>

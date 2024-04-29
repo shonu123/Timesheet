@@ -6,6 +6,7 @@ export enum StatusType {
   Approved = "Approved",
   Reject = "Rejected",
   ManagerApprove= "approved by Manager",
+  ReviewerApprove="approved by Synergy",
   ManagerReject = "rejected by Manager",
   ReviewerReject = "rejected by Synergy",
   Revoke="Revoked"
