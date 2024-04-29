@@ -82,7 +82,7 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
                         EmployeName: d.Name,
                         Company : d.ClientName,
                         PendingWith: d.PendingWith,
-                        Status : d.Status=='rejected by Synergy'?'Rejected by Synergy':d.Status=='rejected by Manager'?'Rejected by Reporting Manager':d.Status,
+                        Status : this.getStatus(d.Status),
                         BillableHrs: isBillable?d.WeeklyTotalHrs:JSON.parse(d.SynergyOfficeHrs)[0].Total,
                         OTTotalHrs : d.OTTotalHrs,
                         TotalBillableHours: d.BillableTotalHrs,
@@ -99,7 +99,21 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
                 console.log('Failed to fetch data.', err);
             });
     }
-
+    private getStatus(value){
+        let Status=value
+        if(value =="approved by Manager")
+        {
+            Status = "Approved by Reporting Manager"
+        }
+        else if(value == "rejected by Manager"){
+                Status = "Rejected by Reporting Manager"
+            }
+        else if(value =="rejected by Synergy")
+            {
+                Status = "Rejected by Synergy"
+            }
+        return Status
+    }
     //this function is used to send Email
     private sendemail(emaildetails,modalTitle,modalText){
         sp.utility.sendEmail({
@@ -307,13 +321,13 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
         let recordId = parseInt(e.target.id);
         this.setState({ItemID : recordId})
         let name = e.target.dataset.name
-        // if(name == 'Approve')
-        // {
-        //     this.setState({message : 'Are you sure you want to approve?',title : 'Approve', Action : 'Approve'});
-        //     this.setState({showHideModal : true,isSuccess:true,ModalHeader:'modal-header-Approve'})
+        if(name == 'Approve')
+        {
+            this.setState({message : 'Are you sure you want to approve?',title : 'Approve', Action : 'Approve'});
+            this.setState({showHideModal : true,isSuccess:true,ModalHeader:'modal-header-Approve'})
 
-        // }
-        // else
+        }
+        else
          if(name == 'Reject')
         {
             this.setState({message : 'Are you sure you want to reject?',title : 'Reject', Action :StatusType.Reject});
@@ -327,9 +341,9 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
     //this function calls handleApprove/handleReject function based on the user action
     private handleAction = (e) =>{
         this.setState({loading : true})
-         //if(this.state.Action == StatusType.Approved)
-        // this.handleApprove(e)
-        // else
+         if(this.state.Action == StatusType.Approved)
+        this.handleApprove(e)
+        else
          this.handleReject(e)
     }
 
@@ -417,22 +431,22 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
                     // width: '140px',
                     sortable: true
                 },
-                // {
-                //     name: "Approve",
-                //     //selector: "Id",
-                //     selector: (row, i) => row.Id,
-                //     export: false,
-                //     cell: record => {
-                //         return (
-                //             <React.Fragment>
-                //             <div style={{ paddingLeft: '10px' }} >
-                //                     <FontAwesomeIcon className='iconApprove' icon={faCheck} id={record.Id} data-name={'Approve'} color='green' size="lg" onClick={this.showPopUp} title='Approve'></FontAwesomeIcon>
-                //             </div>
-                //         </React.Fragment>
-                //         );
-                //     },
-                //     width: '100px'
-                // },
+                {
+                    name: "Approve",
+                    //selector: "Id",
+                    selector: (row, i) => row.Id,
+                    export: false,
+                    cell: record => {
+                        return (
+                            <React.Fragment>
+                            <div style={{ paddingLeft: '10px' }} >
+                                    <FontAwesomeIcon className='iconApprove' icon={faCheck} id={record.Id} data-name={'Approve'} color='green' size="lg" onClick={this.showPopUp} title='Approve'></FontAwesomeIcon>
+                            </div>
+                        </React.Fragment>
+                        );
+                    },
+                    width: '100px'
+                },
                 {
                     name: "Reject",
                     selector: (row, i) => row.Id,

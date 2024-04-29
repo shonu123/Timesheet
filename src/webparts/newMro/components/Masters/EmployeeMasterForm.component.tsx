@@ -45,6 +45,7 @@ class EmployeeMasterForm extends React.Component<EmployeeMasterFormProps, Employ
     private WeekStartDay;
     private MandatoryDescription;
     private MandatoryProjectCode;
+    private EligibleforPTO;
     constructor(props: EmployeeMasterFormProps) {
         super(props);
         this.siteURL = this.props.spContext.webAbsoluteUrl;
@@ -56,6 +57,7 @@ class EmployeeMasterForm extends React.Component<EmployeeMasterFormProps, Employ
         this.WeekStartDay = React.createRef();
         this.MandatoryDescription = React.createRef();
         this.MandatoryProjectCode  = React.createRef();
+        this.EligibleforPTO = React.createRef();
     }
 
     public state = {
@@ -88,7 +90,8 @@ class EmployeeMasterForm extends React.Component<EmployeeMasterFormProps, Employ
         modalText:'',
         message:"Success",
         showToaster:false,
-        GlobalHolidayList:[]
+        GlobalHolidayList:[],
+        EligibleforPTO:'Yes',
     }
 
     public componentDidMount() {
@@ -172,7 +175,7 @@ class EmployeeMasterForm extends React.Component<EmployeeMasterFormProps, Employ
         //     }
         // }
         let filterdHolidays = this.getHolidays(Holidays,data[0].ClientName)
-        this.setState({ClientsObject:Clients,ItemID:ID,EmployeeEmail : data[0].Employee.EMail,EmployeeId : data[0].Employee.ID,ClientName : data[0].ClientName,isActive : data[0].IsActive,DateOfJoining : date,SelectedEmployee : data[0].Employee.ID,SelectedClient : data[0].ClientName,HolidayType : data[0].HolidayType,weekStartDay : data[0].WeekStartDay,MandatoryProjectCode : data[0].MandatoryProjectCode?"Yes":"No",MandatoryDescription : data[0].MandatoryDescription?"Yes":"No",ReportingManagerEmail: ReportingManagersEmail,ReportingManagerId : ReportingManagerIds,ReviewerEmail: ReviewersEMail,ReviewerId : ReviewerIds,HolidaysObject:filterdHolidays,GlobalHolidayList:Holidays,loading: false})
+        this.setState({ClientsObject:Clients,ItemID:ID,EmployeeEmail : data[0].Employee.EMail,EmployeeId : data[0].Employee.ID,ClientName : data[0].ClientName,isActive : data[0].IsActive,DateOfJoining : date,SelectedEmployee : data[0].Employee.ID,SelectedClient : data[0].ClientName,HolidayType : data[0].HolidayType,weekStartDay : data[0].WeekStartDay,MandatoryProjectCode : data[0].MandatoryProjectCode?"Yes":"No",MandatoryDescription : data[0].MandatoryDescription?"Yes":"No",EligibleforPTO:data[0].EligibleforPTO?"Yes":"No",ReportingManagerEmail: ReportingManagersEmail,ReportingManagerId : ReportingManagerIds,ReviewerEmail: ReviewersEMail,ReviewerId : ReviewerIds,HolidaysObject:filterdHolidays,GlobalHolidayList:Holidays,loading: false})
     }
 
     // this function is used to bind users to people pickers
@@ -321,6 +324,7 @@ private async validateDuplicateRecord () {
                 DateOfJoining : this.state.DateOfJoining,
                 MandatoryDescription:this.state.MandatoryDescription == 'Yes'?true:false,
                 MandatoryProjectCode:this.state.MandatoryProjectCode == 'Yes'?true:false,
+                EligibleforPTO:this.state.EligibleforPTO == 'Yes'?true:false,
                 WeekStartDay: this.state.weekStartDay,
                 HolidayType : this.state.HolidayType
             }
@@ -581,6 +585,16 @@ else {
                                                             </select>
                                                         </div>
                                                     </div>
+                                                    <div className="col-md-3">
+                                                        <div className="light-text">
+                                                            <label>Is Eligible for PTO</label>
+                                                            <select className="form-control"  name="EligibleforPTO" title="Is Eligible for PTO" id='EligibleforPTO' ref={this.EligibleforPTO} onChange={this.handleChangeEvents} value={this.state.EligibleforPTO}>
+                                                                <option value='Yes'>Yes</option>
+                                                                <option value='No'>No</option>
+                                                            </select>
+                                                        </div>
+                                                    </div>
+                                                    {/* EligibleforPTO */}
                                             <div className="col-md-3">
                                                     <div className="light-text" id='chkIsActive'>
                                                         <InputCheckBox

@@ -397,6 +397,8 @@ finalArray.sort((a, b) => {
                 return StatusType.Submit;
             else if(StatusType.Revoke.toString().toLowerCase()==item.Status.toLowerCase())
                 return StatusType.Revoke;
+            else if(StatusType.ManagerApprove.toString().toLowerCase()==item.Status.toLowerCase())
+                return StatusType.ManagerApprove;
             else if(StatusType.Approved.toString().toLowerCase()==item.Status.toLowerCase())
                 return StatusType.Approved;
             else
@@ -457,9 +459,10 @@ let legend = [
     { v: '', t: "s", s: { font: { bold: true },fill: { fgColor: { rgb: 'ffffff' },border: allBorders }} },
     // { v: 'Legend', t: "s", s: { font: { bold: true },fill: { fgColor: { rgb: 'ffffff' } },border: allBorders } },
     { v: 'Submitted', t: "s", s: { font: { bold: true },fill: { fgColor: { rgb: 'fafac5' } },border: allBorders } },
-    // { v: 'Revoked', t: "s", s: { font: { bold: true },fill: { fgColor: { rgb: 'fae3ea' } },border: allBorders } },
-    { v: 'Approved', t: "s", s: { font: { bold: true },fill: { fgColor: { rgb: 'a9e6fc' } },border: allBorders } },
-    { v: 'Rejected', t: "s", s: { font: { bold: true },fill: { fgColor: { rgb: 'f7b5b5' } },border: allBorders } }
+    // { v: 'Revoked', t: "s", s: { font: { bold: true },fill: { fgColor: { rgb: 'fae3ea' } },border: allBorders } },dbf6ff
+    { v: 'Approved by Reporting Manager', t: "s", s: { font: { bold: true },fill: { fgColor: { rgb: 'dbf6ff' } },border: allBorders } },
+    { v: 'Approved', t: "s", s: { font: { bold: true },fill: { fgColor: { rgb: 'eedcf7' } },border: allBorders } },
+    { v: 'Rejected', t: "s", s: { font: { bold: true },fill: { fgColor: { rgb: 'fad2d2' } },border: allBorders } }
 ]
 workSheetRows.push(legend)
 workSheetRows.push([])
@@ -477,7 +480,7 @@ let dataColums = []
             // dataObj ={ Header: h, accessor: 'col1' }  
             headerRow.push(obj);
         }
-        headerRow.push({ v: 'Total', t: "s", s: { font: { bold: true },border: allBorders } })
+        headerRow.push({ v: 'Total (Approved)', t: "s", s: { font: { bold: true },border: allBorders } })
         workSheetRows.push(headerRow)
         
         //-------------------new code starts---------------
@@ -498,13 +501,16 @@ let dataColums = []
                             color = "fafac5"; // Color for Submitted
                             break;
                         case StatusType.Reject:
-                            color = 'f7b5b5'; // Color for Rejected
+                            color = 'fad2d2'; // Color for Rejected  f7b5b5
                             break;
                         case StatusType.Revoke:
                             color = "fae3ea"; // Color for Revoked
                             break;
+                            case StatusType.ManagerApprove:
+                            color ="dbf6ff"// Color for Manager Approved
+                            break;
                         case StatusType.Approved:
-                            color ="a9e6fc"// Color for Approved
+                            color ="eedcf7"// Color for Approved a9e6fc/eedcf7
                             break;
                         default:
                             color = "ffffff"; // Default color
@@ -521,12 +527,12 @@ let dataColums = []
             let Total =0
             for(let t of tempArr){
                 // console.log(t.s.fill.fgColor.rgb)
-                if(t.s.fill.fgColor.rgb == 'a9e6fc'){
+                if(t.s.fill.fgColor.rgb == 'eedcf7'){
                     Total += parseFloat(t.v)
                 }
             } 
             // console.log("Approved Total = "+Total)
-            tempArr.push({ v: Total, t: "s", s: { alignment: { wrapText: true },border: allBorders, font: { bold: false}, fill: { fgColor: { rgb: 'a9e6fc' }} } })
+            tempArr.push({ v: Total, t: "s", s: { alignment: { wrapText: true },border: allBorders, font: { bold: false}, fill: { fgColor: { rgb: 'eedcf7' }} } })
             workSheetRows.push(tempArr);
         });
         let lastColumn = columnOrder.length
@@ -535,46 +541,56 @@ let dataColums = []
         let hColumns = []
         for(let b of workSheetRows[6]){
             let obj={};
-            obj ={header:b.v,accessor: `col${cell}`}
+            obj ={Header:b.v,accessor: `col${cell}`}
             hColumns.push(obj)
             cell++;
         }
         console.log(cell)
-        let SampleData = [];
 
-         legend = [
-            { v: '', t: "s", s: { font: { bold: true },fill: { fgColor: { rgb: 'ffffff' },border: allBorders }} },
-            { v: '', t: "s", s: { font: { bold: true },fill: { fgColor: { rgb: 'ffffff' },border: allBorders }} },
-            // { v: 'Legend', t: "s", s: { font: { bold: true },fill: { fgColor: { rgb: 'ffffff' } },border: allBorders } },
-            { v: 'Submitted', t: "s", s: { font: { bold: true },fill: { fgColor: { rgb: 'fafac5' } },border: allBorders } },
-            // { v: 'Revoked', t: "s", s: { font: { bold: true },fill: { fgColor: { rgb: 'fae3ea' } },border: allBorders } },
-            { v: 'Approved', t: "s", s: { font: { bold: true },fill: { fgColor: { rgb: 'a9e6fc' } },border: allBorders } },
-            { v: 'Rejected', t: "s", s: { font: { bold: true },fill: { fgColor: { rgb: 'f7b5b5' } },border: allBorders } }
-        ]
+        // let SampleData = [];
+
+        // for (let i = 7; i < workSheetRows.length; i++) {
+        //     let rowData = workSheetRows[i];
+        //     let dataObj = {};
+        
+        //     for (let j = 0; j < rowData.length; j++) {
+        //         let cellData = rowData[j];
+        //         if (cellData.v !== undefined) {
+        //             dataObj["col" + (j + 1)] = cellData.v;
+        //             let fgColorRgb = cellData.s.fill.fgColor.rgb;
+        //             dataObj["colorClass"] = fgColorRgb == "fad2d2" ? "R-LRed" : fgColorRgb == "fafac5" ? "R-LYellow" : fgColorRgb == "eedcf7" ? "R-LBlue" : "R-White";
+        //         }
+        //     }
+        
+        //     SampleData.push(dataObj);
+        // }
+        // console.log(SampleData);
+
+        // Assuming workSheetRows is the array of rows containing data
+let SampleData = [];
+
 // Assuming workSheetRows[7] contains the row data
-for (let cellValue of workSheetRows[7]) {
+for (let i = 7; i < workSheetRows.length; i++) {
+    let rowData = workSheetRows[i];
     let dataObj = {};
 
-        // Constructing key like col1, col2, col3, ...
-        // const key = `col${index + 1}`;
-        // dataObj[key] = cellValue.v;
-        dataObj['colorClass'] = cellValue.s.fill.fgColor.rgb == "f7b5b5"?"R-LRed":cellValue.s.fill.fgColor.rgb == "fafac5"?"R-LYellow":cellValue.s.fill.fgColor.rgb=="a9e6fc"?"R-LBlue":"R-White" // Assuming cellValue.v contains the cell value
+    for (let j = 0; j < rowData.length; j++) {
+        let cellData = rowData[j];
+        dataObj["col" + (j + 1)] = cellData.v;
+        let fgColorRgb = cellData.s.fill.fgColor.rgb;
+        dataObj["colorClass" + (j + 1)] = fgColorRgb == "fad2d2" ? "R-LRed" : fgColorRgb == "fafac5" ? "R-LYellow" : fgColorRgb == "eedcf7" ? "R-LPurple" :fgColorRgb == "dbf6ff"?'R-LBlue': "R-White";
+    }
 
     SampleData.push(dataObj);
 }
-this.setState({ColumnsHeaders:hColumns,ReportData:SampleData})
-        // for (let header = 7; header < workSheetRows.length; header++) {
 
-        //     for(let b of workSheetRows[header]){
-        //         let obj={};
-              
-        //         obj ={""+'cell'+"col":b.v }
-        //         headerColumns.push(obj)
-        //         cell++;
-        //     // +=b.v+","
-        //     }
-        //     console.log()
-        // }
+console.log(SampleData);
+
+        
+
+                
+this.setState({ColumnsHeaders:hColumns,ReportData:SampleData})
+
         const finalWorkshetData = XLSX.utils.aoa_to_sheet(workSheetRows)
         finalWorkshetData['!autofilter'] = { ref: 'A7:B7' };
         // mention the range of merge for individual row/item according
@@ -786,7 +802,9 @@ this.setState({ColumnsHeaders:hColumns,ReportData:SampleData})
                                         <button type="button" className="ReportCancelButtons btn" onClick={this.handleCancel}>Cancel</button>
                                     </div>
                                 </div>
+                                <div className="c-v-table">
                                 <MyDataTable columns={this.state.ColumnsHeaders} data={this.state.ReportData}></MyDataTable>
+                                </div>
                             </div>
                         </div>
                     </div>

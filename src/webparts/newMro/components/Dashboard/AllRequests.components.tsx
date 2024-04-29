@@ -93,7 +93,7 @@ class AllRequests extends React.Component<AllRequestsProps,AllRequestsState> {
                         Date : `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`,
                         EmployeName: d.Name,
                         // Status : d.Status == StatusType.Submit?'Pending With Reporting Manager':d.Status== StatusType.InProgress?'Pending With Reviewer':d.Status,
-                        Status : d.Status=='rejected by Synergy'?'Rejected by Synergy':d.Status=='rejected by Manager'?'Rejected by Reporting Manager':d.Status,
+                        Status : this.getStatus(d.Status),
                         Client: d.ClientName,
                         PendingWith: d.PendingWith == "Approver" ||d.PendingWith == "Manager" ?"Reporting Manager":d.PendingWith,
                         BillableHours: isBillable?d.WeeklyTotalHrs:JSON.parse(d.SynergyOfficeHrs)[0].Total,
@@ -111,6 +111,21 @@ class AllRequests extends React.Component<AllRequestsProps,AllRequestsState> {
             }).catch(err => {
                 console.log('Failed to fetch data.', err);
             });
+    }
+    private getStatus(value){
+        let Status=value
+        if(value =="approved by Manager")
+        {
+            Status = "Approved by Reporting Manager"
+        }
+        else if(value == "rejected by Manager"){
+                Status = "Rejected by Reporting Manager"
+            }
+        else if(value =="rejected by Synergy")
+            {
+                Status = "Rejected by Synergy"
+            }
+        return Status
     }
     public render() {
         const columns = [
@@ -152,13 +167,14 @@ class AllRequests extends React.Component<AllRequestsProps,AllRequestsState> {
             {
                 name: "Reporting Manager",
                 selector: (row, i) => row.RM,
-                cell: row => <div dangerouslySetInnerHTML={{ __html: row.RM }} />,
+                cell: row => <div className='divManagers' dangerouslySetInnerHTML={{ __html: row.RM }} />,
                 width: '230px',
                 sortable: true
             },
             {
                 name: "Status",
                 selector: (row, i) => row.Status,
+                width: '220px',
                 sortable: true
             },
             {

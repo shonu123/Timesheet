@@ -44,6 +44,17 @@
     padding-left: 20px;
     margin-left: 20px;
   }
+  a.redirect{
+    text-decoration-line: none;
+    padding: 4px;
+    padding-right: 10px;
+    margin-top: 4px;
+    font-weight: 700;
+    font-size: 1.5rem;
+    color: #444;
+    padding-left: 20px;
+    margin-left: 20px;
+    }
   .custom-tab .nav.nav-pills li a {
   /* background: #cecece52; */
   font-size: 14px;
@@ -2810,13 +2821,18 @@ flex-direction: column;
   padding: 12px;
   border: 1px solid #ddd;
 }
-
-.header-cell.frozen,
-.body-cell.frozen {
-  position: sticky;
-  left: 0;
-  z-index: 1;
-  background-color: white;
+.header-cell,
+.body-cell {
+  padding: 12px;
+  border: 1px solid #ddd;
+}
+.header-cell:first-child,
+.body-cell:first-child {
+width: 230px;
+}
+.header-cell:nth-child(2),
+.body-cell:nth-child(2) {
+width: 230px;
 }
 
 .header-cell.frozen:first-child,
@@ -2824,12 +2840,15 @@ flex-direction: column;
 {
   left: 0;
   z-index: 1;
+  width:230px
 }
 .header-cell.frozen:nth-child(2),
 .body-cell.frozen:nth-child(2) {
-  left: var(--width-of-first-column); /* Set the width of the first column here */
+  /* left: var(--width-of-first-column); Set the width of the first column here */
+  left:230px;
   z-index: 1;
 }
+
 
 /* colors for Report UI table */
 .R-LRed{
@@ -2841,6 +2860,24 @@ flex-direction: column;
 .R-LBlue{
   background-color: #a9e6fc;
 }
+.R-LPurple{
+  background-color: #b9b4e3;
+}
 .R-White{
   background-color: #ffff;
+}
+.R-LSkBlue{
+  background-color: #d2eaf3;
+}
+.Reportheader-row{
+  font-size: 14px;
+  font-weight: bold;
+  text-align: left;
+}
+.RIndiactor{
+  height: 10px;
+  width: 10px;
+}
+.divTaskTypes,.divManagers,.divReviewers{
+  line-height: 1.5 !important;
 }

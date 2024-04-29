@@ -1,5 +1,7 @@
 import React, { useEffect } from 'react';
 import { useTable, useBlockLayout, useSortBy, useFilters, useGlobalFilter } from 'react-table';
+import { faArrowUp, faArrowDown } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
 const MyDataTable = ({ columns, data }) => {
   useEffect(() => {
@@ -32,6 +34,8 @@ const MyDataTable = ({ columns, data }) => {
   const { globalFilter } = state;
 
   return (
+    <>
+    {data.length>0 &&(
     <div className="table-container">
       <div className="table-toolbar">
         <input
@@ -40,11 +44,15 @@ const MyDataTable = ({ columns, data }) => {
           onChange={(e) => setGlobalFilter(e.target.value)}
           placeholder="Search..."
         />
+        <span className='RIndiactor R-LYellow'>Submitted</span>
+        <span className='RIndiactor R-LBlue'>Approved by Reporting Manager</span>
+        <span className='RIndiactor R-LPurple'>Approved</span>
+        <span className='RIndiactor R-LRed'>Rejected</span>
       </div>
       <div {...getTableProps()} className="table">
         <div className="header">
           {headerGroups.map(headerGroup => (
-            <div {...headerGroup.getHeaderGroupProps()} className="header-row">
+            <div {...headerGroup.getHeaderGroupProps()} className="Reportheader-row">
               {headerGroup.headers.map((column, columnIndex) => (
                 <div
                   {...column.getHeaderProps(column.getSortByToggleProps())}
@@ -52,7 +60,7 @@ const MyDataTable = ({ columns, data }) => {
                 >
                   {column.render('Header')}
                   <span>
-                    {column.isSorted ? (column.isSortedDesc ? ' 🔽' : ' 🔼') : ''}
+                    {column.isSorted ? (column.isSortedDesc ? " "+<FontAwesomeIcon className='iconArrow' icon={faArrowUp}  size="lg" ></FontAwesomeIcon> :" "+ <FontAwesomeIcon className='iconArrow' icon={faArrowDown}  size="lg" ></FontAwesomeIcon>) : ''}
                   </span>
                 </div>
               ))}
@@ -67,7 +75,7 @@ const MyDataTable = ({ columns, data }) => {
                 {row.cells.map((cell, cellIndex) => (
                   <div
                     {...cell.getCellProps()}
-                    className={`body-cell ${cellIndex < 2 ? 'frozen' : ''} ${row.original.colorClass||''}`}
+                    className={`body-cell ${cellIndex < 2 ? 'frozen' : ''} ${row.original[`colorClass${cellIndex + 1}`] || ''}`}
                   >
                     {cell.render('Cell')}
                   </div>
@@ -78,7 +86,11 @@ const MyDataTable = ({ columns, data }) => {
         </div>
       </div>
     </div>
+    )}
+    </>
   );
 };
 
+
 export default MyDataTable;
+//

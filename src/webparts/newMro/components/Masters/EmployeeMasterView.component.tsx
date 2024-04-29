@@ -98,6 +98,7 @@ class EmployeeMasterView extends React.Component<EmployeeMasterViewProps, Employ
                         ReportingManager: ReportingManagerString,
                         Reviewers:ReviewersString,
                         Doj : `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`,
+                        EPTO:d.EligibleforPTO?"Yes":"No",
                         IsActive: d.IsActive
                     })
                 }
@@ -137,7 +138,7 @@ class EmployeeMasterView extends React.Component<EmployeeMasterViewProps, Employ
             {
                 name: "Reporting Manager",
                 selector: (row, i) => row.ReportingManager,
-                cell: row => <div dangerouslySetInnerHTML={{ __html: row.ReportingManager }} />,
+                cell: row => <div className='divManagers' dangerouslySetInnerHTML={{ __html: row.ReportingManager }} />,
                 width: '250px',
                 sortable: true
             },
@@ -152,7 +153,7 @@ class EmployeeMasterView extends React.Component<EmployeeMasterViewProps, Employ
                 selector: (row, i) => row.Reviewers,
                 sortable: true,
                 width: '250px',
-                cell: row => <div dangerouslySetInnerHTML={{ __html: row.Reviewers }} />
+                cell: row => <div className='divReviewers' dangerouslySetInnerHTML={{ __html: row.Reviewers }} />
             },
             {
                 name: "Client",
@@ -170,6 +171,12 @@ class EmployeeMasterView extends React.Component<EmployeeMasterViewProps, Employ
             {
                 name: "Date of Joining",
                 selector: (row, i) => row.Doj,
+                sortable: true,
+                // width: '150px'
+            },
+            {
+                name: "Eligible for PTO",
+                selector: (row, i) => row.EPTO,
                 sortable: true,
                 // width: '150px'
             },

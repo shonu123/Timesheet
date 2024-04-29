@@ -51,8 +51,8 @@ class NavBar extends React.Component<NavBarProps, NavBarState> {
                     {/* <div>
                         <img src='/sites/billing.Timesheet/SiteAssets/SynergyLogo-SM.jpg' className='synergyLogo'/>
                     </div> */}
-                    <div className="main-title">Timesheet</div>
-                    
+                    {/* <div className="main-title">Timesheet</div> */}
+                    <div className="main-title"><NavLink className="redirect" to="/Dashboard"><span className=""><span className="">Timesheet</span></span></NavLink></div>
                     <div className='container-fluid'>                
                          
                         <ul className="list-unstyled ul-leftnav components mb-0 mt-2">

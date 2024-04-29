@@ -68,7 +68,7 @@ class MyRequests extends React.Component<MyRequestsProps, MyRequestsState> {
                         Date : date,
                         Company: d.ClientName,
                         PendingWith: d.PendingWith == "Approver" ||d.PendingWith == "Manager" ?"Reporting Manager":d.PendingWith,
-                        Status : d.Status=='rejected by Synergy'?'Rejected by Synergy':d.Status=='rejected by Manager'?'Rejected by Reporting Manager':d.Status,
+                        Status : this.getStatus(d.Status),
                     })
                 }
                 // console.log(Data);
@@ -78,7 +78,21 @@ class MyRequests extends React.Component<MyRequestsProps, MyRequestsState> {
                 console.log('Failed to fetch data.', err);
             });
     }
-
+    private getStatus(value){
+        let Status=value
+        if(value =="approved by Manager")
+        {
+            Status = "Approved by Reporting Manager"
+        }
+        else if(value == "rejected by Manager"){
+                Status = "Rejected by Reporting Manager"
+            }
+        else if(value =="rejected by Synergy")
+            {
+                Status = "Rejected by Synergy"
+            }
+        return Status
+    }
     public render() {
         const columns = [
             {
