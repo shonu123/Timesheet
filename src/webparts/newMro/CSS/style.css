@@ -2806,11 +2806,6 @@ flex-direction: column;
   width: 92vw !important;
   border-collapse: collapse;
 }
-.header-cell,
-.body-cell {
-  padding: 12px;
-  border: 1px solid #ddd;
-}
 
 .body-row:nth-child(even) {
   background-color: #f9f9f9;
@@ -2818,11 +2813,6 @@ flex-direction: column;
 
 .body-row:hover {
   background-color: #f5f5f5;
-}
-.header-cell,
-.body-cell {
-  padding: 12px;
-  border: 1px solid #ddd;
 }
 .header-cell,
 .body-cell {
@@ -2890,9 +2880,24 @@ width: 300px !important;
   padding: 3px 7px;
   display: inline-block;
   margin: 0 2px;
-  border-radius: 4px;
-  border: 1px solid #dddddd;
+  border-right: 1px solid #ddd;
 }
+.RIndiactor:last-child{
+  border-right:0!important;
+}
+.cs-v-table {
+  border: 2px solid #f3f3f3;
+  padding: 10px;
+  border-radius: 6px;
+}
+.cs-v-table .body-cell{
+  padding: 12px;
+  border: 1px solid #fbfbfb;
+}
+/* .cs-v-table .header-cell{
+  padding: 12px;
+  border: 1px solid #f9f9f9;
+} */
 .div-indiactor{
   display: inline-block;
   margin-left: 18vw;
@@ -2904,5 +2909,13 @@ width: 300px !important;
   margin-bottom: 4px;
 }
 .table-toolbar .icon-export-b{
-
+float: right;
+}
+.div-indiactor .RIndiactor span{
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  margin: 0 4px;
+  display: inline-block;
+  border: 1px solid gainsboro;
 }

@@ -70,7 +70,7 @@ const MyDataTable = ({ columns, data,ExcelData }) => {
   return (
     <>
     {data.length>0 &&(
-    <div className="table-container">
+      <>
       <div className="table-toolbar">
         <input
           type="text"
@@ -88,6 +88,7 @@ const MyDataTable = ({ columns, data,ExcelData }) => {
         <FontAwesomeIcon icon={faFileExcel} className='icon-export-b'></FontAwesomeIcon>
     </a>
       </div>
+    <div className="table-container">
       <div {...getTableProps()} className="ReportTable">
         <div className="header">
           {headerGroups.map(headerGroup => (
@@ -125,6 +126,7 @@ const MyDataTable = ({ columns, data,ExcelData }) => {
         </div>
       </div>
     </div>
+    </>
     )}
     </>
   );
