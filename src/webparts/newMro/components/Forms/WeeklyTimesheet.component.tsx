@@ -399,8 +399,8 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
          "IsDay7Holiday":this.IsHoliday(WeekStartDate,trFormdata.HolidayType),
          "IsDay7SynergyHoliday":this.IsHoliday(WeekStartDate,"synergy"),
          })
-         this.showApproveAndRejectButton();
-        // this.userAccessableRecord();
+         this.showApproveAndRejectButton(trFormdata);
+        // this.userAccessableRecord(trFormdata);
          
         this.setState({UserGoups:userGroups,trFormdata,ClientNames: this.state.ClientNames,EmployeeEmail:this.state.EmployeeEmail,currentUserId:ClientNames[0].Employee.Id,showToaster: true});
         if(this.state.ClientNames.length==1&&this.props.match.params.id==undefined){
@@ -527,8 +527,8 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
         }
         this.setState({UserGoups:userGroups})
 
-       this.showApproveAndRejectButton();
-       this.userAccessableRecord();
+       this.showApproveAndRejectButton(trFormdata);
+       this.userAccessableRecord(trFormdata);
 
         ClientNames = await this.oweb.lists.getByTitle('EmployeeMaster').items.filter(" Employee/Id eq "+data[0].InitiatorId+"and IsActive eq 1").select("ClientName ,DateOfJoining,Employee/Title,Employee/Id,Employee/EMail,ReportingManager/Id,Reviewers/Id,Notifiers/Id,ReportingManager/Title,Reviewers/Title,Notifiers/Title,ReportingManager/EMail,Reviewers/EMail,Notifiers/EMail,*").orderBy("ClientName",true).expand("Employee,ReportingManager,Reviewers,Notifiers").getAll();
         
@@ -1876,7 +1876,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                 }
                 this.setState({ trFormdata:trFormdata,currentWeeklyRowsCount:trFormdata.WeeklyItemsData.length,currentOTRowsCount: trFormdata.OTItemsData.length,ItemID:0,EmployeeEmail:this.state.EmployeeEmail,isSubmitted:false,errorMessage:'',showBillable:false,loading:false});
             }
-        this.showApproveAndRejectButton()
+        this.showApproveAndRejectButton(trFormdata);
         //To remove mandatory-FormContent-focus
         if (trFormdata.ClientName.toLowerCase().includes("synergy")) {
             document.getElementById("0_Description_SynOffcHrs").classList.remove('mandatory-FormContent-focus');
@@ -1967,7 +1967,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
            
             this.setState({ trFormdata:trFormdata,currentWeeklyRowsCount:trFormdata.WeeklyItemsData.length,currentOTRowsCount: trFormdata.OTItemsData.length,ItemID:0,EmployeeEmail:this.state.EmployeeEmail,isSubmitted:true,errorMessage:'',showBillable:false,loading:false});
       
-        this.showApproveAndRejectButton();
+        this.showApproveAndRejectButton(trFormdata);
          //To remove mandatory-FormContent-focus
          if (trFormdata.ClientName.toLowerCase().includes("synergy")) {
             document.getElementById("0_Description_SynOffcHrs").classList.remove('mandatory-FormContent-focus');
@@ -2002,8 +2002,8 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
         }
     }
     //this function is used to hide and show Approve/Reject/Submit/Save/Revoke buttons based on logged in user and current record respective users
-    private showApproveAndRejectButton() {
-        let value = this.state.trFormdata.Status != StatusType.Save ? true : false;
+    private showApproveAndRejectButton(trFormdata) {
+        let value = trFormdata.Status != StatusType.Save ? true : false;
         let userGroups = this.state.UserGoups;
         let userEmail = this.props.spContext.userEmail
         let isAdmin = false;
@@ -2015,28 +2015,28 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
             let managerApprove= StatusType.ManagerApprove.toString()
             let Approve = StatusType.Approved.toString()
             let submit = StatusType.Submit.toString()
-            // if (![Approve, submit].includes(this.state.trFormdata.Status)) 
+            // if (![Approve, submit].includes(trFormdata.Status)) 
             //     this.setState({ showSubmitSavebtn: true})
             // else
             //     this.setState({ showSubmitSavebtn: false})
 
-            // if ([Approve,submit].includes(this.state.trFormdata.Status))
+            // if ([Approve,submit].includes(trFormdata.Status))
             //     this.setState({showRevokebtn: true })
             // else
             //     this.setState({showRevokebtn:false })
-            if (![managerApprove,Approve, submit].includes(this.state.trFormdata.Status)) 
+            if (![managerApprove,Approve, submit].includes(trFormdata.Status)) 
                 this.setState({ showSubmitSavebtn: true})
             else
                 this.setState({ showSubmitSavebtn: false})
 
-            if ([submit].includes(this.state.trFormdata.Status))
+            if ([submit].includes(trFormdata.Status))
                 this.setState({showRevokebtn: true })
             else
                 this.setState({showRevokebtn:false })
 
             if(isAdmin)  //to show revoke button only for admin if status is Submit/ManagerApproved/Approved
             {
-                if ([Approve, submit].includes(this.state.trFormdata.Status))
+                if ([Approve, submit].includes(trFormdata.Status))
                     this.setState({showRevokebtn: true })
                 else
                    this.setState({showRevokebtn:false })
@@ -2046,13 +2046,13 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
             this.setState({ showSubmitSavebtn: false,showRevokebtn:false })
         }
         if(value){
-        let RMEmails = this.state.trFormdata.ReportingManagersEmail
-        let RevEmails = this.state.trFormdata.ReviewersEmail
+        let RMEmails = trFormdata.ReportingManagersEmail
+        let RevEmails = trFormdata.ReviewersEmail
         if(userEmail == this.state.EmployeeEmail){
             value = false;
         }
         if (RMEmails.includes(userEmail)) {
-            if (this.state.trFormdata.Pendingwith == "Manager") {
+            if (trFormdata.Pendingwith == "Manager") {
                 value = true;
                 this.setState({ showApproveRejectbtn: value,IsReviewer:false })
                 return false;
@@ -2063,7 +2063,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
         }
         if (RevEmails.includes(userEmail)) {
            // if (this.state.trFormdata.Pendingwith == "NA") {
-            if (this.state.trFormdata.Pendingwith == "Reviewer") {
+            if (trFormdata.Pendingwith == "Reviewer") {
                 value = true;
                 this.setState({ showApproveRejectbtn: value,IsReviewer:true })
                 return false;
@@ -2083,12 +2083,12 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
        }
        
     }
-     private userAccessableRecord(){
+     private userAccessableRecord(trFormdata){
         let currentUserEmail = this.props.spContext.userEmail;
         let userEmail = this.state.EmployeeEmail
-        let NotifiersEmail = this.state.trFormdata.NotifiersEmail 
-        let ReviewerEmails = this.state.trFormdata.ReviewersEmail
-        let ApproverEmails = this.state.trFormdata.ReportingManagersEmail
+        let NotifiersEmail =trFormdata.NotifiersEmail 
+        let ReviewerEmails =trFormdata.ReviewersEmail
+        let ApproverEmails =trFormdata.ReportingManagersEmail
         let userGroups = this.state.UserGoups
         let isAccessable = false;
         if(userEmail.includes(currentUserEmail)){
