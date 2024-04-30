@@ -92,6 +92,7 @@ class EmployeeMasterForm extends React.Component<EmployeeMasterFormProps, Employ
         showToaster:false,
         GlobalHolidayList:[],
         EligibleforPTO:'Yes',
+        isDisabled:false,
     }
 
     public componentDidMount() {
@@ -115,34 +116,36 @@ class EmployeeMasterForm extends React.Component<EmployeeMasterFormProps, Employ
         // this.setState({ClientsObject : clients})
         // console.log(clients);
         // this.setState({ loading: false});        this.setState({showToaster:true})
+        let userGroups = []
+        for (const grp of groups) {
+            userGroups.push(grp.Title)
+        }
         if(this.props.match.params.id != undefined){
             // this.setState({ loading: true});
             // console.log(this.props.match.params.id)
             // this.setState({ItemID : this.props.match.params.id})
             let ItemID = this.props.match.params.id
-            this.getData(ItemID,Holidays,clients)
+            this.getData(ItemID,Holidays,clients,userGroups)
         }
         else{
+            if(userGroups.includes('Timesheet Administrators')){
+                this.setState({isPageAccessable : true,showToaster:true})
+            }
+            else{
+                this.setState({isPageAccessable : false})
+            }
             // let filterdHolidays = this.getHolidays(Holidays,'None')
             this.setState({ClientsObject : clients,GlobalHolidayList:Holidays,HolidaysObject:[],loading:false})
         }
         // console.log("current user deatils")
         // console.log(this.props.context.pageContext)
 
-        let userGroups = []
-        for (const grp of groups) {
-            userGroups.push(grp.Title)
-        }
-        if(userGroups.includes('Timesheet Administrators')){
-            this.setState({isPageAccessable : true,showToaster:true})
-        }
-        else{
-            this.setState({isPageAccessable : false})
-        }
+
+
     }
 
     // this function is used to get data from the employee master of Edit record
-    private async getData(ID,Holidays,Clients){
+    private async getData(ID,Holidays,Clients,userGroups){
         let filterQuery = "ID eq '"+ID+"'"
         let selectQuery = "Employee/ID,Employee/EMail,ReportingManager/ID,ReportingManager/EMail,Approvers/ID,Approvers/EMail,Reviewers/ID,Reviewers/EMail,Notifiers/ID,Notifiers/EMail,*"
         // let Year = new Date().getFullYear()+"";
@@ -174,8 +177,19 @@ class EmployeeMasterForm extends React.Component<EmployeeMasterFormProps, Employ
         //         NotifierIds.results.push(user.ID)
         //     }
         // }
+        let pageAccessable = false,disabled=false;
+        if(userGroups.includes('Timesheet Administrators')){
+            pageAccessable = true
+        }
+        else if(ReportingManagerIds.results.includes(this.props.spContext.userId)){
+            pageAccessable = true,
+            disabled = true
+        }
+        else{
+            this.setState({isPageAccessable : false})
+        }
         let filterdHolidays = this.getHolidays(Holidays,data[0].ClientName)
-        this.setState({ClientsObject:Clients,ItemID:ID,EmployeeEmail : data[0].Employee.EMail,EmployeeId : data[0].Employee.ID,ClientName : data[0].ClientName,isActive : data[0].IsActive,DateOfJoining : date,SelectedEmployee : data[0].Employee.ID,SelectedClient : data[0].ClientName,HolidayType : data[0].HolidayType,weekStartDay : data[0].WeekStartDay,MandatoryProjectCode : data[0].MandatoryProjectCode?"Yes":"No",MandatoryDescription : data[0].MandatoryDescription?"Yes":"No",EligibleforPTO:data[0].EligibleforPTO?"Yes":"No",ReportingManagerEmail: ReportingManagersEmail,ReportingManagerId : ReportingManagerIds,ReviewerEmail: ReviewersEMail,ReviewerId : ReviewerIds,HolidaysObject:filterdHolidays,GlobalHolidayList:Holidays,loading: false})
+        this.setState({ClientsObject:Clients,ItemID:ID,EmployeeEmail : data[0].Employee.EMail,EmployeeId : data[0].Employee.ID,ClientName : data[0].ClientName,isActive : data[0].IsActive,DateOfJoining : date,SelectedEmployee : data[0].Employee.ID,SelectedClient : data[0].ClientName,HolidayType : data[0].HolidayType,weekStartDay : data[0].WeekStartDay,MandatoryProjectCode : data[0].MandatoryProjectCode?"Yes":"No",MandatoryDescription : data[0].MandatoryDescription?"Yes":"No",EligibleforPTO:data[0].EligibleforPTO?"Yes":"No",ReportingManagerEmail: ReportingManagersEmail,ReportingManagerId : ReportingManagerIds,ReviewerEmail: ReviewersEMail,ReviewerId : ReviewerIds,HolidaysObject:filterdHolidays,GlobalHolidayList:Holidays,isDisabled:disabled,isPageAccessable:pageAccessable,showToaster:true,loading: false})
     }
 
     // this function is used to bind users to people pickers
@@ -385,7 +399,12 @@ private async validateDuplicateRecord () {
     }
     if (this.state.Homeredirect) {
        let message = this.state.message
-        let url = `/EmployeeMasterView/${message}`
+        let url 
+        if(this.props.match.params.redirect != undefined)
+        url =`/Dashboard`
+        else
+        url= `/EmployeeMasterView/${message}`
+        
         return (<Navigate to={url}/>);
     }
 else {
@@ -414,7 +433,7 @@ else {
                                                                     titleText=""
                                                                     personSelectionLimit={1}
                                                                     showtooltip={false}
-                                                                    disabled={false}
+                                                                    disabled={this.state.isDisabled}
                                                                     onChange={(e) => this._getPeoplePickerItems(e, 'EmployeeId')}    
                                                                     ensureUser={true}
                                                                     required={true}   
@@ -429,7 +448,7 @@ else {
                                                 <div className="col-md-3">
                                                     <div className="light-text">
                                                         <label>Client<span className="mandatoryhastrick">*</span></label>
-                                                        <select className="form-control" required={true} name="ClientName" title="Client" id='client' ref={this.client} onChange={this.handleChangeEvents}>
+                                                        <select className="form-control" required={true} name="ClientName" title="Client" id='client' ref={this.client} onChange={this.handleChangeEvents} disabled={this.state.isDisabled}>
                                                             <option value=''>None</option>
                                                             {this.state.ClientsObject.map((option) => (
                                                                 <option value={option.Title} selected={option.Title ==this.state.ClientName}>{option.Title}</option>
@@ -443,7 +462,7 @@ else {
                                                 <label className="z-in-9">Date of Joining <span className="mandatoryhastrick">*</span></label>
                                                 <div className="custom-datepicker" id="divDateofJoining">
                                                     
-                                                    <DatePicker onDatechange={this.UpdateDate} selectedDate={this.state.DateOfJoining}/>
+                                                    <DatePicker  onDatechange={this.UpdateDate} selectedDate={this.state.DateOfJoining} isDisabled={this.state.isDisabled}/>
                                                 </div>
                                             </div>
                                                 </div>
@@ -451,7 +470,7 @@ else {
                                                 <div className="col-md-3">
                                                     <div className="light-text">
                                                         <label>Holiday Calendar<span className="mandatoryhastrick">*</span></label>
-                                                        <select className="form-control" required={true} name="HolidayType" title="HolidayType" id='HolidayType' ref={this.HolidayType} onChange={this.handleChangeEvents}>
+                                                        <select className="form-control" required={true} name="HolidayType" title="HolidayType" id='HolidayType' ref={this.HolidayType} onChange={this.handleChangeEvents} disabled={this.state.isDisabled}>
                                                             <option value=''>None</option>
                                                             {this.state.HolidaysObject.map((option) => (
                                                                 <option value={option} selected={option ==this.state.HolidayType}>{option}</option>
@@ -473,7 +492,7 @@ else {
                                                                     titleText=""
                                                                     personSelectionLimit={10}
                                                                     showtooltip={false}
-                                                                    disabled={false}
+                                                                    disabled={this.state.isDisabled}
                                                                     defaultSelectedUsers = {this.state.ReportingManagerEmail}
                                                                     onChange={(e) => this._getPeoplePickerItems(e, 'ReportingManagerId')}    
                                                                     ensureUser={true}
@@ -493,7 +512,7 @@ else {
                                                                     titleText=""
                                                                     personSelectionLimit={10}
                                                                     showtooltip={false}
-                                                                    disabled={false}
+                                                                    disabled={this.state.isDisabled}
                                                                     defaultSelectedUsers = {this.state.ReviewerEmail}
                                                                     onChange={(e) => this._getPeoplePickerItems(e, 'ReviewerId')}    
                                                                     ensureUser={true}
@@ -527,7 +546,7 @@ else {
                                                     <div className="col-md-3">
                                                         <div className="light-text">
                                                             <label>Week Start Day</label>
-                                                            <select className="form-control"  name="weekStartDay" title="WeekStartDay" id='WeekStartDay' ref={this.WeekStartDay} onChange={this.handleChangeEvents} value={this.state.weekStartDay}>
+                                                            <select className="form-control"  name="weekStartDay" title="WeekStartDay" id='WeekStartDay' disabled={this.state.isDisabled} ref={this.WeekStartDay} onChange={this.handleChangeEvents} value={this.state.weekStartDay}>
                                                                 <option value='Monday'>Monday</option>
                                                                 <option value='Tuesday'>Tuesday</option>
                                                                 <option value='Wednesday'>Wednesday</option>
@@ -588,7 +607,7 @@ else {
                                                     <div className="col-md-3">
                                                         <div className="light-text">
                                                             <label>Is Eligible for PTO</label>
-                                                            <select className="form-control"  name="EligibleforPTO" title="Is Eligible for PTO" id='EligibleforPTO' ref={this.EligibleforPTO} onChange={this.handleChangeEvents} value={this.state.EligibleforPTO}>
+                                                            <select className="form-control"  name="EligibleforPTO" title="Is Eligible for PTO" id='EligibleforPTO' ref={this.EligibleforPTO} onChange={this.handleChangeEvents} value={this.state.EligibleforPTO} disabled={this.state.isDisabled}>
                                                                 <option value='Yes'>Yes</option>
                                                                 <option value='No'>No</option>
                                                             </select>
@@ -603,7 +622,7 @@ else {
                                                         checked={this.state.isActive}
                                                         onChange={this.handleChangeEvents}
                                                         isforMasters={false}
-                                                        isdisable={false}
+                                                        isdisable={this.state.isDisabled}
                                                         />
                                                     </div>
                                             </div>

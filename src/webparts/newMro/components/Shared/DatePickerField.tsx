@@ -73,8 +73,10 @@ const DatePickercontrol = (props,ref) => {
           placeholder={'MM/DD/YYYY '}
           className="form-control DatePicker"//{props.isDisabled ? "form-control DatePicker c-input-readonly" : "form-control DatePicker"}//"form-control DatePicker" // custom class
          ref={reference}
+         disabled={props.isDisabled}
         />
      );
   };
 
-  export default React.forwardRef(DatePickercontrol);
+  // export default React.forwardRef(DatePickercontrol);
+  export default DatePickercontrol

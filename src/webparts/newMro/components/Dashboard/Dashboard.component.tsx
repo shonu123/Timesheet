@@ -8,6 +8,7 @@ import "@pnp/sp/site-users/web";
 import ApproversApprovals from './Approvers.component';
 import MyRequests from './Myrequests.component';
 import AllRequests from './AllRequests.components';
+import MyTeam from '../Masters/MyTeam.component';
 import Loader from '../Shared/Loader';
 import customToaster from '../Shared/Toaster.component';
 import { StatusType, ToasterTypes } from '../../Constants/Constants';
@@ -34,11 +35,13 @@ export interface DashboardState {
     isAdmin : boolean;
     showRequestTab: boolean;
     showMyApprovalsTab: boolean;
+    showMyTeamTab: boolean;
     showMyReviewersTab: boolean;
     showAllRequestsTab:boolean;
     loading:boolean;
     showToaster:boolean;
     isEmployeeConfigured:boolean;
+    showMyTeamComp:boolean;
 }
 
 class Dashboard extends React.Component<DashboardProps, DashboardState> {
@@ -65,7 +68,9 @@ class Dashboard extends React.Component<DashboardProps, DashboardState> {
             showAllRequestsTab: false,
             loading:false,
             showToaster:false,
-            isEmployeeConfigured:true
+            isEmployeeConfigured:true,
+            showMyTeamComp:false,
+            showMyTeamTab:false,
         };
     }
     public componentDidMount() {
@@ -182,7 +187,7 @@ class Dashboard extends React.Component<DashboardProps, DashboardState> {
         item.classList.remove('show');
         });
 
-        let showReviewerComp = false; let showApproveComp = false; let showMyRequestsComp = false; let showApproved = false; let showExported = false; let isAdmin = false;
+        let showReviewerComp = false; let showApproveComp = false; let showMyRequestsComp = false; let showApproved = false; let showExported = false; let isAdmin = false,showMyTeamComp = false;
         if (url === 'Reviewers')
         {
             document.getElementById('ReviewersApprovals-tab').classList.add('active');
@@ -190,6 +195,7 @@ class Dashboard extends React.Component<DashboardProps, DashboardState> {
             document.getElementById('ReviewersApprovals').classList.add('show');
             showReviewerComp = true;
             showApproveComp = false;
+            showMyTeamComp = false;
             showMyRequestsComp = false;
             isAdmin = false;
         }
@@ -199,6 +205,18 @@ class Dashboard extends React.Component<DashboardProps, DashboardState> {
             document.getElementById('home').classList.add('active');
             document.getElementById('home').classList.add('show');
             showApproveComp = true;
+            showMyTeamComp = false;
+            showReviewerComp = false;
+            showMyRequestsComp = false;
+            isAdmin = false;
+        }
+        else if (url === 'MyTeam')
+         { 
+            document.getElementById('MyTeam-tab').classList.add('active');
+            document.getElementById('home').classList.add('active');
+            document.getElementById('home').classList.add('show');
+            showApproveComp = false;
+            showMyTeamComp = true;
             showReviewerComp = false;
             showMyRequestsComp = false;
             isAdmin = false;
@@ -209,6 +227,7 @@ class Dashboard extends React.Component<DashboardProps, DashboardState> {
             document.getElementById('MyRequests').classList.add('show');
             showMyRequestsComp = true;
             showApproveComp = false;
+            showMyTeamComp = false;
             showReviewerComp = false;
             isAdmin = false;
         }
@@ -217,12 +236,13 @@ class Dashboard extends React.Component<DashboardProps, DashboardState> {
             document.getElementById('AdminRequests').classList.add('active');
             document.getElementById('AdminRequests').classList.add('show');
             showApproveComp = false;
+            showMyTeamComp = false;
             showReviewerComp = false;
             showMyRequestsComp = false;
             isAdmin = true;
         }
         
-        this.setState({ showReviewerComp: showReviewerComp, showApproveComp: showApproveComp, showMyRequestsComp: showMyRequestsComp, showExported: showExported,isAdmin:isAdmin});
+        this.setState({ showReviewerComp: showReviewerComp, showApproveComp: showApproveComp, showMyRequestsComp: showMyRequestsComp, showExported: showExported,isAdmin:isAdmin,showMyTeamComp:showMyTeamComp});
     }
     public render() {
         return (
@@ -252,7 +272,9 @@ class Dashboard extends React.Component<DashboardProps, DashboardState> {
                                     {this.state.showMyReviewersTab &&<li className="nav-item" role="presentation" onClick={() => this.onHandleClick('Reviewers')} >
                                         <a className="nav-link" id="ReviewersApprovals-tab" data-toggle="tab" href="#/Reviewers" role="tab" aria-controls="profile" aria-selected="false">My Reviews</a>
                                     </li>}
-                                    
+                                    {this.state.showMyApprovalsTab &&   <li className="nav-item" role="presentation" onClick={() => this.onHandleClick('MyTeam')} >
+                                        <a className="nav-link" id="MyTeam-tab" data-toggle="tab" href="#/MyTeam" role="tab" aria-controls="home" aria-selected="true">My Team</a>
+                                    </li>}
                                 </ul>
                                 
                                <div className="tab-content" id="myTabContent">
@@ -276,7 +298,16 @@ class Dashboard extends React.Component<DashboardProps, DashboardState> {
                                             {this.state.isAdmin && <AllRequests {...this.props} />}
                                         </div>
                                     </div>
-                                    
+                                     {/* <div className="tab-pane fade csMyRequests" id="MyRequests" role="tabpanel" aria-labelledby="MyRequests-tab">
+                                        <div className="border-box-shadow light-box table-responsive dataTables_wrapper-overflow p-2">
+                                            {this.state.showMyRequestsComp && <MyRequests {...this.props} />}
+                                        </div>
+                                    </div> */}
+                                    <div className="tab-pane fade csMyTeam show" id="MyTeam" role="tabpanel" aria-labelledby="home-tab">
+                                        <div className="border-box-shadow light-box table-responsive dataTables_wrapper-overflow p-2">
+                                            {this.state.showMyTeamComp && <MyTeam {...this.props} />}
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div> 

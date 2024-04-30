@@ -95,7 +95,7 @@ class Routesitems extends Component<RoutesProps, RoutesState> {
                     {/* <Route path='/' element={<Dashboard {...this.context}{...this.props}  />} />WrapperDashboard */}
                     <Route path='/:message?' element={<WrapperDashboard/>} />
                    <Route path='/WeeklyTimesheet/:id?' element ={<WrapperWeeklyTimesheet/>} />
-                   <Route path='/EmployeeMasterForm/:id?' element ={<WrapperEmployeeMasterForm/>} />
+                   <Route path='/EmployeeMasterForm/:id?/:redirect?' element ={<WrapperEmployeeMasterForm/>} />
                    <Route path='/EmployeeMasterView/:message?' element ={<WrapperMasterView/>} />
                    <Route path='/HolidayMaster/:id?' element ={<WrapperHolidayMaster/>} />
                    <Route path='/ClientMaster/:id?' element ={<WrapperClientMaster/>} />

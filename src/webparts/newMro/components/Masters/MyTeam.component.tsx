@@ -2,17 +2,16 @@ import * as React from 'react';
 import { NavLink } from 'react-router-dom';
 import TableGenerator from '../Shared/TableGenerator';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faXmark, faEdit, faCheck, faPlus } from '@fortawesome/free-solid-svg-icons';
+import {  faEdit } from '@fortawesome/free-solid-svg-icons';
 import { SPHttpClient} from '@microsoft/sp-http';
 import { sp } from '@pnp/sp';
 import "@pnp/sp/webs";
 import "@pnp/sp/lists";
 import "@pnp/sp/items";
 import Loader from '../Shared/Loader';
-import { ToasterTypes } from '../../Constants/Constants';
-import toast, { Toaster } from 'react-hot-toast';
-import customToaster from '../Shared/Toaster.component';
-export interface EmployeeMasterViewProps {
+import { StatusType } from '../../Constants/Constants';
+
+export interface MyTeamProps {
     match: any;
     spContext: any;
     spHttpClient: SPHttpClient;
@@ -20,8 +19,8 @@ export interface EmployeeMasterViewProps {
     history: any;
 }
 
-export interface EmployeeMasterViewState {
-    Details: Array<Object>;
+export interface MyTeamState {
+    MyTeamMemebrs: Array<Object>;
     loading:boolean;
     message : string;
     title : string;
@@ -30,82 +29,43 @@ export interface EmployeeMasterViewState {
     comments :  string;
     Action : string;
     errorMessage: string;
-    ItemID : Number;
-    showToaster:boolean;
+    ItemID : Number
 }
 
-class EmployeeMasterView extends React.Component<EmployeeMasterViewProps, EmployeeMasterViewState> {
-    constructor(props: EmployeeMasterViewProps) {
+class MyTeam extends React.Component<MyTeamProps, MyTeamState> {
+    constructor(props: MyTeamProps) {
         super(props);
         sp.setup({
             spfxContext: this.props.context
         });
-        this.state = {Details: [], loading:false,message:'',title:'',showHideModal:false,isSuccess:true,comments:'',Action:'',errorMessage:'',ItemID:0,showToaster:false};
+        this.state = {MyTeamMemebrs: [], loading:false,message:'',title:'',showHideModal:false,isSuccess:true,comments:'',Action:'',errorMessage:'',ItemID:0};
     }
 
     public componentDidMount() {
-        this.setState({ loading: true});
-        this.MyTeamData();
-        if(!["",undefined,null].includes(this.props.match.params.message)){
-            this.setState({showToaster:true})
-            let message = this.props.match.params.message
-            window.location.hash='#/MyTeam';
-            if(message == 'Error'){
-                customToaster('toster-error',ToasterTypes.Error,'Sorry! something went wrong',4000)
-            }
-            else{
-                let status = message.split('-')[1]
-                setTimeout(() => {
-                    status == "Added"?customToaster('toster-success',ToasterTypes.Success,'Employee configuration added successfully',2000):customToaster('toster-success',ToasterTypes.Success,'Employee configuration updated successfully',
-                    2000)}, 0);
-            }
-        }
+        this.ReportingManagerApproval();
     }
-// this function is used to get all records of  both active and inactive employees from employee master list
-    private MyTeamData = async () => {
-        var selectQuery = "Employee/Title,*";
-        var expandQuery = "Employee";
-        var filterQuery = "ReportingManager/ID eq '"+this.props.spContext.userId;+"'"
-        sp.web.lists.getByTitle('EmployeeMaster').items.top(2000).filter(filterQuery).expand(expandQuery).select(selectQuery).orderBy('Modified', false).get()
+// this function is used to get 1 month records of weeklytime data of the employees who's manager is current logged in user from weeklytimesheet list
+    private ReportingManagerApproval = async () => {
+        this.setState({ loading: true });
+        const userId = this.props.spContext.userId;
+        var filterString = "ReportingManager/ID eq '"+userId+"'"
+
+        sp.web.lists.getByTitle('EmployeeMaster').items.top(2000).filter(filterString).expand("Employee").select('Employee/Title','*').orderBy('Employee/Title', false).get()
             .then((response) => {
                 // console.log(response)
                 let Data = [];
                 for (const d of response) {
-                    let ReportingManagerString = '',ReviewersString = '',NotifiersString ='';
-                    if(d.ReportingManager.length>0){
-                        for(let user of d.ReportingManager){
-                            ReportingManagerString+= "<div>"+user.Title+"</div>"
-                        }
-                    }
-                    if(d.Reviewers.length>0){
-                        for(let user of d.Reviewers){
-                            ReviewersString+= "<div>"+user.Title+"</div>"
-                        }
-                    }
-                    // --------------Notifiers-----------
-                    // if(d.Notifiers.length>0){
-                    //     for(let user of d.Notifiers){
-                    //         NotifiersString+= "<div>"+user.Title+"<div>"
-                    //     }
-                    //     // NotifiersString = NotifiersString.substring(0, NotifiersString.lastIndexOf(","));
-                    // }
-                    // ----------------------------------
-
                     let date = new Date(d.DateOfJoining)
                     Data.push({
                         Id : d.Id,
-                        Employee : d.Employee.Title,
-                        Company : d.ClientName,
-                        ReportingManager: ReportingManagerString,
-                        Reviewers:ReviewersString,
+                        Employee: d.Employee.Title,
                         Doj : `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`,
-                        EPTO:d.EligibleforPTO?"Yes":"No",
-                        IsActive: d.IsActive
+                        PDM:d.MandatoryDescription?"Mandatory":"Not-Mandatory",
+                        PCM:d.MandatoryProjectCode?"Mandatory":"Not-Mandatory",
                     })
                 }
                 // console.log(Data);
-                this.setState({ Details: Data,loading: false});
-                // document.getElementById('txtTableSearch').style.display = 'none';
+                this.setState({ MyTeamMemebrs: Data,loading: false });
             }).catch(err => {
                 console.log('Failed to fetch data.', err);
             });
@@ -121,7 +81,7 @@ class EmployeeMasterView extends React.Component<EmployeeMasterViewProps, Employ
                     return (
                         <React.Fragment>
                             <div style={{ paddingLeft: '10px' }}>
-                                <NavLink title="Edit"  className="csrLink ms-draggable" to={`/EmployeeMasterForm/${record.Id}`}>
+                                <NavLink title="Edit"  className="csrLink ms-draggable" to={`/EmployeeMasterForm/${record.Id}/Edit`}>
                                     <FontAwesomeIcon icon={faEdit}></FontAwesomeIcon>
                                 </NavLink>
                             </div>
@@ -131,91 +91,41 @@ class EmployeeMasterView extends React.Component<EmployeeMasterViewProps, Employ
                 width: '100px'
             },
             {
-                name: "Employee",
+                name: "Employee Name",
                 selector: (row, i) => row.Employee,
                 width: '250px',
                 sortable: true
             },
             {
-                name: "Reporting Manager",
-                selector: (row, i) => row.ReportingManager,
-                cell: row => <div className='divManagers' dangerouslySetInnerHTML={{ __html: row.ReportingManager }} />,
-                width: '250px',
-                sortable: true
-            },
-            // {
-            //     name: "Approvers",
-            //     selector: (row, i) => row.Approvers,
-            //     sortable: true,
-            //     width: '200px'
-            // },
-            {
-                name: "Reviewers",
-                selector: (row, i) => row.Reviewers,
-                sortable: true,
-                width: '250px',
-                cell: row => <div className='divReviewers' dangerouslySetInnerHTML={{ __html: row.Reviewers }} />
-            },
-            {
-                name: "Client",
-                selector: (row, i) => row.Company,
-                // width: '200px',
-                sortable: true
-            },
-            // { ------Notifiers--------
-            //     name: "Notifiers",
-            //     selector: (row, i) => row.Notifiers,
-            //     sortable: true,
-            //     cell: row => <div dangerouslySetInnerHTML={{ __html: row.Notifiers }} />
-            //     // width: '250px'
-            // },
-            {
                 name: "Date of Joining",
                 selector: (row, i) => row.Doj,
-                sortable: true,
-                // width: '150px'
+                width: '250px',
+                sortable: true
             },
             {
-                name: "Eligible for PTO",
-                selector: (row, i) => row.EPTO,
-                sortable: true,
-                // width: '150px'
+                name: "Project Description",
+                selector: (row, i) => row.PDM,
+                width: '250px',
+                sortable: true
             },
             {
-                name: "Status",
-                selector: (row, i) => row.IsActive?"Active":"In-Active",
-                sortable: true,
-                width: '100px',
-            }
+                name: "Project Code",
+                selector: (row, i) => row.PCM,
+                width: '250px',
+                sortable: true
+            },
         ];
         return (
             <React.Fragment>
-            <div id="content" className="content p-2 pt-2">
-            <div className='container-fluid'>
-                            <div className='FormContent'>
-                                <div className="title">Approval Matrix</div>
-                                <div className="after-title"></div>
-            {/* <h1 className='title'>Approval Matrix</h1> */}
-
-                {/* <div style={{ paddingLeft: '10px' }} className="px-1 text-right Billable" id='divAddNewEmployeeMaster'>
-                    <NavLink title="New Approval Matrix"  className="csrLink ms-draggable" to={`/EmployeeMasterForm`}>
-                        <span className='add-button' id='newEmployeeMasterForm'><FontAwesomeIcon icon={faPlus}></FontAwesomeIcon> New</span>
-                    </NavLink>
-                </div> */}
             <div>
-            {this.state.loading && <Loader />}
                 <div className='table-head-1st-td'>
-                    <TableGenerator columns={columns} data={this.state.Details} fileName={'My Details'} showExportExcel={false}
-                    showAddButton={true} customBtnClass='px-1 text-right mt-2' btnDivID='divAddNewEmployeeMaster' navigateOnBtnClick={`/EmployeeMasterForm`} btnSpanID='newEmployeeMasterForm' btnCaption=' New' btnTitle='New Approval Matrix' searchBoxLeft={false}></TableGenerator>
+                    <TableGenerator columns={columns} data={this.state.MyTeamMemebrs} fileName={'My Team'} showExportExcel={false}
+                    showAddButton={false} customBtnClass='' btnDivID='' navigateOnBtnClick='' btnSpanID='' btnCaption='' btnTitle='' searchBoxLeft={true}></TableGenerator>
                 </div>
             </div>
-            </div>
-            </div>
-            </div>
-               {this.state.showToaster&& <Toaster /> }
+            {this.state.loading && <Loader />}
             </React.Fragment> 
         );
     }
 }
-
-export default EmployeeMasterView
+export default MyTeam
