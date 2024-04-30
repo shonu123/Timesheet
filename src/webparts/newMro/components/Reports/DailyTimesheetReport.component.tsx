@@ -765,8 +765,9 @@ this.setState({ColumnsHeaders:hColumns,ReportData:SampleData,ExportExcelData:req
                                     <div className="col-sm-12 text-center my-2" id="">
                                         {/* <button type="button" className="DownloadButtons btn" onClick={this.handleSubmit}>
                                         <FontAwesomeIcon icon={faCloudDownload} className=''></FontAwesomeIcon>Download</button> */}
+                                        {/* <button type="button" className="ReportCancelButtons btn" onClick={this.handleCancel}>Cancel</button> */}
                                         <button type="button" className="SubmitButtons btn" onClick={this.handleSubmit}>Submit</button>
-                                        <button type="button" className="ReportCancelButtons btn" onClick={this.handleCancel}>Cancel</button>
+                                        <button type="button" className="CancelButtons btn" onClick={this.handleCancel}>Cancel</button>
                                     </div>
                                 </div>
                                 <div className="c-v-table">
