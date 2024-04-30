@@ -461,7 +461,7 @@ let legend = [
     // { v: 'Legend', t: "s", s: { font: { bold: true },fill: { fgColor: { rgb: 'ffffff' } },border: allBorders } },
     { v: 'Submitted', t: "s", s: { font: { bold: true },fill: { fgColor: { rgb: 'fafac5' } },border: allBorders } },
     // { v: 'Revoked', t: "s", s: { font: { bold: true },fill: { fgColor: { rgb: 'fae3ea' } },border: allBorders } },dbf6ff
-    { v: 'Approved by Reporting Manager', t: "s", s: { font: { bold: true },fill: { fgColor: { rgb: 'dbf6ff' } },border: allBorders } },
+    { v: 'Approved by Manager', t: "s", s: { font: { bold: true },fill: { fgColor: { rgb: 'dbf6ff' } },border: allBorders } },
     { v: 'Approved', t: "s", s: { font: { bold: true },fill: { fgColor: { rgb: 'eedcf7' } },border: allBorders } },
     { v: 'Rejected', t: "s", s: { font: { bold: true },fill: { fgColor: { rgb: 'fad2d2' } },border: allBorders } }
 ]

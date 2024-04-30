@@ -78,10 +78,12 @@ const MyDataTable = ({ columns, data,ExcelData }) => {
           onChange={(e) => setGlobalFilter(e.target.value)}
           placeholder="Search..."
         />
-        <span className='RIndiactor R-LYellow'>Submitted</span>
-        <span className='RIndiactor R-LBlue'>Approved by Reporting Manager</span>
-        <span className='RIndiactor R-LPurple'>Approved</span>
-        <span className='RIndiactor R-LRed'>Rejected</span>
+        <div className='div-indiactor'>
+        <span className='RIndiactor'><span className='R-LYellow'></span>Submitted</span>
+        <span className='RIndiactor'><span className='R-LBlue'></span>Approved by Manager</span>
+        <span className='RIndiactor'><span className='R-LPurple'></span>Approved</span>
+        <span className='RIndiactor'><span className='R-LRed'></span>Rejected</span>
+        </div>
         <a type="button" id="btnDownloadFile" className="icon-export-b" onClick={(e) => exportToexcel(ExcelData)}>
         <FontAwesomeIcon icon={faFileExcel} className='icon-export-b'></FontAwesomeIcon>
     </a>

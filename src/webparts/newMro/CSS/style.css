@@ -2857,8 +2857,9 @@ width: 300px !important;
 }
 
 .table-toolbar{
-  position: sticky;
-  left: 0;
+  padding: 6px 5px;
+  border-bottom: 1px solid lightgray;
+  margin-bottom: 15px;
 }
 
 /* colors for Report UI table */
@@ -2886,9 +2887,22 @@ width: 300px !important;
   text-align: left;
 }
 .RIndiactor{
-  height: 10px;
-  width: 10px;
+  padding: 3px 7px;
+  display: inline-block;
+  margin: 0 2px;
+  border-radius: 4px;
+  border: 1px solid #dddddd;
+}
+.div-indiactor{
+  display: inline-block;
+  margin-left: 18vw;
 }
 .divTaskTypes,.divManagers,.divReviewers{
   line-height: 1.5 !important;
+}
+.table-toolbar input{
+  margin-bottom: 4px;
+}
+.table-toolbar .icon-export-b{
+
 }
