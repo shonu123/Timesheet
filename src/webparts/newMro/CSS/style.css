@@ -2822,12 +2822,12 @@ flex-direction: column;
 .header-cell:first-child,
 .body-cell:first-child {
   background-color: #ffffff;
-width: 310px !important;
+min-width: 310px !important;
 }
 .header-cell:nth-child(2),
 .body-cell:nth-child(2) {
   background-color: #ffffff;
-width: 300px !important;
+min-width: 300px !important;
 }
 
 .header-cell.frozen:first-child,
@@ -2836,13 +2836,13 @@ width: 300px !important;
   position: sticky;
   left: 0;
   z-index: 1;
-  width:310px !important
 }
 .header-cell.frozen:nth-child(2),
 .body-cell.frozen:nth-child(2) {
   /* left: var(--width-of-first-column); Set the width of the first column here */
   position: sticky;
-  left:290px;
+  
+  left:310px;
   z-index: 1;
 }
 
@@ -2877,9 +2877,9 @@ width: 300px !important;
   text-align: left;
 }
 .RIndiactor{
-  padding: 3px 7px;
+  padding: 3px 12px 3px 6px;
   display: inline-block;
-  margin: 0 2px;
+  margin: 0 2px 0px 0;
   border-right: 1px solid #ddd;
 }
 .RIndiactor:last-child{
