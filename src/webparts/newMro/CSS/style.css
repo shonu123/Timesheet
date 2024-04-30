@@ -2831,27 +2831,35 @@ flex-direction: column;
 }
 .header-cell:first-child,
 .body-cell:first-child {
+  background-color: #ffffff;
 width: 310px !important;
 }
 .header-cell:nth-child(2),
 .body-cell:nth-child(2) {
+  background-color: #ffffff;
 width: 300px !important;
 }
 
 .header-cell.frozen:first-child,
 .body-cell.frozen:first-child
 {
+  position: sticky;
   left: 0;
   z-index: 1;
-  width:230px !important
+  width:310px !important
 }
 .header-cell.frozen:nth-child(2),
 .body-cell.frozen:nth-child(2) {
   /* left: var(--width-of-first-column); Set the width of the first column here */
-  left:230px;
+  position: sticky;
+  left:290px;
   z-index: 1;
 }
 
+.table-toolbar{
+  position: sticky;
+  left: 0;
+}
 
 /* colors for Report UI table */
 .R-LRed{

@@ -74,6 +74,7 @@ class DailyTimesheetReport extends React.Component<DailyTimesheetReportProps, Da
         ResultExcelData : [],
         ColumnsHeaders:[],
         ReportData:[],
+        ExportExcelData:[],
     }
 
     public componentDidMount() {
@@ -588,33 +589,38 @@ console.log(SampleData);
 
         
 
-                
-this.setState({ColumnsHeaders:hColumns,ReportData:SampleData})
+                let requiredData = []
+                requiredData.push(workSheetRows)
+                requiredData.push(filename)
+                requiredData.push(startDate)
+                requiredData.push(endDate)
+                requiredData.push(columnOrder.length)
+this.setState({ColumnsHeaders:hColumns,ReportData:SampleData,ExportExcelData:requiredData})
 
-        const finalWorkshetData = XLSX.utils.aoa_to_sheet(workSheetRows)
-        finalWorkshetData['!autofilter'] = { ref: 'A7:B7' };
-        // mention the range of merge for individual row/item according
-        const merge = [
-                { s: { r: 2, c: 0 }, e: { r: 2, c: lastColumn>7?lastColumn:7 } },{ s: { r: 4, c: 0 }, e: { r: 4, c: lastColumn>7?lastColumn:7 } }
-              ];
+        // const finalWorkshetData = XLSX.utils.aoa_to_sheet(workSheetRows)
+        // finalWorkshetData['!autofilter'] = { ref: 'A7:B7' };
+        // // mention the range of merge for individual row/item according
+        // const merge = [
+        //         { s: { r: 2, c: 0 }, e: { r: 2, c: lastColumn>7?lastColumn:7 } },{ s: { r: 4, c: 0 }, e: { r: 4, c: lastColumn>7?lastColumn:7 } }
+        //       ];
 
-          finalWorkshetData["!merges"] = merge;
-          finalWorkshetData['!images'] = [
-            {
-                name: 'logo.jpg',
-                data: require('../Images/logo.jpg'),
-                opts: { base64: true },
-                position: {
-                    type: 'twoCellAnchor',
-                    attrs: { editAs: 'oneCell' },
-                    from: { col: 2, row : 18 },
-                    to: { col: 8, row: 22 }
-                }
-            }
-          ]
-        XLSX.utils.book_append_sheet(wb, finalWorkshetData, `${filename}`);
-        // STEP 4: Write Excel file to browser
-        XLSX.writeFile(wb, `${filename}(${startDate} to ${endDate}).xlsx`);
+        //   finalWorkshetData["!merges"] = merge;
+        //   finalWorkshetData['!images'] = [
+        //     {
+        //         name: 'logo.jpg',
+        //         data: require('../Images/logo.jpg'),
+        //         opts: { base64: true },
+        //         position: {
+        //             type: 'twoCellAnchor',
+        //             attrs: { editAs: 'oneCell' },
+        //             from: { col: 2, row : 18 },
+        //             to: { col: 8, row: 22 }
+        //         }
+        //     }
+        //   ]
+        // XLSX.utils.book_append_sheet(wb, finalWorkshetData, `${filename}`);
+        // // STEP 4: Write Excel file to browser
+        // XLSX.writeFile(wb, `${filename}(${startDate} to ${endDate}).xlsx`);
 
     }
 
@@ -687,46 +693,6 @@ this.setState({ColumnsHeaders:hColumns,ReportData:SampleData})
 
 
     public render() {
-        const SampleColumns = [
-            { Header: 'Column 1', accessor: 'col1' },
-            { Header: 'Column 2', accessor: 'col2' },
-            { Header: 'Column 3', accessor: 'col3' },
-            { Header: 'Column 4', accessor: 'col4' },
-            { Header: 'Column 5', accessor: 'col5' },
-            { Header: 'Column 6', accessor: 'col6' },
-            { Header: 'Column 7', accessor: 'col7' },
-            { Header: 'Column 8', accessor: 'col8' },
-            { Header: 'Column 9', accessor: 'col9' },
-            { Header: 'Column 10', accessor: 'col10' },
-            { Header: 'Column 11', accessor: 'col11' },
-            { Header: 'Column 12', accessor: 'col12' },
-            { Header: 'Column 13', accessor: 'col13' },
-            { Header: 'Column 14', accessor: 'col14' },
-            { Header: 'Column 15', accessor: 'col15' },
-            { Header: 'Column 16', accessor: 'col16' },
-            { Header: 'Column 1', accessor: 'col17' },
-            { Header: 'Column 2', accessor: 'col18' },
-            { Header: 'Column 3', accessor: 'col19' },
-            { Header: 'Column 4', accessor: 'col20' },
-            { Header: 'Column 5', accessor: 'col21' },
-            { Header: 'Column 6', accessor: 'col22' },
-            { Header: 'Column 7', accessor: 'col23' },
-            { Header: 'Column 8', accessor: 'col24' },
-            { Header: 'Column 9', accessor: 'col25' },
-            { Header: 'Column 10', accessor: 'col26' },
-            { Header: 'Column 11', accessor: 'col27' },
-            { Header: 'Column 12', accessor: 'col28' },
-            { Header: 'Column 13', accessor: 'col29' },
-            { Header: 'Column 14', accessor: 'col30' },
-          ];
-          
-          const SampleData = [
-            { col1: 'Data 1-1', col2: 'Data 1-2', col3: 'Data 1-3', col4: 'Data 1-4', col5: 'Data 1-5', col6: 'Data 1-6',col7:'Data 1-7',col8:'Data 1-8',col9:'Data 1-9',col10:'Data 1-10',col11:'Data 1-11',col12:'Data 1-12',col13:'Data 1-13',col14:'Data 1-14',col15:'Data 1-15',col16:'Data 1-16',col17:'sas',col18:'gdkjghd',col19:"gaskgak",col20:'shgsjkgh',col21:'ksjdhgsjk',col22:'dsd' },
-            { col1: 'Data 2-1', col2: 'Data 2-2', col3: 'Data 2-3', col4: 'Data 2-4', col5: 'Data 2-5', col6: 'Data 2-6',col7:'Data 1-7',col8:'Data 1-8',col9:'Data 1-9',col10:'Data 1-10',col11:'Data 1-11',col12:'Data 1-12',col13:'Data 1-13',col14:'Data 1-14',col15:'Data 1-15',col16:'Data 1-16',col17:'sas',col18:'gdkjghd',col19:"gaskgak",col20:'shgsjkgh',col21:'ksjdhgsjk',col22:'dsd',col23:'fdfs',col24:'ghkgk',col25:'fsf',col26:'fghjgf',col27:'gkjasg',col28:'dasd',col29:'dfad',col30:'jhj' },
-            { col1: 'Data 3-1', col2: 'Data 3-2', col3: 'Data 3-3', col4: 'Data 3-4', col5: 'Data 3-5', col6: 'Data 3-6',col7:'Data 1-7',col8:'Data 1-8',col9:'Data 1-9',col10:'Data 1-10',col11:'Data 1-11',col12:'Data 1-12',col13:'Data 1-13',col14:'Data 1-14',col15:'Data 1-15',col16:'Data 1-16',col17:'sas',col18:'gdkjghd',col19:"gaskgak",col20:'shgsjkgh',col21:'ksjdhgsjk',col22:'dsd',col23:'fdfs',col24:'ghkgk',col25:'fsf',col26:'fghjgf',col27:'gkjasg',col28:'dasd',col29:'dfad',col30:'jhj' },
-            { col1: 'Data 4-1', col2: 'Data 4-2', col3: 'Data 4-3', col4: 'Data 4-4', col5: 'Data 4-5', col6: 'Data 4-6',col7:'Data 1-7',col8:'Data 1-8',col9:'Data 1-9',col10:'Data 1-10',col11:'Data 1-11',col12:'Data 1-12',col13:'Data 1-13',col14:'Data 1-14',col15:'Data 1-15',col16:'Data 1-16',col17:'sas',col18:'gdkjghd',col19:"gaskgak",col20:'shgsjkgh',col21:'ksjdhgsjk',col22:'dsd',col23:'fdfs',col24:'ghkgk',col25:'fsf',col26:'fghjgf',col27:'gkjasg',col28:'dasd',col29:'dfad',col30:'jhj' },
-            { col1: 'Data 5-1', col2: 'Data 5-2', col3: 'Data 5-3', col4: 'Data 5-4', col5: 'Data 5-5', col6: 'Data 5-6',col7:'Data 1-7',col8:'Data 1-8',col9:'Data 1-9',col10:'Data 1-10',col11:'Data 1-11',col12:'Data 1-12',col13:'Data 1-13',col14:'Data 1-14',col15:'Data 1-15',col16:'Data 1-16',col17:'sas',col18:'gdkjghd',col19:"gaskgak",col20:'shgsjkgh',col21:'ksjdhgsjk',col22:'dsd',col23:'fdfs',col24:'ghkgk',col25:'fsf',col26:'fghjgf',col27:'gkjasg',col28:'dasd',col29:'dfad',col30:'jhj'},
-          ];
         if (!this.state.isPageAccessable) {
             let url = `https://synergycomcom.sharepoint.com/sites/Billing.Timesheet/SitePages/AccessDenied.aspx?`
             window.location.href = url
@@ -797,13 +763,14 @@ this.setState({ColumnsHeaders:hColumns,ReportData:SampleData})
                                 </div>
                                 <div className="row mx-1" id="">
                                     <div className="col-sm-12 text-center my-2" id="">
-                                        <button type="button" className="DownloadButtons btn" onClick={this.handleSubmit}>
-                                        <FontAwesomeIcon icon={faCloudDownload} className=''></FontAwesomeIcon>Download</button>
+                                        {/* <button type="button" className="DownloadButtons btn" onClick={this.handleSubmit}>
+                                        <FontAwesomeIcon icon={faCloudDownload} className=''></FontAwesomeIcon>Download</button> */}
+                                        <button type="button" className="SubmitButtons btn" onClick={this.handleSubmit}>Submit</button>
                                         <button type="button" className="ReportCancelButtons btn" onClick={this.handleCancel}>Cancel</button>
                                     </div>
                                 </div>
                                 <div className="c-v-table">
-                                <MyDataTable columns={this.state.ColumnsHeaders} data={this.state.ReportData}></MyDataTable>
+                                <MyDataTable columns={this.state.ColumnsHeaders} data={this.state.ReportData} ExcelData={this.state.ExportExcelData}></MyDataTable>
                                 </div>
                             </div>
                         </div>
