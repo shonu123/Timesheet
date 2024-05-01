@@ -2857,6 +2857,10 @@ min-width: 250px !important;
   left:310px;
   z-index: 1;
 }
+.header-cell:last-child,
+.body-cell:last-child {
+min-width: 160px !important;
+}
 
 .table-toolbar{
   padding: 6px 5px;
@@ -2957,5 +2961,5 @@ float: right;
   min-height: 150px;
 } */
 .body-cell,.header-cell:not(.frozen){
-	min-width: 140px !important;
+	min-width: 125px !important;
 }

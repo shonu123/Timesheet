@@ -770,9 +770,10 @@ this.setState({ColumnsHeaders:hColumns,ReportData:SampleData,ExportExcelData:req
                                         <button type="button" className="CancelButtons btn" onClick={this.handleCancel}>Cancel</button>
                                     </div>
                                 </div>
+                                {this.state.ReportData.length>0 &&
                                 <div className="c-v-table p-2 FormContent">
                                 <MyDataTable columns={this.state.ColumnsHeaders} data={this.state.ReportData} ExcelData={this.state.ExportExcelData}></MyDataTable>
-                                </div>
+                                </div>}
                             </div>
                         </div>
                     </div>
