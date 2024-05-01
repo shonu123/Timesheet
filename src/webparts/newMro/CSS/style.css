@@ -2932,18 +2932,25 @@ float: right;
 	width: 8px;
 	height: 8px;
 }
-.table-container::-webkit-scrollbar-thumb {
+/* .table-container::-webkit-scrollbar-thumb {
 	background: #97c2c76e;
 	border-radius: 20px;
-}
+} */
+.table-container::-webkit-scrollbar-thumb {
+  background: rgb(131 131 131);
+    border-radius: 20px;
+  }
 .table-container::-webkit-scrollbar-track {
 	border-radius: 20px;
 }
 
-.header-cell:not(.frozen) {
+/* .header-cell:not(.frozen) {
   min-height: 150px;
 }
 
 .body-cell:not(.frozen) {
   min-height: 150px;
+} */
+.body-cell,.header-cell:not(.frozen){
+	min-width: 140px !important;
 }
