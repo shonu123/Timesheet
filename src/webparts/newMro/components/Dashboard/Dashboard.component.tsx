@@ -213,8 +213,8 @@ class Dashboard extends React.Component<DashboardProps, DashboardState> {
         else if (url === 'MyTeam')
          { 
             document.getElementById('MyTeam-tab').classList.add('active');
-            document.getElementById('home').classList.add('active');
-            document.getElementById('home').classList.add('show');
+            document.getElementById('MyTeam').classList.add('active');
+            document.getElementById('MyTeam').classList.add('show');
             showApproveComp = false;
             showMyTeamComp = true;
             showReviewerComp = false;
@@ -273,7 +273,7 @@ class Dashboard extends React.Component<DashboardProps, DashboardState> {
                                         <a className="nav-link" id="ReviewersApprovals-tab" data-toggle="tab" href="#/Reviewers" role="tab" aria-controls="profile" aria-selected="false">My Reviews</a>
                                     </li>}
                                     {this.state.showMyApprovalsTab &&   <li className="nav-item" role="presentation" onClick={() => this.onHandleClick('MyTeam')} >
-                                        <a className="nav-link" id="MyTeam-tab" data-toggle="tab" href="#/MyTeam" role="tab" aria-controls="home" aria-selected="true">My Team</a>
+                                        <a className="nav-link" id="MyTeam-tab" data-toggle="tab" href="#/MyTeam" role="tab" aria-controls="MyTeam" aria-selected="true">My Team</a>
                                     </li>}
                                 </ul>
                                 
@@ -298,16 +298,16 @@ class Dashboard extends React.Component<DashboardProps, DashboardState> {
                                             {this.state.isAdmin && <AllRequests {...this.props} />}
                                         </div>
                                     </div>
+                                    <div className="" id="MyTeam" role="tabpanel" aria-labelledby="MyTeam-tab">
+                                        <div className="border-box-shadow light-box table-responsive dataTables_wrapper-overflow p-2">
+                                        {this.state.showMyTeamComp && <MyTeam {...this.props} />}
+                                        </div>
+                                    </div>
                                      {/* <div className="tab-pane fade csMyRequests" id="MyRequests" role="tabpanel" aria-labelledby="MyRequests-tab">
                                         <div className="border-box-shadow light-box table-responsive dataTables_wrapper-overflow p-2">
                                             {this.state.showMyRequestsComp && <MyRequests {...this.props} />}
                                         </div>
                                     </div> */}
-                                    <div className="tab-pane fade csMyTeam" id="MyTeam" role="tabpanel" aria-labelledby="MyTeam-tab">
-                                        <div className="border-box-shadow light-box table-responsive dataTables_wrapper-overflow p-2">
-                                            {this.state.showMyTeamComp && <MyTeam {...this.props} />}
-                                        </div>
-                                    </div>
                                 </div>
                             </div>
                         </div> 

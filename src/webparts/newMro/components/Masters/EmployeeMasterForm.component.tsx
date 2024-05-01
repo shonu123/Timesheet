@@ -93,8 +93,8 @@ class EmployeeMasterForm extends React.Component<EmployeeMasterFormProps, Employ
         GlobalHolidayList: [],
         EligibleforPTO: 'Yes',
         isDisabled: false,
-        DelegateToId: { results: [] },
-        DelegateToEmail: [],
+        // DelegateToId: { results: [] },
+        // DelegateToEmail: [],
     }
 
     public componentDidMount() {
@@ -149,9 +149,9 @@ class EmployeeMasterForm extends React.Component<EmployeeMasterFormProps, Employ
     // this function is used to get data from the employee master of Edit record
     private async getData(ID, Holidays, Clients, userGroups) {
         let filterQuery = "ID eq '" + ID + "'"
-        let selectQuery = "Employee/ID,Employee/EMail,ReportingManager/ID,ReportingManager/EMail,Approvers/ID,Approvers/EMail,Reviewers/ID,Reviewers/EMail,DelegateTo/ID,DelegateTo/EMail,*"
+        let selectQuery = "Employee/ID,Employee/EMail,ReportingManager/ID,ReportingManager/EMail,Approvers/ID,Approvers/EMail,Reviewers/ID,Reviewers/EMail,*"
         // let Year = new Date().getFullYear()+"";
-        let data = await sp.web.lists.getByTitle(this.listName).items.filter(filterQuery).select(selectQuery).expand('Employee,ReportingManager,Approvers,Reviewers,DelegateTo').get()
+        let data = await sp.web.lists.getByTitle(this.listName).items.filter(filterQuery).select(selectQuery).expand('Employee,ReportingManager,Approvers,Reviewers').get()
         // let Holidays = await  sp.web.lists.getByTitle('HolidaysList').items.top(2000).filter("Year eq '"+Year+"'").select('*').orderBy('ClientName').get()
 
         // console.log(data)
@@ -165,16 +165,16 @@ class EmployeeMasterForm extends React.Component<EmployeeMasterFormProps, Employ
                 ReportingManagerIds.results.push(user.ID)
             }
         }
-        let DelegateToIds = { results: [] }
-        let DelegateToEmails = []
-        if(data[0].DelegateTo!=undefined){
-            if (data[0].DelegateTo.length > 0) {
-                for (const user of data[0].DelegateTo) {
-                    DelegateToEmails.push(user.EMail)
-                    DelegateToIds.results.push(user.ID)
-                }
-            }
-        }
+        // let DelegateToIds = { results: [] }
+        // let DelegateToEmails = []
+        // if(data[0].DelegateTo!=undefined){
+        //     if (data[0].DelegateTo.length > 0) {
+        //         for (const user of data[0].DelegateTo) {
+        //             DelegateToEmails.push(user.EMail)
+        //             DelegateToIds.results.push(user.ID)
+        //         }
+        //     }
+        // }
         let ReviewersEMail = []
         if (data[0].Reviewers.length > 0) {
             for (const user of data[0].Reviewers) {
@@ -201,7 +201,7 @@ class EmployeeMasterForm extends React.Component<EmployeeMasterFormProps, Employ
             this.setState({ isPageAccessable: false })
         }
         let filterdHolidays = this.getHolidays(Holidays, data[0].ClientName)
-        this.setState({ ClientsObject: Clients, ItemID: ID, EmployeeEmail: data[0].Employee.EMail, EmployeeId: data[0].Employee.ID, ClientName: data[0].ClientName, isActive: data[0].IsActive, DateOfJoining: date, SelectedEmployee: data[0].Employee.ID, SelectedClient: data[0].ClientName, HolidayType: data[0].HolidayType, weekStartDay: data[0].WeekStartDay, MandatoryProjectCode: data[0].MandatoryProjectCode ? "Yes" : "No", MandatoryDescription: data[0].MandatoryDescription ? "Yes" : "No", EligibleforPTO: data[0].EligibleforPTO ? "Yes" : "No", ReportingManagerEmail: ReportingManagersEmail, ReportingManagerId: ReportingManagerIds, ReviewerEmail: ReviewersEMail, ReviewerId: ReviewerIds, DelegateToId: DelegateToIds, DelegateToEmail: DelegateToEmails, HolidaysObject: filterdHolidays, GlobalHolidayList: Holidays, isDisabled: disabled, isPageAccessable: pageAccessable, showToaster: true, loading: false })
+        this.setState({ ClientsObject: Clients, ItemID: ID, EmployeeEmail: data[0].Employee.EMail, EmployeeId: data[0].Employee.ID, ClientName: data[0].ClientName, isActive: data[0].IsActive, DateOfJoining: date, SelectedEmployee: data[0].Employee.ID, SelectedClient: data[0].ClientName, HolidayType: data[0].HolidayType, weekStartDay: data[0].WeekStartDay, MandatoryProjectCode: data[0].MandatoryProjectCode ? "Yes" : "No", MandatoryDescription: data[0].MandatoryDescription ? "Yes" : "No", EligibleforPTO: data[0].EligibleforPTO ? "Yes" : "No", ReportingManagerEmail: ReportingManagersEmail, ReportingManagerId: ReportingManagerIds, ReviewerEmail: ReviewersEMail, ReviewerId: ReviewerIds,HolidaysObject: filterdHolidays, GlobalHolidayList: Holidays, isDisabled: disabled, isPageAccessable: pageAccessable, showToaster: true, loading: false })
     }
 
     // this function is used to bind users to people pickers
@@ -211,7 +211,7 @@ class EmployeeMasterForm extends React.Component<EmployeeMasterFormProps, Employ
         if (items.length > 0) {
             if (['EmployeeId'].includes(name))
                 value = items[0].id;
-            else if (['ReportingManagerId', 'ReviewerId', 'NotifierId', 'DelegateToId'].includes(name)) {
+            else if (['ReportingManagerId', 'ReviewerId', 'NotifierId'].includes(name)) {
                 let multiple = { results: [] }
                 for (const user of items) {
                     multiple.results.push(user.id)
@@ -222,7 +222,7 @@ class EmployeeMasterForm extends React.Component<EmployeeMasterFormProps, Employ
         else {
             value = null;
         }
-        name == 'EmployeeId' ? this.setState({ EmployeeId: value }) : name == 'ReportingManagerId' ? this.setState({ ReportingManagerId: values }) : name == 'ApproverId' ? this.setState({ ApproverId: values }) : name == 'ReviewerId' ? this.setState({ ReviewerId: values }) : this.setState({ DelegateToId: values })
+        name == 'EmployeeId' ? this.setState({ EmployeeId: value }) : name == 'ReportingManagerId' ? this.setState({ ReportingManagerId: values }) : name == 'ApproverId' ? this.setState({ ApproverId: values }) : name == 'ReviewerId' ? this.setState({ ReviewerId: values }) : ''//this.setState({ NotifiersId: values })
     }
 
     /* this function is used to get holidays of all the clients from HolidaysList and filters with the active clients present in client list.
@@ -329,16 +329,16 @@ class EmployeeMasterForm extends React.Component<EmployeeMasterFormProps, Employ
         for (let manager of this.state.ReportingManagerId.results) {
             Rm.push(manager)
         }
-        let Delegates = []
-        for (let delegate of this.state.DelegateToId.results) {
-            Delegates.push(delegate)
-        }
-        let noDuplicates = true
-        Rm.forEach(element => {
-            if (Delegates.includes(element)) {
-                noDuplicates = false;
-            }
-        });
+        // let Delegates = []
+        // for (let delegate of this.state.DelegateToId.results) {
+        //     Delegates.push(delegate)
+        // }
+        // let noDuplicates = true
+        // Rm.forEach(element => {
+        //     if (Delegates.includes(element)) {
+        //         noDuplicates = false;
+        //     }
+        // });
         if (!isValid.status) {
             // this.setState({showToaster:true})
             customToaster('toster-error', ToasterTypes.Error, isValid.message, 4000)
@@ -348,15 +348,15 @@ class EmployeeMasterForm extends React.Component<EmployeeMasterFormProps, Employ
             // this.setState({showToaster:true})
             customToaster('toster-error', ToasterTypes.Error, errMsg, 4000)
         }
-        else if (Delegates.includes(this.state.EmployeeId)) {
-            let errMsg = 'The selected Employee cannot be assigned as their own Delegate To.';
-            // this.setState({showToaster:true})
-            customToaster('toster-error', ToasterTypes.Error, errMsg, 4000)
-        }
-        else if (!noDuplicates) {
-            let errMsg = 'The Reporting Managers and Delegate To Managers should be unique.';
-            customToaster('toster-error', ToasterTypes.Error, errMsg, 4000)
-        }
+        // else if (Delegates.includes(this.state.EmployeeId)) {
+        //     let errMsg = 'The selected Employee cannot be assigned as their own Delegate To.';
+        //     // this.setState({showToaster:true})
+        //     customToaster('toster-error', ToasterTypes.Error, errMsg, 4000)
+        // }
+        // else if (!noDuplicates) {
+        //     let errMsg = 'The Reporting Managers and Delegate To Managers should be unique.';
+        //     customToaster('toster-error', ToasterTypes.Error, errMsg, 4000)
+        // }
         else {
             // console.log(data);
             let postObject = {
@@ -366,7 +366,7 @@ class EmployeeMasterForm extends React.Component<EmployeeMasterFormProps, Employ
                 IsActive: this.state.isActive,
                 ApproversId: this.state.ApproverId,
                 ReviewersId: this.state.ReviewerId,
-                DelegateToId: this.state.DelegateToId,
+                // DelegateToId: this.state.DelegateToId,
                 // NotifiersId : this.state.NotifierId,
                 DateOfJoining: this.state.DateOfJoining,
                 MandatoryDescription: this.state.MandatoryDescription == 'Yes' ? true : false,
@@ -555,10 +555,21 @@ class EmployeeMasterForm extends React.Component<EmployeeMasterFormProps, Employ
                                                     </div>
                                                 </div>
                                             </div>
-
+                                            
+                                            {/* ---Description--- */}
                                             <div className="col-md-3">
                                                 <div className="light-text">
-                                                    <label className='lblPeoplepicker'>Delegate To{/* <span className="mandatoryhastrick">*</span> */}</label>
+                                                    <label>Is Description Mandatory</label>
+                                                    <select className="form-control" name="MandatoryDescription" title="MandatoryDescription" id='MandatoryDescription' ref={this.MandatoryDescription} onChange={this.handleChangeEvents} value={this.state.MandatoryDescription}>
+                                                        <option value='No'>No</option>
+                                                        <option value='Yes'>Yes</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            {/* ---Description--- */}
+                                            {/* <div className="col-md-3">
+                                                <div className="light-text">
+                                                    <label className='lblPeoplepicker'>Delegate To</label>
                                                     <div className="custom-peoplepicker" id="divDelegateTo">
                                                         <PeoplePicker
                                                             context={this.props.context}
@@ -574,7 +585,7 @@ class EmployeeMasterForm extends React.Component<EmployeeMasterFormProps, Employ
                                                             resolveDelay={1000} peoplePickerCntrlclassName={"input-peoplePicker-custom"} />
                                                     </div>
                                                 </div>
-                                            </div>
+                                            </div> */}
                                             {/* Notifers */}
                                             {/* <div className="col-md-3">
                                                     <div className="light-text">
@@ -632,17 +643,7 @@ class EmployeeMasterForm extends React.Component<EmployeeMasterFormProps, Employ
                                                         </div>
                                                     </div>
                                                 </div> */}
-                                            {/* ---Description--- */}
-                                            <div className="col-md-3">
-                                                <div className="light-text">
-                                                    <label>Is Description Mandatory</label>
-                                                    <select className="form-control" name="MandatoryDescription" title="MandatoryDescription" id='MandatoryDescription' ref={this.MandatoryDescription} onChange={this.handleChangeEvents} value={this.state.MandatoryDescription}>
-                                                        <option value='No'>No</option>
-                                                        <option value='Yes'>Yes</option>
-                                                    </select>
-                                                </div>
-                                            </div>
-                                            {/* ---Description--- */}
+
                                             <div className="col-md-3">
                                                 <div className="light-text">
                                                     <label>Is Project Code Mandatory</label>

@@ -705,7 +705,7 @@ this.setState({ColumnsHeaders:hColumns,ReportData:SampleData,ExportExcelData:req
             return (
                 <React.Fragment>
                     <div className='container-fluid'>
-                        <div className='FormContent2'>
+                        <div className='FormContent-2'>
                             <div className="title">Timesheet Daily Report
                                 <div className='mandatory-note'>
                                     <span className='mandatoryhastrick'>*</span> indicates a required field

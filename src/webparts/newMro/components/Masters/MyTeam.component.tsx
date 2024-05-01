@@ -57,21 +57,13 @@ class MyTeam extends React.Component<MyTeamProps, MyTeamState> {
                 let Data = [];
                 for (const d of response) {
                     let date = new Date(d.DateOfJoining)
-                    let DelegateToString = '';
-                    if (d.DelegateTo != undefined) {
-                        if (d.DelegateTo.length > 0) {
-                            for (let r of d.DelegateTo) {
-                                DelegateToString += "<div>" + r.Title + "</div>"
-                            }
-                        }
-                    }
+                    
                     Data.push({
                         Id: d.Id,
                         Employee: d.Employee.Title,
                         Doj: `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`,
                         PDM: d.MandatoryDescription ? "Mandatory" : "Not-Mandatory",
                         PCM: d.MandatoryProjectCode ? "Mandatory" : "Not-Mandatory",
-                        DelegateTo: DelegateToString,
                     })
                 }
                 // console.log(Data);
@@ -121,12 +113,6 @@ class MyTeam extends React.Component<MyTeamProps, MyTeamState> {
             {
                 name: "Project Code",
                 selector: (row, i) => row.PCM,
-                // width: '250px',
-                sortable: true
-            },
-            {
-                name: "Delegate To",
-                selector: (row, i) => row.DelegateTo,
                 // width: '250px',
                 sortable: true
             },

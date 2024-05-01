@@ -25,6 +25,7 @@ import { ToasterTypes } from '../../Constants/Constants';
 import ImportExcel from '../Shared/ImportExcel';
 import DatePicker from "../Shared/DatePickerField";
 import { addDays } from 'office-ui-fabric-react';
+import { PeoplePicker, PrincipalType } from "@pnp/spfx-controls-react/lib/PeoplePicker";
 
 interface ClientProps {
     match: any;
@@ -52,7 +53,8 @@ class Clients extends Component<ClientProps, ClientState> {
             
         formData: {
             Title : '',
-            IsActive: true
+            IsActive: true,
+            DelegateToId: { results: [] },
         },
         ClientsObj : [],
         SaveUpdateText: 'Submit',
@@ -68,6 +70,7 @@ class Clients extends Component<ClientProps, ClientState> {
         isRedirect: false,
         ExportExcelData:[],
         showToaster:false,
+        DelegateToEMail:[],
     };
 
     public componentDidMount() {
@@ -86,7 +89,9 @@ class Clients extends Component<ClientProps, ClientState> {
                 formData: {
                     Title : '',
                     IsActive: true,
-                }, SaveUpdateText: 'Submit', addNewClient: false
+                    DelegateToId: { results: [] },
+                },DelegateToEMail:[],
+                SaveUpdateText: 'Submit', addNewClient: false
             });
     }
     private handleChange = (event) => {
@@ -106,7 +111,19 @@ class Clients extends Component<ClientProps, ClientState> {
         formData[name] = value;
         this.setState({ formData });
     }
-
+    private _getPeoplePickerItems(items, name) {
+        let values = { results: [] };
+        let formData = {...this.state.formData}
+        if (items.length > 0) {
+                let multiple = { results: [] }
+                for (const user of items) {
+                    multiple.results.push(user.id)
+                }
+                values = multiple
+        }
+        formData['DelegateToId'] = values
+        this.setState({ formData }) 
+    }
 
     private handleSubmit = (event) => {
         event.preventDefault();
@@ -114,14 +131,18 @@ class Clients extends Component<ClientProps, ClientState> {
         let data = {
             Clinet: { val: this.state.formData.Title, required: true, Name: 'Client Name', Type: ControlType.string, Focusid: this.Client },
         };
-
+        let pdata = {
+            DelegateTo: { val: this.state.formData.DelegateToId, required: true, Name: 'DelegateTo', Type: ControlType.people, Focusid: 'divDelegateTo'},
+        }
         const formdata = { ...this.state.formData };
         const id = this.props.match.params.id ? this.props.match.params.id : 0;
 
         let isValid = Formvalidator.checkValidations(data);
+        isValid = isValid.status ? Formvalidator.multiplePeoplePickerValidation(pdata) : isValid
         if (isValid.status) {
             this.checkDuplicates(formdata, id);
-        } else {
+        }
+         else {
             // this.setState({ showLabel: true, errorMessage: isValid.message });
             this.setState({ loading: false });
             customToaster('toster-error',ToasterTypes.Error,isValid.message,4000)
@@ -153,7 +174,7 @@ class Clients extends Component<ClientProps, ClientState> {
                             sp.web.lists.getByTitle(ClientList).items.getById(id).update(formData).then((res) => {
                                 // this.resetHolidayMasterForm();
                                 // toast.success('updated successfully');
-                                customToaster('toster-success',ToasterTypes.Success,'Client name updated successfully.',2000)
+                                customToaster('toster-success',ToasterTypes.Success,'Client updated successfully.',2000)
                                 this.resetHolidayMasterForm();
                                 this.setState({
                                     modalTitle: 'Success',
@@ -172,7 +193,7 @@ class Clients extends Component<ClientProps, ClientState> {
                                 // this.setState({ loading: true });
                                 sp.web.lists.getByTitle(ClientList).items.add({ ...this.state.formData })
                                     .then((res) => {
-                                        customToaster('toster-success',ToasterTypes.Success,'Client name added successfully',2000)
+                                        customToaster('toster-success',ToasterTypes.Success,'Client added successfully',2000)
                                         this.resetHolidayMasterForm();
                                         // toast.success('updated successfully');
                                         this.setState({ showHideModal: false,addNewClient: false,loading:false,isRedirect:true});
@@ -232,20 +253,39 @@ class Clients extends Component<ClientProps, ClientState> {
         this.setState({isRedirect:false})
         // console.log(Clients);
         
-        sp.web.lists.getByTitle('Client').items.select('*').orderBy("Title", false).getAll()
+        sp.web.lists.getByTitle('Client').items.select('DelegateTo/Title,*').expand('DelegateTo').orderBy("Title", false).getAll()
             .then((response) => {
                 response.sort((a, b) => b.Id - a.Id);
                 let ExcelData = []
+                let Data = [];
                 for (const d of response) {
+                    let delegateToString = ""
+                    let delegateToStringExcel = "";
+                    if(d.DelegateTo!=undefined){
+                    if(d.DelegateTo.length>0)
+                        {
+                            for(let r of d.DelegateTo){
+                                delegateToString += "<div>"+r.Title+"</div>"
+                                delegateToStringExcel += r.Title+"\n"
+                            }
+                            // ExcelRm = ExcelRm.substring(0, ExcelRm.lastIndexOf("\n"));
+                        }
+                    }
                     ExcelData.push({
                        ClientName: d.Title,
                        IsActive: d.IsActive?"Active":"In-Active",
+                       DelegateTo:delegateToStringExcel
                     })
-                }
+                
+                Data.push({
+                    Id: d.Id, 
+                    ClientName: d.Title, 
+                    IsActive: d.IsActive,
+                    DelegateTo:delegateToString
+                })
+            }
                 this.setState({
-                    ClientsObj: response.map(o => ({
-                        Id: o.Id, ClientName: o.Title, IsActive: o.IsActive,
-                    })),
+                    ClientsObj: Data,
                     SaveUpdateText: 'Submit',
                     showLabel: false,
                     loading: false,
@@ -268,16 +308,33 @@ class Clients extends Component<ClientProps, ClientState> {
     }
     private async onEditClickHandler(id) {
         // console.log('edit clicked', id);
-
+        // DelegateTo/Title
         try {
-            var response = await sp.web.lists.getByTitle('Client').items.getById(id).get();
+            let filterQuery = "ID eq '" + id + "'"
+            let selectQuery = "DelegateTo/ID,DelegateTo/EMail,*"
+            // let Year = new Date().getFullYear()+"";
+            var data = await sp.web.lists.getByTitle('Client').items.filter(filterQuery).select(selectQuery).expand('DelegateTo').get()
+               let response = data[0]
+            // var response = await sp.web.lists.getByTitle('Client').items.getById(id).get();
+        let DelegateToIds = { results: [] }
+        let DelegateToEmails = []
+        if(data[0].DelegateTo!=undefined){
+            if (data[0].DelegateTo.length > 0) {
+                for (const user of data[0].DelegateTo) {
+                    DelegateToEmails.push(user.EMail)
+                    DelegateToIds.results.push(user.ID)
+                }
+            }
+        }
 
             this.setState({
                 formData:
                  {
                     Title: response.Title,
-                  IsActive: response.IsActive
+                  IsActive: response.IsActive,
+                  DelegateToId: DelegateToIds
                 },
+                DelegateToEMail:DelegateToEmails,
                 SaveUpdateText: 'Update',
                 showLabel: false,
                 addNewClient: true
@@ -291,8 +348,10 @@ class Clients extends Component<ClientProps, ClientState> {
         this.setState({
             formData: {
                 Title : '',
-                IsActive: true
-            }, SaveUpdateText: 'Submit', addNewClient: false,isRedirect:true
+                IsActive: true,
+                DelegateToId: {results:[]}
+            },DelegateToEmail:[],
+            SaveUpdateText: 'Submit', addNewClient: false,isRedirect:true
         });
     }
     private cancelHandler = () => {
@@ -322,6 +381,10 @@ class Clients extends Component<ClientProps, ClientState> {
                 name: "Status",
                 selector: "IsActive",
             },
+            {
+                name: "Delegate To",
+                selector: "DelegateTo"
+            }
         ];
         const columns = [
             {
@@ -354,6 +417,14 @@ class Clients extends Component<ClientProps, ClientState> {
                 header: 'Client Name',
                 dataKey: 'ClientName'
             },
+            {
+                name: "Delegate To",
+                selector: (row, i) => row.DelegateTo,
+                sortable: true,
+                width: '250px',
+                cell: row => <div className='divReviewers' dangerouslySetInnerHTML={{ __html: row.DelegateTo }} />
+            },
+
             {
                 name: "Status",
                 //selector: "Database",
@@ -411,9 +482,6 @@ class Clients extends Component<ClientProps, ClientState> {
                                             <div className="light-box border-box-shadow mx-2">
                                                 <div className={this.state.addNewClient ? '' : 'activediv'}>
                                                     <div className="my-2">
-
-                                                        
-
                                                         <div className="row pt-2 px-2">
                                                             <InputText
                                                                 type='text'
@@ -427,6 +495,25 @@ class Clients extends Component<ClientProps, ClientState> {
                                                                 onBlur={this.handleonBlur}
                                                             />
 
+
+                                            <div className="col-md-3">
+                                                <div className="light-text">
+                                                    <label className='lblPeoplepicker'>Delegate To <span className="mandatoryhastrick">*</span></label>
+                                                    <div className="custom-peoplepicker" id="divDelegateTo">
+                                                        <PeoplePicker
+                                                            context={this.props.context}
+                                                            titleText=""
+                                                            personSelectionLimit={10}
+                                                            showtooltip={false}
+                                                            defaultSelectedUsers={this.state.DelegateToEMail}
+                                                            onChange={(e) => this._getPeoplePickerItems(e, 'DelegateToId')}
+                                                            ensureUser={true}
+                                                            required={true}
+                                                            principalTypes={[PrincipalType.User]} placeholder=""
+                                                            resolveDelay={1000} peoplePickerCntrlclassName={"input-peoplePicker-custom"} />
+                                                    </div>
+                                                </div>
+                                            </div>
                                                             
                                                     <div className="col-md-3">
                                                         <div className="light-text" id='chkIsActive'>
@@ -455,7 +542,7 @@ class Clients extends Component<ClientProps, ClientState> {
                                         </div>
                                         {this.state.showToaster&&<Toaster /> }
                                         <div className="c-v-table table-head-1st-td">
-                                            <TableGenerator columns={columns} data={this.state.ClientsObj} fileName={'Clients'}showExportExcel={true} ExportExcelCustomisedColumns={ExportExcelreportColumns} ExportExcelCustomisedData={this.state.ExportExcelData}></TableGenerator>
+                                            <TableGenerator columns={columns} data={this.state.ClientsObj} fileName={'Clients'}showExportExcel={true} ExportExcelCustomisedColumns={ExportExcelreportColumns} ExportExcelCustomisedData={this.state.ExportExcelData} wrapColumns={"DelegateTo"}></TableGenerator>
                                         </div>
                                     </div>
                                 </div>
