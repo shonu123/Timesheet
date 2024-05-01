@@ -2939,3 +2939,11 @@ float: right;
 .table-container::-webkit-scrollbar-track {
 	border-radius: 20px;
 }
+
+.header-cell:not(.frozen) {
+  min-height: 150px;
+}
+
+.body-cell:not(.frozen) {
+  min-height: 150px;
+}
