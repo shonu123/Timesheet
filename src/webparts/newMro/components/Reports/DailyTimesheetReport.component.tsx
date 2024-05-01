@@ -705,7 +705,7 @@ this.setState({ColumnsHeaders:hColumns,ReportData:SampleData,ExportExcelData:req
             return (
                 <React.Fragment>
                     <div className='container-fluid'>
-                        <div className='FormContent'>
+                        <div className='FormContent2'>
                             <div className="title">Timesheet Daily Report
                                 <div className='mandatory-note'>
                                     <span className='mandatoryhastrick'>*</span> indicates a required field
@@ -762,7 +762,7 @@ this.setState({ColumnsHeaders:hColumns,ReportData:SampleData,ExportExcelData:req
 
                                 </div>
                                 <div className="row mx-1" id="">
-                                    <div className="col-sm-12 text-center my-2" id="">
+                                    <div className="col-sm-12 text-center my-4" id="">
                                         {/* <button type="button" className="DownloadButtons btn" onClick={this.handleSubmit}>
                                         <FontAwesomeIcon icon={faCloudDownload} className=''></FontAwesomeIcon>Download</button> */}
                                         {/* <button type="button" className="ReportCancelButtons btn" onClick={this.handleCancel}>Cancel</button> */}
@@ -770,7 +770,7 @@ this.setState({ColumnsHeaders:hColumns,ReportData:SampleData,ExportExcelData:req
                                         <button type="button" className="CancelButtons btn" onClick={this.handleCancel}>Cancel</button>
                                     </div>
                                 </div>
-                                <div className="c-v-table">
+                                <div className="c-v-table p-2 FormContent">
                                 <MyDataTable columns={this.state.ColumnsHeaders} data={this.state.ReportData} ExcelData={this.state.ExportExcelData}></MyDataTable>
                                 </div>
                             </div>

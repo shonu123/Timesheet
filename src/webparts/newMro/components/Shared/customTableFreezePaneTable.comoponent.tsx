@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { useTable, useBlockLayout, useSortBy, useFilters, useGlobalFilter } from 'react-table';
-import { faArrowUp, faArrowDown,faFileExcel } from '@fortawesome/free-solid-svg-icons';
+import { faArrowUp, faArrowDown,faFileExcel,faArrowDownLong,faArrowUpLong } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import * as XLSX from 'xlsx-js-style';
 
@@ -100,7 +100,7 @@ const MyDataTable = ({ columns, data,ExcelData }) => {
                 >
                   {column.render('Header')}
                   <span className='iconArrow'>
-                    {column.isSorted ? (column.isSortedDesc ? <FontAwesomeIcon className='' icon={faArrowUp}  size="lg" ></FontAwesomeIcon> : <FontAwesomeIcon className='' icon={faArrowDown}  size="lg" ></FontAwesomeIcon>) : ''}
+                    {column.isSorted ? (column.isSortedDesc ? <FontAwesomeIcon className='' icon={faArrowUpLong}  size="lg" ></FontAwesomeIcon> : <FontAwesomeIcon className='' icon={faArrowDownLong}  size="lg" ></FontAwesomeIcon>) : ''}
                   </span>
                 </div>
               ))}

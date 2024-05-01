@@ -2816,7 +2816,7 @@ flex-direction: column;
 }
 .header-cell,
 .body-cell {
-  padding: 12px;
+  padding: 6px 9px;
   border: 1px solid #ddd;
 }
 .header-cell:first-child,
@@ -2827,7 +2827,7 @@ min-width: 310px !important;
 .header-cell:nth-child(2),
 .body-cell:nth-child(2) {
   background-color: #ffffff;
-min-width: 300px !important;
+min-width: 250px !important;
 }
 
 .header-cell.frozen:first-child,
@@ -2920,13 +2920,6 @@ float: right;
   border: 1px solid gainsboro;
 }
 
-.Reportheader-row{
-  width: auto !important;
-}
-
-.body-row{
-  width: auto !important;
-}
 
 .table-container::-webkit-scrollbar {
 	width: 8px;

@@ -303,7 +303,7 @@ class Dashboard extends React.Component<DashboardProps, DashboardState> {
                                             {this.state.showMyRequestsComp && <MyRequests {...this.props} />}
                                         </div>
                                     </div> */}
-                                    <div className="tab-pane fade csMyTeam show" id="MyTeam" role="tabpanel" aria-labelledby="home-tab">
+                                    <div className="tab-pane fade csMyTeam" id="MyTeam" role="tabpanel" aria-labelledby="MyTeam-tab">
                                         <div className="border-box-shadow light-box table-responsive dataTables_wrapper-overflow p-2">
                                             {this.state.showMyTeamComp && <MyTeam {...this.props} />}
                                         </div>
