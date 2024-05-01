@@ -201,7 +201,7 @@ class EmployeeMasterView extends React.Component<EmployeeMasterViewProps, Employ
                         <span className='add-button' id='newEmployeeMasterForm'><FontAwesomeIcon icon={faPlus}></FontAwesomeIcon> New</span>
                     </NavLink>
                 </div> */}
-            <div>
+            <div className='border-box-shadow light-box table-responsive dataTables_wrapper-overflow p-2'>
             {this.state.loading && <Loader />}
                 <div className='table-head-1st-td'>
                     <TableGenerator columns={columns} data={this.state.Details} fileName={'My Details'} showExportExcel={false}

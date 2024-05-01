@@ -2919,3 +2919,23 @@ float: right;
   display: inline-block;
   border: 1px solid gainsboro;
 }
+
+.Reportheader-row{
+  width: auto !important;
+}
+
+.body-row{
+  width: auto !important;
+}
+
+.table-container::-webkit-scrollbar {
+	width: 8px;
+	height: 8px;
+}
+.table-container::-webkit-scrollbar-thumb {
+	background: #97c2c76e;
+	border-radius: 20px;
+}
+.table-container::-webkit-scrollbar-track {
+	border-radius: 20px;
+}
