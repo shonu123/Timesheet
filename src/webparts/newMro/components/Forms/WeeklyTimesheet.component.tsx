@@ -61,6 +61,7 @@ export interface WeeklyTimesheetState {
         OTSubTotalHrs:any,
         OTItemsTotalTime:string,
         SuperviserIds:any,
+        DelegateToIds:any,
         ReviewerIds:any,
         NotifierIds:any,
         DateOfJoining:Date,
@@ -70,19 +71,22 @@ export interface WeeklyTimesheetState {
         HolidayType:string,
 
         ReportingManagersEmail:any,
+        DelegateToEmails:any,
         ReviewersEmail:any,
         NotifiersEmail:any,
         IsClientApprovalNeeded:boolean,
         IsClientApprovalNeededUI:boolean,
         Revised:boolean,
-        IsSubmitted:boolean
+        IsSubmitted:boolean,
+        IsDelegated:boolean
 
     };
     ClientNames:any;
     Clients_DateOfJoinings:any,
     HolidaysList:any,
     SynergyHolidaysList:any,
-    SuperviserNames:any;
+    SuperviserNames:any,
+    DelegateTo:any,
     Reviewers:any,
     Notifiers:any,
     currentWeeklyRowsCount:any,
@@ -177,6 +181,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                 WeeklySubTotalHrs:[],
                 OTSubTotalHrs:[],
                 SuperviserIds:[],
+                DelegateToIds:[],
                 ReviewerIds:[],
                 NotifierIds:[],
                 DateOfJoining:new Date(),
@@ -186,18 +191,21 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                 HolidayType:'',
 
                 ReportingManagersEmail:[],
+                DelegateToEmails:[],
                 ReviewersEmail:[],
                 NotifiersEmail:[],
                 IsClientApprovalNeeded:false,
                 IsClientApprovalNeededUI:false,
                 Revised:false,
-                IsSubmitted:false
+                IsSubmitted:false,
+                IsDelegated:false
             },
             ClientNames:[],
             Clients_DateOfJoinings:[],
             HolidaysList:[],
             SynergyHolidaysList:[],
             SuperviserNames:[],
+            DelegateTo:[],
             Reviewers:[],
             Notifiers:[],
             currentWeeklyRowsCount:1,
@@ -290,7 +298,6 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
         highlightCurrentNav("weeklytimesheet");
          this.setState({ loading: true });
          this.loadWeeklyTimeSheetData(this.state.currentUserId);
-    
     }
     //functions related to  initial loading
     private async loadWeeklyTimeSheetData(currentUserId) {
@@ -298,7 +305,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
         var ClientsFromClientMaster:any;
         var Client=[];
         let [clientMaster,groups] = await Promise.all([
-            this.oweb.lists.getByTitle('Client').items.filter("IsActive eq 1").select("Title,*").orderBy("Title",true).getAll(),
+            this.oweb.lists.getByTitle('Client').items.filter("IsActive eq 1").select("Title,DelegateTo/Id,DelegateTo/EMail,*").expand("DelegateTo").orderBy("Title",true).getAll(),
             sp.web.currentUser.groups()
         ]);
         // console.log("current user deatils")
@@ -351,7 +358,11 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
         ClientsFromClientMaster.filter(ClientItem=>{ //to filter only active client names
             Client.filter(employeeItem=>{
                 if(ClientItem.Title.toLowerCase()==employeeItem.ClientName.toLowerCase())
-                this.state.ClientNames.push(employeeItem.ClientName)
+                {
+                    this.state.ClientNames.push(employeeItem.ClientName);
+                    // if(ClientItem.hasOwnProperty("DelegateTo"))
+                    // ClientItem.DelegateTo.map(i=>(this.state.DelegateTo.push({"ClientName":ClientItem.ClientName,"DelegateToId":i.Id,"DelegateToEmail":i.EMail})));
+                }
             });
         });
          //For getting Dateofjoining,DescriptionMandatory,ProjectCOde Mandatory,WeekStartday of selected client
@@ -412,8 +423,8 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
     private async getItemData(TimesheetID){
         var ClientNames: any;
         let filterQuery = "ID eq '"+TimesheetID+"'";
-        let selectQuery = "Initiator/EMail,Reviewers/EMail,ReportingManager/EMail,Notifiers/EMail,*";
-        let data = await sp.web.lists.getByTitle(this.listName).items.filter(filterQuery).select(selectQuery).expand("Initiator,Reviewers,ReportingManager,Notifiers").get();
+        let selectQuery = "Initiator/EMail,Reviewers/EMail,ReportingManager/EMail,DelegateTo/EMail,Notifiers/EMail,*";
+        let data = await sp.web.lists.getByTitle(this.listName).items.filter(filterQuery).select(selectQuery).expand("Initiator,Reviewers,ReportingManager,DelegateTo,Notifiers").get();
         // console.log(data);
         if(data.length==0){   //for deleted or not founded record
             this.setState({ActionToasterMessage:'Success-Invalid',redirect:true});
@@ -445,13 +456,17 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
         trFormdata.IsClientApprovalNeededUI=false;//default value as false
         trFormdata.Revised=data[0].Revised;
         trFormdata.IsSubmitted=data[0].IsSubmitted;
+        trFormdata.IsDelegated=data[0].IsDelegated;
         let EmpEmail=[];
         let RMEmail=[];
+        let DelToEmail=[];
         let ReviewEmail=[];
         let NotifyEmail=[];
         EmpEmail.push(data[0].Initiator.EMail);
         if(data[0].hasOwnProperty("ReportingManager"))   
         data[0].ReportingManager.map(i=>(RMEmail.push(i.EMail)));
+        if(data[0].hasOwnProperty("DelegateTo"))   
+        data[0].DelegateTo.map(i=>(DelToEmail.push(i.EMail)));
         if(data[0].hasOwnProperty("Reviewers"))        
         data[0].Reviewers.map(i=>(ReviewEmail.push(i.EMail)));
         if(data[0].hasOwnProperty("Notifiers")) 
@@ -460,6 +475,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
         trFormdata.CommentsHistoryData=[];
        
         trFormdata.ReportingManagersEmail=RMEmail;
+        trFormdata.DelegateToEmails=DelToEmail;
         trFormdata.ReviewersEmail=ReviewEmail;
         trFormdata.NotifiersEmail=NotifyEmail;
         trFormdata.WeekStartDay=this.state.weeks[trFormdata.WeekStartDate.getDay()];
@@ -1154,16 +1170,18 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                 WeeklySubTotalHrs:JSON.stringify(formdata.WeeklySubTotalHrs),
                 OTSubTotalHrs:JSON.stringify(formdata.OTSubTotalHrs),
                 ReportingManagerId:{"results":formdata.SuperviserIds},
+               // DelegateToId:{"results":formdata.DelegateToIds},
                 ReviewersId:{"results":formdata.ReviewerIds},
                 NotifiersId:{"results":formdata.NotifierIds},
                 Comments:formdata.Comments,
-            //    IsClientApprovalNeed:formdata.IsClientApprovalNeededUI,
+               //IsClientApprovalNeed:formdata.IsClientApprovalNeededUI,
                Revised:formdata.Revised
             }
             if(Action.toLowerCase()=="btnsave")
             {
                     postObject['Status']=StatusType.Save;
                     postObject['PendingWith']="Initiator";
+                   postObject['AssignedToId']={"results":[this.state.currentUserId]};
             }
             else if(Action.toLowerCase()=="btnsubmit")
               {
@@ -1185,6 +1203,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                     postObject['Status']=StatusType.Submit;
                     postObject['PendingWith']="Manager";
                     postObject['DateSubmitted']=new Date();
+                    postObject['AssignedToId']={"results":formdata.SuperviserIds};
                    }
                    else
                    {
@@ -1193,6 +1212,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                            postObject['Status']=StatusType.Submit;
                            postObject['PendingWith']="Manager";
                            postObject['DateSubmitted']=new Date();
+                           postObject['AssignedToId']={"results":formdata.SuperviserIds};
                        }
                        else{
                         if(StatusType.Save==formdata.Status||StatusType.Revoke==formdata.Status||StatusType.ManagerReject==formdata.Status)
@@ -1200,6 +1220,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                             postObject['Status']=StatusType.Submit;
                             postObject['PendingWith']="Manager";
                             postObject['DateSubmitted']=new Date();
+                            postObject['AssignedToId']={"results":formdata.SuperviserIds};
                             //Condition for Reviewer reject / Manager reject scenarios changed to save
                             if(formdata.CommentsHistoryData.length>2)
                             {
@@ -1210,11 +1231,13 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                                     postObject['Status']=StatusType.ManagerApprove;
                                     postObject['PendingWith']="Reviewer";
                                     postObject['DateSubmitted']=new Date();
+                                    postObject['AssignedToId']={"results":formdata.ReviewerIds};
                                 }else
                                 {
                                     postObject['Status']=StatusType.Submit;
                                     postObject['PendingWith']="Manager";
                                     postObject['DateSubmitted']=new Date();
+                                    postObject['AssignedToId']={"results":formdata.SuperviserIds};
                                 }
                             }
                          }
@@ -1224,6 +1247,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                              postObject['Status']=StatusType.ManagerApprove;
                              postObject['PendingWith']="Reviewer";
                              postObject['DateSubmitted']=new Date();
+                             postObject['AssignedToId']={"results":formdata.ReviewerIds};
                          }
                        }
                    }
@@ -1257,6 +1281,14 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                 RMEmail.push(item.ReportingManagerEmail)
             }
         }
+        // for( var item of this.state.DelegateTo)
+        // {
+        //     if(item.ClientName.toLowerCase()==clientVal.toLowerCase())
+        //     {
+        //         Formdata.DelegateToIds.push(item.DelegateToId);
+        //         Formdata.DelegateToEmails.push(item.DelegateToEmail);
+        //     }
+        // }
         for( var item of this.state.Reviewers)
         {
             if(item.ClientName.toLowerCase()==clientVal.toLowerCase())
@@ -1332,10 +1364,12 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                     {
                         postObject['Status']=StatusType.Approved;
                         postObject['PendingWith']="NA";
+                        postObject['AssignedToId']={"results":[]};
                         break;
                     }else{
                         postObject['Status']=StatusType.ManagerApprove;
                         postObject['PendingWith']="Reviewer";
+                        postObject['AssignedToId']={"results":formdata.ReviewerIds};
                         break;
                     }
             //case StatusType.InProgress:
@@ -1343,6 +1377,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                 formdata.CommentsHistoryData.push({"Action":StatusType.Approved,"Role":"Reviewer","User":this.props.spContext.userDisplayName,"Comments":this.state.trFormdata.Comments,"Date":new Date().toISOString()})
                 postObject['Status']=StatusType.Approved;
                 postObject['PendingWith']="NA";
+                postObject['AssignedToId']={"results":[]};
                 break;
         }
              postObject["CommentsHistory"]=JSON.stringify(formdata.CommentsHistoryData),
@@ -1361,6 +1396,8 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                 formdata.CommentsHistoryData.push({"Action":StatusType.Revoke,"Role":user,"User":this.props.spContext.userDisplayName,"Comments":this.state.trFormdata.Comments,"Date":new Date().toISOString()})
                 postObject['Status']=StatusType.Revoke;
                 postObject['PendingWith']="Initiator";
+                postObject['AssignedToId']={"results":[this.state.currentUserId]};
+                postObject['IsClientApprovalNeed']=false;
                 //if(formdata.Status==StatusType.Approved)
                 if(formdata.Status==StatusType.ManagerApprove)
                 postObject['Revised']=true;
@@ -1388,6 +1425,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                 postObject['Revised']=true;
             }
             postObject['PendingWith']="Initiator";
+            postObject['AssignedToId']={"results":[this.state.currentUserId]};
             postObject["CommentsHistory"]=JSON.stringify(formdata.CommentsHistoryData),
             postObject['IsClientApprovalNeed']=formdata.IsClientApprovalNeededUI;
             this.setState({errorMessage : '',trFormdata:formdata});
@@ -1404,20 +1442,20 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
         if(formObject.ClientName.toLowerCase().includes("synergy"))
         {   
             if(formObject.Comments.trim()=="")
-            tableContent = {'Name':this.state.trFormdata.Name,'Client':this.state.trFormdata.ClientName,'Submitted Date':`${this.state.trFormdata.DateSubmitted.getMonth() + 1}/${this.state.trFormdata.DateSubmitted.getDate()}/${this.state.trFormdata.DateSubmitted.getFullYear()}`,'Office  Hours':this.state.trFormdata.SynergyOfficeHrs[0].Total,'Holiday Hours':this.state.trFormdata.ClientHolidayHrs[0].Total,'PTO Hours':this.state.trFormdata.PTOHrs[0].Total,'Grand Total Hours':this.state.trFormdata.Total[0].Total}
+            tableContent = {'Name':this.state.trFormdata.Name,'Client':this.state.trFormdata.ClientName,'Submitted Date':`${this.state.trFormdata.DateSubmitted.getMonth() + 1}/${this.state.trFormdata.DateSubmitted.getDate()}/${this.state.trFormdata.DateSubmitted.getFullYear()}`,'Office  Hours':this.state.trFormdata.SynergyOfficeHrs[0].Total,'Holiday Hours':this.state.trFormdata.ClientHolidayHrs[0].Total,'Time Off Hours':this.state.trFormdata.PTOHrs[0].Total,'Grand Total Hours':this.state.trFormdata.Total[0].Total}
             else
-            tableContent = {'Name':this.state.trFormdata.Name,'Client':this.state.trFormdata.ClientName,'Submitted Date':`${this.state.trFormdata.DateSubmitted.getMonth() + 1}/${this.state.trFormdata.DateSubmitted.getDate()}/${this.state.trFormdata.DateSubmitted.getFullYear()}`,'Office  Hours':this.state.trFormdata.SynergyOfficeHrs[0].Total,'Holiday Hours':this.state.trFormdata.ClientHolidayHrs[0].Total,'PTO Hours':this.state.trFormdata.PTOHrs[0].Total,'Grand Total Hours':this.state.trFormdata.Total[0].Total,'Comments':formObject.Comments}
+            tableContent = {'Name':this.state.trFormdata.Name,'Client':this.state.trFormdata.ClientName,'Submitted Date':`${this.state.trFormdata.DateSubmitted.getMonth() + 1}/${this.state.trFormdata.DateSubmitted.getDate()}/${this.state.trFormdata.DateSubmitted.getFullYear()}`,'Office  Hours':this.state.trFormdata.SynergyOfficeHrs[0].Total,'Holiday Hours':this.state.trFormdata.ClientHolidayHrs[0].Total,'Time Off Hours':this.state.trFormdata.PTOHrs[0].Total,'Grand Total Hours':this.state.trFormdata.Total[0].Total,'Comments':formObject.Comments}
         }
         else 
         {
             if(formObject.Comments.trim()=="")
-            tableContent = {'Name':this.state.trFormdata.Name,'Client':this.state.trFormdata.ClientName,'Submitted Date':`${this.state.trFormdata.DateSubmitted.getMonth() + 1}/${this.state.trFormdata.DateSubmitted.getDate()}/${this.state.trFormdata.DateSubmitted.getFullYear()}`,'Billable Hours':formObject.WeeklyItemsTotalTime,'OT Hours':formObject.OTItemsTotalTime,'Total Billable Hours':this.state.trFormdata.BillableSubTotal[0].Total,'Holiday Hours':this.state.trFormdata.ClientHolidayHrs[0].Total,'PTO Hours':this.state.trFormdata.PTOHrs[0].Total,'Grand Total Hours':this.state.trFormdata.Total[0].Total}
+            tableContent = {'Name':this.state.trFormdata.Name,'Client':this.state.trFormdata.ClientName,'Submitted Date':`${this.state.trFormdata.DateSubmitted.getMonth() + 1}/${this.state.trFormdata.DateSubmitted.getDate()}/${this.state.trFormdata.DateSubmitted.getFullYear()}`,'Billable Hours':formObject.WeeklyItemsTotalTime,'OT Hours':formObject.OTItemsTotalTime,'Total Billable Hours':this.state.trFormdata.BillableSubTotal[0].Total,'Holiday Hours':this.state.trFormdata.ClientHolidayHrs[0].Total,'Time Off Hours':this.state.trFormdata.PTOHrs[0].Total,'Grand Total Hours':this.state.trFormdata.Total[0].Total}
             else
-            tableContent = {'Name':this.state.trFormdata.Name,'Client':this.state.trFormdata.ClientName,'Submitted Date':`${this.state.trFormdata.DateSubmitted.getMonth() + 1}/${this.state.trFormdata.DateSubmitted.getDate()}/${this.state.trFormdata.DateSubmitted.getFullYear()}`,'Billable Hours':formObject.WeeklyItemsTotalTime,'OT Hours':formObject.OTItemsTotalTime,'Total Billable Hours':this.state.trFormdata.BillableSubTotal[0].Total,'Holiday Hours':this.state.trFormdata.ClientHolidayHrs[0].Total,'PTO Hours':this.state.trFormdata.PTOHrs[0].Total,'Grand Total Hours':this.state.trFormdata.Total[0].Total,'Comments':formObject.Comments}
+            tableContent = {'Name':this.state.trFormdata.Name,'Client':this.state.trFormdata.ClientName,'Submitted Date':`${this.state.trFormdata.DateSubmitted.getMonth() + 1}/${this.state.trFormdata.DateSubmitted.getDate()}/${this.state.trFormdata.DateSubmitted.getFullYear()}`,'Billable Hours':formObject.WeeklyItemsTotalTime,'OT Hours':formObject.OTItemsTotalTime,'Total Billable Hours':this.state.trFormdata.BillableSubTotal[0].Total,'Holiday Hours':this.state.trFormdata.ClientHolidayHrs[0].Total,'Time Off Hours':this.state.trFormdata.PTOHrs[0].Total,'Grand Total Hours':this.state.trFormdata.Total[0].Total,'Comments':formObject.Comments}
         }
         let sub='';
         let emaildetails={};
-
+        let To=[];
         let CC=[];
         if (this.state.ItemID!=0) { //update existing record
             sp.web.lists.getByTitle(this.listName).items.getById(this.state.ItemID).update(formdata).then((res) => {
@@ -1428,12 +1466,19 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                }
                else if(StatusType.Revoke==formdata.Status)
                {
-                let To=[];
-             
-                    for(const mail of formObject.ReportingManagersEmail)
-                    {
-                        To.push(mail);
-                    }
+                     if(formObject.IsDelegated)
+                     {
+                        for(const mail of formObject.DelegateToEmails)
+                        {
+                            To.push(mail);
+                        }
+                     }
+                     else{
+                         for(const mail of formObject.ReportingManagersEmail)
+                         {
+                             To.push(mail);
+                         }
+                     }
                     for(const mail of formObject.ReviewersEmail)
                     {
                         To.push(mail);
@@ -1443,24 +1488,39 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                 var DashboardURl = 'https://synergycomcom.sharepoint.com/sites/Billing.Timesheet/SitePages/TimeSheet.aspx';
                 emaildetails['body'] = this.emailBodyPreparation(this.siteURL+'/SitePages/TimeSheet.aspx#/WeeklyTimesheet/'+this.state.ItemID,tableContent,emaildetails['bodyString'],this.props.spContext.userDisplayName,DashboardURl);
                 this.sendemail(emaildetails,formdata.Status);
+                // this.setState({loading:false})
+                // customToaster('toster-success',ToasterTypes.Success,'Weekly timesheet '+StatusType.Revoke.toLowerCase()+' successfully',2000)
+                // this.getItemData(this.state.ItemID);
                }
                else if(StatusType.Submit==formdata.Status)
                {
                     sub="Weekly Time Sheet has been "+formdata.Status+"."
-                    emaildetails ={toemail:formObject.ReportingManagersEmail,ccemail:this.state.EmployeeEmail,subject:sub,bodyString:sub,body:'' };
+                    formObject.IsDelegated?To=formObject.DelegateToEmails:To=formObject.ReportingManagersEmail;
+                    emaildetails ={toemail:To,ccemail:this.state.EmployeeEmail,subject:sub,bodyString:sub,body:'' };
                     var DashboardURl = 'https://synergycomcom.sharepoint.com/sites/Billing.Timesheet/SitePages/TimeSheet.aspx';
                     emaildetails['body'] = this.emailBodyPreparation(this.siteURL+'/SitePages/TimeSheet.aspx#/WeeklyTimesheet/'+this.state.ItemID,tableContent,emaildetails['bodyString'],this.props.spContext.userDisplayName,DashboardURl);
                     this.sendemail(emaildetails,formdata.Status);
+                    //this.setState({ActionToasterMessage:'Success-'+StatusType.Submit,loading:false,redirect:true})
+
                }
-               else if(StatusType.Save==formObject.Status)  //save after submit case.
+               else if([StatusType.ReviewerReject,StatusType.Save].includes(formObject.Status))  //submitted after Reviewer Reject or Reviewer reject->save but client Approval not needed or not depends on IsClientApprovalNeeded
             {
                  sub="Weekly Time Sheet has been "+StatusType.Submit+"."
                  if(formObject.IsClientApprovalNeeded)
                  {
-                     for(const mail of formObject.ReportingManagersEmail)
-                     {
-                         CC.push(mail);
-                     }
+                    if(formObject.IsDelegated)
+                    {
+                        for(const mail of formObject.DelegateToEmails)
+                        {
+                            CC.push(mail);
+                        }
+                    }
+                    else{
+                        for(const mail of formObject.ReportingManagersEmail)
+                        {
+                            CC.push(mail);
+                        }
+                    }
                  }
                 for(const mail of formObject.ReviewersEmail)
                 {
@@ -1470,53 +1530,27 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                  var DashboardURl = 'https://synergycomcom.sharepoint.com/sites/Billing.Timesheet/SitePages/TimeSheet.aspx';
                  emaildetails['body'] = this.emailBodyPreparation(this.siteURL+'/SitePages/TimeSheet.aspx#/WeeklyTimesheet/'+this.state.ItemID,tableContent,emaildetails['bodyString'],this.props.spContext.userDisplayName,DashboardURl);
                  this.sendemail(emaildetails,StatusType.Submit);
+                 //this.setState({ActionToasterMessage:'Success-'+StatusType.Submit,loading:false,redirect:true})
+
                }
-              else if(StatusType.ReviewerReject==formObject.Status) //Reviewer rejected but client Approval not needed or not depends on IsClientApprovalNeeded
-            {
-                sub="Weekly Time Sheet has been "+StatusType.Submit+"."
-                if(formObject.IsClientApprovalNeeded)
-                {
-                    for(const mail of formObject.ReportingManagersEmail)
-                    {
-                        CC.push(mail);
-                    }
-                }
-               for(const mail of formObject.ReviewersEmail)
-               {
-                   CC.push(mail);
-               }
-               emaildetails ={toemail:CC,ccemail:this.state.EmployeeEmail,subject:sub,bodyString:sub,body:'' };
-               var DashboardURl = 'https://synergycomcom.sharepoint.com/sites/Billing.Timesheet/SitePages/TimeSheet.aspx';
-               emaildetails['body'] = this.emailBodyPreparation(this.siteURL+'/SitePages/TimeSheet.aspx#/WeeklyTimesheet/'+this.state.ItemID,tableContent,emaildetails['bodyString'],this.props.spContext.userDisplayName,DashboardURl);
-               this.sendemail(emaildetails,StatusType.Submit);
-              }
-            //    else if(StatusType.Approved==formdata.Status)
-            //    {
-            //         sub="Weekly Time Sheet has been approved by Manager."
-            //         CC=this.state.EmployeeEmail;
-            //         for(const mail of formObject.ReportingManagersEmail)
-            //         {
-            //             CC.push(mail);
-            //         }
-            //         for(const mail of formObject.ReviewersEmail)
-            //         {
-            //             CC.push(mail);
-            //         }
-            //         emaildetails ={toemail:this.state.EmployeeEmail,ccemail:CC,subject:sub,bodyString:sub,body:'' };
-            //         var DashboardURl = 'https://synergycomcom.sharepoint.com/sites/Billing.Timesheet/SitePages/TimeSheet.aspx';
-            //         emaildetails['body'] = this.emailBodyPreparation(this.siteURL+'/SitePages/TimeSheet.aspx#/WeeklyTimesheet/'+this.state.ItemID,tableContent,emaildetails['bodyString'],this.props.spContext.userDisplayName,DashboardURl);
-            //         this.sendemail(emaildetails,formdata.Status);
-            //    }
-            else if([StatusType.ManagerApprove,StatusType.Approved].includes(formdata.Status))
+               else if([StatusType.ManagerApprove,StatusType.Approved].includes(formdata.Status))
                {
                     sub=formdata.Status==StatusType.Approved?"Weekly Time Sheet has been "+StatusType.ReviewerApprove+".":"Weekly Time Sheet has been "+formdata.Status+".";
-                    let To=[];
                     if(formdata.Status==StatusType.ManagerApprove)
                     {
                         To=this.state.EmployeeEmail;
-                        for(const mail of formObject.ReportingManagersEmail)
+                        if(formObject.IsDelegated)
                         {
-                            CC.push(mail);
+                            for(const mail of formObject.DelegateToEmails)
+                            {
+                                CC.push(mail);
+                            }
+                        }
+                        else{
+                            for(const mail of formObject.ReportingManagersEmail)
+                            {
+                                CC.push(mail);
+                            }
                         }
                         for(const mail of formObject.ReviewersEmail)
                         {
@@ -1525,9 +1559,18 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                     }
                     else if(formdata.Status==StatusType.Approved){
                         To=this.state.EmployeeEmail;
-                        for(const mail of formObject.ReportingManagersEmail)
+                        if(formObject.IsDelegated)
                         {
-                            CC.push(mail);
+                            for(const mail of formObject.DelegateToEmails)
+                            {
+                                CC.push(mail);
+                            }
+                        }
+                        else{
+                            for(const mail of formObject.ReportingManagersEmail)
+                            {
+                                CC.push(mail);
+                            }
                         }
                         for(const mail of formObject.ReviewersEmail)
                         {
@@ -1539,16 +1582,25 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                     var DashboardURl = 'https://synergycomcom.sharepoint.com/sites/Billing.Timesheet/SitePages/TimeSheet.aspx';
                     emaildetails['body'] = this.emailBodyPreparation(this.siteURL+'/SitePages/TimeSheet.aspx#/WeeklyTimesheet/'+this.state.ItemID,tableContent,emaildetails['bodyString'],this.props.spContext.userDisplayName,DashboardURl);
                     this.sendemail(emaildetails,StatusType.Approved);
+                    //this.setState({ActionToasterMessage:'Success-'+StatusType.Approved,loading:false,redirect:true})
                }
                else if([StatusType.ManagerReject,StatusType.ReviewerReject].includes(formdata.Status))
                {
                 sub="Weekly Time Sheet has been "+formdata.Status+". Please re-submit with necessary details."
-                        CC=this.state.EmployeeEmail;
                         if(formObject.IsClientApprovalNeeded)
                         {
-                            for(const mail of formObject.ReportingManagersEmail)
+                            if(formObject.IsDelegated)
                             {
-                                CC.push(mail);
+                                for(const mail of formObject.DelegateToEmails)
+                                {
+                                    CC.push(mail);
+                                }
+                            }
+                            else{
+                                for(const mail of formObject.ReportingManagersEmail)
+                                {
+                                    CC.push(mail);
+                                }
                             }
                         }
                        
@@ -1560,6 +1612,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                        var DashboardURl = 'https://synergycomcom.sharepoint.com/sites/Billing.Timesheet/SitePages/TimeSheet.aspx';
                        emaildetails['body'] = this.emailBodyPreparation(this.siteURL+'/SitePages/TimeSheet.aspx#/WeeklyTimesheet/'+this.state.ItemID,tableContent,emaildetails['bodyString'],this.props.spContext.userDisplayName,DashboardURl);
                        this.sendemail(emaildetails,formdata.Status);
+                       //this.setState({ActionToasterMessage:'Success-'+StatusType.Reject,loading:false,redirect:true})
                } 
             }, (error) => {
                 this.setState({ActionToasterMessage:'Error',loading:false,redirect:true})
@@ -1583,6 +1636,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                          var DashboardURl = 'https://synergycomcom.sharepoint.com/sites/Billing.Timesheet/SitePages/TimeSheet.aspx';
                          emaildetails['body'] = this.emailBodyPreparation(this.siteURL+'/SitePages/TimeSheet.aspx#/WeeklyTimesheet/'+ItemID,tableContent,emaildetails['bodyString'],this.props.spContext.userDisplayName,DashboardURl);
                          this.sendemail(emaildetails,formdata.Status);
+                         //this.setState({ActionToasterMessage:'Success-'+StatusType.Submit,loading:false,redirect:true})
                     }
                 }, (error) => {
                     console.log(error);
@@ -1632,7 +1686,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
            this.setState({ActionToasterMessage:'Success-'+StatusType.Reject,loading:false,redirect:true})
            else if(ActionStatus==StatusType.Revoke)
            {
-            this.setState({loading:false})
+               this.setState({loading:false})
                customToaster('toster-success',ToasterTypes.Success,'Weekly timesheet '+StatusType.Revoke.toLowerCase()+' successfully',2000)
                this.getItemData(this.state.ItemID);
            }
@@ -1651,10 +1705,10 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
         let prev = `${prevDate.getMonth() + 1}/${prevDate.getDate()}/${prevDate.getFullYear()}`
         let next = `${nextDate.getMonth() + 1}/${nextDate.getDate()}/${nextDate.getFullYear()}`
          filterQuery = "WeekStartDate gt '" + prev + "' and WeekStartDate lt '" + next + "'"
-         let selectQuery = "Initiator/ID,Initiator/EMail,Reviewers/EMail,ReportingManager/EMail,Notifiers/EMail,*"
+         let selectQuery = "Initiator/ID,Initiator/EMail,Reviewers/EMail,ReportingManager/EMail,DelegateTo/EMail,Notifiers/EMail,*"
          let filterQuery2 = " and ClientName eq '" + ClientName + "' and Initiator/ID eq '" + this.state.currentUserId + "'"
          filterQuery += filterQuery2;
-          ExistRecordData = await sp.web.lists.getByTitle('WeeklyTimeSheet').items.filter(filterQuery).select(selectQuery).expand('Initiator,Reviewers,ReportingManager,Notifiers').get();
+          ExistRecordData = await sp.web.lists.getByTitle('WeeklyTimeSheet').items.filter(filterQuery).select(selectQuery).expand('Initiator,Reviewers,ReportingManager,DelegateTo,Notifiers').get();
         //  console.log(ExistRecordData);
         }
             if(ExistRecordData.length>=1)
@@ -1684,13 +1738,17 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                 trFormdata.IsClientApprovalNeededUI=false;
                 trFormdata.Revised=ExistRecordData[0].Revised;
                 trFormdata.IsSubmitted=ExistRecordData[0].IsSubmitted;
+                trFormdata.IsDelegated=ExistRecordData[0].IsDelegated;
                 let EmpEmail=[];
                 let RMEmail=[];
+                let DelToEmail=[];
                 let ReviewEmail=[];
                 let NotifyEmail=[];
                 EmpEmail.push(ExistRecordData[0].Initiator.EMail); 
                 if(ExistRecordData[0].hasOwnProperty("ReportingManager"))   
                 ExistRecordData[0].ReportingManager.map(i=>(RMEmail.push(i.EMail)));
+                if(ExistRecordData[0].hasOwnProperty("DelegateTo"))        
+                ExistRecordData[0].DelegateTo.map(i=>(DelToEmail.push(i.EMail)));
                 if(ExistRecordData[0].hasOwnProperty("Reviewers"))        
                 ExistRecordData[0].Reviewers.map(i=>(ReviewEmail.push(i.EMail)));
                 if(ExistRecordData[0].hasOwnProperty("Notifiers"))  
@@ -1699,6 +1757,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                 trFormdata.CommentsHistoryData=[];
                
                 trFormdata.ReportingManagersEmail=RMEmail;
+                trFormdata.DelegateToEmails=DelToEmail;
                 trFormdata.ReviewersEmail=ReviewEmail;
                 trFormdata.NotifiersEmail=NotifyEmail;
                 this.setState({ trFormdata:trFormdata,currentWeeklyRowsCount:trFormdata.WeeklyItemsData.length,currentOTRowsCount: trFormdata.OTItemsData.length,ItemID:ExistRecordData[0].ID,EmployeeEmail:EmpEmail,errorMessage:'',loading:false,showBillable : false, showNonBillable: false});
@@ -1800,12 +1859,14 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                 trFormdata.OTSubTotalHrs.push({Type:"OT",Mon: '0.00',Tue: '0.00',Wed:'0.00',Thu: '0.00',Fri: '0.00',Sat: '0.00',Sun: '0.00',Total: '0.00',});
                 trFormdata.Total.push({Type:"Total",Mon: '0.00',Tue: '0.00',Wed:'0.00',Thu: '0.00',Fri: '0.00',Sat: '0.00',Sun: '0.00',Total: '0.00',});
                 trFormdata.ReportingManagersEmail=[];
+                trFormdata.DelegateToEmails=[];
                 trFormdata.ReviewersEmail=[];
                 trFormdata.NotifiersEmail=[];
                 trFormdata.IsClientApprovalNeeded=false;
                 trFormdata.IsClientApprovalNeededUI=false;
                 trFormdata.Revised=false;
                 trFormdata.IsSubmitted=false;
+                trFormdata.IsDelegated=false;
 
                 let WeekStartDate=([null,undefined,''].includes(trFormdata.WeekStartDate)?new Date():new Date(trFormdata.WeekStartDate.getMonth()+1+"/"+trFormdata.WeekStartDate.getDate()+"/"+trFormdata.WeekStartDate.getFullYear()));
                 let DateOfjoining=new Date(trFormdata.DateOfJoining.getMonth()+1+"/"+trFormdata.DateOfJoining.getDate()+"/"+trFormdata.DateOfJoining.getFullYear());
@@ -1932,12 +1993,14 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
             trFormdata.OTSubTotalHrs.push({Type:"OT",Mon: '0.00',Tue: '0.00',Wed:'0.00',Thu: '0.00',Fri: '0.00',Sat: '0.00',Sun: '0.00',Total: '0.00',});
             trFormdata.Total.push({Type:"Total",Mon: '0.00',Tue: '0.00',Wed:'0.00',Thu: '0.000',Fri: '0.00',Sat: '0.00',Sun: '0.00',Total: '0.00',});
             trFormdata.ReportingManagersEmail=[];
+            trFormdata.DelegateToEMails=[];
             trFormdata.ReviewersEmail=[];
             trFormdata.NotifiersEmail=[];
             trFormdata.IsClientApprovalNeeded=false;
             trFormdata.IsClientApprovalNeededUI=false;
             trFormdata.Revised=false;
             trFormdata.IsSubmitted=false;
+            trFormdata.IsDelegated=false;
 
             let WeekStartDate=([null,undefined,''].includes(trFormdata.WeekStartDate)?new Date():new Date(trFormdata.WeekStartDate.getMonth()+1+"/"+trFormdata.WeekStartDate.getDate()+"/"+trFormdata.WeekStartDate.getFullYear()));
             let DateOfjoining=new Date(trFormdata.DateOfJoining.getMonth()+1+"/"+trFormdata.DateOfJoining.getDate()+"/"+trFormdata.DateOfJoining.getFullYear());
@@ -2005,7 +2068,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
     private showApproveAndRejectButton(trFormdata) {
         let value = trFormdata.Status != StatusType.Save ? true : false;
         let userGroups = this.state.UserGoups;
-        let userEmail = this.props.spContext.userEmail
+        let userEmail = this.props.spContext.userEmail;
         let isAdmin = false;
         if(userGroups.includes('Timesheet Administrators')){
             isAdmin = true
@@ -2046,19 +2109,35 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
             this.setState({ showSubmitSavebtn: false,showRevokebtn:false })
         }
         if(value){
-        let RMEmails = trFormdata.ReportingManagersEmail
-        let RevEmails = trFormdata.ReviewersEmail
+        let RMEmails = trFormdata.ReportingManagersEmail;
+        let DelToEmails=trFormdata.DelegateToEmails;
+        let RevEmails = trFormdata.ReviewersEmail;
         if(userEmail == this.state.EmployeeEmail){
             value = false;
         }
-        if (RMEmails.includes(userEmail)) {
-            if (trFormdata.Pendingwith == "Manager") {
-                value = true;
-                this.setState({ showApproveRejectbtn: value,IsReviewer:false })
-                return false;
+        if(trFormdata.IsDelegated)
+        {
+            if (DelToEmails.includes(userEmail)) {
+                if (trFormdata.Pendingwith == "Manager") {
+                    value = true;
+                    this.setState({ showApproveRejectbtn: value,IsReviewer:false })
+                    return false;
+                }
+                else {
+                    value = false
+                }
             }
-            else {
-                value = false
+        }
+        else{
+            if (RMEmails.includes(userEmail)) {
+                if (trFormdata.Pendingwith == "Manager") {
+                    value = true;
+                    this.setState({ showApproveRejectbtn: value,IsReviewer:false })
+                    return false;
+                }
+                else {
+                    value = false
+                }
             }
         }
         if (RevEmails.includes(userEmail)) {
@@ -2074,7 +2153,9 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
         }
         if(!RMEmails.includes(userEmail)){
             if(!RevEmails.includes(userEmail))
+            { if(!DelToEmails.includes(userEmail))
                 value = false;
+            }       
         }
         this.setState({ showApproveRejectbtn: value,IsReviewer:false  })
         }
@@ -2085,16 +2166,20 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
     }
      private userAccessableRecord(trFormdata){
         let currentUserEmail = this.props.spContext.userEmail;
-        let userEmail = this.state.EmployeeEmail
-        let NotifiersEmail =trFormdata.NotifiersEmail 
-        let ReviewerEmails =trFormdata.ReviewersEmail
-        let ApproverEmails =trFormdata.ReportingManagersEmail
-        let userGroups = this.state.UserGoups
+        let userEmail = this.state.EmployeeEmail;
+        let NotifiersEmail =trFormdata.NotifiersEmail ;
+        let ReviewerEmails =trFormdata.ReviewersEmail;
+        let ApproverEmails =trFormdata.ReportingManagersEmail;
+        let DelegateToEmails=trFormdata.DelegateToEmails;
+        let userGroups = this.state.UserGoups;
         let isAccessable = false;
         if(userEmail.includes(currentUserEmail)){
             isAccessable = true
         }
         else if(ApproverEmails.includes(currentUserEmail)){
+            isAccessable = true
+        }
+        else if(DelegateToEmails.includes(currentUserEmail)){
             isAccessable = true
         }
         else if(ReviewerEmails.includes(currentUserEmail)){
