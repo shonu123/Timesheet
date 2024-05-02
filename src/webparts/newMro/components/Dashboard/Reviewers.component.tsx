@@ -64,7 +64,8 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
         let date = `${dateFilter.getMonth() + 1}/${dateFilter.getDate()}/${dateFilter.getFullYear()}`
         var filterQuery = "and WeekStartDate ge '"+date+"'"
 
-        var filterString = "Reviewers/Id eq '"+userId+"' and PendingWith eq 'Reviewer' and Status eq '"+StatusType.ManagerApprove+"'"
+        // var filterString = "Reviewers/Id eq '"+userId+"' and PendingWith eq 'Reviewer' and Status eq '"+StatusType.ManagerApprove+"'"
+        var filterString = "AssignedTo/Id eq '"+userId+"'";
 
         sp.web.lists.getByTitle('WeeklyTimeSheet').items.top(5000).filter(filterString+filterQuery).expand("Reviewers").select('Reviewers/Title','*').orderBy('Modified', false).get()
             .then((response) => {
@@ -214,13 +215,17 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
         })
         commentsObj = JSON.stringify(commentsObj);
         var filterString = "Employee/ID eq '"+data[0].Initiator.ID+"' and ClientName eq '"+data[0].ClientName+"'"
-        var selectString = 'Employee/EMail,Reviewers/EMail,ReportingManager/EMail,Notifiers/EMail,*'
-        let emailData = await sp.web.lists.getByTitle('EmployeeMaster').items.filter(filterString).select(selectString).expand('Employee,Reviewers,ReportingManager,Notifiers').get();
+        var selectString = 'Employee/EMail,Reviewers/EMail,ReportingManager/EMail,DelegateTo/EMail,*'
+        let emailData = await sp.web.lists.getByTitle('EmployeeMaster').items.filter(filterString).select(selectString).expand('Employee,Reviewers,ReportingManager,DelegateTo').get();
         // console.log(emailData)
         let toEmail = [];
         let ccEmail = [];
         toEmail.push(emailData[0].Employee.EMail);
-        let approvers = emailData[0].ReportingManager
+        // let approvers = emailData[0].ReportingManager
+        let isDeligated = emailData[0].IsDelegated
+        let approvers;
+        isDeligated?emailData[0].DelegateTo:approvers = emailData[0].ReportingManager
+
         for (const user of approvers) {
             if(!ccEmail.includes(user.EMail))
             ccEmail.push(user.EMail);
@@ -238,7 +243,7 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
         }
         // this.setState({comments : comments })
         let date = new Date(data[0].DateSubmitted)
-        let tableContent = {'Name':data[0].Name,'Client':data[0].ClientName,'Submitted Date':`${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`,'Billable Hours':data[0].WeeklyTotalHrs,'OT Hours':data[0].OTTotalHrs,'Total Billable Hours':data[0].BillableTotalHrs,'Holiday Hours':JSON.parse(data[0].ClientHolidayHrs)[0].Total,'PTO Hours':JSON.parse(data[0].PTOHrs)[0].Total,'Total Hours':data[0].GrandTotal}
+        let tableContent = {'Name':data[0].Name,'Client':data[0].ClientName,'Submitted Date':`${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`,'Billable Hours':data[0].WeeklyTotalHrs,'OT Hours':data[0].OTTotalHrs,'Total Billable Hours':data[0].BillableTotalHrs,'Holiday Hours':JSON.parse(data[0].ClientHolidayHrs)[0].Total,'Time Off Hours':JSON.parse(data[0].PTOHrs)[0].Total,'Total Hours':data[0].GrandTotal}
         // console.log(tableContent)
         this.updateStatus(recordId,StatusType.Approved,commentsObj,toEmail,ccEmail,tableContent)
     }
@@ -267,13 +272,15 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
             })
             commentsObj = JSON.stringify(commentsObj);
             // var filterString = "Employee/ID eq '"+data[0].Initiator.ID+"' and ClientName eq '"+data[0].ClientName+"'"
-            var selectString = 'Initiator/EMail,Reviewers/EMail,ReportingManager/EMail,Notifiers/EMail,*'
-            let emailData = await sp.web.lists.getByTitle('WeeklyTimeSheet').items.filter(filterString).select(selectString).expand('Initiator,Reviewers,ReportingManager,Notifiers').get();
+            var selectString = 'Initiator/EMail,Reviewers/EMail,ReportingManager/EMail,DelegateTo/EMail,*'
+            let emailData = await sp.web.lists.getByTitle('WeeklyTimeSheet').items.filter(filterString).select(selectString).expand('Initiator,Reviewers,ReportingManager,DelegateTo').get();
             // console.log(emailData)
             let toEmail = [];
             let ccEmail = [];
+            let isDeligated = emailData[0].IsDelegated
             toEmail.push(emailData[0].Initiator.EMail);
-            let approvers = emailData[0].ReportingManager
+            let approvers;
+            isDeligated?emailData[0].DelegateTo:approvers = emailData[0].ReportingManager
             if(this.state.IsClientApprovalNeed){
                 for (const user of approvers) {
                     if(!ccEmail.includes(user.EMail))
@@ -294,10 +301,10 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
             let tableContent = {}
             let date = new Date(data[0].DateSubmitted)
             if(data[0].ClientName.toLowerCase().includes("synergy")){
-                tableContent = {'Name':data[0].Name,'Client Name':data[0].ClientName,'Submitted Date':`${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`,'Office Hours':JSON.parse(data[0].SynergyOfficeHrs)[0].Total,'Holiday Hours':JSON.parse(data[0].ClientHolidayHrs)[0].Total,'PTO Hours':JSON.parse(data[0].PTOHrs)[0].Total,'Grand Total Hours':data[0].GrandTotal,'Comments':this.state.comments}
+                tableContent = {'Name':data[0].Name,'Client Name':data[0].ClientName,'Submitted Date':`${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`,'Office Hours':JSON.parse(data[0].SynergyOfficeHrs)[0].Total,'Holiday Hours':JSON.parse(data[0].ClientHolidayHrs)[0].Total,'Time Off Hours':JSON.parse(data[0].PTOHrs)[0].Total,'Grand Total Hours':data[0].GrandTotal,'Comments':this.state.comments}
             }
             else{
-                tableContent = {'Name':data[0].Name,'Client Name':data[0].ClientName,'Submitted Date':`${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`,'Billable Hours':data[0].WeeklyTotalHrs,'OT Hours':data[0].OTTotalHrs,'Total Billable Hours':data[0].BillableTotalHrs,'Holiday Hours':JSON.parse(data[0].ClientHolidayHrs)[0].Total,'PTO Hours':JSON.parse(data[0].PTOHrs)[0].Total,'Grand Total Hours':data[0].GrandTotal,'Comments':this.state.comments}
+                tableContent = {'Name':data[0].Name,'Client Name':data[0].ClientName,'Submitted Date':`${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`,'Billable Hours':data[0].WeeklyTotalHrs,'OT Hours':data[0].OTTotalHrs,'Total Billable Hours':data[0].BillableTotalHrs,'Holiday Hours':JSON.parse(data[0].ClientHolidayHrs)[0].Total,'Time Off Hours':JSON.parse(data[0].PTOHrs)[0].Total,'Grand Total Hours':data[0].GrandTotal,'Comments':this.state.comments}
             }
             // console.log(tableContent)
 
@@ -420,7 +427,7 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
                     sortable: true,
                 },
                 {
-                    name: "PTO",
+                    name: "Time Off",
                     selector: (row, i) => row.PTOHrs,
                     width: '110px',
                     sortable: true,

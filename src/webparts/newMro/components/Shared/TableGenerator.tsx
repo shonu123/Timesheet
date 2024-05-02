@@ -4,7 +4,7 @@ import ExportExcel from './ExportExcel';
 import Search from './Search';
 import { NavLink } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faPlus } from '@fortawesome/free-solid-svg-icons';
+import { faPlus,faArrowsTurnRight } from '@fortawesome/free-solid-svg-icons';
 import ExportExcelwithStyles from './ExportExcelwithStyles'
 const customStyles = {
   rows: {
@@ -54,9 +54,13 @@ interface TableGeneratorProps {
   customBtnClass?:string;
   searchBoxLeft?:boolean;
   wrapColumns?:any;
+  selectableRows?:boolean;
+  handleSelectedRows?:any;
+  customButton?:boolean;
+  customButtonClick?:any;
 }
 
-const TableGenerator = ({ columns, data, fileName,showExportExcel, ExportExcelCustomisedColumns,ExportExcelCustomisedData, prvPageNumber,prvSort,prvDirection,onChange,onSortChange,onSortDirection,showAddButton,btnSpanID,btnTitle,navigateOnBtnClick,btnCaption,customBtnClass,btnDivID,searchBoxLeft,wrapColumns}: TableGeneratorProps) => {
+const TableGenerator = ({ columns, data, fileName,showExportExcel, ExportExcelCustomisedColumns,ExportExcelCustomisedData, prvPageNumber,prvSort,prvDirection,onChange,onSortChange,onSortDirection,showAddButton,btnSpanID,btnTitle,navigateOnBtnClick,btnCaption,customBtnClass,btnDivID,searchBoxLeft,wrapColumns,selectableRows,handleSelectedRows,customButton=false,customButtonClick}: TableGeneratorProps) => {
   //let lsMyrequests = localStorage.getItem('PrvData');
  // const tableData = { columns, data };
   const [totalData, setData] = useState([]);
@@ -91,6 +95,14 @@ const TableGenerator = ({ columns, data, fileName,showExportExcel, ExportExcelCu
             setSearchText(value);
           }} ></Search>
         </div>
+        {
+          customButton&&
+          <div className="col-6 text-right">
+          <div style={{ paddingLeft: '10px' }} className={customBtnClass} id={""+btnDivID}>
+            <button type="button" id="" className={"SubmitButtons btn"}  onClick={customButtonClick}><span className='position-static' id={""+btnSpanID}><FontAwesomeIcon icon={faArrowsTurnRight}></FontAwesomeIcon>{btnCaption}</span></button>
+            </div> 
+          </div>
+        }
         {showAddButton&&
               <div className="col-6 text-right">
                   <div style={{ paddingLeft: '10px' }} className={customBtnClass} id={""+btnDivID}>
@@ -126,6 +138,8 @@ const TableGenerator = ({ columns, data, fileName,showExportExcel, ExportExcelCu
           onSort={onSortChange}
           defaultSortFieldId={prvSort}
           defaultSortAsc={prvDirection}
+          selectableRows={selectableRows}
+          onSelectedRowsChange={handleSelectedRows}
         />
         
       </div>

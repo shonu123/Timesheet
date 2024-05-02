@@ -132,7 +132,7 @@ class Clients extends Component<ClientProps, ClientState> {
             Clinet: { val: this.state.formData.Title, required: true, Name: 'Client Name', Type: ControlType.string, Focusid: this.Client },
         };
         let pdata = {
-            DelegateTo: { val: this.state.formData.DelegateToId, required: true, Name: 'DelegateTo', Type: ControlType.people, Focusid: 'divDelegateTo'},
+            DelegateTo: { val: this.state.formData.DelegateToId, required: true, Name: 'Delegate To', Type: ControlType.people, Focusid: 'divDelegateTo'},
         }
         const formdata = { ...this.state.formData };
         const id = this.props.match.params.id ? this.props.match.params.id : 0;

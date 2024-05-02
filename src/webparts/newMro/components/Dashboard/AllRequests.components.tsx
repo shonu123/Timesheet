@@ -284,7 +284,7 @@ class AllRequests extends React.Component<AllRequestsProps,AllRequestsState> {
                 sortable: true,
             },
             {
-                name: "PTO Hours",
+                name: "Time Off Hours",
                 selector: "PTOHrs",
                 sortable: true,
             },

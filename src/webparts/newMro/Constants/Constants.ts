@@ -9,7 +9,8 @@ export enum StatusType {
   ReviewerApprove="approved by Synergy",
   ManagerReject = "rejected by Manager",
   ReviewerReject = "rejected by Synergy",
-  Revoke="Revoked"
+  Revoke="Revoked",
+  ForwardApprovals = "Forwarded"
 }
 
 export enum ToasterTypes {

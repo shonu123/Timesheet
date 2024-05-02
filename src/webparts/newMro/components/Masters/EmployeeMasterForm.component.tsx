@@ -91,7 +91,7 @@ class EmployeeMasterForm extends React.Component<EmployeeMasterFormProps, Employ
         message: "Success",
         showToaster: false,
         GlobalHolidayList: [],
-        EligibleforPTO: 'Yes',
+        EligibleforPTO: false,
         isDisabled: false,
         // DelegateToId: { results: [] },
         // DelegateToEmail: [],
@@ -201,7 +201,7 @@ class EmployeeMasterForm extends React.Component<EmployeeMasterFormProps, Employ
             this.setState({ isPageAccessable: false })
         }
         let filterdHolidays = this.getHolidays(Holidays, data[0].ClientName)
-        this.setState({ ClientsObject: Clients, ItemID: ID, EmployeeEmail: data[0].Employee.EMail, EmployeeId: data[0].Employee.ID, ClientName: data[0].ClientName, isActive: data[0].IsActive, DateOfJoining: date, SelectedEmployee: data[0].Employee.ID, SelectedClient: data[0].ClientName, HolidayType: data[0].HolidayType, weekStartDay: data[0].WeekStartDay, MandatoryProjectCode: data[0].MandatoryProjectCode ? "Yes" : "No", MandatoryDescription: data[0].MandatoryDescription ? "Yes" : "No", EligibleforPTO: data[0].EligibleforPTO ? "Yes" : "No", ReportingManagerEmail: ReportingManagersEmail, ReportingManagerId: ReportingManagerIds, ReviewerEmail: ReviewersEMail, ReviewerId: ReviewerIds,HolidaysObject: filterdHolidays, GlobalHolidayList: Holidays, isDisabled: disabled, isPageAccessable: pageAccessable, showToaster: true, loading: false })
+        this.setState({ ClientsObject: Clients, ItemID: ID, EmployeeEmail: data[0].Employee.EMail, EmployeeId: data[0].Employee.ID, ClientName: data[0].ClientName, isActive: data[0].IsActive, DateOfJoining: date, SelectedEmployee: data[0].Employee.ID, SelectedClient: data[0].ClientName, HolidayType: data[0].HolidayType, weekStartDay: data[0].WeekStartDay, MandatoryProjectCode: data[0].MandatoryProjectCode ? "Yes" : "No", MandatoryDescription: data[0].MandatoryDescription ? "Yes" : "No", EligibleforPTO: data[0].EligibleforPTO, ReportingManagerEmail: ReportingManagersEmail, ReportingManagerId: ReportingManagerIds, ReviewerEmail: ReviewersEMail, ReviewerId: ReviewerIds,HolidaysObject: filterdHolidays, GlobalHolidayList: Holidays, isDisabled: disabled, isPageAccessable: pageAccessable, showToaster: true, loading: false })
     }
 
     // this function is used to bind users to people pickers
@@ -320,7 +320,7 @@ class EmployeeMasterForm extends React.Component<EmployeeMasterFormProps, Employ
             // Approver : { val: this.state.ApproverId, required: true, Name: 'Approver', Type: ControlType.people,Focusid:'divApprover' },
             ReportingManager: { val: this.state.ReportingManagerId, required: true, Name: 'Reporting Manager', Type: ControlType.people, Focusid: 'divReportingManager'},
             Reviewer: { val: this.state.ReviewerId, required: true, Name: 'Reviewer', Type: ControlType.people, Focusid: 'divReviewer' },
-            // DelegateTo: { val: this.state.DelegateToId, required: true, Name: 'DelegateTo', Type: ControlType.people, Focusid: 'divDelegateTo'},
+            // DelegateTo: { val: this.state.DelegateToId, required: true, Name: 'Delegate To', Type: ControlType.people, Focusid: 'divDelegateTo'},
             // Notifier : { val: this.state.NotifierId, required: true, Name: 'Notifier', Type: ControlType.people,Focusid:'divNotifier' },
         }
         isValid = isValid.status ? Formvalidator.multiplePeoplePickerValidation(pdata) : isValid
@@ -371,7 +371,7 @@ class EmployeeMasterForm extends React.Component<EmployeeMasterFormProps, Employ
                 DateOfJoining: this.state.DateOfJoining,
                 MandatoryDescription: this.state.MandatoryDescription == 'Yes' ? true : false,
                 MandatoryProjectCode: this.state.MandatoryProjectCode == 'Yes' ? true : false,
-                EligibleforPTO: this.state.EligibleforPTO == 'Yes' ? true : false,
+                EligibleforPTO: this.state.EligibleforPTO,
                 WeekStartDay: this.state.weekStartDay,
                 HolidayType: this.state.HolidayType
             }
@@ -653,13 +653,26 @@ class EmployeeMasterForm extends React.Component<EmployeeMasterFormProps, Employ
                                                     </select>
                                                 </div>
                                             </div>
-                                            <div className="col-md-3">
+                                            {/* Eligible for PTO */}
+                                            {/* <div className="col-md-3">
                                                 <div className="light-text">
                                                     <label>Is Eligible for PTO</label>
                                                     <select className="form-control" name="EligibleforPTO" title="Is Eligible for PTO" id='EligibleforPTO' ref={this.EligibleforPTO} onChange={this.handleChangeEvents} value={this.state.EligibleforPTO} disabled={this.state.isDisabled}>
                                                         <option value='Yes'>Yes</option>
                                                         <option value='No'>No</option>
                                                     </select>
+                                                </div>
+                                            </div> */}
+                                            <div className="col-md-3">
+                                                <div className="light-text" id='chkIsActive'>
+                                                    <InputCheckBox
+                                                        label={"Is Eligible for PTO"}
+                                                        name={"EligibleforPTO"}
+                                                        checked={this.state.EligibleforPTO}
+                                                        onChange={this.handleChangeEvents}
+                                                        isforMasters={false}
+                                                        isdisable={this.state.isDisabled}
+                                                    />
                                                 </div>
                                             </div>
                                             {/* EligibleforPTO */}
