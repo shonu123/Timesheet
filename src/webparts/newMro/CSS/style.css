@@ -2862,7 +2862,7 @@ min-width: 250px !important;
 .header-cell:last-child,
 .body-cell:last-child {
 /* min-width: 160px !important; */
-min-width: 180px !important;
+min-width: 185px !important;
 }
 
 .table-toolbar{

@@ -84,13 +84,13 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
                         Company : d.ClientName,
                         PendingWith: d.PendingWith,
                         Status : this.getStatus(d.Status),
-                        BillableHrs: isBillable?d.WeeklyTotalHrs:JSON.parse(d.SynergyOfficeHrs)[0].Total,
-                        OTTotalHrs : d.OTTotalHrs,
-                        TotalBillableHours: d.BillableTotalHrs,
+                        BillableHrs: isBillable?parseFloat(parseFloat(d.WeeklyTotalHrs).toFixed(2)):parseFloat(parseFloat(JSON.parse(d.SynergyOfficeHrs)[0].Total).toFixed(2)),
+                        OTTotalHrs : parseFloat(parseFloat(d.OTTotalHrs).toFixed(2)),
+                        TotalBillableHours: parseFloat(parseFloat(d.BillableTotalHrs).toFixed(2)),
                         // NonBillableTotalHrs: d.NonBillableTotalHrs,
-                        HolidayHrs:JSON.parse(d.ClientHolidayHrs)[0].Total,
-                        PTOHrs:JSON.parse(d.PTOHrs)[0].Total,
-                        GrandTotal: d.GrandTotal
+                        HolidayHrs:parseFloat(parseFloat(JSON.parse(d.ClientHolidayHrs)[0].Total).toFixed(2)),
+                        PTOHrs:parseFloat(parseFloat(JSON.parse(d.PTOHrs)[0].Total).toFixed(2)),
+                        GrandTotal: parseFloat(parseFloat(d.GrandTotal).toFixed(2))
                     })
                 }
                 this.setState({ExportExcelData:Data})

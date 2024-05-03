@@ -79,13 +79,13 @@ class AllRequests extends React.Component<AllRequestsProps,AllRequestsState> {
                         Status : d.Status=='rejected by Synergy'?'Rejected by Synergy':d.Status=='rejected by Manager'?'Rejected by Reporting Manager':d.Status,
                         Client: d.ClientName,
                         PendingWith: d.PendingWith == "Approver" ||d.PendingWith == "Manager" ?"Reporting Manager":d.PendingWith,
-                        BillableHours: isBillable?d.WeeklyTotalHrs:JSON.parse(d.SynergyOfficeHrs)[0].Total,
-                        OTTotalHrs : d.OTTotalHrs,
-                        TotalBillableHrs: d.BillableTotalHrs,
+                        BillableHours: isBillable?parseFloat(parseFloat(d.WeeklyTotalHrs).toFixed(2)):parseFloat(parseFloat(JSON.parse(d.SynergyOfficeHrs)[0].Total).toFixed(2)),
+                        OTTotalHrs : parseFloat(parseFloat(d.OTTotalHrs).toFixed(2)),
+                        TotalBillableHrs: parseFloat(parseFloat(d.BillableTotalHrs).toFixed(2)),
                         // NonBillableTotalHrs: d.NonBillableTotalHrs,
-                        HolidayHrs:JSON.parse(d.ClientHolidayHrs)[0].Total,
-                        PTOHrs:JSON.parse(d.PTOHrs)[0].Total,
-                        TotalHours: d.GrandTotal,
+                        HolidayHrs:parseFloat(parseFloat(JSON.parse(d.ClientHolidayHrs)[0].Total).toFixed(2)),
+                        PTOHrs:parseFloat(parseFloat(JSON.parse(d.PTOHrs)[0].Total).toFixed(2)),
+                        TotalHours: parseFloat(parseFloat(d.GrandTotal).toFixed(2)),
                         RM : Rm
                     })
                     ExcelData.push({
@@ -208,7 +208,7 @@ class AllRequests extends React.Component<AllRequestsProps,AllRequestsState> {
                 sortable: true,
             },
             {
-                name: "PTO",
+                name: "Time Off",
                 selector: (row, i) =>row.PTOHrs,
                 width: '110px',
                 sortable: true,
