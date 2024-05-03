@@ -518,9 +518,15 @@ let dataColums = []
                     }
 
                     if (wrapColumnsArray.includes(key)) {
-                        cellObj = { v: value, t: "s", s: { alignment: { wrapText: true },border: allBorders, font: { bold: false}, fill: { fgColor: { rgb: color }} } };
+                        if(["Client","Initiator"].includes(key))
+                            cellObj = { v: value, t: "s", s: { alignment: { wrapText: true },border: allBorders, font: { bold: false}, fill: { fgColor: { rgb: color }} } };
+                        else
+                        cellObj = { v: parseFloat(parseFloat(value).toFixed(2)), t: "s", s: { alignment: { wrapText: true },border: allBorders, font: { bold: false}, fill: { fgColor: { rgb: color }} } };
                     } else {
-                        cellObj = { v: value, t: "s", s: {border: allBorders, font: { bold: false,color:'1a1818'}, fill: { fgColor: { rgb: color }}} };
+                        if(["Client","Initiator"].includes(key))
+                            cellObj = { v: value, t: "s", s: { alignment: { wrapText: true },border: allBorders, font: { bold: false}, fill: { fgColor: { rgb: color }} } };
+                        else
+                        cellObj = { v: parseFloat(parseFloat(value).toFixed(2)), t: "s", s: {border: allBorders, font: { bold: false,color:'1a1818'}, fill: { fgColor: { rgb: color }}} };
                     }
                     tempArr.push(cellObj);
                 }

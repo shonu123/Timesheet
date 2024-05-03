@@ -4,7 +4,7 @@ import ExportExcel from './ExportExcel';
 import Search from './Search';
 import { NavLink } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faPlus,faArrowsTurnRight } from '@fortawesome/free-solid-svg-icons';
+import { faPlus,faArrowTurnRight } from '@fortawesome/free-solid-svg-icons';
 import ExportExcelwithStyles from './ExportExcelwithStyles'
 const customStyles = {
   rows: {
@@ -99,7 +99,7 @@ const TableGenerator = ({ columns, data, fileName,showExportExcel, ExportExcelCu
           customButton&&
           <div className="col-6 text-right">
           <div style={{ paddingLeft: '10px' }} className={customBtnClass} id={""+btnDivID}>
-            <button type="button" id="" className={"SubmitButtons btn"}  onClick={customButtonClick}><span className='position-static' id={""+btnSpanID}><FontAwesomeIcon icon={faArrowsTurnRight}></FontAwesomeIcon>{btnCaption}</span></button>
+            <button type="button" id="" className={"SubmitButtons-2 btn"}  onClick={customButtonClick} title={btnTitle}><span className='position-static' id={""+btnSpanID}><FontAwesomeIcon icon={faArrowTurnRight}></FontAwesomeIcon></span></button>
             </div> 
           </div>
         }

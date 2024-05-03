@@ -1189,6 +1189,15 @@ a:active {
   background: #0D2F4B;
   color: #ffffff;
 }
+.SubmitButtons-2{
+  background: #0D2F4B;
+  color: white;
+  border: 1px solid #0D2F4B !important;
+}
+.SubmitButtons-2:hover{
+  background: #0D2F4B;
+  color: #ffffff;
+}
 .ApproveButtons{
   background-color: rgb(109, 61, 76);
   color: white;
@@ -2605,6 +2614,7 @@ li {
 .bRirNn{
   font-size: 13px !important;
   font-weight: bold;
+  padding-left: 5px !important;
 }
 
 .lkrJOt{
@@ -2986,10 +2996,6 @@ span.iconArrow {
    
    
   .ePmbQn {
-      -webkit-box-flex: 1;
-      flex: 1 0 0px;
-  /*min-width: 100px;
-      max-width: 100px;*/
-      min-width: 80px;
-      max-width: 80px;
+      min-width: 80px !important;
+      max-width: 80px !important;
   }
