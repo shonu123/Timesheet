@@ -326,7 +326,8 @@ class Clients extends Component<ClientProps, ClientState> {
                 }
             }
         }
-
+        document.getElementById("txtClientName").scrollIntoView({behavior: 'smooth', block: 'start'});
+        document.getElementById("txtClientName").focus();
             this.setState({
                 formData:
                  {
@@ -493,6 +494,7 @@ class Clients extends Component<ClientProps, ClientState> {
                                                                 refElement={this.Client}
                                                                 maxlength={250}
                                                                 onBlur={this.handleonBlur}
+                                                                id={"txtClientName"}
                                                             />
 
 

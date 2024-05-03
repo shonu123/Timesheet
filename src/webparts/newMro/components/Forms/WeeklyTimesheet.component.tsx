@@ -2097,7 +2097,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
             else
                 this.setState({showRevokebtn:false })
 
-            if(isAdmin)  //to show revoke button only for admin if status is Submit/ManagerApproved/Approved
+            if(isAdmin)  //to show revoke button only for admin if status is Submit/Approved
             {
                 if ([Approve, submit].includes(trFormdata.Status))
                     this.setState({showRevokebtn: true })

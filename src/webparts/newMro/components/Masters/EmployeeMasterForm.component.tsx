@@ -555,7 +555,20 @@ class EmployeeMasterForm extends React.Component<EmployeeMasterFormProps, Employ
                                                     </div>
                                                 </div>
                                             </div>
-                                            
+                                            <div className="col-md-3">
+                                                <div className="light-text">
+                                                    <label>Week Start Day</label>
+                                                    <select className="form-control" name="weekStartDay" title="WeekStartDay" id='WeekStartDay' disabled={this.state.isDisabled} ref={this.WeekStartDay} onChange={this.handleChangeEvents} value={this.state.weekStartDay}>
+                                                        <option value='Monday'>Monday</option>
+                                                        <option value='Tuesday'>Tuesday</option>
+                                                        <option value='Wednesday'>Wednesday</option>
+                                                        <option value='Thursday'>Thursday</option>
+                                                        <option value='Friday'>Friday</option>
+                                                        <option value='Saturday'>Saturday</option>
+                                                        <option value='Sunday'>Sunday</option>
+                                                    </select>
+                                                </div>
+                                            </div>
                                             {/* ---Description--- */}
                                             <div className="col-md-3">
                                                 <div className="light-text">
@@ -607,20 +620,7 @@ class EmployeeMasterForm extends React.Component<EmployeeMasterFormProps, Employ
                                                     </div>
                                                 </div> */}
                                             {/* Notifiers */}
-                                            <div className="col-md-3">
-                                                <div className="light-text">
-                                                    <label>Week Start Day</label>
-                                                    <select className="form-control" name="weekStartDay" title="WeekStartDay" id='WeekStartDay' disabled={this.state.isDisabled} ref={this.WeekStartDay} onChange={this.handleChangeEvents} value={this.state.weekStartDay}>
-                                                        <option value='Monday'>Monday</option>
-                                                        <option value='Tuesday'>Tuesday</option>
-                                                        <option value='Wednesday'>Wednesday</option>
-                                                        <option value='Thursday'>Thursday</option>
-                                                        <option value='Friday'>Friday</option>
-                                                        <option value='Saturday'>Saturday</option>
-                                                        <option value='Sunday'>Sunday</option>
-                                                    </select>
-                                                </div>
-                                            </div>
+                                          
                                         </div>
 
                                         <div className="row pt-2 px-2">

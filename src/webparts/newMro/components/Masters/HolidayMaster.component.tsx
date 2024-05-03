@@ -335,7 +335,8 @@ class HolidaysList extends Component<HolidaysListProps, HolidaysListState> {
 
         try {
             var response = await sp.web.lists.getByTitle('HolidaysList').items.getById(id).get();
-
+            document.getElementById("txtHolidayName").scrollIntoView({behavior: 'smooth', block: 'start'});
+            document.getElementById("txtHolidayName").focus();
             this.setState({
                 formData:
                  {
@@ -757,6 +758,7 @@ class HolidaysList extends Component<HolidaysListProps, HolidaysListState> {
                                                                 refElement={this.Holiday}
                                                                 maxlength={50}
                                                                 onBlur={this.handleonBlur}
+                                                                id={"txtHolidayName"}
                                                             />
                                                             {/* <InputText
                                                                 type='text'
