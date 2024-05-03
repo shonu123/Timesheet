@@ -331,8 +331,8 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
         if(name == 'Approve')
         {
             this.setState({message : 'Are you sure you want to approve?',title : 'Approve', Action : 'Approve'});
-            // this.setState({showHideModal : true,isSuccess:true,ModalHeader:'modal-header-Approve'})
-            this.setState({showHideModal : true,isSuccess:true,ModalHeader:'modal-header-reject'})
+            this.setState({showHideModal : true,isSuccess:true,ModalHeader:'modal-header-Approve'})
+            // this.setState({showHideModal : true,isSuccess:true,ModalHeader:'modal-header-reject'})
         }
         else
          if(name == 'Reject')

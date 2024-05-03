@@ -28,7 +28,7 @@ const ModalForwardApprovals = ({ message, modalHeader, title, isVisible, onConfi
                     </div>
                     <div className="light-box border-box-shadow m-1 p-2">
                         <div className="media-px-12">
-                            <div className="light-text height-auto">
+                            <div className="light-text height-auto mb-4">
                                 <label>Delegate To<span className="mandatoryhastrick">*</span></label>
                                 <select className="form-control" required={true} name="DelegateToId" title="Delegate To" id='ddlDelegateTo' onChange={changeEvent}>
                                     <option value=''>None</option>
