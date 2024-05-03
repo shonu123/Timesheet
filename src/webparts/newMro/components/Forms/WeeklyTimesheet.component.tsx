@@ -434,6 +434,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
         trFormdata.ClientName=data[0].ClientName;
         trFormdata.Name=data[0].Name;
         trFormdata.WeekStartDate=new Date(data[0].WeekStartDate);
+        trFormdata.DateSubmitted=new Date(data[0].DateSubmitted);
         trFormdata.WeeklyItemsData=JSON.parse(data[0].WeeklyHrs);
         trFormdata.OTItemsData=JSON.parse(data[0].OverTimeHrs);
         trFormdata.BillableSubTotal=JSON.parse(data[0].BillableSubtotalHrs);
@@ -1716,6 +1717,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                 trFormdata.ClientName=ExistRecordData[0].ClientName;
                 trFormdata.Name=ExistRecordData[0].Name;
                 trFormdata.WeekStartDate=new Date(ExistRecordData[0].WeekStartDate);
+                trFormdata.DateSubmitted=new Date(ExistRecordData[0].DateSubmitted);
                 trFormdata.WeeklyItemsData=JSON.parse(ExistRecordData[0].WeeklyHrs);
                 trFormdata.OTItemsData=JSON.parse(ExistRecordData[0].OverTimeHrs);
                 trFormdata.BillableSubTotal=JSON.parse(ExistRecordData[0].BillableSubtotalHrs);
@@ -1827,6 +1829,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                 trFormdata.ClientName=trFormdata.ClientName;
                 trFormdata.Name=trFormdata.Name;
                 trFormdata.WeekStartDate=trFormdata.WeekStartDate;
+                trFormdata.DateSubmitted=new Date();
                 trFormdata.WeeklyItemsData=[];
                 trFormdata.OTItemsData=[];
                 trFormdata.BillableSubTotal=[];
@@ -1961,6 +1964,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
             trFormdata.ClientName="";
             trFormdata.Name==""?trFormdata.Name="":trFormdata.Name=trFormdata.Name;
             trFormdata.WeekStartDate=null;
+            trFormdata.DateSubmitted=new Date();
             trFormdata.WeeklyItemsData=[];
             trFormdata.OTItemsData=[];
             trFormdata.BillableSubTotal=[];
@@ -2092,7 +2096,9 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
             else
                 this.setState({ showSubmitSavebtn: false})
 
-            if ([submit].includes(trFormdata.Status))
+            let daysBetweenSubmitted_CurrDate=Math.ceil( Math.abs( (new Date (new Date().getMonth()+1+"/"+new Date().getDate()+"/"+new Date().getFullYear() ).getTime()-new Date(trFormdata.DateSubmitted.getMonth()+1+"/"+trFormdata.DateSubmitted.getDate()+"/"+trFormdata.DateSubmitted.getFullYear()).getTime()) ) / (24*60*60*1000))
+            
+            if ([submit].includes(trFormdata.Status) && daysBetweenSubmitted_CurrDate<=30)
                 this.setState({showRevokebtn: true })
             else
                 this.setState({showRevokebtn:false })
