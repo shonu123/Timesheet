@@ -121,6 +121,7 @@ class DailyTimesheetReport extends React.Component<DailyTimesheetReportProps, Da
         let { name } = event.target;
         let value = event.target.value;
         this.setState({ [name]: value });
+        this.setState({ ReportData: [] });
         this.getClientEmployees(value)
     }
 
@@ -154,16 +155,17 @@ class DailyTimesheetReport extends React.Component<DailyTimesheetReportProps, Da
         // console.log(value);
         let { name } = event.target;
         this.setState({ [name]: value });
+        this.setState({ ReportData: [] });
     }
     private handleStartDate = (dateprops) => {
         // console.log(dateprops)
         let date = new Date()
         if (dateprops[0] != null) {
             date = new Date(dateprops[0])
-            this.setState({ startDate: date });
+            this.setState({ startDate: date,ReportData:[] });
         }
         else{
-            this.setState({ startDate: null });
+            this.setState({ startDate: null,ReportData:[] });
         }
     }
     private handleEndDate = (dateprops) => {
@@ -171,10 +173,10 @@ class DailyTimesheetReport extends React.Component<DailyTimesheetReportProps, Da
         let date = new Date()
         if (dateprops[0] != null) {
             date = new Date(dateprops[0])
-            this.setState({ endDate: date });
+            this.setState({ endDate: date,ReportData:[] });
         }
         else{
-            this.setState({ endDate: null });
+            this.setState({ endDate: null,ReportData:[] });
         }
     }
     private checkIsvalid = (data, selectedStartDate, selectedEndDate) => {
@@ -521,12 +523,12 @@ let dataColums = []
                         if(["Client","Initiator"].includes(key))
                             cellObj = { v: value, t: "s", s: { alignment: { wrapText: true },border: allBorders, font: { bold: false}, fill: { fgColor: { rgb: color }} } };
                         else
-                        cellObj = { v: parseFloat(parseFloat(value).toFixed(2)), t: "s", s: { alignment: { wrapText: true },border: allBorders, font: { bold: false}, fill: { fgColor: { rgb: color }} } };
+                        cellObj = { v: value!=""?parseFloat(parseFloat(value).toFixed(2)):"", t: "s", s: { alignment: { wrapText: true },border: allBorders, font: { bold: false}, fill: { fgColor: { rgb: color }} } };
                     } else {
                         if(["Client","Initiator"].includes(key))
                             cellObj = { v: value, t: "s", s: { alignment: { wrapText: true },border: allBorders, font: { bold: false}, fill: { fgColor: { rgb: color }} } };
                         else
-                        cellObj = { v: parseFloat(parseFloat(value).toFixed(2)), t: "s", s: {border: allBorders, font: { bold: false,color:'1a1818'}, fill: { fgColor: { rgb: color }}} };
+                        cellObj = { v: value!=""?parseFloat(parseFloat(value).toFixed(2)):"", t: "s", s: {border: allBorders, font: { bold: false,color:'1a1818'}, fill: { fgColor: { rgb: color }}} };
                     }
                     tempArr.push(cellObj);
                 }

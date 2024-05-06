@@ -65,7 +65,7 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
         var filterQuery = "and WeekStartDate ge '"+date+"'"
 
         // var filterString = "Reviewers/Id eq '"+userId+"' and PendingWith eq 'Reviewer' and Status eq '"+StatusType.ManagerApprove+"'"
-        var filterString = "AssignedTo/Id eq '"+userId+"'";
+        var filterString = "AssignedTo/Id eq '"+userId+"' and PendingWith eq 'Reviewer'";
 
         sp.web.lists.getByTitle('WeeklyTimeSheet').items.top(5000).filter(filterString+filterQuery).expand("Reviewers").select('Reviewers/Title','*').orderBy('Modified', false).get()
             .then((response) => {
@@ -164,25 +164,37 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
         }
         // console.log(postObject);
         this.setState({comments  :''})
-        sp.web.lists.getByTitle('WeeklyTimeSheet').items.getById(recordId).update(postObject).then((res) => {
-            let sub=''; 
-            if(Status==StatusType.Approved){
-                sub = "Weekly Time Sheet has been "+StatusType.ReviewerApprove+"."
-                // this.setState({ModalHeader:'modal-header-Approve'})
-            }
-            else{
-                sub = "Weekly Time Sheet has been "+StatusType.ReviewerReject+". Please re-submit with necessary details."
-            }
 
-            let emaildetails ={toemail:To,ccemail:CC,subject:sub,bodyString:sub,body:'' };
-             let table = tableContent;
-             var DashboardURl = this.state.siteURL+'/SitePages/TimeSheet.aspx';
-             emaildetails.body = this.emailBodyPreparation(this.state.siteURL+'/SitePages/TimeSheet.aspx#/WeeklyTimesheet/'+this.state.ItemID,table,emaildetails.bodyString,this.props.spContext.userDisplayName,DashboardURl);
-             if(Status == StatusType.Approved)
-             this.sendemail(emaildetails,'Success','Record approved successfully')
-            else
-            this.sendemail(emaildetails,'Success','Record rejected successfully')
-        });
+        sp.web.lists.getByTitle('WeeklyTimeSheet').items.getById(recordId).update(postObject).then((res) => {
+            if(Status == StatusType.Approved){
+                this.setState({showHideModal : false,ItemID:0,message:'',title:'',Action:'',loading: false,successPopUp:false,modalTitle:'Record approved successfully'});
+                customToaster('toster-success',ToasterTypes.Success,'Weekly timesheet '+StatusType.Approved.toLowerCase()+ ' succesfully',2000);
+            }
+        else{
+            this.setState({showHideModal : false,ItemID:0,message:'',title:'',Action:'',loading: false,successPopUp:false,modalTitle:'Record rejected successfully'});
+            customToaster('toster-success',ToasterTypes.Success,'Weekly timesheet '+StatusType.Reject.toLowerCase()+ ' succesfully',2000);
+        }
+            this.ReviewerApproval();
+            // let sub=''; 
+            // if(Status==StatusType.Approved){
+            //     sub = "Weekly Time Sheet has been "+StatusType.ReviewerApprove+"."
+            //     // this.setState({ModalHeader:'modal-header-Approve'})
+            // }
+            // else{
+            //     sub = "Weekly Time Sheet has been "+StatusType.ReviewerReject+". Please re-submit with necessary details."
+            // }
+
+            // let emaildetails ={toemail:To,ccemail:CC,subject:sub,bodyString:sub,body:'' };
+            //  let table = tableContent;
+            //  var DashboardURl = this.state.siteURL+'/SitePages/TimeSheet.aspx';
+            //  emaildetails.body = this.emailBodyPreparation(this.state.siteURL+'/SitePages/TimeSheet.aspx#/WeeklyTimesheet/'+this.state.ItemID,table,emaildetails.bodyString,this.props.spContext.userDisplayName,DashboardURl);
+            //  if(Status == StatusType.Approved)
+            //  this.sendemail(emaildetails,'Success','Record approved successfully')
+            // else
+            // this.sendemail(emaildetails,'Success','Record rejected successfully')
+        }).catch(err => {
+        console.log('Failed to fetch data.', err);
+    });
     }
 // This function is used to bind comments to comments input feild
     private handleComments = async (e) =>{
@@ -452,7 +464,7 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
                         </React.Fragment>
                         );
                     },
-                    width: '100px'
+                    // width: '100px'
                 },
                 {
                     name: "Reject",
