@@ -1488,10 +1488,10 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                 emaildetails ={toemail:To,ccemail:this.state.EmployeeEmail,subject:sub,bodyString:sub,body:'' };
                 var DashboardURl = 'https://synergycomcom.sharepoint.com/sites/Billing.Timesheet/SitePages/TimeSheet.aspx';
                 emaildetails['body'] = this.emailBodyPreparation(this.siteURL+'/SitePages/TimeSheet.aspx#/WeeklyTimesheet/'+this.state.ItemID,tableContent,emaildetails['bodyString'],this.props.spContext.userDisplayName,DashboardURl);
-                this.sendemail(emaildetails,formdata.Status);
-                // this.setState({loading:false})
-                // customToaster('toster-success',ToasterTypes.Success,'Weekly timesheet '+StatusType.Revoke.toLowerCase()+' successfully',2000)
-                // this.getItemData(this.state.ItemID);
+                //this.sendemail(emaildetails,formdata.Status);
+                this.setState({loading:false})
+                customToaster('toster-success',ToasterTypes.Success,'Weekly timesheet '+StatusType.Revoke.toLowerCase()+' successfully',2000)
+                this.getItemData(this.state.ItemID);
                }
                else if(StatusType.Submit==formdata.Status)
                {
@@ -1500,8 +1500,8 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                     emaildetails ={toemail:To,ccemail:this.state.EmployeeEmail,subject:sub,bodyString:sub,body:'' };
                     var DashboardURl = 'https://synergycomcom.sharepoint.com/sites/Billing.Timesheet/SitePages/TimeSheet.aspx';
                     emaildetails['body'] = this.emailBodyPreparation(this.siteURL+'/SitePages/TimeSheet.aspx#/WeeklyTimesheet/'+this.state.ItemID,tableContent,emaildetails['bodyString'],this.props.spContext.userDisplayName,DashboardURl);
-                    this.sendemail(emaildetails,formdata.Status);
-                    //this.setState({ActionToasterMessage:'Success-'+StatusType.Submit,loading:false,redirect:true})
+                    //this.sendemail(emaildetails,formdata.Status);
+                    this.setState({ActionToasterMessage:'Success-'+StatusType.Submit,loading:false,redirect:true})
 
                }
                else if([StatusType.ReviewerReject,StatusType.Save].includes(formObject.Status))  //submitted after Reviewer Reject or Reviewer reject->save but client Approval not needed or not depends on IsClientApprovalNeeded
@@ -1530,8 +1530,8 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                  emaildetails ={toemail:CC,ccemail:this.state.EmployeeEmail,subject:sub,bodyString:sub,body:'' };
                  var DashboardURl = 'https://synergycomcom.sharepoint.com/sites/Billing.Timesheet/SitePages/TimeSheet.aspx';
                  emaildetails['body'] = this.emailBodyPreparation(this.siteURL+'/SitePages/TimeSheet.aspx#/WeeklyTimesheet/'+this.state.ItemID,tableContent,emaildetails['bodyString'],this.props.spContext.userDisplayName,DashboardURl);
-                 this.sendemail(emaildetails,StatusType.Submit);
-                 //this.setState({ActionToasterMessage:'Success-'+StatusType.Submit,loading:false,redirect:true})
+                 //this.sendemail(emaildetails,StatusType.Submit);
+                 this.setState({ActionToasterMessage:'Success-'+StatusType.Submit,loading:false,redirect:true})
 
                }
                else if([StatusType.ManagerApprove,StatusType.Approved].includes(formdata.Status))
@@ -1582,8 +1582,8 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                     emaildetails ={toemail:To,ccemail:CC,subject:sub,bodyString:sub,body:'' };
                     var DashboardURl = 'https://synergycomcom.sharepoint.com/sites/Billing.Timesheet/SitePages/TimeSheet.aspx';
                     emaildetails['body'] = this.emailBodyPreparation(this.siteURL+'/SitePages/TimeSheet.aspx#/WeeklyTimesheet/'+this.state.ItemID,tableContent,emaildetails['bodyString'],this.props.spContext.userDisplayName,DashboardURl);
-                    this.sendemail(emaildetails,StatusType.Approved);
-                    //this.setState({ActionToasterMessage:'Success-'+StatusType.Approved,loading:false,redirect:true})
+                    //this.sendemail(emaildetails,StatusType.Approved);
+                    this.setState({ActionToasterMessage:'Success-'+StatusType.Approved,loading:false,redirect:true})
                }
                else if([StatusType.ManagerReject,StatusType.ReviewerReject].includes(formdata.Status))
                {
@@ -1612,8 +1612,8 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                        emaildetails ={toemail:this.state.EmployeeEmail,ccemail:CC,subject:sub,bodyString:sub,body:'' };
                        var DashboardURl = 'https://synergycomcom.sharepoint.com/sites/Billing.Timesheet/SitePages/TimeSheet.aspx';
                        emaildetails['body'] = this.emailBodyPreparation(this.siteURL+'/SitePages/TimeSheet.aspx#/WeeklyTimesheet/'+this.state.ItemID,tableContent,emaildetails['bodyString'],this.props.spContext.userDisplayName,DashboardURl);
-                       this.sendemail(emaildetails,formdata.Status);
-                       //this.setState({ActionToasterMessage:'Success-'+StatusType.Reject,loading:false,redirect:true})
+                       //this.sendemail(emaildetails,formdata.Status);
+                       this.setState({ActionToasterMessage:'Success-'+StatusType.Reject,loading:false,redirect:true})
                } 
             }, (error) => {
                 this.setState({ActionToasterMessage:'Error',loading:false,redirect:true})
@@ -1636,8 +1636,8 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                          emaildetails ={toemail:formObject.ReportingManagersEmail,ccemail:this.state.EmployeeEmail,subject:sub,bodyString:sub,body:'' };
                          var DashboardURl = 'https://synergycomcom.sharepoint.com/sites/Billing.Timesheet/SitePages/TimeSheet.aspx';
                          emaildetails['body'] = this.emailBodyPreparation(this.siteURL+'/SitePages/TimeSheet.aspx#/WeeklyTimesheet/'+ItemID,tableContent,emaildetails['bodyString'],this.props.spContext.userDisplayName,DashboardURl);
-                         this.sendemail(emaildetails,formdata.Status);
-                         //this.setState({ActionToasterMessage:'Success-'+StatusType.Submit,loading:false,redirect:true})
+                         //this.sendemail(emaildetails,formdata.Status);
+                         this.setState({ActionToasterMessage:'Success-'+StatusType.Submit,loading:false,redirect:true})
                     }
                 }, (error) => {
                     console.log(error);
