@@ -248,30 +248,31 @@ if(Data.length>0){
             let EmailSubject = "Weekly Time Sheet has been forwarded for your Approval"
             // Execute the batch
             await batch.execute();
-            try{
-            for (const m of selectedRows) {
-                let To = this.state.DelegateToUsers.find(item => item.ID === delegatedUserID)?.Email;
-                let CC = m.ReportingManagerEmails
-                let tableContent = {}
-                let date = new Date(m.Date)
-                if (m.Client.toLowerCase().includes("synergy")) {
-                    tableContent = { 'Name': m.EmployeName, 'Client Name': m.Client, 'Submitted Date': `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`, 'Office Hours': JSON.parse(m.SynergyOfficeHrs)[0].Total, 'Holiday Hours': JSON.parse(m.ClientHolidayHrs)[0].Total, 'Time Off Hours': m.PTOHrs, 'Grand Total Hours': m.GrandTotal, 'Comments': this.state.comments }
-                }
-                else {
-                    tableContent = { 'Name': m.EmployeName, 'Client Name': m.Client, 'Submitted Date': `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`, 'Billable Hours': m.BillableTotalHrs, 'OT Hours': m.OTTotalHrs, 'Total Billable Hours': m.TotalBillable, 'Holiday Hours': JSON.parse(m.ClientHolidayHrs)[0].Total, 'Time Off Hours': m.PTOHrs, 'Grand Total Hours': m.GrandTotal, 'Comments': this.state.comments }
-                }
-                let emaildetails = { toemail: [To], ccemail: CC, subject: EmailSubject, bodyString: EmailSubject, body: '' };
-                var DashboardURl = this.props.spContext.webAbsoluteUrl+'/SitePages/TimeSheet.aspx';
-                emaildetails.body = this.emailBodyPreparation(this.props.spContext.webAbsoluteUrl+'/SitePages/TimeSheet.aspx#/WeeklyTimesheet/' + m.Id, tableContent, emaildetails.bodyString, this.props.spContext.userDisplayName, DashboardURl);
-                await this.sendemail(emaildetails)
+            // Send Email
+            // try{
+            // for (const m of selectedRows) {
+            //     let To = this.state.DelegateToUsers.find(item => item.ID === delegatedUserID)?.Email;
+            //     let CC = m.ReportingManagerEmails
+            //     let tableContent = {}
+            //     let date = new Date(m.Date)
+            //     if (m.Client.toLowerCase().includes("synergy")) {
+            //         tableContent = { 'Name': m.EmployeName, 'Client Name': m.Client, 'Submitted Date': `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`, 'Office Hours': JSON.parse(m.SynergyOfficeHrs)[0].Total, 'Holiday Hours': JSON.parse(m.ClientHolidayHrs)[0].Total, 'Time Off Hours': m.PTOHrs, 'Grand Total Hours': m.GrandTotal, 'Comments': this.state.comments }
+            //     }
+            //     else {
+            //         tableContent = { 'Name': m.EmployeName, 'Client Name': m.Client, 'Submitted Date': `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`, 'Billable Hours': m.BillableTotalHrs, 'OT Hours': m.OTTotalHrs, 'Total Billable Hours': m.TotalBillable, 'Holiday Hours': JSON.parse(m.ClientHolidayHrs)[0].Total, 'Time Off Hours': m.PTOHrs, 'Grand Total Hours': m.GrandTotal, 'Comments': this.state.comments }
+            //     }
+            //     let emaildetails = { toemail: [To], ccemail: CC, subject: EmailSubject, bodyString: EmailSubject, body: '' };
+            //     var DashboardURl = this.props.spContext.webAbsoluteUrl+'/SitePages/TimeSheet.aspx';
+            //     emaildetails.body = this.emailBodyPreparation(this.props.spContext.webAbsoluteUrl+'/SitePages/TimeSheet.aspx#/WeeklyTimesheet/' + m.Id, tableContent, emaildetails.bodyString, this.props.spContext.userDisplayName, DashboardURl);
+            //     await this.sendemail(emaildetails)
 
-            }
-            }
-            catch (error) {
-                customToaster('toster-error', ToasterTypes.Error, 'Sorry! something went wrong', 4000)
-                this.setState({ loading: false })
-                console.log('Error occurred while sending emails:', error);
-            }
+            // }
+            // }
+            // catch (error) {
+            //     customToaster('toster-error', ToasterTypes.Error, 'Sorry! something went wrong', 4000)
+            //     this.setState({ loading: false })
+            //     console.log('Error occurred while sending emails:', error);
+            // }
             // console.log('Bulk forwards successful!');
             customToaster('toster-success', ToasterTypes.Success, 'Timesheets forwarded Sucessfully.', 2000)
             this.setState({ SelectedValue: '', comments: '', showHideModal: false,SelectedRows:[], loading: false });

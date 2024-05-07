@@ -9,6 +9,7 @@ import ApproversApprovals from './Approvers.component';
 import MyRequests from './Myrequests.component';
 import AllRequests from './AllRequests.components';
 import MyTeam from '../Masters/MyTeam.component';
+ import DelegateApprovals from './DelegateApprovals.component';
 import Loader from '../Shared/Loader';
 import customToaster from '../Shared/Toaster.component';
 import { StatusType, ToasterTypes } from '../../Constants/Constants';
@@ -38,6 +39,7 @@ export interface DashboardState {
     showMyTeamTab: boolean;
     showMyReviewersTab: boolean;
     showAllRequestsTab:boolean;
+    showDelegateApprovalsComp:boolean
     loading:boolean;
     showToaster:boolean;
     isEmployeeConfigured:boolean;
@@ -58,6 +60,7 @@ class Dashboard extends React.Component<DashboardProps, DashboardState> {
             activeElementClass:"nav-link",
             userRole:'',
             showMyRequestsComp : false,
+            showDelegateApprovalsComp:false,
             isInitiator:false,
             isApprover: false,
             isReviewer: false,
@@ -187,7 +190,7 @@ class Dashboard extends React.Component<DashboardProps, DashboardState> {
         item.classList.remove('show');
         });
 
-        let showReviewerComp = false; let showApproveComp = false; let showMyRequestsComp = false; let showApproved = false; let showExported = false; let isAdmin = false,showMyTeamComp = false;
+        let showReviewerComp = false; let showApproveComp = false; let showMyRequestsComp = false; let showApproved = false; let showExported = false; let isAdmin = false,showMyTeamComp = false,showDelegateApprovalsComp=false;
         if (url === 'Reviewers')
         {
             document.getElementById('ReviewersApprovals-tab').classList.add('active');
@@ -198,6 +201,7 @@ class Dashboard extends React.Component<DashboardProps, DashboardState> {
             showMyTeamComp = false;
             showMyRequestsComp = false;
             isAdmin = false;
+            showDelegateApprovalsComp =false;
         }
         else if (url === 'Approvers')
          { 
@@ -209,6 +213,7 @@ class Dashboard extends React.Component<DashboardProps, DashboardState> {
             showReviewerComp = false;
             showMyRequestsComp = false;
             isAdmin = false;
+            showDelegateApprovalsComp = false;
         }
         else if (url === 'MyTeam')
          { 
@@ -220,6 +225,7 @@ class Dashboard extends React.Component<DashboardProps, DashboardState> {
             showReviewerComp = false;
             showMyRequestsComp = false;
             isAdmin = false;
+            showDelegateApprovalsComp = false;
         }
         else if (url === 'MyRequests'){
             document.getElementById('MyRequests-tab').classList.add('active');
@@ -230,6 +236,7 @@ class Dashboard extends React.Component<DashboardProps, DashboardState> {
             showMyTeamComp = false;
             showReviewerComp = false;
             isAdmin = false;
+            showDelegateApprovalsComp = false;
         }
         else if(url == 'AllRequests'){
             document.getElementById('AllRequests-tab').classList.add('active');
@@ -240,9 +247,21 @@ class Dashboard extends React.Component<DashboardProps, DashboardState> {
             showReviewerComp = false;
             showMyRequestsComp = false;
             isAdmin = true;
+            showDelegateApprovalsComp = false;
+        }
+        else if(url == 'DelegateApprovals'){
+            document.getElementById('DelegateApprovals-tab').classList.add('active');
+            document.getElementById('DelegateApprovals').classList.add('active');
+            document.getElementById('DelegateApprovals').classList.add('show');
+            showApproveComp = false;
+            showMyTeamComp = false;
+            showReviewerComp = false;
+            showMyRequestsComp = false;
+            isAdmin = false;
+            showDelegateApprovalsComp = true;
         }
         
-        this.setState({ showReviewerComp: showReviewerComp, showApproveComp: showApproveComp, showMyRequestsComp: showMyRequestsComp, showExported: showExported,isAdmin:isAdmin,showMyTeamComp:showMyTeamComp});
+        this.setState({ showReviewerComp: showReviewerComp, showApproveComp: showApproveComp, showMyRequestsComp: showMyRequestsComp, showExported: showExported,isAdmin:isAdmin,showMyTeamComp:showMyTeamComp,showDelegateApprovalsComp:showDelegateApprovalsComp});
     }
     public render() {
         return (
@@ -260,7 +279,7 @@ class Dashboard extends React.Component<DashboardProps, DashboardState> {
                                 {this.state.showAllRequestsTab &&<li className="nav-item" role="presentation" onClick={() => this.onHandleClick('AllRequests')} >
                                         <a className="nav-link" id="AllRequests-tab" data-toggle="tab" href="#/AllTimesheets" role="tab" aria-controls="AdminRequests" aria-selected="false">All Timesheets</a>
                                     </li>}
-
+                                    
                                     {this.state.showRequestTab  &&  <li className="nav-item" role="presentation" onClick={() => this.onHandleClick('MyRequests')} >
                                         <a className="nav-link" id="MyRequests-tab" data-toggle="tab" href="#/MyTimesheets" role="tab" aria-controls="profile" aria-selected="false">My Timesheets</a>
                                     </li>}
@@ -268,7 +287,9 @@ class Dashboard extends React.Component<DashboardProps, DashboardState> {
                                     {this.state.showMyApprovalsTab &&   <li className="nav-item" role="presentation" onClick={() => this.onHandleClick('Approvers')} >
                                         <a className="nav-link active" id="Approvers-tab" data-toggle="tab" href="#/Approvers" role="tab" aria-controls="home" aria-selected="true">My Approvals</a>
                                     </li>}
-                                  
+                                    {this.state.showAllRequestsTab &&<li className="nav-item" role="presentation" onClick={() => this.onHandleClick('DelegateApprovals')} >
+                                        <a className="nav-link" id="DelegateApprovals-tab" data-toggle="tab" href="#/DelegateApprovals" role="tab" aria-controls="DelegateApprovals" aria-selected="false">Delegate Approvals</a>
+                                    </li>}
                                     {this.state.showMyReviewersTab &&<li className="nav-item" role="presentation" onClick={() => this.onHandleClick('Reviewers')} >
                                         <a className="nav-link" id="ReviewersApprovals-tab" data-toggle="tab" href="#/Reviewers" role="tab" aria-controls="profile" aria-selected="false">My Reviews</a>
                                     </li>}
@@ -303,10 +324,15 @@ class Dashboard extends React.Component<DashboardProps, DashboardState> {
                                         {this.state.showMyTeamComp && <MyTeam {...this.props} />}
                                         </div>
                                     </div>
+                                    <div className="tab-pane fade csDelegateApprovals" id="DelegateApprovals" role="tabpanel" aria-labelledby="DelegateApprovals-tab">
+                                        <div className="border-box-shadow light-box table-responsive dataTables_wrapper-overflow p-2">
+                                        {this.state.showDelegateApprovalsComp && <DelegateApprovals {...this.props} />}
+                                        </div>
+                                    </div>
                                      {/* <div className="tab-pane fade csMyRequests" id="MyRequests" role="tabpanel" aria-labelledby="MyRequests-tab">
                                         <div className="border-box-shadow light-box table-responsive dataTables_wrapper-overflow p-2">
                                             {this.state.showMyRequestsComp && <MyRequests {...this.props} />}
-                                        </div>
+                                        </div> 
                                     </div> */}
                                 </div>
                             </div>
