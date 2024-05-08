@@ -379,12 +379,12 @@ class Clients extends Component<ClientProps, ClientState> {
                 selector: "ClientName",
             },
             {
-                name: "Status",
-                selector: "IsActive",
-            },
-            {
                 name: "Delegate To",
                 selector: "DelegateTo"
+            },
+            {
+                name: "Status",
+                selector: "IsActive",
             }
         ];
         const columns = [

@@ -66,7 +66,8 @@ class DelegateApprovals extends React.Component<DelegateApprovalsProps, Delegate
         comments:'',
         SelectedValue:'',
         SelectedRows:[],
-        ApprovalsData:[]
+        ApprovalsData:[],
+        showTable:false,
         // DelegateToEmail: [],
     }
 
@@ -97,7 +98,10 @@ class DelegateApprovals extends React.Component<DelegateApprovalsProps, Delegate
         let { name } = event.target;
         if( name == "ReportingManagerId"){
             let Client = event.target.selectedOptions[0].getAttribute('data-Client');
-            this.setState({ ReportingManagerId: value,ClientName:Client});
+            this.setState({ReportingManagerId: value})
+            if(value == "")
+            this.setState({ showTable:false,ClientName:'',ApprovalsData:[],DelegateToUsers:[]});
+            else
             this.getManagerApprovals(value,Client)
         }
         else if(name == "DelegateToId")
@@ -152,15 +156,16 @@ class DelegateApprovals extends React.Component<DelegateApprovalsProps, Delegate
         }
         let delegates = clientDelegates[0].DelegateTo
         let obj = []
+
         for (const d of delegates) {
-            if (d.ID != this.props.spContext.userId)
+            if (d.ID != parseInt(ID))
                 obj.push({
                     ID: d.ID,
                     Title: d.Title,
                     Email: d.EMail
                 })
         }
-        this.setState({ ApprovalsData: Data,DelegateToUsers:obj, loading: false });
+        this.setState({ ApprovalsData: Data,DelegateToUsers:obj,ClientName:Client,showTable:true,loading: false });
     }
 
     // this functionis uesd to go to dashboard when clicked on cancel button
@@ -168,7 +173,7 @@ class DelegateApprovals extends React.Component<DelegateApprovalsProps, Delegate
     //     this.setState({ message: '', Homeredirect: true });
     // }
     private handleCancel = () => {
-        this.setState({ SelectedValue: '', comments: '', showHideModal: false })
+        this.setState({ SelectedValue: '', comments: '', showHideModal: false})
     }
 
     private showToaster = () => {
@@ -184,8 +189,9 @@ class DelegateApprovals extends React.Component<DelegateApprovalsProps, Delegate
         if (!isValid.status) {
             customToaster('toster-error', ToasterTypes.Error, isValid.message, 4000)
         }
-        else
-        this.getManagerApprovals(this.state.ReportingManagerId,this.state.ClientName);
+        else{
+            this.getManagerApprovals(this.state.ReportingManagerId,this.state.ClientName);
+        }
     }
 
 
@@ -269,6 +275,10 @@ class DelegateApprovals extends React.Component<DelegateApprovalsProps, Delegate
     }
 
     public render() {
+        if (this.state.Homeredirect) {
+            let url = `/Dashboard/`
+            return (<Navigate to={url}/>);
+        }
             const columns = [
                 {
                     name: "View",
@@ -342,7 +352,7 @@ class DelegateApprovals extends React.Component<DelegateApprovalsProps, Delegate
             ];
             return (
                 <React.Fragment>
-                    <ModalPopUp title={this.state.modalTitle} modalText={this.state.modalText} isVisible={this.state.showHideModal} onClose={this.handleClose} isSuccess={true}></ModalPopUp>
+                    {/* <ModalPopUp title={this.state.modalTitle} modalText={this.state.modalText} isVisible={this.state.showHideModal} onClose={this.handleClose} isSuccess={true}></ModalPopUp> */}
                     <div id="content" className="content p-2 pt-2">
                         <div className='container-fluid'>
                             <div className='FormContent'>
@@ -371,22 +381,22 @@ class DelegateApprovals extends React.Component<DelegateApprovalsProps, Delegate
                                         </div>
                                     </div>
                                 </div>
-                                <div className="row mx-1" id="">
+                                {/* <div className="row mx-1" id="">
                                     <div className="col-sm-12 text-center my-2" id="">
                                         <button type="button" className="SubmitButtons btn" onClick={this.showToaster}>Submit</button>
                                         <button type="button" className="CancelButtons btn" onClick={this.handleCancel}>Cancel</button>
                                     </div>
-                                </div>
+                                </div> */}
                             </div>
                         </div>
-                        {this.state.ReportingManagerId!=""?
+                        {this.state.showTable&&
                         <div>
                         <ModalForwardApprovals changeEvent={this.handleChangeEvents} dropdownObject={this.state.DelegateToUsers} isVisible={this.state.showHideModal} message='Are you sure you want to forward the selected Timesheets?' modalHeader='modal-header-reject' onCancel={this.handleCancel} onConfirm={this.forwardApprovals} selectedValue={this.state.SelectedValue} title='' commentsValue={this.state.comments}></ModalForwardApprovals>
                     <div className='table-head-1st-td'>
-                        <TableGenerator columns={columns} data={this.state.ApprovalsData} fileName={''} showExportExcel={false}
+                       <TableGenerator columns={columns} data={this.state.ApprovalsData} fileName={''} showExportExcel={false}
                             showAddButton={false} customBtnClass='' btnDivID='' navigateOnBtnClick='' btnSpanID='' btnCaption='' btnTitle='Forward Approvals' searchBoxLeft={true} selectableRows={this.state.ApprovalsData.length>0?true:false} handleSelectedRows={this.getSelectedRows} customButton={this.state.SelectedRows.length > 0 ? true : false} customButtonClick={this.ShowPopUp}></TableGenerator>
                             </div>
-                        </div>:''
+                        </div>
                         }
                     </div>
                 <Toaster />
