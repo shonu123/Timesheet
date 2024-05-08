@@ -61,13 +61,13 @@ class DelegateApprovals extends React.Component<DelegateApprovalsProps, Delegate
         GlobalHolidayList: [],
         EligibleforPTO: false,
         isDisabled: false,
-        DelegateToUsers:[],
+        DelegateToUsers: [],
         DelegateToId: { results: [] },
-        comments:'',
-        SelectedValue:'',
-        SelectedRows:[],
-        ApprovalsData:[],
-        showTable:false,
+        comments: '',
+        SelectedValue: '',
+        SelectedRows: [],
+        ApprovalsData: [],
+        showTable: false,
         // DelegateToEmail: [],
     }
 
@@ -78,36 +78,36 @@ class DelegateApprovals extends React.Component<DelegateApprovalsProps, Delegate
 
 
     private async getOnLoadData() {
-        let reportingManagers = await sp.web.lists.getByTitle('EmployeeMaster').items.filter("IsActive eq '1'").expand('ReportingManager').select('ReportingManager/Title,ReportingManager/ID,*').orderBy('ReportingManager/Title', true).getAll()   
+        let reportingManagers = await sp.web.lists.getByTitle('EmployeeMaster').items.filter("IsActive eq '1'").expand('ReportingManager').select('ReportingManager/Title,ReportingManager/ID,*').orderBy('ReportingManager/Title', true).getAll()
         let Managers = []
-            let ManagersObj = []
-            for (const name of reportingManagers) {
-                for (const manager of name.ReportingManager) {       
-                    if (!Managers.includes(manager.Title)) {
-                        Managers.push(manager.Title)
-                        ManagersObj.push({ ID: manager.ID, Title: manager.Title,Client:name.ClientName })
-                    }
+        let ManagersObj = []
+        for (const name of reportingManagers) {
+            for (const manager of name.ReportingManager) {
+                if (!Managers.includes(manager.Title)) {
+                    Managers.push(manager.Title)
+                    ManagersObj.push({ ID: manager.ID, Title: manager.Title, Client: name.ClientName })
                 }
             }
-            this.setState({ReportingManagers:ManagersObj,loading:false})
+        }
+        this.setState({ ReportingManagers: ManagersObj, loading: false })
     }
 
     // this function is used to bind and set values to respect form feilds
     private handleChangeEvents = (event) => {
         let value = event.target.type == 'checkbox' ? event.target.checked : event.target.value;
         let { name } = event.target;
-        if( name == "ReportingManagerId"){
+        if (name == "ReportingManagerId") {
             let Client = event.target.selectedOptions[0].getAttribute('data-Client');
-            this.setState({ReportingManagerId: value})
-            if(value == "")
-            this.setState({ showTable:false,ClientName:'',ApprovalsData:[],DelegateToUsers:[]});
+            this.setState({ ReportingManagerId: value })
+            if (value == "")
+                this.setState({ showTable: false, ClientName: '', ApprovalsData: [], DelegateToUsers: [] });
             else
-            this.getManagerApprovals(value,Client)
+                this.getManagerApprovals(value, Client)
         }
-        else if(name == "DelegateToId")
-        this.setState({ SelectedValue: value});
+        else if (name == "DelegateToId")
+            this.setState({ SelectedValue: value });
         else
-        this.setState({ comments: value });
+            this.setState({ comments: value });
 
     }
 
@@ -115,14 +115,14 @@ class DelegateApprovals extends React.Component<DelegateApprovalsProps, Delegate
         this.setState({ SelectedRows: rows.selectedRows });
     };
 
-    private async getManagerApprovals(ID,Client){
-        this.setState({ loading:true });
+    private async getManagerApprovals(ID, Client) {
+        this.setState({ loading: true });
         let dateFilter = new Date()
         dateFilter.setDate(new Date().getDate() - 31);
         let date = `${dateFilter.getMonth() + 1}/${dateFilter.getDate()}/${dateFilter.getFullYear()}`
         var filterQuery = "and WeekStartDate ge '" + date + "'"
         var filterString = "AssignedTo/Id eq '" + ID + "' and PendingWith eq 'Manager'";
-        let [clientDelegates,Approvals] = await Promise.all([
+        let [clientDelegates, Approvals] = await Promise.all([
             sp.web.lists.getByTitle('Client').items.filter("Title eq '" + Client + "' and IsActive eq 1").select('DelegateTo/Title,DelegateTo/ID,DelegateTo/EMail,*').expand('DelegateTo').get(),
             sp.web.lists.getByTitle('WeeklyTimeSheet').items.top(2000).filter(filterString + filterQuery).expand("ReportingManager,Initiator").select('ReportingManager/Title,ReportingManager/EMail,Initiator/EMail,*').orderBy('WeekStartDate,DateSubmitted', false).get()
         ])
@@ -139,7 +139,7 @@ class DelegateApprovals extends React.Component<DelegateApprovalsProps, Delegate
                 EmployeName: d.Name,
                 PendingWith: d.PendingWith == "Approver" || d.PendingWith == "Manager" ? "Reporting Manager" : d.PendingWith,
                 Status: d.Status == StatusType.ReviewerReject ? 'Rejected by Synergy' : d.Status == StatusType.ManagerReject ? 'Rejected by Reporting Manager' : d.Status,
-                BillableTotalHrs: isBillable ?parseFloat(parseFloat(d.WeeklyTotalHrs).toFixed(2)) : parseFloat(parseFloat(JSON.parse(d.SynergyOfficeHrs)[0].Total).toFixed(2)),
+                BillableTotalHrs: isBillable ? parseFloat(parseFloat(d.WeeklyTotalHrs).toFixed(2)) : parseFloat(parseFloat(JSON.parse(d.SynergyOfficeHrs)[0].Total).toFixed(2)),
                 OTTotalHrs: parseFloat(parseFloat(d.OTTotalHrs).toFixed(2)),
                 TotalBillable: parseFloat(parseFloat(d.BillableTotalHrs).toFixed(2)),
                 // NonBillableTotalHrs: d.NonBillableTotalHrs,
@@ -165,7 +165,7 @@ class DelegateApprovals extends React.Component<DelegateApprovalsProps, Delegate
                     Email: d.EMail
                 })
         }
-        this.setState({ ApprovalsData: Data,DelegateToUsers:obj,ClientName:Client,showTable:true,loading: false });
+        this.setState({ ApprovalsData: Data, DelegateToUsers: obj, ClientName: Client, showTable: true, loading: false });
     }
 
     // this functionis uesd to go to dashboard when clicked on cancel button
@@ -173,7 +173,7 @@ class DelegateApprovals extends React.Component<DelegateApprovalsProps, Delegate
     //     this.setState({ message: '', Homeredirect: true });
     // }
     private handleCancel = () => {
-        this.setState({ SelectedValue: '', comments: '', showHideModal: false})
+        this.setState({ SelectedValue: '', comments: '', showHideModal: false })
     }
 
     private showToaster = () => {
@@ -189,8 +189,8 @@ class DelegateApprovals extends React.Component<DelegateApprovalsProps, Delegate
         if (!isValid.status) {
             customToaster('toster-error', ToasterTypes.Error, isValid.message, 4000)
         }
-        else{
-            this.getManagerApprovals(this.state.ReportingManagerId,this.state.ClientName);
+        else {
+            this.getManagerApprovals(this.state.ReportingManagerId, this.state.ClientName);
         }
     }
 
@@ -257,10 +257,10 @@ class DelegateApprovals extends React.Component<DelegateApprovalsProps, Delegate
             let EmailSubject = "Weekly Time Sheet has been forwarded for your Approval"
             // Execute the batch
             await batch.execute();
-            
+
             customToaster('toster-success', ToasterTypes.Success, 'Timesheets forwarded Sucessfully.', 2000)
-            this.setState({ SelectedValue: '', comments: '', showHideModal: false,SelectedRows:[], loading: false });
-            this.getManagerApprovals(this.state.ReportingManagerId,this.state.ClientName);
+            this.setState({ SelectedValue: '', comments: '', showHideModal: false, SelectedRows: [], loading: false });
+            this.getManagerApprovals(this.state.ReportingManagerId, this.state.ClientName);
         } catch (error) {
             customToaster('toster-error', ToasterTypes.Error, 'Sorry! something went wrong', 4000)
             this.setState({ loading: false })
@@ -277,135 +277,136 @@ class DelegateApprovals extends React.Component<DelegateApprovalsProps, Delegate
     public render() {
         if (this.state.Homeredirect) {
             let url = `/Dashboard/`
-            return (<Navigate to={url}/>);
+            return (<Navigate to={url} />);
         }
-            const columns = [
-                {
-                    name: "View",
-                    selector: (row, i) => row.Id,
-                    export: false,
-                    cell: record => {
-                        return (
-                            <React.Fragment>
-                                <div style={{ paddingLeft: '10px' }}>
-                                    <NavLink title="Edit" className="csrLink ms-draggable" to={`/WeeklyTimesheet/${record.Id}`}>
-                                        <FontAwesomeIcon icon={faEye}></FontAwesomeIcon>
-                                    </NavLink>
+        const columns = [
+            {
+                name: "View",
+                selector: (row, i) => row.Id,
+                export: false,
+                cell: record => {
+                    return (
+                        <React.Fragment>
+                            <div style={{ paddingLeft: '10px' }}>
+                                <NavLink title="Edit" className="csrLink ms-draggable" to={`/WeeklyTimesheet/${record.Id}`}>
+                                    <FontAwesomeIcon icon={faEye}></FontAwesomeIcon>
+                                </NavLink>
+                            </div>
+                        </React.Fragment>
+                    );
+                },
+                width: '100px'
+            },
+            {
+                name: "Date",
+                selector: (row, i) => row.Date,
+                width: '100px',
+                sortable: true
+            },
+            {
+                name: "Employee Name",
+                selector: (row, i) => row.EmployeName,
+                width: '250px',
+                sortable: true
+            },
+            {
+                name: "Pending With",
+                selector: (row, i) => row.PendingWith,
+                width: '180px',
+                sortable: true
+            },
+            {
+                name: "Status",
+                selector: (row, i) => row.Status,
+                sortable: true
+            },
+            {
+                name: "Hours",
+                selector: (row, i) => row.BillableTotalHrs,
+                sortable: true,
+            },
+            {
+                name: "OT",
+                selector: (row, i) => row.OTTotalHrs,
+                width: '110px',
+                sortable: true,
+            },
+            {
+                name: "Holiday",
+                selector: (row, i) => row.HolidayHrs,
+                width: '130px',
+                sortable: true,
+            },
+            {
+                name: "Time Off",
+                selector: (row, i) => row.PTOHrs,
+                width: '110px',
+                sortable: true,
+            },
+            {
+                name: "Grand Total",
+                selector: (row, i) => row.GrandTotal,
+                // width: '140px',
+                sortable: true
+            }
+        ];
+        return (
+            <React.Fragment>
+                {/* <ModalPopUp title={this.state.modalTitle} modalText={this.state.modalText} isVisible={this.state.showHideModal} onClose={this.handleClose} isSuccess={true}></ModalPopUp> */}
+                <div id="content" className="content p-2 pt-2">
+                    <div className='container-fluid'>
+                        <div className='FormContent'>
+                            <div className="title">Delegate Approvals
+                                <div className='mandatory-note'>
+                                    <span className='mandatoryhastrick'>*</span> indicates a required field
                                 </div>
-                            </React.Fragment>
-                        );
-                    },
-                    width: '100px'
-                },
-                {
-                    name: "Date",
-                    selector: (row, i) => row.Date,
-                    width: '100px',
-                    sortable: true
-                },
-                {
-                    name: "Employee Name",
-                    selector: (row, i) => row.EmployeName,
-                    width: '250px',
-                    sortable: true
-                },
-                {
-                    name: "Pending With",
-                    selector: (row, i) => row.PendingWith,
-                    width: '180px',
-                    sortable: true
-                },
-                {
-                    name: "Status",
-                    selector: (row, i) => row.Status,
-                    sortable: true
-                },
-                {
-                    name: "Hours",
-                    selector: (row, i) => row.BillableTotalHrs,
-                    sortable: true,
-                },
-                {
-                    name: "OT",
-                    selector: (row, i) => row.OTTotalHrs,
-                    width: '110px',
-                    sortable: true,
-                },
-                {
-                    name: "Holiday",
-                    selector: (row, i) => row.HolidayHrs,
-                    width: '130px',
-                    sortable: true,
-                },
-                {
-                    name: "Time Off",
-                    selector: (row, i) => row.PTOHrs,
-                    width: '110px',
-                    sortable: true,
-                },
-                {
-                    name: "Grand Total",
-                    selector: (row, i) => row.GrandTotal,
-                    // width: '140px',
-                    sortable: true
-                }
-            ];
-            return (
-                <React.Fragment>
-                    {/* <ModalPopUp title={this.state.modalTitle} modalText={this.state.modalText} isVisible={this.state.showHideModal} onClose={this.handleClose} isSuccess={true}></ModalPopUp> */}
-                    <div id="content" className="content p-2 pt-2">
-                        <div className='container-fluid'>
-                            <div className='FormContent'>
-                                <div className="title">Delegate Approvals
-                                    <div className='mandatory-note'>
-                                        <span className='mandatoryhastrick'>*</span> indicates a required field
-                                    </div>
-                                </div>
-                                <div className="after-title"></div>
-                                <div className="media-m-2 media-p-1">
-                                    <div className="my-2">
-                                        <div className="row pt-2 px-2">
+                            </div>
+                            <div className="after-title"></div>
+                            <div className="media-m-2 media-p-1">
+                                <div className="my-2">
+                                    <div className="row pt-2 px-2">
 
-                                            <div className="col-md-3">
-                                                <div className="light-text">
-                                                    <label>Reporting Manager<span className="mandatoryhastrick">*</span></label>
-                                                    <select className="form-control" required={true} name="ReportingManagerId" title="ReportingManager" id='' ref={this.ReportingManager} onChange={this.handleChangeEvents} disabled={this.state.isDisabled}>
-                                                        <option value=''>None</option>
-                                                        {this.state.ReportingManagers.map((option) => (
-                                                            <option value={option.ID} selected={option.ID == this.state.ReportingManagerId} data-Client ={option.Client}>{option.Title}</option>
-                                                        ))}
-                                                    </select>
-                                                </div>
+                                        <div className="col-md-3">
+                                            <div className="light-text">
+                                                <label>Reporting Manager<span className="mandatoryhastrick">*</span></label>
+                                                <select className="form-control" required={true} name="ReportingManagerId" title="ReportingManager" id='' ref={this.ReportingManager} onChange={this.handleChangeEvents} disabled={this.state.isDisabled}>
+                                                    <option value=''>None</option>
+                                                    {this.state.ReportingManagers.map((option) => (
+                                                        <option value={option.ID} selected={option.ID == this.state.ReportingManagerId} data-Client={option.Client}>{option.Title}</option>
+                                                    ))}
+                                                </select>
                                             </div>
-
                                         </div>
+
                                     </div>
                                 </div>
-                                {/* <div className="row mx-1" id="">
+                            </div>
+                            {/* <div className="row mx-1" id="">
                                     <div className="col-sm-12 text-center my-2" id="">
                                         <button type="button" className="SubmitButtons btn" onClick={this.showToaster}>Submit</button>
                                         <button type="button" className="CancelButtons btn" onClick={this.handleCancel}>Cancel</button>
                                     </div>
                                 </div> */}
-                            </div>
+                            {this.state.showTable &&
+                                <div>
+                                    <ModalForwardApprovals changeEvent={this.handleChangeEvents} dropdownObject={this.state.DelegateToUsers} isVisible={this.state.showHideModal} message='Are you sure you want to forward the selected Timesheets?' modalHeader='modal-header-reject' onCancel={this.handleCancel} onConfirm={this.forwardApprovals} selectedValue={this.state.SelectedValue} title='' commentsValue={this.state.comments}></ModalForwardApprovals>
+                                    <div className='table-head-1st-td'>
+                                        <TableGenerator columns={columns} data={this.state.ApprovalsData} fileName={''} showExportExcel={false}
+                                            showAddButton={false} customBtnClass='' btnDivID='' navigateOnBtnClick='' btnSpanID='' btnCaption='' btnTitle='Forward Approvals' searchBoxLeft={true} selectableRows={this.state.ApprovalsData.length > 0 ? true : false} handleSelectedRows={this.getSelectedRows} customButton={this.state.SelectedRows.length > 0 ? true : false} customButtonClick={this.ShowPopUp}></TableGenerator>
+                                    </div>
+                                </div>
+                            }
                         </div>
-                        {this.state.showTable&&
-                        <div>
-                        <ModalForwardApprovals changeEvent={this.handleChangeEvents} dropdownObject={this.state.DelegateToUsers} isVisible={this.state.showHideModal} message='Are you sure you want to forward the selected Timesheets?' modalHeader='modal-header-reject' onCancel={this.handleCancel} onConfirm={this.forwardApprovals} selectedValue={this.state.SelectedValue} title='' commentsValue={this.state.comments}></ModalForwardApprovals>
-                    <div className='table-head-1st-td'>
-                       <TableGenerator columns={columns} data={this.state.ApprovalsData} fileName={''} showExportExcel={false}
-                            showAddButton={false} customBtnClass='' btnDivID='' navigateOnBtnClick='' btnSpanID='' btnCaption='' btnTitle='Forward Approvals' searchBoxLeft={true} selectableRows={this.state.ApprovalsData.length>0?true:false} handleSelectedRows={this.getSelectedRows} customButton={this.state.SelectedRows.length > 0 ? true : false} customButtonClick={this.ShowPopUp}></TableGenerator>
-                            </div>
-                        </div>
-                        }
                     </div>
+
+                </div>
                 <Toaster />
                 {this.state.loading && <Loader />}
-                    {this.state.showToaster && <Toaster />}
-                    {this.state.loading && <Loader />}
-                </React.Fragment >
-            );
-        
+                {this.state.showToaster && <Toaster />}
+                {this.state.loading && <Loader />}
+            </React.Fragment >
+        );
+
     }
 }
 export default DelegateApprovals
