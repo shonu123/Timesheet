@@ -3003,7 +3003,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                         <div className="light-box m-1 p-2 pt-3">
                                                     <div className="media-px-12,col-md-9">
                                                         <div className="light-text height-auto">
-                                                            <label className="floatingTextarea2 top-11">Comments{this.state.IsReviewer?<span className="mandatoryhastrick">*</span>:""} </label>
+                                                            <label className="floatingTextarea2 top-11">Comments</label>
                                                             <textarea className="position-static form-control requiredinput" ref={ this.Comments} onChange={this.handleChange} value={this.state.trFormdata.Comments} maxLength={500} id="txtComments" name="Comments"  disabled={false}></textarea>
                                                         </div>
                                                     </div>
