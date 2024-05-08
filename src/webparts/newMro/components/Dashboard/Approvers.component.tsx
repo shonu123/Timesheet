@@ -77,7 +77,7 @@ class ApproversApprovals extends React.Component<ApproversProps, ApproversState>
         let date = `${dateFilter.getMonth() + 1}/${dateFilter.getDate()}/${dateFilter.getFullYear()}`
         var filterQuery = "and WeekStartDate ge '" + date + "'"
         // var filterString = "ReportingManager/Id eq '"+userId+"' and PendingWith eq 'Manager' and Status eq '"+StatusType.Submit+"'"
-        var filterString = "AssignedTo/Id eq '" + userId + "' and PendingWith eq 'Manager'";
+        var filterString = "(AssignedTo/Id eq '" + userId + "' or ReportingManager/Id eq '"+userId+"') and PendingWith eq 'Manager'";
         sp.web.lists.getByTitle('WeeklyTimeSheet').items.top(2000).filter(filterString + filterQuery).expand("ReportingManager,Initiator").select('ReportingManager/Title,ReportingManager/EMail,Initiator/EMail,*').orderBy('WeekStartDate,DateSubmitted', false).get()
             .then((response) => {
                 // console.log(response)
