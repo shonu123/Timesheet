@@ -58,9 +58,10 @@ interface TableGeneratorProps {
   handleSelectedRows?:any;
   customButton?:boolean;
   customButtonClick?:any;
+  clearSelectedRows?:boolean;
 }
 
-const TableGenerator = ({ columns, data, fileName,showExportExcel, ExportExcelCustomisedColumns,ExportExcelCustomisedData, prvPageNumber,prvSort,prvDirection,onChange,onSortChange,onSortDirection,showAddButton,btnSpanID,btnTitle,navigateOnBtnClick,btnCaption,customBtnClass,btnDivID,searchBoxLeft,wrapColumns,selectableRows,handleSelectedRows,customButton=false,customButtonClick}: TableGeneratorProps) => {
+const TableGenerator = ({ columns, data, fileName,showExportExcel, ExportExcelCustomisedColumns,ExportExcelCustomisedData, prvPageNumber,prvSort,prvDirection,onChange,onSortChange,onSortDirection,showAddButton,btnSpanID,btnTitle,navigateOnBtnClick,btnCaption,customBtnClass,btnDivID,searchBoxLeft,wrapColumns,selectableRows,handleSelectedRows,customButton=false,customButtonClick,clearSelectedRows=true}: TableGeneratorProps) => {
   //let lsMyrequests = localStorage.getItem('PrvData');
  // const tableData = { columns, data };
   const [totalData, setData] = useState([]);
@@ -140,6 +141,7 @@ const TableGenerator = ({ columns, data, fileName,showExportExcel, ExportExcelCu
           defaultSortAsc={prvDirection}
           selectableRows={selectableRows}
           onSelectedRowsChange={handleSelectedRows}
+          // clearSelectedRows={clearSelectedRows}
         />
         
       </div>
