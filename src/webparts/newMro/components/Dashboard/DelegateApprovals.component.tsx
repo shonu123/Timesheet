@@ -177,6 +177,9 @@ class DelegateApprovals extends React.Component<DelegateApprovalsProps, Delegate
             }
         }
         obj.sort((a, b) => a.Title.localeCompare(b.Title));
+        if(uniqueArray.length<1)
+            customToaster('toster-error', ToasterTypes.Error, 'There are no Reporting Managers configured for this client', 4000);
+
         this.setState({DelegateToUsersObj:obj,ReportingManagers:uniqueArray,selectedClient:value,loading:false})
     }
 
@@ -415,7 +418,7 @@ class DelegateApprovals extends React.Component<DelegateApprovalsProps, Delegate
                 {/* <ModalPopUp title={this.state.modalTitle} modalText={this.state.modalText} isVisible={this.state.showHideModal} onClose={this.handleClose} isSuccess={true}></ModalPopUp> */}
                 <div id="content" className="content p-2 pt-2">
                     <div className='container-fluid'>
-                        <div className='FormContent'>
+                        <div className='FormContent box-shadow-none'>
                             <div className="title">Delegate Approvals
                                 <div className='mandatory-note'>
                                     <span className='mandatoryhastrick'>*</span> indicates a required field
@@ -460,7 +463,7 @@ class DelegateApprovals extends React.Component<DelegateApprovalsProps, Delegate
                                 </div>
                             {this.state.showTable &&
                                 <div>
-                                    <ModalForwardApprovals changeEvent={this.handleChangeEvents} dropdownObject={this.state.DelegateToUsers} isVisible={this.state.showHideModal} message='Are you sure you want to forward the selected Timesheets?' modalHeader='modal-header-reject' onCancel={this.handleCancel} onConfirm={this.forwardApprovals} selectedValue={this.state.SelectedValue} title='' commentsValue={this.state.comments}></ModalForwardApprovals>
+                                    <ModalForwardApprovals changeEvent={this.handleChangeEvents} dropdownObject={this.state.DelegateToUsers} isVisible={this.state.showHideModal} message='Are you sure you want to forward the selected Timesheets?' modalHeader='modal-header-Approve' onCancel={this.handleCancel} onConfirm={this.forwardApprovals} selectedValue={this.state.SelectedValue} title='' commentsValue={this.state.comments}></ModalForwardApprovals>
                                     <div className='table-head-1st-td'>
                                         <TableGenerator columns={columns} data={this.state.ApprovalsData} fileName={''} showExportExcel={false}
                                             showAddButton={false} customBtnClass='' btnDivID='' navigateOnBtnClick='' btnSpanID='' btnCaption='' btnTitle='Forward Approvals' searchBoxLeft={true} selectableRows={this.state.ApprovalsData.length > 0 ? true : false} handleSelectedRows={this.getSelectedRows} customButton={this.state.SelectedRows.length > 0 ? true : false} customButtonClick={this.ShowPopUp} clearSelectedRows={this.state.clearRows}></TableGenerator>

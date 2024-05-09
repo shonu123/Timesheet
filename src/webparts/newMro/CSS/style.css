@@ -1010,6 +1010,9 @@ a:active {
 .form-control:disabled:hover{
   cursor: not-allowed;
 }
+.ms-BasePicker-text:disabled:hover{
+  cursor: not-allowed;
+}
 .custom-control-input:disabled~.custom-control-label:before{
   opacity: .5;
   background-color: #6c757d;
@@ -2616,7 +2619,9 @@ li {
   font-weight: bold;
   padding-left: 5px !important;
 }
-
+.box-shadow-none{
+  box-shadow: none;
+}
 .lkrJOt{
   font-family: sans-serif !important;
   padding-left: 6px !important;

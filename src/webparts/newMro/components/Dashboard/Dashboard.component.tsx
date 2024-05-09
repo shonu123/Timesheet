@@ -273,7 +273,7 @@ class Dashboard extends React.Component<DashboardProps, DashboardState> {
                 <div className="container-fluid">
                     <div className='FormContent'>
                         <div className="p-1">
-                            <div className="border-box-shadow light-box m-2">
+                            <div className="light-box m-2">
                                 <ul className="nav nav-tabs nav-fill" id="myTab" role="tablist">
 
                                 {this.state.showAllRequestsTab &&<li className="nav-item" role="presentation" onClick={() => this.onHandleClick('AllRequests')} >
@@ -300,17 +300,17 @@ class Dashboard extends React.Component<DashboardProps, DashboardState> {
                                 
                                <div className="tab-content" id="myTabContent">
                                <div className="tab-pane fade csApproversApprovals show active" id="home" role="tabpanel" aria-labelledby="home-tab">
-                                        <div className="border-box-shadow light-box table-responsive dataTables_wrapper-overflow p-2">
+                                        <div className="">
                                             {this.state.showApproveComp && <ApproversApprovals {...this.props} />}
                                         </div>
                                     </div>
                                     <div className="tab-pane fade csReviewersApprovals" id="ReviewersApprovals" role="tabpanel" aria-labelledby="ReviewersApprovals-tab">
-                                        <div className="border-box-shadow light-box table-responsive dataTables_wrapper-overflow p-2">
+                                        <div className="">
                                             {this.state.showReviewerComp && <ReviewerApprovals {...this.props} />}
                                         </div>
                                     </div>
                                     <div className="tab-pane fade csMyRequests" id="MyRequests" role="tabpanel" aria-labelledby="MyRequests-tab">
-                                        <div className="border-box-shadow light-box table-responsive dataTables_wrapper-overflow p-2">
+                                        <div className="">
                                             {this.state.showMyRequestsComp && <MyRequests {...this.props} />}
                                         </div>
                                     </div>
@@ -320,12 +320,12 @@ class Dashboard extends React.Component<DashboardProps, DashboardState> {
                                         </div>
                                     </div>
                                     <div className="tab-pane fade csMyRequests" id="MyTeam" role="tabpanel" aria-labelledby="MyTeam-tab">
-                                        <div className="border-box-shadow light-box table-responsive dataTables_wrapper-overflow p-2">
+                                        <div className="">
                                         {this.state.showMyTeamComp && <MyTeam {...this.props} />}
                                         </div>
                                     </div>
                                     <div className="tab-pane fade csDelegateApprovals" id="DelegateApprovals" role="tabpanel" aria-labelledby="DelegateApprovals-tab">
-                                        <div className="border-box-shadow light-box table-responsive dataTables_wrapper-overflow p-2">
+                                        <div className="">
                                         {this.state.showDelegateApprovalsComp && <DelegateApprovals {...this.props} />}
                                         </div>
                                     </div>
