@@ -458,7 +458,8 @@ class DelegateApprovals extends React.Component<DelegateApprovalsProps, Delegate
                             <div className="row mx-1" id="">
                                     <div className="col-sm-12 text-center my-2" id="">
                                         <button type="button" className="SubmitButtons btn" onClick={this.showToaster}>Submit</button>
-                                        <button type="button" className="CancelButtons btn" onClick={this.handleCancel}>Cancel</button>
+                                        {/* <button type="button" className="CancelButtons btn" onClick={this.handleCancel}>Cancel</button>
+                                        need to write cancel button functionality */}
                                     </div>
                                 </div>
                             {this.state.showTable &&
