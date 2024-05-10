@@ -47,7 +47,7 @@ class AllRequests extends React.Component<AllRequestsProps,AllRequestsState> {
     private AllRequests = async () => {
         const userId = this.props.spContext.userId;
         let dateFilter = new Date()
-        dateFilter.setDate(new Date().getDate()-31);
+        dateFilter.setDate(new Date().getDate()-60);
         let date = `${dateFilter.getMonth() + 1}/${dateFilter.getDate()}/${dateFilter.getFullYear()}`
         var filterString = "WeekStartDate ge '"+date+"'"
         sp.web.lists.getByTitle('WeeklyTimeSheet').items.top(5000).filter(filterString).expand("ReportingManager").select('ReportingManager/Title','*').orderBy('WeekStartDate,DateSubmitted', false).getAll()

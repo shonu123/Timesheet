@@ -46,7 +46,7 @@ class MyRequests extends React.Component<MyRequestsProps, MyRequestsState> {
         this.setState({ loading: true });
         const userId = this.props.spContext.userId;
         let dateFilter = new Date()
-        dateFilter.setDate(new Date().getDate()-31);
+        dateFilter.setDate(new Date().getDate()-60);
         let date = `${dateFilter.getMonth() + 1}/${dateFilter.getDate()}/${dateFilter.getFullYear()}`
         var filterQuery = "and WeekStartDate ge '"+date+"'"
 
