@@ -138,7 +138,7 @@ class Clients extends Component<ClientProps, ClientState> {
         const id = this.props.match.params.id ? this.props.match.params.id : 0;
 
         let isValid = Formvalidator.checkValidations(data);
-        isValid = isValid.status ? Formvalidator.multiplePeoplePickerValidation(pdata) : isValid
+        // isValid = isValid.status ? Formvalidator.multiplePeoplePickerValidation(pdata) : isValid
         if (isValid.status) {
             this.checkDuplicates(formdata, id);
         }
@@ -500,7 +500,7 @@ class Clients extends Component<ClientProps, ClientState> {
 
                                             <div className="col-md-3">
                                                 <div className="light-text">
-                                                    <label className='lblPeoplepicker'>Delegate To <span className="mandatoryhastrick">*</span></label>
+                                                    <label className='lblPeoplepicker'>Delegate To {/*<span className="mandatoryhastrick">*</span>*/}</label>
                                                     <div className="custom-peoplepicker" id="divDelegateTo">
                                                         <PeoplePicker
                                                             context={this.props.context}

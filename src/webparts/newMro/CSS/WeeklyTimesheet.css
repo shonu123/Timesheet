@@ -78,7 +78,8 @@
     .day {
         display: block;
         color: #ffff;
-        font-size: 16px;
+        /* font-size: 16px; Commneted on 5/14/2024 */
+        font-size: 12px;
     }
     .weekDay{
         width: 66px!important;
