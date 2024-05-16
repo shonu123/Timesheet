@@ -129,13 +129,15 @@ if(Data.length>0){
     let clientDelegates = await sp.web.lists.getByTitle('Client').items.filter("Title eq '" + Data[0].Client + "' and IsActive eq 1").select('DelegateTo/Title,DelegateTo/ID,DelegateTo/EMail,*').expand('DelegateTo').get()
     let delegates = clientDelegates[0].DelegateTo
     obj = []
-    for (const d of delegates) {
-        if (d.ID != this.props.spContext.userId)
-            obj.push({
-                ID: d.ID,
-                Title: d.Title,
-                Email: d.EMail
-            })
+    if(delegates!=undefined){
+        for (const d of delegates) {
+            if (d.ID != this.props.spContext.userId)
+                obj.push({
+                    ID: d.ID,
+                    Title: d.Title,
+                    Email: d.EMail
+                })
+        }
     }
 }
 

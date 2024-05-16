@@ -166,12 +166,14 @@ class DelegateApprovals extends React.Component<DelegateApprovalsProps, Delegate
         for (const d of delegates) {
             if(d.Client == value){
                 let users = d.Delegates
-                for (const u of users) {
-                        obj.push({
-                            ID: u.ID,
-                            Title: u.Title
-                            // Email: u.EMail
-                        })
+                if(users!=undefined){
+                    for (const u of users) {
+                            obj.push({
+                                ID: u.ID,
+                                Title: u.Title
+                                // Email: u.EMail
+                            })
+                    }
                 }
                 
             }

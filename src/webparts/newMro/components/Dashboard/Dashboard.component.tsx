@@ -144,7 +144,7 @@ class Dashboard extends React.Component<DashboardProps, DashboardState> {
             userGroup.push(grp.Title)
         }
         let showTab =false;
-        if(userGroup.includes('Timesheet Administrators')||userGroup.includes('Timesheet Members')){
+        if(userGroup.includes('Timesheet Administrators')|| userGroup.includes('Timesheet Members') || userGroup.includes('Dashboard Admins')){
             showTab =true;
         }
         if(showTab && isEmployee){
@@ -164,7 +164,7 @@ class Dashboard extends React.Component<DashboardProps, DashboardState> {
             this.setState({ showMyReviewersTab: true});
             this.onHandleClick('Reviewers')
         }
-        if(userGroup.includes('Timesheet Administrators')){
+        if(userGroup.includes('Timesheet Administrators') || userGroup.includes('Dashboard Admins')){
             this.setState({ showAllRequestsTab: true});
             this.onHandleClick('AllRequests')
             EmployeeConfigured = true
