@@ -7,6 +7,7 @@ const DatePickercontrol = (props,ref) => {
     let selectedDate = props.selectedDate!=null?props.selectedDate:null;
     let selDate=null;
     let reference = ref
+    let id = props.id
     if(selectedDate !=null)
     {
     //   let month =selectedDate.getMonth()+1;
@@ -72,8 +73,9 @@ const DatePickercontrol = (props,ref) => {
           onChange={handlechangeevent}
           placeholder={'MM/DD/YYYY '}
           className="form-control DatePicker"//{props.isDisabled ? "form-control DatePicker c-input-readonly" : "form-control DatePicker"}//"form-control DatePicker" // custom class
-         ref={reference}
+        //  ref={reference}
          disabled={props.isDisabled}
+         id={id}
         />
      );
   };

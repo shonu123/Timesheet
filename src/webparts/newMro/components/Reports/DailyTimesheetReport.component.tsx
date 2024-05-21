@@ -192,29 +192,38 @@ class DailyTimesheetReport extends React.Component<DailyTimesheetReportProps, Da
         else if (this.state.startDate == null) {
             isvalid.status = false;
             isvalid.message = 'Start Date cannot be blank'
-            let prpel =  this.startDate
-            prpel.current.input.focus();
+            // let prpel =  this.startDate
+            let element = document.getElementById('txtStartDate')
+            element.focus()
+            element.classList.add('mandatory-FormContent-focus');
             setTimeout(function (){
-                prpel.current.input.classList.add('mandatory-FormContent-focus');
+                // prpel.current.input.classList.add('mandatory-FormContent-focus');
+                element.classList.add('mandatory-FormContent-focus');
             },0)
         }
         else if (this.state.endDate == null) {
             isvalid.status = false;
             isvalid.message = 'End Date cannot be blank'
-            let prpel =  this.endDate
-            prpel.current.input.focus();
-            setTimeout(function (){
-                prpel.current.input.classList.add('mandatory-FormContent-focus');
-            },0)
+            // let prpel =  this.endDate
+            let element = document.getElementById('txtEndDate')
+            element.focus()
+            element.classList.add('mandatory-FormContent-focus');
 
+            // prpel.current.input.focus();
+            setTimeout(function (){
+                element.classList.add('mandatory-FormContent-focus');
+            },0)
         }
         else if (new Date(selectedStartDate) > new Date(selectedEndDate)) {
             isvalid.status = false;
             isvalid.message = 'Start Date cannot be greater than End Date'
-            let prpel =  this.startDate
-            prpel.current.input.focus();
+            let element = document.getElementById('txtStartDate')
+            element.focus()
+            element.classList.add('mandatory-FormContent-focus');
+            // let prpel =  this.startDate
+            // prpel.current.input.focus();
             setTimeout(function (){
-                prpel.current.input.classList.add('mandatory-FormContent-focus');
+                element.classList.add('mandatory-FormContent-focus');
             },0)
         }
         return isvalid;
@@ -751,7 +760,7 @@ this.setState({ColumnsHeaders:hColumns,ReportData:SampleData,ExportExcelData:req
                                                 <label className="z-in-9">Start Date<span className="mandatoryhastrick">*</span></label>
                                                 <div className="custom-datepicker" id="divDateofJoining">
 
-                                                    <DatePicker onDatechange={this.handleStartDate} selectedDate={this.state.startDate} ref={this.startDate} placeholderText='MM/DD/YYYY'/>
+                                                    <DatePicker onDatechange={this.handleStartDate} selectedDate={this.state.startDate} ref={this.startDate} placeholderText='MM/DD/YYYY' id={'txtStartDate'}/>
                                                 </div>
                                             </div>
                                         </div>
@@ -761,7 +770,7 @@ this.setState({ColumnsHeaders:hColumns,ReportData:SampleData,ExportExcelData:req
                                                 <label className="z-in-9">End Date<span className="mandatoryhastrick">*</span></label>
                                                 <div className="custom-datepicker" id="divDateofJoining">
 
-                                                    <DatePicker onDatechange={this.handleEndDate} ref={this.endDate} selectedDate={this.state.endDate} />
+                                                    <DatePicker onDatechange={this.handleEndDate} ref={this.endDate} selectedDate={this.state.endDate} id={'txtEndDate'}/>
                                                 </div>
                                             </div>
                                         </div>
