@@ -94,7 +94,7 @@ class DailyTimesheetReport extends React.Component<DailyTimesheetReportProps, Da
         for (const grp of groups) {
             userGroups.push(grp.Title)
         }
-        if (userGroups.includes('Timesheet Administrators')) {
+        if (userGroups.includes('Timesheet Administrators') || userGroups.includes('Dashboard Admins')) {
             this.setState({ isPageAccessable: true })
         }
         else {
