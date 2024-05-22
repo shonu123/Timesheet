@@ -1,0 +1,160 @@
+Billing Timesheet
+********************************
+"Workbench urls"
+----------------
+
+1. Development
+----------------
+"initialPage": "https://synergycomcom.sharepoint.com/sites/Billing.Timesheet/DEV/_layouts/workbench.aspx"
+
+2. Production
+----------------
+"initialPage": "https://synergycomcom.sharepoint.com/sites/Billing.Timesheet/_layouts/workbench.aspx"
+
+
+"Package Files"
+------------------
+Development
+==================================
+1. Timesheet.manifest.json
+-------------------------------------
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/spfx/client-side-web-part-manifest.schema.json",
+  "id": "008b3b6a-73eb-4763-8b3f-0fc9afbbb143",
+  "alias": "Timesheet",
+  "componentType": "WebPart",
+
+  "version": "*",
+  "manifestVersion": 2,
+
+  "requiresCustomScript": false,
+  "supportedHosts": ["SharePointWebPart", "TeamsPersonalApp", "TeamsTab", "SharePointFullPage"],
+  "supportsThemeVariants": true,
+
+  "preconfiguredEntries": [{
+    "groupId": "5c03119e-3074-46fd-976b-c60198311f70", 
+    "group": { "default": "Advanced" },
+    "title": { "default": "TimesheetDEV" },
+    "description": { "default": "Timesheet description Development" }, 
+    "officeFabricIconFontName": "Page",
+    "properties": {
+      "description": "Timesheet-DEV"
+    }
+  }]
+}
+_________________________________________________________________________________________
+2. package-solution.json
+-----------------------------
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/spfx-build/package-solution.schema.json",
+  "solution": {
+    "name": "timesheet-client-side-solution-Dev",
+    "id": "1cd17a6f-e355-4d0f-985b-bc008a623cbd",
+    "version": "1.0.0.0",
+    "includeClientSideAssets": true,
+    "skipFeatureDeployment": true,
+    "isDomainIsolated": false,
+    "developer": {
+      "name": "",
+      "websiteUrl": "",
+      "privacyUrl": "",
+      "termsOfUseUrl": "",
+      "mpnId": "Undefined-1.16.1"
+    },
+    "metadata": {
+      "shortDescription": {
+        "default": "Timesheet description"
+      },
+      "longDescription": {
+        "default": "Timesheet description"
+      },
+      "screenshotPaths": [],
+      "videoUrl": "",
+      "categories": []
+    },
+    "features": [
+      {
+        "title": "Timesheet Feature",
+        "description": "The feature that activates elements of the Timesheet solution Development.", 
+        "id": "4b69729e-f3c6-4189-acfc-ccfc723780cd",
+        "version": "1.0.0.0"
+      }
+    ]
+  },
+  "paths": {
+    "zippedPackage": "solution/Timesheet-DEV.sppkg"
+  }
+}
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+Production
+===============================
+1. Timesheet.manifest.json
+---------------------------------
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/spfx/client-side-web-part-manifest.schema.json",
+  "id": "008b3b6a-73eb-4763-8b3f-0fc9afbbb775",
+  "alias": "Timesheet",
+  "componentType": "WebPart",
+
+  "version": "*",
+  "manifestVersion": 2,
+
+  "requiresCustomScript": false,
+  "supportedHosts": ["SharePointWebPart", "TeamsPersonalApp", "TeamsTab", "SharePointFullPage"],
+  "supportsThemeVariants": true,
+
+  "preconfiguredEntries": [{
+    "groupId": "5c03119e-3074-46fd-976b-c60198311f70", 
+    "group": { "default": "Advanced" },
+    "title": { "default": "TimesheetPROD" },
+    "description": { "default": "Timesheet description Production" }, 
+    "officeFabricIconFontName": "Page",
+    "properties": {
+      "description": "Timesheet-PROD"
+    }
+  }]
+}
+__________________________________________________________________________________________________
+2. package-solution.json
+-----------------------------
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/spfx-build/package-solution.schema.json",
+  "solution": {
+    "name": "timesheet-client-side-solution-Prod",
+    "id": "3cd17a6f-e355-4d0f-985b-bc008a623cbd",
+    "version": "1.0.0.0",
+    "includeClientSideAssets": true,
+    "skipFeatureDeployment": true,
+    "isDomainIsolated": false,
+    "developer": {
+      "name": "",
+      "websiteUrl": "",
+      "privacyUrl": "",
+      "termsOfUseUrl": "",
+      "mpnId": "Undefined-1.16.1"
+    },
+    "metadata": {
+      "shortDescription": {
+        "default": "Timesheet description"
+      },
+      "longDescription": {
+        "default": "Timesheet description"
+      },
+      "screenshotPaths": [],
+      "videoUrl": "",
+      "categories": []
+    },
+    "features": [
+      {
+        "title": "Timesheet Feature",
+        "description": "The feature that activates elements of the Timesheet solution Production.", 
+        "id": "4b69729e-f3c6-4189-acfc-ccfc723780cd",
+        "version": "1.0.0.0"
+      }
+    ]
+  },
+  "paths": {
+    "zippedPackage": "solution/Timesheet-PROD.sppkg"
+  }
+}
+==================================================================================================================

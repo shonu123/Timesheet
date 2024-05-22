@@ -1766,7 +1766,7 @@ div[id^="_TopSpan_NotificationSpan"]{
     content: "";
     position: absolute;
     bottom: -22px;
-    z-index: 9999999999;
+    z-index: 9;
     left: 40%;
     border: 10px solid transparent;
     border-top-color: #0D2F4B;
