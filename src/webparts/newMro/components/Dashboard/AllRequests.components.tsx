@@ -50,7 +50,7 @@ class AllRequests extends React.Component<AllRequestsProps,AllRequestsState> {
         dateFilter.setDate(new Date().getDate()-60);
         let date = `${dateFilter.getMonth() + 1}/${dateFilter.getDate()}/${dateFilter.getFullYear()}`
         var filterString = "WeekStartDate ge '"+date+"'"
-        sp.web.lists.getByTitle('WeeklyTimeSheet').items.top(5000).filter(filterString).expand("ReportingManager").select('ReportingManager/Title','*').orderBy('WeekStartDate,DateSubmitted', false).getAll()
+        sp.web.lists.getByTitle('WeeklyTimeSheet').items.top(5000).filter(filterString).expand("ReportingManager").select('ReportingManager/Title','*').orderBy('WeekStartDate', false).get()
             .then((response) => {
                 // console.log(response)
                 let Data = [];

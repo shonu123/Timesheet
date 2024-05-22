@@ -126,7 +126,7 @@ class ApproversApprovals extends React.Component<ApproversProps, ApproversState>
     private async getClientDeligates(Data) {
         let obj;
 if(Data.length>0){
-    let clientDelegates = await sp.web.lists.getByTitle('Client').items.filter("Title eq '" + Data[0].Client + "' and IsActive eq 1").select('DelegateTo/Title,DelegateTo/ID,DelegateTo/EMail,*').expand('DelegateTo').get()
+    let clientDelegates = await sp.web.lists.getByTitle('Client').items.filter("Title eq '" + Data[0].Client + "' and IsActive eq 1").select('DelegateTo/Title,DelegateTo/ID,DelegateTo/EMail,*').expand('DelegateTo').orderBy('Modifed', false).get()
     let delegates = clientDelegates[0].DelegateTo
     obj = []
     if(delegates!=undefined){
