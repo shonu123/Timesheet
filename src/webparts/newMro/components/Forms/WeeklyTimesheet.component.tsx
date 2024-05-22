@@ -690,8 +690,8 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                 break;
             }
         }
-        // Formdata.WeekStartDate=null; 
-        Formdata.WeekStartDate=this.getCurrentWeekStartDate(Formdata.WeekStartDay);
+        Formdata.WeekStartDate=null; 
+       // Formdata.WeekStartDate=this.getCurrentWeekStartDate(Formdata.WeekStartDay);
         //For restricting  of incorrect WeekstarDay binding in DatePicker
         //this.setState({trFormdata:Formdata});
        this.GetHolidayMasterDataByClientName(Formdata.WeekStartDate,Formdata.HolidayType,Formdata);
@@ -1094,7 +1094,11 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
             isValid=this.validateTimeControls(formdata,"Submit");
         }
         if (isValid.status) {
-        this.setState({showConfirmDeletePopup:true,ConfirmPopupMessage:'Are you sure you want to submit?',ActionButtonId:event.target.id});
+            let CurrWeekStartDate=this.getCurrentWeekStartDate(formdata.WeekStartDay);
+            if(formdata.WeekStartDate.getMonth()+1+"/"+formdata.WeekStartDate.getDate()+"/"+formdata.WeekStartDate.getFullYear()==CurrWeekStartDate.getMonth()+1+"/"+CurrWeekStartDate.getDate()+"/"+CurrWeekStartDate.getFullYear())
+            this.setState({showConfirmDeletePopup:true,ConfirmPopupMessage:'Are you sure you want to submit for current week?',ActionButtonId:event.target.id});
+            else
+            this.setState({showConfirmDeletePopup:true,ConfirmPopupMessage:'Are you sure you want to submit?',ActionButtonId:event.target.id});
          }
         else {
             customToaster('toster-error',ToasterTypes.Error,isValid.message,4000)
@@ -2201,6 +2205,9 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
             isAccessable = true;
             //this.setState({isSubmitted:true})
         }
+        else if(userGroups.includes('Dashboard Admins')){
+            isAccessable = true
+        }
         this.setState({isRecordAcessable : isAccessable})
     }
     //function related to custom Validation
@@ -2643,7 +2650,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                       {
                       this.state.ConfirmPopupMessage==""?"":
                       this.state.ConfirmPopupMessage=="Are you sure you want to delete this row?"?<ModalPopUpConfirm message={this.state.ConfirmPopupMessage} title={''} isVisible={this.state.showConfirmDeletePopup} isSuccess={false} onConfirm={this.RemoveCurrentRow} onCancel={this.CancelDeleteRow}></ModalPopUpConfirm>:
-                      this.state.ConfirmPopupMessage=="Are you sure you want to submit?"?<ModalPopUpConfirm message={this.state.ConfirmPopupMessage} title={''} isVisible={this.state.showConfirmDeletePopup} isSuccess={false} onConfirm={this.handleSubmitorSave} onCancel={this.CancelDeleteRow}></ModalPopUpConfirm>:
+                    ["Are you sure you want to submit?","Are you sure you want to submit for current week?"].includes(this.state.ConfirmPopupMessage)?<ModalPopUpConfirm message={this.state.ConfirmPopupMessage} title={''} isVisible={this.state.showConfirmDeletePopup} isSuccess={false} onConfirm={this.handleSubmitorSave} onCancel={this.CancelDeleteRow}></ModalPopUpConfirm>:
                       this.state.ConfirmPopupMessage=="Are you sure you want to approve?"?<ModalPopUpConfirm message={this.state.ConfirmPopupMessage} title={''} isVisible={this.state.showConfirmDeletePopup} isSuccess={false} onConfirm={this.handleApprove} onCancel={this.CancelDeleteRow}></ModalPopUpConfirm>:
                       this.state.ConfirmPopupMessage=="Are you sure you want to reject?"?<ModalPopUpConfirm message={this.state.ConfirmPopupMessage} title={''} isVisible={this.state.showConfirmDeletePopup} isSuccess={false} onConfirm={this.handleReject} onCancel={this.CancelDeleteRow}></ModalPopUpConfirm> :
                       this.state.ConfirmPopupMessage=="Are you sure you want to revoke?"?<ModalPopUpConfirm message={this.state.ConfirmPopupMessage} title={''} isVisible={this.state.showConfirmDeletePopup} isSuccess={false} onConfirm={this.handleRevoke} onCancel={this.CancelDeleteRow}></ModalPopUpConfirm>:""

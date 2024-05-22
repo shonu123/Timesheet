@@ -67,7 +67,7 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
         // var filterString = "Reviewers/Id eq '"+userId+"' and PendingWith eq 'Reviewer' and Status eq '"+StatusType.ManagerApprove+"'"
         var filterString = "(AssignedTo/Id eq '"+userId+"' or Reviewers/Id eq '"+userId+"') and PendingWith eq 'Reviewer'";
 
-        sp.web.lists.getByTitle('WeeklyTimeSheet').items.top(5000).filter(filterString+filterQuery).expand("Reviewers").select('Reviewers/Title','*').orderBy('WeekStartDate,Modifed', false).get()
+        sp.web.lists.getByTitle('WeeklyTimeSheet').items.top(5000).filter(filterString+filterQuery).expand("Reviewers").select('Reviewers/Title','*').orderBy('WeekStartDate,Modified', false).get()
             .then((response) => {
                 // console.log(response)
                 let Data = [];
