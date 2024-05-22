@@ -1776,6 +1776,17 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
             trFormdata.IsSubmitted = false;
             trFormdata.IsDelegated = false;
 
+            //For getting Dateofjoining,DescriptionMandatory,ProjectCOde Mandatory,WeekStartday of selected client
+            for (var item of this.state.Clients_DateOfJoinings) {
+                if (item.ClientName.toLowerCase() == trFormdata.ClientName.toLowerCase()) {
+                    trFormdata.DateOfJoining = new Date(item.DOJ);
+                    trFormdata.IsDescriptionMandatory = item.IsDescriptionMandatory;
+                    trFormdata.IsProjectCodeMandatory = item.IsProjectCodeMandatory;
+                    trFormdata.WeekStartDay = item.WeekStartDay;
+                    trFormdata.HolidayType = item.HolidayType;
+                    break;
+                }
+            }
             let WeekStartDate = ([null, undefined, ''].includes(trFormdata.WeekStartDate) ? new Date() : new Date(trFormdata.WeekStartDate.getMonth() + 1 + "/" + trFormdata.WeekStartDate.getDate() + "/" + trFormdata.WeekStartDate.getFullYear()));
             let DateOfjoining = new Date(trFormdata.DateOfJoining.getMonth() + 1 + "/" + trFormdata.DateOfJoining.getDate() + "/" + trFormdata.DateOfJoining.getFullYear());
             this.WeekHeadings = [];
