@@ -711,7 +711,8 @@ this.setState({ColumnsHeaders:hColumns,ReportData:SampleData,ExportExcelData:req
 
     public render() {
         if (!this.state.isPageAccessable) {
-            let url = `https://synergycomcom.sharepoint.com/sites/Billing.Timesheet/SitePages/AccessDenied.aspx?`
+            // let url = `https://synergycomcom.sharepoint.com/sites/Billing.Timesheet/SitePages/AccessDenied.aspx?`
+            let url = this.siteURL+"/SitePages/AccessDenied.aspx"
             window.location.href = url
         }
         if (this.state.Homeredirect) {

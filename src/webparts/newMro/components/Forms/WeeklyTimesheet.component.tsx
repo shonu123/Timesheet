@@ -1409,7 +1409,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                     }
                     sub = "Weekly Time Sheet has been " + formdata.Status + "."
                     emaildetails = { toemail: To, ccemail: this.state.EmployeeEmail, subject: sub, bodyString: sub, body: '' };
-                    var DashboardURl = 'https://synergycomcom.sharepoint.com/sites/Billing.Timesheet/SitePages/TimeSheet.aspx';
+                    var DashboardURl = this.siteURL+'/SitePages/TimeSheet.aspx';
                     emaildetails['body'] = this.emailBodyPreparation(this.siteURL + '/SitePages/TimeSheet.aspx#/WeeklyTimesheet/' + this.state.ItemID, tableContent, emaildetails['bodyString'], this.props.spContext.userDisplayName, DashboardURl);
                     //this.sendemail(emaildetails,formdata.Status);
                     this.setState({ loading: false })
@@ -1420,7 +1420,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                     sub = "Weekly Time Sheet has been " + formdata.Status + "."
                     formObject.IsDelegated ? To = formObject.DelegateToEmails : To = formObject.ReportingManagersEmail;
                     emaildetails = { toemail: To, ccemail: this.state.EmployeeEmail, subject: sub, bodyString: sub, body: '' };
-                    var DashboardURl = 'https://synergycomcom.sharepoint.com/sites/Billing.Timesheet/SitePages/TimeSheet.aspx';
+                    var DashboardURl = this.siteURL+'/SitePages/TimeSheet.aspx';
                     emaildetails['body'] = this.emailBodyPreparation(this.siteURL + '/SitePages/TimeSheet.aspx#/WeeklyTimesheet/' + this.state.ItemID, tableContent, emaildetails['bodyString'], this.props.spContext.userDisplayName, DashboardURl);
                     //this.sendemail(emaildetails,formdata.Status);
                     this.setState({ ActionToasterMessage: 'Success-' + StatusType.Submit, loading: false, redirect: true })
@@ -1445,7 +1445,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                         CC.push(mail);
                     }
                     emaildetails = { toemail: CC, ccemail: this.state.EmployeeEmail, subject: sub, bodyString: sub, body: '' };
-                    var DashboardURl = 'https://synergycomcom.sharepoint.com/sites/Billing.Timesheet/SitePages/TimeSheet.aspx';
+                    var DashboardURl = this.siteURL+'/SitePages/TimeSheet.aspx';
                     emaildetails['body'] = this.emailBodyPreparation(this.siteURL + '/SitePages/TimeSheet.aspx#/WeeklyTimesheet/' + this.state.ItemID, tableContent, emaildetails['bodyString'], this.props.spContext.userDisplayName, DashboardURl);
                     //this.sendemail(emaildetails,StatusType.Submit);
                     this.setState({ ActionToasterMessage: 'Success-' + StatusType.Submit, loading: false, redirect: true })
@@ -1487,7 +1487,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
 
                     }
                     emaildetails = { toemail: To, ccemail: CC, subject: sub, bodyString: sub, body: '' };
-                    var DashboardURl = 'https://synergycomcom.sharepoint.com/sites/Billing.Timesheet/SitePages/TimeSheet.aspx';
+                    var DashboardURl = this.siteURL+'/SitePages/TimeSheet.aspx';
                     emaildetails['body'] = this.emailBodyPreparation(this.siteURL + '/SitePages/TimeSheet.aspx#/WeeklyTimesheet/' + this.state.ItemID, tableContent, emaildetails['bodyString'], this.props.spContext.userDisplayName, DashboardURl);
                     //this.sendemail(emaildetails,StatusType.Approved);
                     this.setState({ ActionToasterMessage: 'Success-' + StatusType.Approved, loading: false, redirect: true })
@@ -1511,7 +1511,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                         CC.push(mail);
                     }
                     emaildetails = { toemail: this.state.EmployeeEmail, ccemail: CC, subject: sub, bodyString: sub, body: '' };
-                    var DashboardURl = 'https://synergycomcom.sharepoint.com/sites/Billing.Timesheet/SitePages/TimeSheet.aspx';
+                    var DashboardURl = this.siteURL+'/SitePages/TimeSheet.aspx';
                     emaildetails['body'] = this.emailBodyPreparation(this.siteURL + '/SitePages/TimeSheet.aspx#/WeeklyTimesheet/' + this.state.ItemID, tableContent, emaildetails['bodyString'], this.props.spContext.userDisplayName, DashboardURl);
                     //this.sendemail(emaildetails,formdata.Status);
                     this.setState({ ActionToasterMessage: 'Success-' + StatusType.Reject, loading: false, redirect: true })
@@ -1534,7 +1534,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                     else if (StatusType.Submit == formdata.Status) {
                         sub = "Weekly Time Sheet has been " + formdata.Status + "."
                         emaildetails = { toemail: formObject.ReportingManagersEmail, ccemail: this.state.EmployeeEmail, subject: sub, bodyString: sub, body: '' };
-                        var DashboardURl = 'https://synergycomcom.sharepoint.com/sites/Billing.Timesheet/SitePages/TimeSheet.aspx';
+                        var DashboardURl = this.siteURL+'/SitePages/TimeSheet.aspx';
                         emaildetails['body'] = this.emailBodyPreparation(this.siteURL + '/SitePages/TimeSheet.aspx#/WeeklyTimesheet/' + ItemID, tableContent, emaildetails['bodyString'], this.props.spContext.userDisplayName, DashboardURl);
                         //this.sendemail(emaildetails,formdata.Status);
                         this.setState({ ActionToasterMessage: 'Success-' + StatusType.Submit, loading: false, redirect: true })
@@ -2507,7 +2507,8 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
 
         if (!this.state.isRecordAcessable) {
 
-            let url = `https://synergycomcom.sharepoint.com/sites/Billing.Timesheet/SitePages/AccessDenied.aspx?`
+            // let url = `https://synergycomcom.sharepoint.com/sites/Billing.Timesheet/SitePages/AccessDenied.aspx?`
+            let url = this.siteURL+"/SitePages/AccessDenied.aspx"
             //return (<Navigate to={url} />);
             window.location.href = url;
         }
