@@ -259,7 +259,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
         trFormdata.SynergyHolidayHrs.push({ Description: '', ProjectCode: '', Mon: '', Tue: '', Wed: '', Thu: '', Fri: '', Sat: '', Sun: '', Total: '0.00', });
         trFormdata.ClientHolidayHrs.push({ Type: "Holiday", Description: '', ProjectCode: '', Mon: '', Tue: '', Wed: '', Thu: '', Fri: '', Sat: '', Sun: '', Total: '0.00', });
         trFormdata.PTOHrs.push({ Type: "Time Off", Description: '', ProjectCode: '', Mon: '', Tue: '', Wed: '', Thu: '', Fri: '', Sat: '', Sun: '', Total: '0.00', });
-        trFormdata.NonBillableSubTotal.push({ Mon: '', Tue: '', Wed: '', Thu: '', Fri: '', Sat: '', Sun: '', Total: '0.00', });
+        trFormdata.NonBillableSubTotal.push({ Mon: '0.00', Tue: '0.00', Wed: '0.00', Thu: '0.00', Fri: '0.00', Sat: '0.00', Sun: '0.00', Total: '0.00', });
         trFormdata.WeeklySubTotalHrs.push({ Type: "Billable", Mon: '0.00', Tue: '0.00', Wed: '0.00', Thu: '0.00', Fri: '0.00', Sat: '0.00', Sun: '0.00', Total: '0.00', });
         trFormdata.OTSubTotalHrs.push({ Type: "OT", Mon: '0.00', Tue: '0.00', Wed: '0.00', Thu: '0.00', Fri: '0.00', Sat: '0.00', Sun: '0.00', Total: '0.00', });
         trFormdata.Total.push({ Type: "Total", Mon: '0.00', Tue: '0.00', Wed: '0.00', Thu: '0.00', Fri: '0.00', Sat: '0.00', Sun: '0.00', Total: '0.00', });
@@ -1762,7 +1762,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
             trFormdata.SynergyHolidayHrs.push({ Description: '', ProjectCode: '', Mon: '', Tue: '', Wed: '', Thu: '', Fri: '', Sat: '', Sun: '', Total: '0', });
             trFormdata.ClientHolidayHrs.push({ Type: "Holiday", Description: '', ProjectCode: '', Mon: '', Tue: '', Wed: '', Thu: '', Fri: '', Sat: '', Sun: '', Total: '0.00', });
             trFormdata.PTOHrs.push({ Type: "Time Off", Description: '', ProjectCode: '', Mon: '', Tue: '', Wed: '', Thu: '', Fri: '', Sat: '', Sun: '', Total: '0.00', });
-            trFormdata.NonBillableSubTotal.push({ Mon: '', Tue: '', Wed: '', Thu: '', Fri: '', Sat: '', Sun: '', Total: '0.00', });
+            trFormdata.NonBillableSubTotal.push({ Mon: '0.00', Tue: '0.00', Wed: '0.00', Thu: '0.00', Fri: '0.00', Sat: '0.00', Sun: '0.00', Total: '0.00', });
             trFormdata.WeeklySubTotalHrs.push({ Type: "Billable", Mon: '0.00', Tue: '0.00', Wed: '0.00', Thu: '0.00', Fri: '0.00', Sat: '0.00', Sun: '0.00', Total: '0.00', });
             trFormdata.OTSubTotalHrs.push({ Type: "OT", Mon: '0.00', Tue: '0.00', Wed: '0.00', Thu: '0.00', Fri: '0.00', Sat: '0.00', Sun: '0.00', Total: '0.00', });
             trFormdata.Total.push({ Type: "Total", Mon: '0.00', Tue: '0.00', Wed: '0.00', Thu: '0.00', Fri: '0.00', Sat: '0.00', Sun: '0.00', Total: '0.00', });
@@ -1909,7 +1909,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
         trFormdata.SynergyHolidayHrs.push({ Description: '', ProjectCode: '', Mon: '', Tue: '', Wed: '', Thu: '', Fri: '', Sat: '', Sun: '', Total: '0.00', });
         trFormdata.ClientHolidayHrs.push({ Type: "Holiday", Description: '', ProjectCode: '', Mon: '', Tue: '', Wed: '', Thu: '', Fri: '', Sat: '', Sun: '', Total: '0.00', });
         trFormdata.PTOHrs.push({ Type: "Time Off", Description: '', ProjectCode: '', Mon: '', Tue: '', Wed: '', Thu: '', Fri: '', Sat: '', Sun: '', Total: '0.00', });
-        trFormdata.NonBillableSubTotal.push({ Mon: '', Tue: '', Wed: '', Thu: '', Fri: '', Sat: '', Sun: '', Total: '0.00', });
+        trFormdata.NonBillableSubTotal.push({ Mon: '0.00', Tue: '0.00', Wed: '0.00', Thu: '0.00', Fri: '0.00', Sat: '0.00', Sun: '0.00', Total: '0.00', });
         trFormdata.WeeklySubTotalHrs.push({ Type: "Billable", Mon: '0.00', Tue: '0.00', Wed: '0.00', Thu: '0.00', Fri: '0.00', Sat: '0.00', Sun: '0.00', Total: '0.00', });
         trFormdata.OTSubTotalHrs.push({ Type: "OT", Mon: '0.00', Tue: '0.00', Wed: '0.00', Thu: '0.00', Fri: '0.00', Sat: '0.00', Sun: '0.00', Total: '0.00', });
         trFormdata.Total.push({ Type: "Total", Mon: '0.00', Tue: '0.00', Wed: '0.00', Thu: '0.000', Fri: '0.00', Sat: '0.00', Sun: '0.00', Total: '0.00', });
