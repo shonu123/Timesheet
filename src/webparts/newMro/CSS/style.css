@@ -368,7 +368,7 @@ margin-bottom: 1.5rem;
 }
 .select2-results__options::-webkit-scrollbar {
   width: 4px;
-  height:4px;
+  height:9px;
 }
 .select2-results__options::-webkit-scrollbar-thumb {   
   background: #ababab;     
@@ -3004,3 +3004,83 @@ span.iconArrow {
       min-width: 80px !important;
       max-width: 80px !important;
   }
+
+  /* 5/27/2024 */
+  .tblWeeklyTimesheetReport{
+    border: 1px solid black;
+    border-collapse: collapse;
+    font-size: 14px;
+  }
+
+.tblWeeklyTimesheetReport th,.tblWeeklyTimesheetReport td{
+    border: 1px solid black;
+    padding: 3px;
+}
+
+.txt-center{
+  text-align: center;
+}
+
+.fz-20{
+  font-size: 20px;
+}
+
+.customTh{
+color: red;
+background-color: yellow;
+font-weight: bold;
+}
+
+.overRidedBlue{
+  background-color: #bce3f1;
+}
+
+.greyCells{
+  background-color: #b9b3b3;
+}
+
+.lightGreyCells{
+  background-color: #e3dfdfba;
+}
+
+.WR-LBlue{
+  background-color: #98d8ef94  
+}
+
+.WR-LWood{
+  background-color: #f5e3ccb3;
+}
+
+.WR-LPurple{
+  background-color: #dedbf7a1;
+}
+
+.WR-CRed{
+  color: #e52323cf;
+}
+
+.WR-LGreen{
+background-color: #5be95bb8;
+}
+
+.WR-ORWood{
+  background-color: #f5e3ccf5;
+}
+
+.min-width210{
+  min-width: 210px;
+  width: auto;
+}
+
+.min-width125{
+  min-width: 135px;
+}
+
+.dataTables_wrapper-overflow::-webkit-scrollbar {
+  width: 4px !important;
+  height: 9px !important;
+}
+
+.fz-15{
+  font-size: 15px;
+}
