@@ -169,8 +169,8 @@
 
 // export default MyDataTable;
 
-import React, { useEffect } from 'react';
-import { useTable, useBlockLayout, useSortBy, useFilters, useGlobalFilter } from 'react-table';
+import React, { useEffect,useMemo } from 'react';
+import { useTable, useBlockLayout, useSortBy, useFilters, useGlobalFilter,usePagination} from 'react-table';
 import { faFileExcel, faArrowDownLong, faArrowUpLong } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import * as XLSX from 'xlsx-js-style';
@@ -188,19 +188,30 @@ const MyDataTable = ({ columns, data, ExcelData }) => {
     getTableProps,
     getTableBodyProps,
     headerGroups,
-    rows,
+    page, // Instead of 'rows', we use 'page'
     prepareRow,
     state,
+    state: { pageIndex, pageSize,globalFilter}, // Destructure pagination state
     setGlobalFilter,
+    nextPage,
+    previousPage,
+    canNextPage,
+    canPreviousPage,
+    gotoPage,
+    pageCount,
+    setPageSize,
+    rows
   } = useTable(
     {
       columns,
       data,
+      initialState: { pageIndex: 0, pageSize: 10 }, // Initial page index and page size
     },
     useFilters,
     useGlobalFilter,
     useSortBy,
-    useBlockLayout // Enables block layout to support column freezing
+    useBlockLayout, // Enables block layout to support column freezing
+    usePagination // Pagination functionality
   );
 
   const exportToExcel = (data) => {
@@ -237,9 +248,34 @@ const MyDataTable = ({ columns, data, ExcelData }) => {
     XLSX.writeFile(wb, `${filename}(${startDate} to ${endDate}).xlsx`);
 
   }
+ // Function for extreme previous page
+ const extremePreviousPage = () => {
+  gotoPage(0);
+  previousPage();
+};
 
-  const { globalFilter } = state;
-
+// Function for extreme next page
+const extremeNextPage = () => {
+  gotoPage(pageCount - 1);
+  nextPage();
+};
+// Dropdown options for rows per page
+const pageSizeOptions = useMemo(
+  () => [10,15,20,25,30].map((size) => ({ value: size, label: size.toString() })),
+  []
+);
+// Filtered rows based on global filter
+const filteredRows = useMemo(() => {
+  if (globalFilter) {
+    return rows.filter((row) =>
+      row.cells.some((cell) => String(cell.value).toLowerCase().includes(globalFilter.toLowerCase()))
+    );
+  }
+  return rows;
+}, [globalFilter, rows]);
+// Calculate start and end record index of current page
+const startRecordIndex = pageIndex * pageSize + 1;
+const endRecordIndex = Math.min((pageIndex + 1) * pageSize,filteredRows.length);
   return (
     <>
       {data.length > 0 && (
@@ -293,7 +329,7 @@ const MyDataTable = ({ columns, data, ExcelData }) => {
                 ))}
               </div>
               <div {...getTableBodyProps()} className="body">
-                {rows.map((row, rowIndex) => {
+                {page.map((row, rowIndex) => {
                   prepareRow(row);
                   return (
                     <div {...row.getRowProps()} className="body-row">
@@ -311,7 +347,37 @@ const MyDataTable = ({ columns, data, ExcelData }) => {
               </div>
             </div>
           </div>
-          
+           {/* Pagination */}
+           {filteredRows.length>0?
+            <div id='divPagination' className='div-pagination'>
+              <label className='px-2'>Rows per page:</label>
+              <select id='ddlRowsPerPage' className='px-2'
+                value={pageSize}
+                onChange={(e) => {
+                  setPageSize(Number(e.target.value));
+                }}
+              >
+                {pageSizeOptions.map((option, index) => (
+                  <option key={index} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+              <span className='px-2'> {startRecordIndex + '-' + endRecordIndex + ' of ' + filteredRows.length} </span>
+              <button className='btn-pagination' onClick={() => extremePreviousPage()} disabled={!canPreviousPage}>
+                {<svg className='svg-icon' xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" aria-hidden="true" role="presentation"><path d="M18.41 16.59L13.82 12l4.59-4.59L17 6l-6 6 6 6zM6 6h2v12H6z"></path><path fill="none" d="M24 24H0V0h24v24z"></path></svg>}
+              </button>
+              <button className='btn-pagination' onClick={() => previousPage()} disabled={!canPreviousPage}>
+              {<svg className='svg-icon' xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" aria-hidden="true" role="presentation"><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"></path><path d="M0 0h24v24H0z" fill="none"></path></svg>}
+              </button>
+              <button className='btn-pagination' onClick={() => nextPage()} disabled={!canNextPage}>
+              {<svg className='svg-icon' xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" aria-hidden="true" role="presentation"><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"></path><path d="M0 0h24v24H0z" fill="none"></path></svg>}
+              </button>
+              <button className='btn-pagination' onClick={() => extremeNextPage()} disabled={!canNextPage}>
+              {<svg className='svg-icon' xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" aria-hidden="true" role="presentation"><path d="M5.59 7.41L10.18 12l-4.59 4.59L7 18l6-6-6-6zM16 6h2v12h-2z"></path><path fill="none" d="M0 0h24v24H0V0z"></path></svg>}
+              </button>
+            </div> : <div className='text-center'>There are no records to display</div>
+          }
         </>
       )}
     </>

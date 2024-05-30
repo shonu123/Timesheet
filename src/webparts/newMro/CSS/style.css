@@ -3084,3 +3084,40 @@ background-color: #5be95bb8;
 .fz-15{
   font-size: 15px;
 }
+/* Pagination CSS */
+.div-pagination{
+  color: rgba(0, 0, 0, .54);
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+}
+.div-pagination label{
+  color: rgba(0, 0, 0, .54);
+  margin-bottom: 0;
+}
+.btn-pagination{
+color: rgba(0, 0, 0, 0.54) !important;
+display: flex;
+justify-content: flex-end;
+align-items: center;
+font-size: 13px;
+margin: 6px 0 0 0;
+padding: 0;
+
+}
+.btn-pagination:disabled svg {
+  border-color: #eaeaea;
+  background-color: #f8f8f8;
+  fill: #a6a6a6;
+}
+.div-pagination .btn-pagination{
+  color: #a6a6a6;
+  border-radius: 50%;
+  height: 35px;
+  width: 35px;
+  padding-right: 5px;
+}
+#ddlRowsPerPage{
+  width: 60px;
+  border: none;
+}

@@ -81,6 +81,7 @@ export interface WeeklyTimesheetState {
         IsDelegated: boolean
 
     };
+    AllSubmittedTimesheetsOfEmployee:any;
     ClientNames: any;
     Clients_DateOfJoinings: any,
     HolidaysList: any,
@@ -201,6 +202,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                 IsSubmitted: false,
                 IsDelegated: false
             },
+            AllSubmittedTimesheetsOfEmployee:[],
             ClientNames: [],
             Clients_DateOfJoinings: [],
             HolidaysList: [],
@@ -307,9 +309,10 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
         var ClientNames: any;
         var ClientsFromClientMaster: any;
         var Client = [];
-        let [clientMaster, groups] = await Promise.all([
+        let [clientMaster, groups,AllSubmittedTimesheetsOfEmployee] = await Promise.all([
             this.oweb.lists.getByTitle('Client').items.filter("IsActive eq 1").select("Title,DelegateTo/Id,DelegateTo/EMail,*").expand("DelegateTo").orderBy("Title", true).getAll(),
-            sp.web.currentUser.groups()
+            sp.web.currentUser.groups(),            
+            this.oweb.lists.getByTitle(this.listName).items.filter("InitiatorId eq '"+currentUserId+"' and (Status eq '"+StatusType.Submit+"' or Status eq '"+StatusType.ManagerApprove+"' or Status eq '"+StatusType.Approved+"')").select('Initiator/Id,Initiator/Title,ClientName,WeekStartDate,Status').expand("Initiator").orderBy("WeekStartDate", true).getAll(),
         ]);
         // console.log("current user deatils")
         // console.log(this.props.context.pageContext)
@@ -413,7 +416,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
         this.showApproveAndRejectButton(trFormdata);
         // this.userAccessableRecord(trFormdata);
 
-        this.setState({ UserGoups: userGroups, trFormdata, ClientNames: this.state.ClientNames, EmployeeEmail: this.state.EmployeeEmail, currentUserId: ClientNames[0].Employee.Id, showToaster: true });
+        this.setState({ UserGoups: userGroups,AllSubmittedTimesheetsOfEmployee:AllSubmittedTimesheetsOfEmployee,trFormdata, ClientNames: this.state.ClientNames, EmployeeEmail: this.state.EmployeeEmail, currentUserId: ClientNames[0].Employee.Id, showToaster: true });
         if (this.state.ClientNames.length == 1 && this.props.match.params.id == undefined) {
             trFormdata.ClientName = ClientNames[0].ClientName;
             this.handleClientChange(ClientNames[0].ClientName);
@@ -677,7 +680,57 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                 break;
             }
         }
-        Formdata.WeekStartDate = null;
+        //Condition for binding not submitted week of consecutive Submitted Week :start
+        let EnabledWeekStartDates=[];
+        let currentWeekStartDate=this.getCurrentWeekStartDate(Formdata.WeekStartDay);
+        for(let i=1;i<=5;i++)
+        {
+            EnabledWeekStartDates.push(currentWeekStartDate.toDateString());
+            currentWeekStartDate=addDays(new Date(currentWeekStartDate), -7);
+        }
+        //for filter Client wise submitted timesheets
+        let ClientWiseSubmittedTimesheetsOfEmp=[];
+        for(let j in this.state.AllSubmittedTimesheetsOfEmployee)
+        {
+            if(this.state.AllSubmittedTimesheetsOfEmployee[j].ClientName===Formdata.ClientName)
+            ClientWiseSubmittedTimesheetsOfEmp.push(this.state.AllSubmittedTimesheetsOfEmployee[j]);
+
+        }
+        if(ClientWiseSubmittedTimesheetsOfEmp.length>0)
+         {
+            //for intial submitted week
+        //       for(let i=EnabledWeekStartDates.length-1;i>=0;i--)
+        //       {
+        //         let isWeekStartDateExists=false;
+        //         for(let j in ClientWiseSubmittedTimesheetsOfEmp)
+        //         {
+        //             if(new Date(ClientWiseSubmittedTimesheetsOfEmp[j].WeekStartDate).toDateString()===EnabledWeekStartDates[i].toDateString())
+        //             {
+        //                 isWeekStartDateExists=true;
+        //                 break;
+        //             }
+
+        //         }
+        //         if(!isWeekStartDateExists)
+        //         {
+        //             Formdata.WeekStartDate=EnabledWeekStartDates[i];
+        //             break;
+        //         }
+        //       }
+            //for latest submitted week
+              let nextWeekOfLatestSubmitted=addDays(new Date(ClientWiseSubmittedTimesheetsOfEmp[0].WeekStartDate),7);
+              if(EnabledWeekStartDates.includes(nextWeekOfLatestSubmitted.toDateString()))
+              Formdata.WeekStartDate = nextWeekOfLatestSubmitted;
+              else
+              Formdata.WeekStartDate = null;
+
+
+        }
+        else{
+            Formdata.WeekStartDate = null;
+        }
+       //Condition for binding not submitted week of consecutive Submitted Week :end
+
         // Formdata.WeekStartDate=this.getCurrentWeekStartDate(Formdata.WeekStartDay);
         //For restricting  of incorrect WeekstarDay binding in DatePicker
         //this.setState({trFormdata:Formdata});
@@ -2426,10 +2479,10 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
             section.push(<tr id={rowId + (i + 1)}>
                 <td className=" text-start"> </td>
                 <td>
-                    <textarea className="form-control textareaBorder" rows={1} value={Obj[i].Description} id={i + "_Description_" + rowType} onChange={this.changeTime} disabled={this.state.isSubmitted || this.state.showBillable} ></textarea>
+                    <textarea className="form-control textareaBorder" rows={1} value={Obj[i].Description} id={i + "_Description_" + rowType} title={Obj[i].Description} onChange={this.changeTime} disabled={this.state.isSubmitted || this.state.showBillable} ></textarea>
                 </td>
                 <td>
-                    <input className="form-control" value={Obj[i].ProjectCode} id={i + "_ProjectCode_" + rowType} onChange={this.changeTime} disabled={this.state.isSubmitted || this.state.showBillable} type="text"></input>
+                    <input className="form-control" value={Obj[i].ProjectCode} id={i + "_ProjectCode_" + rowType} onChange={this.changeTime} title={Obj[i].ProjectCode} disabled={this.state.isSubmitted || this.state.showBillable} type="text"></input>
                 </td>
                 <td>
                     <input className={"form-control time " + (this.WeekNames[0].day1)} value={Obj[i][this.WeekNames[0].day1]} id={i + "_" + this.WeekNames[0].day1 + "_" + rowType} onChange={this.changeTime} disabled={this.state.isSubmitted || this.state.showBillable || this.WeekHeadings[0].IsMonJoined} ></input>
@@ -2631,10 +2684,10 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                                                             </div>
                                                         </td>
                                                         <td>
-                                                            <textarea className="form-control textareaBorder" rows={1} value={this.state.trFormdata.WeeklyItemsData[0].Description} id="0_Description_weekrow" onChange={this.changeTime} disabled={this.state.isSubmitted || this.state.showBillable}  ></textarea>
+                                                            <textarea className="form-control textareaBorder" rows={1} value={this.state.trFormdata.WeeklyItemsData[0].Description} title={this.state.trFormdata.WeeklyItemsData[0].Description} id="0_Description_weekrow" onChange={this.changeTime} disabled={this.state.isSubmitted || this.state.showBillable}  ></textarea>
                                                         </td>
                                                         <td>
-                                                            <input className="form-control" value={this.state.trFormdata.WeeklyItemsData[0].ProjectCode} id="0_ProjectCode_weekrow" onChange={this.changeTime} disabled={this.state.isSubmitted || this.state.showBillable} ></input>
+                                                            <input className="form-control" value={this.state.trFormdata.WeeklyItemsData[0].ProjectCode} title={this.state.trFormdata.WeeklyItemsData[0].ProjectCode} id="0_ProjectCode_weekrow" onChange={this.changeTime} disabled={this.state.isSubmitted || this.state.showBillable} ></input>
                                                         </td>
                                                         <td>
                                                             <input className={"form-control time " + (this.WeekNames[0].day1)} value={this.state.trFormdata.WeeklyItemsData[0][this.WeekNames[0].day1]} id={"0_" + this.WeekNames[0].day1 + "_weekrow"} onChange={this.changeTime} disabled={this.state.isSubmitted || this.state.showBillable || this.WeekHeadings[0].IsMonJoined} ></input>
@@ -2676,10 +2729,10 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                                                             </div>
                                                         </td>
                                                         <td>
-                                                            <textarea className="form-control textareaBorder fw-normal" rows={1} value={this.state.trFormdata.OTItemsData[0].Description} id="0_Description_otrow" onChange={this.changeTime} disabled={this.state.isSubmitted || this.state.showBillable} ></textarea>
+                                                            <textarea className="form-control textareaBorder fw-normal" rows={1} value={this.state.trFormdata.OTItemsData[0].Description} title={this.state.trFormdata.OTItemsData[0].Description} id="0_Description_otrow" onChange={this.changeTime} disabled={this.state.isSubmitted || this.state.showBillable} ></textarea>
                                                         </td>
                                                         <td>
-                                                            <input className="form-control" value={this.state.trFormdata.OTItemsData[0].ProjectCode} id="0_ProjectCode_otrow" onChange={this.changeTime} disabled={this.state.isSubmitted || this.state.showBillable} ></input>
+                                                            <input className="form-control" value={this.state.trFormdata.OTItemsData[0].ProjectCode} title={this.state.trFormdata.OTItemsData[0].ProjectCode} id="0_ProjectCode_otrow" onChange={this.changeTime} disabled={this.state.isSubmitted || this.state.showBillable} ></input>
                                                         </td>
                                                         <td>
                                                             <input className={"form-control time " + (this.WeekNames[0].day1)} value={this.state.trFormdata.OTItemsData[0][this.WeekNames[0].day1]} id={"0_" + this.WeekNames[0].day1 + "_otrow"} onChange={this.changeTime} disabled={this.state.isSubmitted || this.state.showBillable || this.WeekHeadings[0].IsMonJoined} ></input>
@@ -2716,8 +2769,8 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                                                 {!this.state.trFormdata.ClientName.toLowerCase().includes("synergy") ? "" :
                                                     <tr id="SynergyOfficeHrs">
                                                         <td className="text-start"><div className="p-1">Office Hours</div></td>
-                                                        <td><textarea className="form-control textareaBorder" rows={1} value={this.state.trFormdata.SynergyOfficeHrs[0].Description} onChange={this.changeTime} id="0_Description_SynOffcHrs" disabled={this.state.isSubmitted || this.state.showNonBillable} ></textarea></td>
-                                                        <td><input className="form-control" value={this.state.trFormdata.SynergyOfficeHrs[0].ProjectCode} onChange={this.changeTime} id="0_ProjectCode_SynOffcHrs" disabled={this.state.isSubmitted || this.state.showNonBillable} ></input></td>
+                                                        <td><textarea className="form-control textareaBorder" rows={1} value={this.state.trFormdata.SynergyOfficeHrs[0].Description} title={this.state.trFormdata.SynergyOfficeHrs[0].Description} onChange={this.changeTime} id="0_Description_SynOffcHrs" disabled={this.state.isSubmitted || this.state.showNonBillable} ></textarea></td>
+                                                        <td><input className="form-control" value={this.state.trFormdata.SynergyOfficeHrs[0].ProjectCode} title={this.state.trFormdata.SynergyOfficeHrs[0].ProjectCode} onChange={this.changeTime} id="0_ProjectCode_SynOffcHrs" disabled={this.state.isSubmitted || this.state.showNonBillable} ></input></td>
                                                         <td>
                                                             <input className={"form-control time " + (this.WeekNames[0].day1)} value={this.state.trFormdata.SynergyOfficeHrs[0][this.WeekNames[0].day1]} onChange={this.changeTime} id={"0_" + this.WeekNames[0].day1 + "_SynOffcHrs"} disabled={this.state.isSubmitted || this.state.showNonBillable || this.WeekHeadings[0].IsMonJoined} ></input>
                                                         </td>
@@ -2746,8 +2799,8 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
 
                                                 <tr id="Holiday">
                                                     <td className="text-start"><div className="p-1">Holiday</div></td>
-                                                    <td><textarea className="form-control textareaBorder" rows={1} value={this.state.trFormdata.ClientHolidayHrs[0].Description} onChange={this.changeTime} id="0_Description_ClientHldHrs" disabled={this.state.isSubmitted || this.state.showNonBillable} ></textarea></td>
-                                                    <td><input className="form-control" value={this.state.trFormdata.ClientHolidayHrs[0].ProjectCode} onChange={this.changeTime} id="0_ProjectCode_ClientHldHrs" disabled={this.state.isSubmitted || this.state.showNonBillable} ></input></td>
+                                                    <td><textarea className="form-control textareaBorder" rows={1} value={this.state.trFormdata.ClientHolidayHrs[0].Description} title={this.state.trFormdata.ClientHolidayHrs[0].Description} onChange={this.changeTime} id="0_Description_ClientHldHrs" disabled={this.state.isSubmitted || this.state.showNonBillable} ></textarea></td>
+                                                    <td><input className="form-control" value={this.state.trFormdata.ClientHolidayHrs[0].ProjectCode} title={this.state.trFormdata.ClientHolidayHrs[0].ProjectCode} onChange={this.changeTime} id="0_ProjectCode_ClientHldHrs" disabled={this.state.isSubmitted || this.state.showNonBillable} ></input></td>
                                                     <td>
                                                         <input className={"form-control time " + (this.WeekNames[0].day1) + (this.WeekHeadings[0].IsDay1Holiday.isHoliday ? " ClientHoliday" : "")} value={this.state.trFormdata.ClientHolidayHrs[0][this.WeekNames[0].day1]} onChange={this.changeTime} id={"0_" + this.WeekNames[0].day1 + "_ClientHldHrs"} disabled={this.state.isSubmitted || this.state.showNonBillable || this.WeekHeadings[0].IsMonJoined || !this.WeekHeadings[0].IsDay1Holiday.isHoliday} ></input>
                                                     </td>
@@ -2776,8 +2829,8 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                                                 <tr id="PTOHrs">
                                                     {/* <td className="text-start"><div className="p-1">PTO (Paid Time Off)</div></td> */}
                                                     <td className="text-start"><div className="p-1">Time Off</div></td>
-                                                    <td><textarea className="form-control textareaBorder" rows={1} value={this.state.trFormdata.PTOHrs[0].Description} onChange={this.changeTime} id="0_Description_PTOHrs" disabled={this.state.isSubmitted || this.state.showNonBillable}></textarea></td>
-                                                    <td><input className="form-control" value={this.state.trFormdata.PTOHrs[0].ProjectCode} onChange={this.changeTime} id="0_ProjectCode_PTOHrs" disabled={this.state.isSubmitted || this.state.showNonBillable} ></input></td>
+                                                    <td><textarea className="form-control textareaBorder" rows={1} value={this.state.trFormdata.PTOHrs[0].Description} title={this.state.trFormdata.PTOHrs[0].Description} onChange={this.changeTime} id="0_Description_PTOHrs" disabled={this.state.isSubmitted || this.state.showNonBillable}></textarea></td>
+                                                    <td><input className="form-control" value={this.state.trFormdata.PTOHrs[0].ProjectCode} title={this.state.trFormdata.PTOHrs[0].ProjectCode} onChange={this.changeTime} id="0_ProjectCode_PTOHrs" disabled={this.state.isSubmitted || this.state.showNonBillable} ></input></td>
                                                     <td>
                                                         <input className={"form-control time " + (this.WeekNames[0].day1)} value={this.state.trFormdata.PTOHrs[0][this.WeekNames[0].day1]} onChange={this.changeTime} id={"0_" + this.WeekNames[0].day1 + "_PTOHrs"} disabled={this.state.isSubmitted || this.state.showNonBillable || this.WeekHeadings[0].IsMonJoined} ></input>
                                                     </td>
