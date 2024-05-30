@@ -312,7 +312,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
         let [clientMaster, groups,AllSubmittedTimesheetsOfEmployee] = await Promise.all([
             this.oweb.lists.getByTitle('Client').items.filter("IsActive eq 1").select("Title,DelegateTo/Id,DelegateTo/EMail,*").expand("DelegateTo").orderBy("Title", true).getAll(),
             sp.web.currentUser.groups(),            
-            this.oweb.lists.getByTitle(this.listName).items.filter("InitiatorId eq '"+currentUserId+"' and (Status eq '"+StatusType.Submit+"' or Status eq '"+StatusType.ManagerApprove+"' or Status eq '"+StatusType.Approved+"')").select('Initiator/Id,Initiator/Title,ClientName,WeekStartDate,Status').expand("Initiator").orderBy("WeekStartDate", true).getAll(),
+            this.oweb.lists.getByTitle(this.listName).items.filter("InitiatorId eq '"+currentUserId+"' and (Status eq '"+StatusType.Submit+"' or Status eq '"+StatusType.ManagerApprove+"' or Status eq '"+StatusType.Approved+"')").select('Initiator/Id,Initiator/Title,ClientName,WeekStartDate,Status').expand("Initiator").orderBy("WeekStartDate", false).getAll(),
         ]);
         // console.log("current user deatils")
         // console.log(this.props.context.pageContext)
@@ -323,7 +323,11 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
         }
         let trFormdata = this.state.trFormdata
         trFormdata['Name'] = this.currentUser
-
+        AllSubmittedTimesheetsOfEmployee.sort((a, b) => {
+            const dateA = new Date(a.WeekStartDate).getTime();
+            const dateB = new Date(b.WeekStartDate).getTime();
+            return  dateB-dateA;
+        });
         if (this.props.match.params.id != undefined) {
             this.setState({ ItemID: this.props.match.params.id })
             ClientNames = await this.getItemData(this.props.match.params.id)
