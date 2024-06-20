@@ -802,8 +802,8 @@ class HolidaysList extends Component<HolidaysListProps, HolidaysListState> {
                                                     </div>
                                                     <div className="row mx-1" id="">
                                                         <div className="col-sm-12 text-center my-2" id="">
-                                                            <button type="button" onClick={this.handleSubmit} id="btnSubmit" className="SubmitButtons btn">{this.state.SaveUpdateText}</button>
-                                                            <button type="button" id="btnCancel" className="CancelButtons btn" onClick={this.cancelHandler}>Cancel</button>
+                                                            <button type="button" onClick={this.handleSubmit} id="btnSubmit" className="SubmitButtons btn" title={this.state.SaveUpdateText}>{this.state.SaveUpdateText}</button>
+                                                            <button type="button" id="btnCancel" className="CancelButtons btn" onClick={this.cancelHandler} title='Cancel'>Cancel</button>
                                                         </div>
                                                     </div>
                                                     

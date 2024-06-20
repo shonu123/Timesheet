@@ -761,7 +761,7 @@ this.setState({ColumnsHeaders:hColumns,ReportData:SampleData,ExportExcelData:req
                                                 <label className="z-in-9">Start Date<span className="mandatoryhastrick">*</span></label>
                                                 <div className="custom-datepicker" id="divDateofJoining">
 
-                                                    <DatePicker onDatechange={this.handleStartDate} selectedDate={this.state.startDate} ref={this.startDate} placeholderText='MM/DD/YYYY' id={'txtStartDate'}/>
+                                                    <DatePicker onDatechange={this.handleStartDate} selectedDate={this.state.startDate} ref={this.startDate} placeholderText='MM/DD/YYYY' id={'txtStartDate'} title={"Start Date"}/>
                                                 </div>
                                             </div>
                                         </div>
@@ -771,7 +771,7 @@ this.setState({ColumnsHeaders:hColumns,ReportData:SampleData,ExportExcelData:req
                                                 <label className="z-in-9">End Date<span className="mandatoryhastrick">*</span></label>
                                                 <div className="custom-datepicker" id="divDateofJoining">
 
-                                                    <DatePicker onDatechange={this.handleEndDate} ref={this.endDate} selectedDate={this.state.endDate} id={'txtEndDate'}/>
+                                                    <DatePicker onDatechange={this.handleEndDate} ref={this.endDate} selectedDate={this.state.endDate} id={'txtEndDate'} title={"End Date"}/>
                                                 </div>
                                             </div>
                                         </div>
@@ -784,8 +784,8 @@ this.setState({ColumnsHeaders:hColumns,ReportData:SampleData,ExportExcelData:req
                                         {/* <button type="button" className="DownloadButtons btn" onClick={this.handleSubmit}>
                                         <FontAwesomeIcon icon={faCloudDownload} className=''></FontAwesomeIcon>Download</button> */}
                                         {/* <button type="button" className="ReportCancelButtons btn" onClick={this.handleCancel}>Cancel</button> */}
-                                        <button type="button" className="SubmitButtons btn" onClick={this.handleSubmit}>Submit</button>
-                                        <button type="button" className="CancelButtons btn" onClick={this.handleCancel}>Cancel</button>
+                                        <button type="button" className="SubmitButtons btn" onClick={this.handleSubmit} title='Submit'>Submit</button>
+                                        <button type="button" className="CancelButtons btn" onClick={this.handleCancel} title='Cancel'>Cancel</button>
                                     </div>
                                 </div>
                                 {this.state.ReportData.length>0 &&

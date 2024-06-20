@@ -57,10 +57,9 @@ const getStartDate = (date) => {
 const CustomDatePicker = ({ handleChange, selectedDate, className, labelName, isDisabled, ref, Day, isDateRange = true }: DatePickerProps) => {
 
   return (
-    <div className="App">
-      <label className='z-in-9'>{labelName}<span className="mandatoryhastrick">*</span></label>
-      <div className="date-picker-container">
-                   <FontAwesomeIcon icon={faCalendarAlt} className="calendar-icon" />
+      <>
+      <label className='z-in-9'>{labelName}<span className="mandatoryhastrick">*</span></label><div className="date-picker-container">
+      <FontAwesomeIcon icon={faCalendarAlt} className="calendar-icon-custom" />
       {isDateRange ?
         <DatePicker
           selected={selectedDate}
@@ -75,7 +74,7 @@ const CustomDatePicker = ({ handleChange, selectedDate, className, labelName, is
           name={labelName}
           title={labelName}
           id={className}
-          placeholder={"MM/DD/YYYY"}
+          placeholderText={"MM/DD/YYYY"}
         /> :
         <DatePicker
           selected={selectedDate}
@@ -88,13 +87,12 @@ const CustomDatePicker = ({ handleChange, selectedDate, className, labelName, is
           ref={ref}
           required={true}
           name={labelName}
-          title={labelName}
+          titleText={labelName}
           id={className}
-          placeholder={"MM/DD/YYYY"}
-        />
-      }
-      </div>
+          placeholderText={"MM/DD/YYYY"}
+          />} 
     </div>
+    </>
   );
 
 }

@@ -2454,67 +2454,30 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                         }
                     }
                 }
-                else if(isAllDaysTimeOff && formdata.WeeklyItemsData.length>1)
+                else if(isAllDaysTimeOff)
                 {
-                    for (let i in formdata.WeeklyItemsData) {
-                        if (formdata.WeeklyItemsData[i].Description.trim() == "" && formdata.IsDescriptionMandatory) {
-                            isValid.message = "Description cannot be blank.";
-                            isValid.status = false;
-                            document.getElementById(i + "_Description_weekrow").focus();
-                            document.getElementById(i + "_Description_weekrow").classList.add('mandatory-FormContent-focus');
-                            return isValid;
-                        }
-                        else if (formdata.WeeklyItemsData[i].ProjectCode.trim() == "" && formdata.IsProjectCodeMandatory) {
-                            isValid.message = "Project Code cannot be blank.";
-                            isValid.status = false;
-                            document.getElementById(i + "_ProjectCode_weekrow").focus();
-                            document.getElementById(i + "_ProjectCode_weekrow").classList.add('mandatory-FormContent-focus');
-                            return isValid;
-                        }
-                        isAllDaysEmpty = true;
-                        for (let key in formdata.WeeklyItemsData[i]) //validation if entire row Empty of Weekly Hrs 
-                        {
-                            if (!["Description", "ProjectCode", "Total"].includes(key)) {
-                                if (formdata.WeeklyItemsData[i][key] != "") {
-                                    isAllDaysEmpty = false;
-                                    break;
-                                }
+                    if(formdata.WeeklyItemsData.length>1)
+                    {
+                        for (let i in formdata.WeeklyItemsData) {
+                            if (formdata.WeeklyItemsData[i].Description.trim() == "" && formdata.IsDescriptionMandatory) {
+                                isValid.message = "Description cannot be blank.";
+                                isValid.status = false;
+                                document.getElementById(i + "_Description_weekrow").focus();
+                                document.getElementById(i + "_Description_weekrow").classList.add('mandatory-FormContent-focus');
+                                return isValid;
                             }
-                        }
-                        if (isAllDaysEmpty) {
-                            isValid.message = "Hours cannot be blank, Please provide atleast 0.";
-                            isValid.status = false
-                            for (let day of weeks) {
-                                let control = document.getElementById(i + "_" + day + "_weekrow") as HTMLInputElement;
-                                if (!control.disabled) {
-                                    document.getElementById(i + "_" + day + "_weekrow").focus();
-                                    document.getElementById(i + "_" + day + "_weekrow").classList.add('mandatory-FormContent-focus');
-                                    return isValid;
-                                }
+                            else if (formdata.WeeklyItemsData[i].ProjectCode.trim() == "" && formdata.IsProjectCodeMandatory) {
+                                isValid.message = "Project Code cannot be blank.";
+                                isValid.status = false;
+                                document.getElementById(i + "_ProjectCode_weekrow").focus();
+                                document.getElementById(i + "_ProjectCode_weekrow").classList.add('mandatory-FormContent-focus');
+                                return isValid;
                             }
-                        }
-                    }
-                    for (let i in formdata.OTItemsData) {
-                        if (formdata.OTItemsData[i].Description.trim() == "" && formdata.IsDescriptionMandatory && parseFloat(formdata.OTItemsData[i].Total) != 0) {
-                            isValid.message = "Description cannot be blank.";
-                            isValid.status = false;
-                            document.getElementById(i + "_Description_otrow").focus();
-                            document.getElementById(i + "_Description_otrow").classList.add('mandatory-FormContent-focus');
-                            return isValid;
-                        }
-                        else if (formdata.OTItemsData[i].ProjectCode.trim() == "" && formdata.IsProjectCodeMandatory && parseFloat(formdata.OTItemsData[i].Total) != 0) {
-                            isValid.message = "Project Code cannot be blank.";
-                            isValid.status = false;
-                            document.getElementById(i + "_ProjectCode_otrow").focus();
-                            document.getElementById(i + "_ProjectCode_otrow").classList.add('mandatory-FormContent-focus');
-                            return isValid;
-                        }
-                        if (formdata.OTItemsData.length > 1)//validation if entire row Empty of OT Hrs And OT rows greater than 1 
-                        {
                             isAllDaysEmpty = true;
-                            for (let key in formdata.OTItemsData[i]) {
+                            for (let key in formdata.WeeklyItemsData[i]) //validation if entire row Empty of Weekly Hrs 
+                            {
                                 if (!["Description", "ProjectCode", "Total"].includes(key)) {
-                                    if (formdata.OTItemsData[i][key] != "") {
+                                    if (formdata.WeeklyItemsData[i][key] != "") {
                                         isAllDaysEmpty = false;
                                         break;
                                     }
@@ -2522,13 +2485,56 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                             }
                             if (isAllDaysEmpty) {
                                 isValid.message = "Hours cannot be blank, Please provide atleast 0.";
-                                isValid.status = false;
+                                isValid.status = false
                                 for (let day of weeks) {
-                                    let control = document.getElementById(i + "_" + day + "_otrow") as HTMLInputElement;
+                                    let control = document.getElementById(i + "_" + day + "_weekrow") as HTMLInputElement;
                                     if (!control.disabled) {
-                                        document.getElementById(i + "_" + day + "_otrow").focus();
-                                        document.getElementById(i + "_" + day + "_otrow").classList.add('mandatory-FormContent-focus');
+                                        document.getElementById(i + "_" + day + "_weekrow").focus();
+                                        document.getElementById(i + "_" + day + "_weekrow").classList.add('mandatory-FormContent-focus');
                                         return isValid;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    if(formdata.OTItemsData.length>1)
+                    {
+                        for (let i in formdata.OTItemsData) {
+                            if (formdata.OTItemsData[i].Description.trim() == "" && formdata.IsDescriptionMandatory && parseFloat(formdata.OTItemsData[i].Total) != 0) {
+                                isValid.message = "Description cannot be blank.";
+                                isValid.status = false;
+                                document.getElementById(i + "_Description_otrow").focus();
+                                document.getElementById(i + "_Description_otrow").classList.add('mandatory-FormContent-focus');
+                                return isValid;
+                            }
+                            else if (formdata.OTItemsData[i].ProjectCode.trim() == "" && formdata.IsProjectCodeMandatory && parseFloat(formdata.OTItemsData[i].Total) != 0) {
+                                isValid.message = "Project Code cannot be blank.";
+                                isValid.status = false;
+                                document.getElementById(i + "_ProjectCode_otrow").focus();
+                                document.getElementById(i + "_ProjectCode_otrow").classList.add('mandatory-FormContent-focus');
+                                return isValid;
+                            }
+                            if (formdata.OTItemsData.length > 1)//validation if entire row Empty of OT Hrs And OT rows greater than 1 
+                            {
+                                isAllDaysEmpty = true;
+                                for (let key in formdata.OTItemsData[i]) {
+                                    if (!["Description", "ProjectCode", "Total"].includes(key)) {
+                                        if (formdata.OTItemsData[i][key] != "") {
+                                            isAllDaysEmpty = false;
+                                            break;
+                                        }
+                                    }
+                                }
+                                if (isAllDaysEmpty) {
+                                    isValid.message = "Hours cannot be blank, Please provide atleast 0.";
+                                    isValid.status = false;
+                                    for (let day of weeks) {
+                                        let control = document.getElementById(i + "_" + day + "_otrow") as HTMLInputElement;
+                                        if (!control.disabled) {
+                                            document.getElementById(i + "_" + day + "_otrow").focus();
+                                            document.getElementById(i + "_" + day + "_otrow").classList.add('mandatory-FormContent-focus');
+                                            return isValid;
+                                        }
                                     }
                                 }
                             }
@@ -3227,12 +3233,12 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                                 <div className="row">
                                     <div className="col-md-12 text-center my-2">
                                         {/* {this.state.showApproveRejectbtn&&!this.state.IsReviewer?<button type="button" id="btnApprove" onClick={this.showConfirmApprove} className="SubmitButtons btn">Approve</button>:''} */}
-                                        {this.state.showApproveRejectbtn ? <button type="button" id="btnApprove" onClick={this.showConfirmApprove} className="SubmitButtons btn">Approve</button> : ''}
-                                        {this.state.showApproveRejectbtn ? <button type="button" id="btnReject" onClick={this.showConfirmReject} className="RejectButtons btn">Reject</button> : ''}
-                                        {this.state.showRevokebtn ? <button type="button" id="btnRevoke" onClick={this.showConfirmRevoke} className="txt-white CancelButtons bc-burgundy btn">Revoke</button> : ''}
-                                        {!this.state.isSubmitted && this.state.showSubmitSavebtn ? <button type="button" id="btnSave" onClick={this.handleSubmitorSave} className="SaveButtons btn">Save</button> : ''}
-                                        {!this.state.isSubmitted && this.state.showSubmitSavebtn ? <button type="button" id="btnSubmit" onClick={this.showConfirmSubmit} className="SubmitButtons btn">Submit</button> : ''}
-                                        <button type="button" id="btnCancel" onClick={this.handleCancel} className="CancelButtons btn">Cancel</button>
+                                        {this.state.showApproveRejectbtn ? <button type="button" id="btnApprove" onClick={this.showConfirmApprove} className="SubmitButtons btn" title="Approve">Approve</button> : ''}
+                                        {this.state.showApproveRejectbtn ? <button type="button" id="btnReject" onClick={this.showConfirmReject} className="RejectButtons btn" title="Reject">Reject</button> : ''}
+                                        {this.state.showRevokebtn ? <button type="button" id="btnRevoke" onClick={this.showConfirmRevoke} className="txt-white CancelButtons bc-burgundy btn" title="Revoke">Revoke</button> : ''}
+                                        {!this.state.isSubmitted && this.state.showSubmitSavebtn ? <button type="button" id="btnSave" onClick={this.handleSubmitorSave} className="SaveButtons btn" title="Save">Save</button> : ''}
+                                        {!this.state.isSubmitted && this.state.showSubmitSavebtn ? <button type="button" id="btnSubmit" onClick={this.showConfirmSubmit} className="SubmitButtons btn" title="Submit">Submit</button> : ''}
+                                        <button type="button" id="btnCancel" onClick={this.handleCancel} className="CancelButtons btn" title="Cancel">Cancel</button>
                                     </div>
 
                                 </div>
