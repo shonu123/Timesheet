@@ -10,7 +10,9 @@ import "@pnp/sp/lists";
 import "@pnp/sp/items";
 import { addDays } from 'office-ui-fabric-react';
 import DatePicker from 'react-datepicker';
-import 'react-datepicker/dist/react-datepicker.css'
+import 'react-datepicker/dist/react-datepicker.css';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faCalendarAlt} from '@fortawesome/free-solid-svg-icons';
 
 interface DatePickerProps {
   handleChange: (e: any) => void;
@@ -57,6 +59,8 @@ const CustomDatePicker = ({ handleChange, selectedDate, className, labelName, is
   return (
     <div className="App">
       <label className='z-in-9'>{labelName}<span className="mandatoryhastrick">*</span></label>
+      <div className="date-picker-container">
+                   <FontAwesomeIcon icon={faCalendarAlt} className="calendar-icon" />
       {isDateRange ?
         <DatePicker
           selected={selectedDate}
@@ -89,6 +93,7 @@ const CustomDatePicker = ({ handleChange, selectedDate, className, labelName, is
           placeholder={"MM/DD/YYYY"}
         />
       }
+      </div>
     </div>
   );
 

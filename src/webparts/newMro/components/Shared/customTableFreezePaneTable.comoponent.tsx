@@ -170,7 +170,8 @@
 // export default MyDataTable;
 
 import React, { useEffect,useMemo } from 'react';
-import { useTable, useBlockLayout, useSortBy, useFilters, useGlobalFilter,usePagination} from 'react-table';
+//import { useTable, useBlockLayout, useSortBy, useFilters, useGlobalFilter,usePagination} from 'react-table';
+import { useTable, useBlockLayout, useSortBy, useFilters, useGlobalFilter} from 'react-table';
 import { faFileExcel, faArrowDownLong, faArrowUpLong } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import * as XLSX from 'xlsx-js-style';
@@ -188,18 +189,18 @@ const MyDataTable = ({ columns, data, ExcelData }) => {
     getTableProps,
     getTableBodyProps,
     headerGroups,
-    page, // Instead of 'rows', we use 'page'
+    //page, // Instead of 'rows', we use 'page'
     prepareRow,
     state,
-    state: { pageIndex, pageSize,globalFilter}, // Destructure pagination state
+    //state: { pageIndex, pageSize,globalFilter}, // Destructure pagination state
+    // nextPage,
+    // previousPage,
+    // canNextPage,
+    // canPreviousPage,
+    // gotoPage,
+    // pageCount,
+    // setPageSize,
     setGlobalFilter,
-    nextPage,
-    previousPage,
-    canNextPage,
-    canPreviousPage,
-    gotoPage,
-    pageCount,
-    setPageSize,
     rows
   } = useTable(
     {
@@ -211,7 +212,7 @@ const MyDataTable = ({ columns, data, ExcelData }) => {
     useGlobalFilter,
     useSortBy,
     useBlockLayout, // Enables block layout to support column freezing
-    usePagination // Pagination functionality
+    //usePagination // Pagination functionality
   );
 
   const exportToExcel = (data) => {
@@ -248,34 +249,35 @@ const MyDataTable = ({ columns, data, ExcelData }) => {
     XLSX.writeFile(wb, `${filename}(${startDate} to ${endDate}).xlsx`);
 
   }
- // Function for extreme previous page
- const extremePreviousPage = () => {
-  gotoPage(0);
-  previousPage();
-};
+//  // Function for extreme previous page
+//  const extremePreviousPage = () => {
+//   gotoPage(0);
+//   previousPage();
+// };
 
-// Function for extreme next page
-const extremeNextPage = () => {
-  gotoPage(pageCount - 1);
-  nextPage();
-};
-// Dropdown options for rows per page
-const pageSizeOptions = useMemo(
-  () => [10,15,20,25,30].map((size) => ({ value: size, label: size.toString() })),
-  []
-);
-// Filtered rows based on global filter
-const filteredRows = useMemo(() => {
-  if (globalFilter) {
-    return rows.filter((row) =>
-      row.cells.some((cell) => String(cell.value).toLowerCase().includes(globalFilter.toLowerCase()))
-    );
-  }
-  return rows;
-}, [globalFilter, rows]);
-// Calculate start and end record index of current page
-const startRecordIndex = pageIndex * pageSize + 1;
-const endRecordIndex = Math.min((pageIndex + 1) * pageSize,filteredRows.length);
+// // Function for extreme next page
+// const extremeNextPage = () => {
+//   gotoPage(pageCount - 1);
+//   nextPage();
+// };
+// // Dropdown options for rows per page
+// const pageSizeOptions = useMemo(
+//   () => [10,15,20,25,30].map((size) => ({ value: size, label: size.toString() })),
+//   []
+// );
+// // Filtered rows based on global filter
+// const filteredRows = useMemo(() => {
+//   if (globalFilter) {
+//     return rows.filter((row) =>
+//       row.cells.some((cell) => String(cell.value).toLowerCase().includes(globalFilter.toLowerCase()))
+//     );
+//   }
+//   return rows;
+// }, [globalFilter, rows]);
+// // Calculate start and end record index of current page
+// const startRecordIndex = pageIndex * pageSize + 1;
+// const endRecordIndex = Math.min((pageIndex + 1) * pageSize,filteredRows.length);
+const { globalFilter } = state;
   return (
     <>
       {data.length > 0 && (
@@ -329,7 +331,7 @@ const endRecordIndex = Math.min((pageIndex + 1) * pageSize,filteredRows.length);
                 ))}
               </div>
               <div {...getTableBodyProps()} className="body">
-                {page.map((row, rowIndex) => {
+                {rows.map((row, rowIndex) => {
                   prepareRow(row);
                   return (
                     <div {...row.getRowProps()} className="body-row">
@@ -348,7 +350,7 @@ const endRecordIndex = Math.min((pageIndex + 1) * pageSize,filteredRows.length);
             </div>
           </div>
            {/* Pagination */}
-           {filteredRows.length>0?
+           {/* {filteredRows.length>0?
             <div id='divPagination' className='div-pagination'>
               <label className='px-2'>Rows per page:</label>
               <select id='ddlRowsPerPage' className='px-2'
@@ -377,7 +379,7 @@ const endRecordIndex = Math.min((pageIndex + 1) * pageSize,filteredRows.length);
               {<svg className='svg-icon' xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" aria-hidden="true" role="presentation"><path d="M5.59 7.41L10.18 12l-4.59 4.59L7 18l6-6-6-6zM16 6h2v12h-2z"></path><path fill="none" d="M0 0h24v24H0V0z"></path></svg>}
               </button>
             </div> : <div className='text-center'>There are no records to display</div>
-          }
+          } */}
         </>
       )}
     </>

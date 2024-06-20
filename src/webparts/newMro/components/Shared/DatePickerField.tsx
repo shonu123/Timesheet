@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import DatePicker from 'react-datepicker';
 import "react-datepicker/dist/react-datepicker.css";
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faCalendarAlt} from '@fortawesome/free-solid-svg-icons';
 //import 'bootstrap/dist/css/bootstrap.min.css';
 const DatePickercontrol = (props,ref) => {
     var [selectedDay,setDate] = useState(null);
@@ -67,6 +69,8 @@ const DatePickercontrol = (props,ref) => {
     //   format='M/D/YYYY'
       
     // />
+    <div className="date-picker-container">
+    <FontAwesomeIcon icon={faCalendarAlt} className="calendar-icon" />
     <DatePicker 
     selected={selectedDay } 
     dateFormat={'MM/dd/yyyy'} 
@@ -79,6 +83,7 @@ const DatePickercontrol = (props,ref) => {
          id={id}
          title={title}
         />
+        </div>
      );
   };
 

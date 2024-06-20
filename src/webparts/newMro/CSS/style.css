@@ -3193,3 +3193,22 @@ padding: 0;
   width: 60px;
   border: none;
 }
+/* Calendar icon CSS */
+.date-picker-container {
+  position: relative;
+}
+.calendar-icon {
+  position: absolute;
+  top: 50%;
+  right: 10px; /* Adjust the distance from the right edge of the input box */
+  transform: translateY(-50%);
+  pointer-events: none; /* Ensures the icon doesn't block interactions with the input box */
+  z-index: 1;
+  height: 15px;
+}
+.calendar-icon:hover{
+  cursor:pointer;
+}
+.react-datepicker-wrapper {
+  position: relative;
+}

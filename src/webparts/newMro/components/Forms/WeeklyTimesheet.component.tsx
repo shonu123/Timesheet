@@ -551,6 +551,15 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
 
         return ClientNames;
     }
+    private async getItemStatusBeforeActionPerform(TimesheetID) {
+        let filterQuery = "ID eq '" + TimesheetID + "'";
+        let data = await sp.web.lists.getByTitle(this.listName).items.filter(filterQuery).select('Status').get();
+        if(data.length==1)
+        return data[0].Status;
+        else  
+        return this.state.trFormdata.Status;
+
+    }
     // Functions related to OnBehalf functionality.
     private async getAllEmployees() {
         let selectQuery = "Employee/ID,Employee/Title"
@@ -991,7 +1000,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
         }
         return trFormdata;
     }
-    private CancelDeleteRow = () => {
+    private CloseConfirmationPopup = () => {
         this.setState({ showConfirmDeletePopup: false, ConfirmPopupMessage: "", ActionButtonId: "", redirect: false });
     }
     private RemoveCurrentRow = () => {
@@ -1092,7 +1101,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
         let CountOfRow = event.currentTarget.id.split("_")[0];
         this.setState({ RowType: TypeofRow, rowCount: CountOfRow })
     }
-    private showConfirmSubmit = (event) => {
+    private showConfirmSubmit = async (event) => {
         let data = {};
         // new onbehalf changes
         { this.state.onBehalf ? data['Employee'] = { val: this.state.currentUserId, required: true, Name: 'Employee', Type: ControlType.number, Focusid: this.EmployeeDropdown } : '' }
@@ -1105,36 +1114,71 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
         }
         if (isValid.status) {
             let CurrWeekStartDate = this.getCurrentWeekStartDate(formdata.WeekStartDay);
-            if (formdata.WeekStartDate.getMonth() + 1 + "/" + formdata.WeekStartDate.getDate() + "/" + formdata.WeekStartDate.getFullYear() == CurrWeekStartDate.getMonth() + 1 + "/" + CurrWeekStartDate.getDate() + "/" + CurrWeekStartDate.getFullYear())
-                this.setState({ showConfirmDeletePopup: true, ConfirmPopupMessage: 'Are you sure you want to submit for current week?', ActionButtonId: event.target.id });
-            else
-                this.setState({ showConfirmDeletePopup: true, ConfirmPopupMessage: 'Are you sure you want to submit?', ActionButtonId: event.target.id });
+             //new condition for instance action without refreshing
+            var itemStatus = await this.getItemStatusBeforeActionPerform(this.state.ItemID);
+            if(itemStatus==this.state.trFormdata.Status) {
+               
+                if (formdata.WeekStartDate.getMonth() + 1 + "/" + formdata.WeekStartDate.getDate() + "/" + formdata.WeekStartDate.getFullYear() == CurrWeekStartDate.getMonth() + 1 + "/" + CurrWeekStartDate.getDate() + "/" + CurrWeekStartDate.getFullYear())
+                    this.setState({ showConfirmDeletePopup: true, ConfirmPopupMessage: 'Are you sure you want to submit for current week?', ActionButtonId: event.target.id });
+                else
+                    this.setState({ showConfirmDeletePopup: true, ConfirmPopupMessage: 'Are you sure you want to submit?', ActionButtonId: event.target.id });
+            }
+            else {
+                //Info message for action not completed
+                this.setState({ ActionToasterMessage: 'Success-' +StatusType.RecordModified, loading: false, redirect: true })
+
+            }
+
         }
         else {
             customToaster('toster-error', ToasterTypes.Error, isValid.message, 4000)
         }
     }
-    private showConfirmApprove = (event) => {
-        this.setState({ showConfirmDeletePopup: true, ConfirmPopupMessage: 'Are you sure you want to approve?', ActionButtonId: event.target.id });
+    private showConfirmApprove = async (event) => {
+        //new condition for instance action without refreshing
+        var itemStatus = await this.getItemStatusBeforeActionPerform(this.state.ItemID);
+        if(itemStatus==this.state.trFormdata.Status) {  
+            this.setState({ showConfirmDeletePopup: true, ConfirmPopupMessage: 'Are you sure you want to approve?', ActionButtonId: event.target.id });
+        }
+        else {
+            //Info message for action not completed
+            this.setState({ ActionToasterMessage: 'Success-' +StatusType.RecordModified, loading: false, redirect: true })
+        }
     }
-    private showConfirmReject = (event) => {
+    private showConfirmReject = async (event) => {
         if ([null, undefined, ""].includes(this.state.trFormdata.Comments.trim())) {
             customToaster('toster-error', ToasterTypes.Error, 'Comments cannot be blank.', 4000)
             document.getElementById("txtComments").focus();
             document.getElementById("txtComments").classList.add('mandatory-FormContent-focus');
         }
         else {
-            this.setState({ showConfirmDeletePopup: true, ConfirmPopupMessage: 'Are you sure you want to reject?', ActionButtonId: event.target.id });
+            //new condition for instance action without refreshing
+            var itemStatus = await this.getItemStatusBeforeActionPerform(this.state.ItemID);
+            if(itemStatus==this.state.trFormdata.Status) {
+                this.setState({ showConfirmDeletePopup: true, ConfirmPopupMessage: 'Are you sure you want to reject?', ActionButtonId: event.target.id });    
+            }
+            else {
+                //Info message for action not completed
+                this.setState({ ActionToasterMessage: 'Success-' +StatusType.RecordModified, loading: false, redirect: true })
+            }
         }
     }
-    private showConfirmRevoke = (event) => {
+    private showConfirmRevoke = async (event) => {
         if ([null, undefined, ""].includes(this.state.trFormdata.Comments.trim())) {
             customToaster('toster-error', ToasterTypes.Error, 'Comments cannot be blank.', 4000)
             document.getElementById("txtComments").focus();
             document.getElementById("txtComments").classList.add('mandatory-FormContent-focus');
         }
         else {
-            this.setState({ showConfirmDeletePopup: true, ConfirmPopupMessage: 'Are you sure you want to revoke?', ActionButtonId: event.target.id });
+             //new condition for instance action without refreshing
+             var itemStatus = await this.getItemStatusBeforeActionPerform(this.state.ItemID);
+             if(itemStatus==this.state.trFormdata.Status) {
+                 this.setState({ showConfirmDeletePopup: true, ConfirmPopupMessage: 'Are you sure you want to revoke?', ActionButtonId: event.target.id });
+            }
+            else {
+                //Info message for action not completed
+                this.setState({ ActionToasterMessage: 'Success-' +StatusType.RecordModified, loading: false, redirect: true })
+            }
         }
 
     }
@@ -1161,6 +1205,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
         if (isValid.status) {
             // console.log(this.state);
             formdata = this.GetRequiredEmails(formdata.ClientName, formdata);
+            formdata = this.ClearInvalidDots(formdata);
             this.setState({ trFormdata: formdata })
             var postObject = {
                 Name: formdata.Name,
@@ -1429,18 +1474,13 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
         this.setState({ loading: true });
         let tableContent;
         if (formObject.ClientName.toLowerCase().includes("synergy")) {
-            if (formObject.Comments.trim() == "")
-                tableContent = { 'Name': this.state.trFormdata.Name, 'Client': this.state.trFormdata.ClientName, 'Submitted Date': `${this.state.trFormdata.DateSubmitted.getMonth() + 1}/${this.state.trFormdata.DateSubmitted.getDate()}/${this.state.trFormdata.DateSubmitted.getFullYear()}`, 'Office  Hours': this.state.trFormdata.SynergyOfficeHrs[0].Total, 'Holiday Hours': this.state.trFormdata.ClientHolidayHrs[0].Total, 'Time Off Hours': this.state.trFormdata.PTOHrs[0].Total, 'Grand Total Hours': this.state.trFormdata.Total[0].Total }
-            else
-                tableContent = { 'Name': this.state.trFormdata.Name, 'Client': this.state.trFormdata.ClientName, 'Submitted Date': `${this.state.trFormdata.DateSubmitted.getMonth() + 1}/${this.state.trFormdata.DateSubmitted.getDate()}/${this.state.trFormdata.DateSubmitted.getFullYear()}`, 'Office  Hours': this.state.trFormdata.SynergyOfficeHrs[0].Total, 'Holiday Hours': this.state.trFormdata.ClientHolidayHrs[0].Total, 'Time Off Hours': this.state.trFormdata.PTOHrs[0].Total, 'Grand Total Hours': this.state.trFormdata.Total[0].Total, 'Comments': formObject.Comments }
+            tableContent=[formObject.SynergyOfficeHrs,formObject.PTOHrs,formObject.ClientHolidayHrs,formObject.Total]
         }
         else {
-            if (formObject.Comments.trim() == "")
-                tableContent = { 'Name': this.state.trFormdata.Name, 'Client': this.state.trFormdata.ClientName, 'Submitted Date': `${this.state.trFormdata.DateSubmitted.getMonth() + 1}/${this.state.trFormdata.DateSubmitted.getDate()}/${this.state.trFormdata.DateSubmitted.getFullYear()}`, 'Billable Hours': formObject.WeeklyItemsTotalTime, 'OT Hours': formObject.OTItemsTotalTime, 'Total Billable Hours': this.state.trFormdata.BillableSubTotal[0].Total, 'Holiday Hours': this.state.trFormdata.ClientHolidayHrs[0].Total, 'Time Off Hours': this.state.trFormdata.PTOHrs[0].Total, 'Grand Total Hours': this.state.trFormdata.Total[0].Total }
-            else
-                tableContent = { 'Name': this.state.trFormdata.Name, 'Client': this.state.trFormdata.ClientName, 'Submitted Date': `${this.state.trFormdata.DateSubmitted.getMonth() + 1}/${this.state.trFormdata.DateSubmitted.getDate()}/${this.state.trFormdata.DateSubmitted.getFullYear()}`, 'Billable Hours': formObject.WeeklyItemsTotalTime, 'OT Hours': formObject.OTItemsTotalTime, 'Total Billable Hours': this.state.trFormdata.BillableSubTotal[0].Total, 'Holiday Hours': this.state.trFormdata.ClientHolidayHrs[0].Total, 'Time Off Hours': this.state.trFormdata.PTOHrs[0].Total, 'Grand Total Hours': this.state.trFormdata.Total[0].Total, 'Comments': formObject.Comments }
+            tableContent=[formObject.WeeklySubTotalHrs,formObject.OTSubTotalHrs,formObject.PTOHrs,formObject.ClientHolidayHrs,formObject.Total]
         }
         let sub = '';
+        let SubjectLabel = '';
         let emaildetails = {};
         let To = [];
         let CC = [];
@@ -1464,8 +1504,9 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                     for (const mail of formObject.ReviewersEmail) {
                         To.push(mail);
                     }
-                    sub = "Weekly Time Sheet has been " + formdata.Status + "."
-                    emaildetails = { toemail: To, ccemail: this.state.EmployeeEmail, subject: sub, bodyString: sub, body: '' };
+                    sub = "Weekly Time Sheet has been " + formdata.Status + ".";
+                    SubjectLabel =('Timesheet ' + formdata.Status + ' | ' + formObject.Name + this.getWeekstartAndWeekEnd(formObject))+(this.siteURL.toLowerCase().includes('/sites/billing.timesheet/dev')?' - HQ DEV Environment':'');
+                    emaildetails = { toemail: To, ccemail: this.state.EmployeeEmail, subject: SubjectLabel, bodyString: sub, body: '' };
                     var DashboardURl = this.siteURL+'/SitePages/TimeSheet.aspx';
                     emaildetails['body'] = this.emailBodyPreparation(this.siteURL + '/SitePages/TimeSheet.aspx#/WeeklyTimesheet/' + this.state.ItemID, tableContent, emaildetails['bodyString'], this.props.spContext.userDisplayName, DashboardURl);
                     //this.sendemail(emaildetails,formdata.Status);
@@ -1474,9 +1515,10 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                     this.getItemData(this.state.ItemID);
                 }
                 else if (StatusType.Submit == formdata.Status) {
-                    sub = "Weekly Time Sheet has been " + formdata.Status + "."
+                    sub = "Weekly Time Sheet has been " + formdata.Status + ".";
+                    SubjectLabel =('Timesheet ' + formdata.Status + ' | ' + formObject.Name + this.getWeekstartAndWeekEnd(formObject))+(this.siteURL.toLowerCase().includes('/sites/billing.timesheet/dev')?' - HQ DEV Environment':'');
                     formObject.IsDelegated ? To = formObject.DelegateToEmails : To = formObject.ReportingManagersEmail;
-                    emaildetails = { toemail: To, ccemail: this.state.EmployeeEmail, subject: sub, bodyString: sub, body: '' };
+                    emaildetails = { toemail: To, ccemail: this.state.EmployeeEmail, subject: SubjectLabel, bodyString: sub, body: '' };
                     var DashboardURl = this.siteURL+'/SitePages/TimeSheet.aspx';
                     emaildetails['body'] = this.emailBodyPreparation(this.siteURL + '/SitePages/TimeSheet.aspx#/WeeklyTimesheet/' + this.state.ItemID, tableContent, emaildetails['bodyString'], this.props.spContext.userDisplayName, DashboardURl);
                     //this.sendemail(emaildetails,formdata.Status);
@@ -1485,7 +1527,8 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                 }
                 else if ([StatusType.ReviewerReject, StatusType.Save].includes(formObject.Status))  //submitted after Reviewer Reject or Reviewer reject->save but client Approval not needed or not depends on IsClientApprovalNeeded
                 {
-                    sub = "Weekly Time Sheet has been " + StatusType.Submit + "."
+                    sub = "Weekly Time Sheet has been " + StatusType.Submit + ".";
+                    SubjectLabel =('Timesheet ' + formdata.Status + ' | ' + formObject.Name + this.getWeekstartAndWeekEnd(formObject))+(this.siteURL.toLowerCase().includes('/sites/billing.timesheet/dev')?' - HQ DEV Environment':'');
                     if (formObject.IsClientApprovalNeeded) {
                         if (formObject.IsDelegated) {
                             for (const mail of formObject.DelegateToEmails) {
@@ -1501,7 +1544,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                     for (const mail of formObject.ReviewersEmail) {
                         CC.push(mail);
                     }
-                    emaildetails = { toemail: CC, ccemail: this.state.EmployeeEmail, subject: sub, bodyString: sub, body: '' };
+                    emaildetails = { toemail: CC, ccemail: this.state.EmployeeEmail, subject: SubjectLabel, bodyString: sub, body: '' };
                     var DashboardURl = this.siteURL+'/SitePages/TimeSheet.aspx';
                     emaildetails['body'] = this.emailBodyPreparation(this.siteURL + '/SitePages/TimeSheet.aspx#/WeeklyTimesheet/' + this.state.ItemID, tableContent, emaildetails['bodyString'], this.props.spContext.userDisplayName, DashboardURl);
                     //this.sendemail(emaildetails,StatusType.Submit);
@@ -1510,6 +1553,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                 }
                 else if ([StatusType.ManagerApprove, StatusType.Approved].includes(formdata.Status)) {
                     sub = formdata.Status == StatusType.Approved ? "Weekly Time Sheet has been " + StatusType.ReviewerApprove + "." : "Weekly Time Sheet has been " + formdata.Status + ".";
+                    SubjectLabel =('Timesheet ' + (formdata.Status == StatusType.Approved?StatusType.ReviewerApprove:formdata.Status) + ' | ' + formObject.Name + this.getWeekstartAndWeekEnd(formObject))+(this.siteURL.toLowerCase().includes('/sites/billing.timesheet/dev')?' - HQ DEV Environment':'');
                     if (formdata.Status == StatusType.ManagerApprove) {
                         To = this.state.EmployeeEmail;
                         if (formObject.IsDelegated) {
@@ -1543,14 +1587,15 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                         }
 
                     }
-                    emaildetails = { toemail: To, ccemail: CC, subject: sub, bodyString: sub, body: '' };
+                    emaildetails = { toemail: To, ccemail: CC, subject: SubjectLabel, bodyString: sub, body: '' };
                     var DashboardURl = this.siteURL+'/SitePages/TimeSheet.aspx';
                     emaildetails['body'] = this.emailBodyPreparation(this.siteURL + '/SitePages/TimeSheet.aspx#/WeeklyTimesheet/' + this.state.ItemID, tableContent, emaildetails['bodyString'], this.props.spContext.userDisplayName, DashboardURl);
                     //this.sendemail(emaildetails,StatusType.Approved);
                     this.setState({ ActionToasterMessage: 'Success-' + StatusType.Approved, loading: false, redirect: true })
                 }
                 else if ([StatusType.ManagerReject, StatusType.ReviewerReject].includes(formdata.Status)) {
-                    sub = "Weekly Time Sheet has been " + formdata.Status + ". Please re-submit with necessary details."
+                    sub = "Weekly Time Sheet has been " + formdata.Status + ". Please re-submit with necessary details.";
+                    SubjectLabel =('Timesheet ' + formdata.Status + ' | ' + formObject.Name + this.getWeekstartAndWeekEnd(formObject))+(this.siteURL.toLowerCase().includes('/sites/billing.timesheet/dev')?' - HQ DEV Environment':'');
                     if (formObject.IsClientApprovalNeeded) {
                         if (formObject.IsDelegated) {
                             for (const mail of formObject.DelegateToEmails) {
@@ -1567,7 +1612,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                     for (const mail of formObject.ReviewersEmail) {
                         CC.push(mail);
                     }
-                    emaildetails = { toemail: this.state.EmployeeEmail, ccemail: CC, subject: sub, bodyString: sub, body: '' };
+                    emaildetails = { toemail: this.state.EmployeeEmail, ccemail: CC, subject: SubjectLabel, bodyString: sub, body: '' };
                     var DashboardURl = this.siteURL+'/SitePages/TimeSheet.aspx';
                     emaildetails['body'] = this.emailBodyPreparation(this.siteURL + '/SitePages/TimeSheet.aspx#/WeeklyTimesheet/' + this.state.ItemID, tableContent, emaildetails['bodyString'], this.props.spContext.userDisplayName, DashboardURl);
                     //this.sendemail(emaildetails,formdata.Status);
@@ -1589,8 +1634,9 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                         this.getItemData(ItemID);
                     }
                     else if (StatusType.Submit == formdata.Status) {
-                        sub = "Weekly Time Sheet has been " + formdata.Status + "."
-                        emaildetails = { toemail: formObject.ReportingManagersEmail, ccemail: this.state.EmployeeEmail, subject: sub, bodyString: sub, body: '' };
+                        sub = "Weekly Time Sheet has been " + formdata.Status + ".";
+                        SubjectLabel =('Timesheet ' + formdata.Status + ' | ' + formObject.Name + this.getWeekstartAndWeekEnd(formObject))+(this.siteURL.toLowerCase().includes('/sites/billing.timesheet/dev')?' - HQ DEV Environment':'');
+                        emaildetails = { toemail: formObject.ReportingManagersEmail, ccemail: this.state.EmployeeEmail, subject: SubjectLabel, bodyString: sub, body: '' };
                         var DashboardURl = this.siteURL+'/SitePages/TimeSheet.aspx';
                         emaildetails['body'] = this.emailBodyPreparation(this.siteURL + '/SitePages/TimeSheet.aspx#/WeeklyTimesheet/' + ItemID, tableContent, emaildetails['bodyString'], this.props.spContext.userDisplayName, DashboardURl);
                         //this.sendemail(emaildetails,formdata.Status);
@@ -1609,20 +1655,31 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
         }
     }
     private emailBodyPreparation(redirectURL, tableContent, bodyString, userName, DashboardURL) {
-        var emailLink = "Please <a href=" + redirectURL + ">click here</a> to review the details or go to <a href=" + DashboardURL + ">Dashboard</a>.";
-        var emailBody = '<table id="email-container" border="0" cellpadding="0" cellspacing="0" style="margin: 0; padding: 0; text-align: left;"width="600px">' +
-            '<tr valign="top"><td colspan="2"><div id="email-to">Dear Sir/Madam,</br></div></td></tr>';
-        emailBody += '<tr valign="top"><td colspan="2" style="padding-top: 10px;">' + bodyString + '</td></tr>';
-        var i = 0;
-        for (var key in tableContent) {
-            if (i === 0)
-                emailBody += "<tr><td></br></td></tr>";
-            var tdValue = tableContent[key];
-            emailBody += '<tr valign="top"> <td style="width:200px">' + key + '</td><td>: ' + tdValue + '</td></tr>';
-            i++;
+        var emailLink1 = "Please <a href=" + redirectURL + ">click here</a> to view <strong>Timesheet</strong>.";
+        var emailLink2 = "To view <strong>All Timesheets</strong>, please go to <a href=" + DashboardURL + ">Dashboard</a>.";
+        var emailBody = '<table id="email-container" border="0"  cellpadding="0" cellspacing="0" style="margin: 0; padding: 0; text-align: left;border-collapse:collapse;" width="600px">' +
+            '<tr valign="top"><td colspan="9"><div id="email-to">Dear Sir/Madam,</br></div></td></tr>';
+        emailBody += '<tr valign="top"><td colspan="9" style="padding-top: 10px;">' + bodyString + ' with below details.</td></tr>';
+        emailBody += '<tr valign="top"  style="font-weight:bold;text-align: center;border: 1px solid black;"><td style="width: 80px;text-align: left;">Type</td><td>Mon</td><td>Tue</td><td>Wed</td><td>Thu</td><td>Fri</td><td>Sat</td><td>Sun</td><td>Total</td></tr>';
+        for (var index in tableContent) {
+            emailBody += '<tr  valign="top" style="border: 1px solid black;">';
+            for (var key in tableContent[index][0]) {
+                var tdValue = tableContent[index][0][key];
+                if(!["Description","ProjectCode"].includes(key))
+                {
+                    if(key=="Type")
+                    emailBody += '<td style="width: 50px;text-align:left;">'+tdValue + '</td>';
+                    else if(key=="Total" && Number(index)==tableContent.length-1)
+                    emailBody += '<td style="width: 50px;text-align:center;font-weight:bold;">'+tdValue + '</td>';
+                    else
+                    emailBody += '<td style="width: 50px;text-align: center;">'+tdValue + '</td>';
+                }
+            }
+            emailBody += '</tr>';
         }
-        emailBody += '<tr valign="top"> <td colspan="2" style="padding-top: 10px;"></br>' + emailLink + '</td></tr>';
-        emailBody += '<tr valign="top"><td colspan="2"></br><p style="margin-bottom: 0;">Regards,</p><div style="margin-top: 5px;" id="email-from">' + userName + '</div>';
+        emailBody += '<tr valign="top"> <td colspan="9" style="padding-top: 10px;"></br>' + emailLink1 + '</td></tr>';
+        emailBody += '<tr valign="top"> <td colspan="9" style="padding-top: 10px;">' + emailLink2 + '</td></tr>';
+        emailBody += '<tr valign="top"><td colspan="9"></br><p style="margin-bottom: 0;">Regards,</p><div style="margin-top: 5px;" id="email-from">' + userName + '</div>';
         emailBody += '</td></tr></table>';
         return emailBody;
     }
@@ -1916,22 +1973,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
         }
         this.showApproveAndRejectButton(trFormdata);
         //To remove mandatory-FormContent-focus
-        if (trFormdata.ClientName.toLowerCase().includes("synergy")) {
-            document.getElementById("0_Description_SynOffcHrs").classList.remove('mandatory-FormContent-focus');
-            document.getElementById("0_ProjectCode_SynOffcHrs").classList.remove('mandatory-FormContent-focus');
-            document.getElementById("0_" + this.WeekNames[0].day1 + "_SynOffcHrs").classList.remove('mandatory-FormContent-focus');
-        }
-        document.getElementById("0_Description_ClientHldHrs").classList.remove('mandatory-FormContent-focus');
-        document.getElementById("0_ProjectCode_ClientHldHrs").classList.remove('mandatory-FormContent-focus');
-        document.getElementById("0_Description_PTOHrs").classList.remove('mandatory-FormContent-focus');
-        document.getElementById("0_ProjectCode_PTOHrs").classList.remove('mandatory-FormContent-focus');
-
-        Object.keys(trFormdata.Total[0]).forEach(key => {
-            if (!["Total", "Description", "ProjectCode", "Type"].includes(key))
-                document.getElementById("Total" + key).classList.remove('mandatory-FormContent-focus');
-        })
-        document.getElementById("GrandTotal").classList.remove('mandatory-FormContent-focus');
-        document.getElementById("txtComments").classList.remove('mandatory-FormContent-focus');
+        this.RemoveAll_mandatory_FormContent_focus(trFormdata);
     }
     private ClearTimesheetControls = (trFormdata) => {
 
@@ -2011,25 +2053,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
 
         this.showApproveAndRejectButton(trFormdata);
         //To remove mandatory-FormContent-focus
-        if (trFormdata.ClientName.toLowerCase().includes("synergy")) {
-            document.getElementById("0_Description_SynOffcHrs").classList.remove('mandatory-FormContent-focus');
-            document.getElementById("0_ProjectCode_SynOffcHrs").classList.remove('mandatory-FormContent-focus');
-            document.getElementById("0_" + this.WeekNames[0].day1 + "_SynOffcHrs").classList.remove('mandatory-FormContent-focus');
-        }
-        document.getElementById("0_Description_ClientHldHrs").classList.remove('mandatory-FormContent-focus');
-        document.getElementById("0_ProjectCode_ClientHldHrs").classList.remove('mandatory-FormContent-focus');
-        document.getElementById("0_Description_PTOHrs").classList.remove('mandatory-FormContent-focus');
-        document.getElementById("0_ProjectCode_PTOHrs").classList.remove('mandatory-FormContent-focus');
-
-        Object.keys(trFormdata.Total[0]).forEach(key => {
-            if (!["Total", "Description", "ProjectCode", "Type"].includes(key))
-                document.getElementById("Total" + key).classList.remove('mandatory-FormContent-focus');
-        })
-        document.getElementById("GrandTotal").classList.remove('mandatory-FormContent-focus');
-        document.getElementById("txtComments").classList.remove('mandatory-FormContent-focus');
-        document.getElementById("ddlClient").classList.remove('mandatory-FormContent-focus');
-        document.getElementById("dateWeeklyTimesheet").classList.remove('mandatory-FormContent-focus');
-
+        this.RemoveAll_mandatory_FormContent_focus(trFormdata);
     }
     private handlefullClose = () => {
 
@@ -2183,6 +2207,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
         let val;
         let Time;
         var isAllDaysEmpty;
+        var isAllDaysTimeOff;
         var weeks = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
         for (let key in formdata.Total[0]) {
             val = formdata.Total[0][key];
@@ -2198,66 +2223,134 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                 }
             }
         }
-        if (Action == "Submit") {
-            if (formdata.ClientName.toLowerCase().includes("synergy")) {
-                if (formdata.SynergyOfficeHrs[0].Description.trim() == "" && formdata.IsDescriptionMandatory) {
-                    isValid.message = "Description cannot be blank.";
-                    isValid.status = false;
-                    document.getElementById("0_Description_SynOffcHrs").focus();
-                    document.getElementById("0_Description_SynOffcHrs").classList.add('mandatory-FormContent-focus');
-                    return isValid;
-                }
-                else if (formdata.SynergyOfficeHrs[0].ProjectCode.trim() == "" && formdata.IsProjectCodeMandatory) {
-                    isValid.message = "Project Code cannot be blank.";
-                    isValid.status = false;
-                    document.getElementById("0_ProjectCode_SynOffcHrs").focus();
-                    document.getElementById("0_ProjectCode_SynOffcHrs").classList.add('mandatory-FormContent-focus');
-                    return isValid;
-                }
-                isAllDaysEmpty = true;
-                for (let key in formdata.SynergyOfficeHrs[0]) //validation if entire row Empty of  Synergy Office Hrs 
-                {
-                    if (!["Description", "ProjectCode", "Total", "Type"].includes(key)) {
-                        if (formdata.SynergyOfficeHrs[0][key] != "") {
-                            isAllDaysEmpty = false;
-                            break;
-                        }
-                    }
-                }
-                if (isAllDaysEmpty) {
-                    isValid.message = "Hours cannot be blank, Please provide atleast 0.";
-                    isValid.status = false;
-                    for (let day of weeks) {
-                        let control = document.getElementById("0_" + day + "_SynOffcHrs") as HTMLInputElement;
+        if (formdata.ClientName.toLowerCase().includes("synergy")) {
+            for (let key in formdata.SynergyOfficeHrs[0]) //validation for invalid dots of Synergy Office Hrs 
+            {
+                if (!["Description", "ProjectCode", "Total", "Type"].includes(key)) {
+                    if (formdata.SynergyOfficeHrs[0][key] == ".") {
+                        isValid.message = "Please enter valid hours.";
+                        isValid.status = false;
+                        let control = document.getElementById(0 + "_" + key + "_SynOffcHrs") as HTMLInputElement;
                         if (!control.disabled) {
-                            document.getElementById("0_" + day + "_SynOffcHrs").focus();
-                            document.getElementById("0_" + day + "_SynOffcHrs").classList.add('mandatory-FormContent-focus');
+                            document.getElementById(0 + "_" + key + "_SynOffcHrs").focus();
+                            document.getElementById(0 + "_" + key + "_SynOffcHrs").classList.add('mandatory-FormContent-focus');
                             return isValid;
                         }
                     }
                 }
             }
-            else if (!formdata.ClientName.toLowerCase().includes("synergy")) {
-                for (let i in formdata.WeeklyItemsData) {
-                    if (formdata.WeeklyItemsData[i].Description.trim() == "" && formdata.IsDescriptionMandatory) {
-                        isValid.message = "Description cannot be blank.";
-                        isValid.status = false;
-                        document.getElementById(i + "_Description_weekrow").focus();
-                        document.getElementById(i + "_Description_weekrow").classList.add('mandatory-FormContent-focus');
+        }
+        else if (!formdata.ClientName.toLowerCase().includes("synergy")) {
+            for (let i in formdata.WeeklyItemsData) {
+                for (let key in formdata.WeeklyItemsData[i]) //validation for  invalid dots of Weekly Hrs 
+                {
+                    if (!["Description", "ProjectCode", "Total"].includes(key)) {
+                        if (formdata.WeeklyItemsData[i][key] == ".") {
+                            isValid.message = "Please enter valid hours.";
+                            isValid.status = false;
+                            let control = document.getElementById(i + "_" + key + "_weekrow") as HTMLInputElement;
+                            if (!control.disabled) {
+                                document.getElementById(i + "_" + key + "_weekrow").focus();
+                                document.getElementById(i + "_" + key + "_weekrow").classList.add('mandatory-FormContent-focus');
+                                return isValid;
+                            }
+                        }
+                    }
+                }
+            }
+            for (let i in formdata.OTItemsData) {
+                for (let key in formdata.OTItemsData[i]) //validation for  invalid dots of OT Hrs 
+                {
+                    if (!["Description", "ProjectCode", "Total"].includes(key)) {
+                        if (formdata.OTItemsData[i][key] == ".") {
+                            isValid.message = "Please enter valid hours.";
+                            isValid.status = false;
+                            let control = document.getElementById(i + "_" + key + "_otrow") as HTMLInputElement;
+                            if (!control.disabled) {
+                                document.getElementById(i + "_" + key + "_otrow").focus();
+                                document.getElementById(i + "_" + key + "_otrow").classList.add('mandatory-FormContent-focus');
+                                return isValid;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        for (let key in formdata.ClientHolidayHrs[0]) //validation for invalid dots of ClientHoliday Hrs 
+        {
+            if (!["Description", "ProjectCode", "Total", "Type"].includes(key)) {
+                if (formdata.ClientHolidayHrs[0][key] == ".") {
+                    isValid.message = "Please enter valid hours.";
+                    isValid.status = false;
+                    let control = document.getElementById(0 + "_" + key + "_ClientHldHrs") as HTMLInputElement;
+                    if (!control.disabled) {
+                        document.getElementById(0 + "_" + key + "_ClientHldHrs").focus();
+                        document.getElementById(0 + "_" + key + "_ClientHldHrs").classList.add('mandatory-FormContent-focus');
                         return isValid;
                     }
-                    else if (formdata.WeeklyItemsData[i].ProjectCode.trim() == "" && formdata.IsProjectCodeMandatory) {
+                }
+            }
+        }
+        for (let key in formdata.PTOHrs[0]) //validation for invalid dots of PTO Hrs 
+        {
+            if (!["Description", "ProjectCode", "Total", "Type"].includes(key)) {
+                if (formdata.PTOHrs[0][key] == ".") {
+                    isValid.message = "Please enter valid hours.";
+                    isValid.status = false;
+                    let control = document.getElementById(0 + "_" + key + "_PTOHrs") as HTMLInputElement;
+                    if (!control.disabled) {
+                        document.getElementById(0 + "_" + key + "_PTOHrs").focus();
+                        document.getElementById(0 + "_" + key + "_PTOHrs").classList.add('mandatory-FormContent-focus');
+                        return isValid;
+                    }
+                }
+            }
+        }
+       
+        if (Action == "Submit") {
+            isAllDaysTimeOff=true;
+            let EmptyTimeOffKey='';
+            for (let key in formdata.PTOHrs[0]) //validation if entire row is time off Hrs 
+            {
+                if (!["Description", "ProjectCode", "Total", "Type","Sat","Sun"].includes(key)) {
+                    if (formdata.PTOHrs[0][key] == "" || parseFloat(formdata.PTOHrs[0][key]) == 0) {
+                        isAllDaysTimeOff = false;
+                        break;
+                    }
+                }
+            }
+            for (let key in formdata.PTOHrs[0]) //validation if  time off Hrs empty and Holiday Hrs empty
+            {
+                if (!["Description", "ProjectCode", "Total", "Type","Sat","Sun"].includes(key)) {
+                    if ((formdata.PTOHrs[0][key] == "" || parseFloat(formdata.PTOHrs[0][key]) == 0) && (formdata.ClientHolidayHrs[0][key]=="" || parseFloat(formdata.ClientHolidayHrs[0][key])==0)) {
+                        EmptyTimeOffKey=key;
+                        break;
+                    }
+                }
+            }
+            if (formdata.ClientName.toLowerCase().includes("synergy")) {
+                // if all days not time off in a week and if not time off day is also not holiday
+                if(!isAllDaysTimeOff && (formdata.ClientHolidayHrs[0][EmptyTimeOffKey]=="" || parseFloat(formdata.ClientHolidayHrs[0][EmptyTimeOffKey])==0)) 
+                  {
+                    if (formdata.SynergyOfficeHrs[0].Description.trim() == "" && formdata.IsDescriptionMandatory) {
+                        isValid.message = "Description cannot be blank.";
+                        isValid.status = false;
+                        document.getElementById("0_Description_SynOffcHrs").focus();
+                        document.getElementById("0_Description_SynOffcHrs").classList.add('mandatory-FormContent-focus');
+                        return isValid;
+                    }
+                    else if (formdata.SynergyOfficeHrs[0].ProjectCode.trim() == "" && formdata.IsProjectCodeMandatory) {
                         isValid.message = "Project Code cannot be blank.";
                         isValid.status = false;
-                        document.getElementById(i + "_ProjectCode_weekrow").focus();
-                        document.getElementById(i + "_ProjectCode_weekrow").classList.add('mandatory-FormContent-focus');
+                        document.getElementById("0_ProjectCode_SynOffcHrs").focus();
+                        document.getElementById("0_ProjectCode_SynOffcHrs").classList.add('mandatory-FormContent-focus');
                         return isValid;
                     }
                     isAllDaysEmpty = true;
-                    for (let key in formdata.WeeklyItemsData[i]) //validation if entire row Empty of Weekly Hrs 
+                    for (let key in formdata.SynergyOfficeHrs[0]) //validation if entire row Empty of  Synergy Office Hrs 
                     {
-                        if (!["Description", "ProjectCode", "Total"].includes(key)) {
-                            if (formdata.WeeklyItemsData[i][key] != "") {
+                        if (!["Description", "ProjectCode", "Total", "Type"].includes(key)) {
+                            if (formdata.SynergyOfficeHrs[0][key] != "") {
                                 isAllDaysEmpty = false;
                                 break;
                             }
@@ -2265,39 +2358,42 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                     }
                     if (isAllDaysEmpty) {
                         isValid.message = "Hours cannot be blank, Please provide atleast 0.";
-                        isValid.status = false
+                        isValid.status = false;
                         for (let day of weeks) {
-                            let control = document.getElementById(i + "_" + day + "_weekrow") as HTMLInputElement;
+                            let control = document.getElementById("0_" + day + "_SynOffcHrs") as HTMLInputElement;
                             if (!control.disabled) {
-                                document.getElementById(i + "_" + day + "_weekrow").focus();
-                                document.getElementById(i + "_" + day + "_weekrow").classList.add('mandatory-FormContent-focus');
+                                document.getElementById("0_" + day + "_SynOffcHrs").focus();
+                                document.getElementById("0_" + day + "_SynOffcHrs").classList.add('mandatory-FormContent-focus');
                                 return isValid;
                             }
                         }
                     }
-
-                }
-                for (let i in formdata.OTItemsData) {
-                    if (formdata.OTItemsData[i].Description.trim() == "" && formdata.IsDescriptionMandatory && parseFloat(formdata.OTItemsData[i].Total) != 0) {
-                        isValid.message = "Description cannot be blank.";
-                        isValid.status = false;
-                        document.getElementById(i + "_Description_otrow").focus();
-                        document.getElementById(i + "_Description_otrow").classList.add('mandatory-FormContent-focus');
-                        return isValid;
-                    }
-                    else if (formdata.OTItemsData[i].ProjectCode.trim() == "" && formdata.IsProjectCodeMandatory && parseFloat(formdata.OTItemsData[i].Total) != 0) {
-                        isValid.message = "Project Code cannot be blank.";
-                        isValid.status = false;
-                        document.getElementById(i + "_ProjectCode_otrow").focus();
-                        document.getElementById(i + "_ProjectCode_otrow").classList.add('mandatory-FormContent-focus');
-                        return isValid;
-                    }
-                    if (formdata.OTItemsData.length > 1)//validation if entire row Empty of OT Hrs And OT rows greater than 1 
-                    {
+                  }
+               
+            }
+            else if (!formdata.ClientName.toLowerCase().includes("synergy")) {
+                 // if all days not time off in a week and if not time off day is also not holiday
+                if (!isAllDaysTimeOff && (formdata.ClientHolidayHrs[0][EmptyTimeOffKey] == "" || parseFloat(formdata.ClientHolidayHrs[0][EmptyTimeOffKey]) == 0)) {
+                    for (let i in formdata.WeeklyItemsData) {
+                        if (formdata.WeeklyItemsData[i].Description.trim() == "" && formdata.IsDescriptionMandatory) {
+                            isValid.message = "Description cannot be blank.";
+                            isValid.status = false;
+                            document.getElementById(i + "_Description_weekrow").focus();
+                            document.getElementById(i + "_Description_weekrow").classList.add('mandatory-FormContent-focus');
+                            return isValid;
+                        }
+                        else if (formdata.WeeklyItemsData[i].ProjectCode.trim() == "" && formdata.IsProjectCodeMandatory) {
+                            isValid.message = "Project Code cannot be blank.";
+                            isValid.status = false;
+                            document.getElementById(i + "_ProjectCode_weekrow").focus();
+                            document.getElementById(i + "_ProjectCode_weekrow").classList.add('mandatory-FormContent-focus');
+                            return isValid;
+                        }
                         isAllDaysEmpty = true;
-                        for (let key in formdata.OTItemsData[i]) {
+                        for (let key in formdata.WeeklyItemsData[i]) //validation if entire row Empty of Weekly Hrs 
+                        {
                             if (!["Description", "ProjectCode", "Total"].includes(key)) {
-                                if (formdata.OTItemsData[i][key] != "") {
+                                if (formdata.WeeklyItemsData[i][key] != "") {
                                     isAllDaysEmpty = false;
                                     break;
                                 }
@@ -2305,16 +2401,137 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                         }
                         if (isAllDaysEmpty) {
                             isValid.message = "Hours cannot be blank, Please provide atleast 0.";
-                            isValid.status = false;
+                            isValid.status = false
                             for (let day of weeks) {
-                                let control = document.getElementById(i + "_" + day + "_otrow") as HTMLInputElement;
+                                let control = document.getElementById(i + "_" + day + "_weekrow") as HTMLInputElement;
                                 if (!control.disabled) {
-                                    document.getElementById(i + "_" + day + "_otrow").focus();
-                                    document.getElementById(i + "_" + day + "_otrow").classList.add('mandatory-FormContent-focus');
+                                    document.getElementById(i + "_" + day + "_weekrow").focus();
+                                    document.getElementById(i + "_" + day + "_weekrow").classList.add('mandatory-FormContent-focus');
                                     return isValid;
                                 }
                             }
+                        }
+                    }
+                    for (let i in formdata.OTItemsData) {
+                        if (formdata.OTItemsData[i].Description.trim() == "" && formdata.IsDescriptionMandatory && parseFloat(formdata.OTItemsData[i].Total) != 0) {
+                            isValid.message = "Description cannot be blank.";
+                            isValid.status = false;
+                            document.getElementById(i + "_Description_otrow").focus();
+                            document.getElementById(i + "_Description_otrow").classList.add('mandatory-FormContent-focus');
+                            return isValid;
+                        }
+                        else if (formdata.OTItemsData[i].ProjectCode.trim() == "" && formdata.IsProjectCodeMandatory && parseFloat(formdata.OTItemsData[i].Total) != 0) {
+                            isValid.message = "Project Code cannot be blank.";
+                            isValid.status = false;
+                            document.getElementById(i + "_ProjectCode_otrow").focus();
+                            document.getElementById(i + "_ProjectCode_otrow").classList.add('mandatory-FormContent-focus');
+                            return isValid;
+                        }
+                        if (formdata.OTItemsData.length > 1)//validation if entire row Empty of OT Hrs And OT rows greater than 1 
+                        {
+                            isAllDaysEmpty = true;
+                            for (let key in formdata.OTItemsData[i]) {
+                                if (!["Description", "ProjectCode", "Total"].includes(key)) {
+                                    if (formdata.OTItemsData[i][key] != "") {
+                                        isAllDaysEmpty = false;
+                                        break;
+                                    }
+                                }
+                            }
+                            if (isAllDaysEmpty) {
+                                isValid.message = "Hours cannot be blank, Please provide atleast 0.";
+                                isValid.status = false;
+                                for (let day of weeks) {
+                                    let control = document.getElementById(i + "_" + day + "_otrow") as HTMLInputElement;
+                                    if (!control.disabled) {
+                                        document.getElementById(i + "_" + day + "_otrow").focus();
+                                        document.getElementById(i + "_" + day + "_otrow").classList.add('mandatory-FormContent-focus');
+                                        return isValid;
+                                    }
+                                }
 
+                            }
+                        }
+                    }
+                }
+                else if(isAllDaysTimeOff && formdata.WeeklyItemsData.length>1)
+                {
+                    for (let i in formdata.WeeklyItemsData) {
+                        if (formdata.WeeklyItemsData[i].Description.trim() == "" && formdata.IsDescriptionMandatory) {
+                            isValid.message = "Description cannot be blank.";
+                            isValid.status = false;
+                            document.getElementById(i + "_Description_weekrow").focus();
+                            document.getElementById(i + "_Description_weekrow").classList.add('mandatory-FormContent-focus');
+                            return isValid;
+                        }
+                        else if (formdata.WeeklyItemsData[i].ProjectCode.trim() == "" && formdata.IsProjectCodeMandatory) {
+                            isValid.message = "Project Code cannot be blank.";
+                            isValid.status = false;
+                            document.getElementById(i + "_ProjectCode_weekrow").focus();
+                            document.getElementById(i + "_ProjectCode_weekrow").classList.add('mandatory-FormContent-focus');
+                            return isValid;
+                        }
+                        isAllDaysEmpty = true;
+                        for (let key in formdata.WeeklyItemsData[i]) //validation if entire row Empty of Weekly Hrs 
+                        {
+                            if (!["Description", "ProjectCode", "Total"].includes(key)) {
+                                if (formdata.WeeklyItemsData[i][key] != "") {
+                                    isAllDaysEmpty = false;
+                                    break;
+                                }
+                            }
+                        }
+                        if (isAllDaysEmpty) {
+                            isValid.message = "Hours cannot be blank, Please provide atleast 0.";
+                            isValid.status = false
+                            for (let day of weeks) {
+                                let control = document.getElementById(i + "_" + day + "_weekrow") as HTMLInputElement;
+                                if (!control.disabled) {
+                                    document.getElementById(i + "_" + day + "_weekrow").focus();
+                                    document.getElementById(i + "_" + day + "_weekrow").classList.add('mandatory-FormContent-focus');
+                                    return isValid;
+                                }
+                            }
+                        }
+                    }
+                    for (let i in formdata.OTItemsData) {
+                        if (formdata.OTItemsData[i].Description.trim() == "" && formdata.IsDescriptionMandatory && parseFloat(formdata.OTItemsData[i].Total) != 0) {
+                            isValid.message = "Description cannot be blank.";
+                            isValid.status = false;
+                            document.getElementById(i + "_Description_otrow").focus();
+                            document.getElementById(i + "_Description_otrow").classList.add('mandatory-FormContent-focus');
+                            return isValid;
+                        }
+                        else if (formdata.OTItemsData[i].ProjectCode.trim() == "" && formdata.IsProjectCodeMandatory && parseFloat(formdata.OTItemsData[i].Total) != 0) {
+                            isValid.message = "Project Code cannot be blank.";
+                            isValid.status = false;
+                            document.getElementById(i + "_ProjectCode_otrow").focus();
+                            document.getElementById(i + "_ProjectCode_otrow").classList.add('mandatory-FormContent-focus');
+                            return isValid;
+                        }
+                        if (formdata.OTItemsData.length > 1)//validation if entire row Empty of OT Hrs And OT rows greater than 1 
+                        {
+                            isAllDaysEmpty = true;
+                            for (let key in formdata.OTItemsData[i]) {
+                                if (!["Description", "ProjectCode", "Total"].includes(key)) {
+                                    if (formdata.OTItemsData[i][key] != "") {
+                                        isAllDaysEmpty = false;
+                                        break;
+                                    }
+                                }
+                            }
+                            if (isAllDaysEmpty) {
+                                isValid.message = "Hours cannot be blank, Please provide atleast 0.";
+                                isValid.status = false;
+                                for (let day of weeks) {
+                                    let control = document.getElementById(i + "_" + day + "_otrow") as HTMLInputElement;
+                                    if (!control.disabled) {
+                                        document.getElementById(i + "_" + day + "_otrow").focus();
+                                        document.getElementById(i + "_" + day + "_otrow").classList.add('mandatory-FormContent-focus');
+                                        return isValid;
+                                    }
+                                }
+                            }
                         }
                     }
                 }
@@ -2363,37 +2580,81 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                 return isValid;
             }
             //if isValid true remove all 'mandatory-FormContent-focus' classes
-            if (!formdata.ClientName.toLowerCase().includes("synergy")) {
-                for (let i in formdata.WeeklyItemsData) {
-                    document.getElementById(i + "_Description_weekrow").classList.remove('mandatory-FormContent-focus');
-                    document.getElementById(i + "_ProjectCode_weekrow").classList.remove('mandatory-FormContent-focus');
-                    document.getElementById(i + "_" + this.WeekNames[0].day1 + "_weekrow").classList.remove('mandatory-FormContent-focus');
-                }
-                for (let i in formdata.OTItemsData) {
-                    document.getElementById(i + "_Description_otrow").classList.remove('mandatory-FormContent-focus');
-                    document.getElementById(i + "_ProjectCode_otrow").classList.remove('mandatory-FormContent-focus');
-                    document.getElementById(i + "_" + this.WeekNames[0].day1 + "_otrow").classList.remove('mandatory-FormContent-focus');
-                }
-            }
-            else {
-                document.getElementById("0_Description_SynOffcHrs").classList.remove('mandatory-FormContent-focus');
-                document.getElementById("0_ProjectCode_SynOffcHrs").classList.remove('mandatory-FormContent-focus');
-                document.getElementById("0_" + this.WeekNames[0].day1 + "_SynOffcHrs").classList.remove('mandatory-FormContent-focus');
-            }
-            document.getElementById("0_Description_ClientHldHrs").classList.remove('mandatory-FormContent-focus');
-            document.getElementById("0_ProjectCode_ClientHldHrs").classList.remove('mandatory-FormContent-focus');
-            document.getElementById("0_Description_PTOHrs").classList.remove('mandatory-FormContent-focus');
-            document.getElementById("0_ProjectCode_PTOHrs").classList.remove('mandatory-FormContent-focus');
-
-            Object.keys(formdata.Total[0]).forEach(key => {
-                if (!["Total", "Description", "ProjectCode", "Type"].includes(key))
-                    document.getElementById("Total" + key).classList.remove('mandatory-FormContent-focus');
-            })
-            document.getElementById("GrandTotal").classList.remove('mandatory-FormContent-focus');
-            document.getElementById("txtComments").classList.remove('mandatory-FormContent-focus');
+             this.RemoveAll_mandatory_FormContent_focus(formdata);
             return isValid;
         }
+        this.RemoveAll_mandatory_FormContent_focus(formdata);
         return isValid;
+    }
+    private ClearInvalidDots=(Formdata) =>
+    {   const formdata = Formdata;
+        let TableColumns = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+        for (var prop of TableColumns) {
+            let val;
+            //WeeklyHrs row
+            for (var index in formdata.WeeklyItemsData) {
+             val =parseFloat(formdata.WeeklyItemsData[index][prop].toString());
+                formdata.WeeklyItemsData[index][prop]= Number.isNaN(val)?'':parseFloat(formdata.WeeklyItemsData[index][prop].toString());
+            }
+            //OverTimeHrs row
+            for (var index in formdata.OTItemsData) {
+             val =parseFloat(formdata.OTItemsData[index][prop].toString());
+                formdata.OTItemsData[index][prop]= Number.isNaN(val)?'':parseFloat(formdata.OTItemsData[index][prop].toString());
+            }
+            //SynergyOfficeHrs row
+             val =parseFloat(formdata.SynergyOfficeHrs[0][prop].toString());
+            formdata.SynergyOfficeHrs[0][prop]= Number.isNaN(val)?'':parseFloat(formdata.SynergyOfficeHrs[0][prop].toString());
+            //ClientHolidayHrs row
+             val =parseFloat(formdata.ClientHolidayHrs[0][prop].toString());
+            formdata.ClientHolidayHrs[0][prop]= Number.isNaN(val)?'':parseFloat(formdata.ClientHolidayHrs[0][prop].toString());
+            //PTOHrs row
+             val =parseFloat(formdata.PTOHrs[0][prop].toString());
+            formdata.PTOHrs[0][prop]= Number.isNaN(val)?'':parseFloat(formdata.PTOHrs[0][prop].toString());
+        }
+                return formdata;
+    }
+    private RemoveAll_mandatory_FormContent_focus=(formdata)=>
+    {
+        if (!formdata.ClientName.toLowerCase().includes("synergy")) {
+            for (let i in formdata.WeeklyItemsData) {
+                for (let key in formdata.WeeklyItemsData[i]) 
+                {
+                  document.getElementById(i + "_" + key + "_weekrow").classList.remove('mandatory-FormContent-focus');
+                }
+            }
+            for (let i in formdata.OTItemsData) {
+                for (let key in formdata.OTItemsData[i]) 
+                {
+                  document.getElementById(i + "_" + key + "_otrow").classList.remove('mandatory-FormContent-focus');
+                }
+            }
+        }
+        else {
+            for (let key in formdata.SynergyOfficeHrs[0])
+            {
+                if (!["Total", "Type"].includes(key)) {
+                document.getElementById(0 + "_" + key + "_SynOffcHrs").classList.remove('mandatory-FormContent-focus');
+                }
+            }
+        }
+        for (let key in formdata.ClientHolidayHrs[0]) {
+            if (!["Total", "Type"].includes(key)) {
+                document.getElementById(0 + "_" + key + "_ClientHldHrs").classList.remove('mandatory-FormContent-focus');
+            }
+        }
+        for (let key in formdata.PTOHrs[0]) {
+            if (!["Total", "Type"].includes(key)) {
+                document.getElementById(0 + "_" + key + "_PTOHrs").classList.remove('mandatory-FormContent-focus');
+            }
+        }
+        Object.keys(formdata.Total[0]).forEach(key => {
+            if (!["Total", "Description", "ProjectCode", "Type"].includes(key))
+                document.getElementById("Total" + key).classList.remove('mandatory-FormContent-focus');
+        })
+        document.getElementById("GrandTotal").classList.remove('mandatory-FormContent-focus');
+        document.getElementById("txtComments").classList.remove('mandatory-FormContent-focus');
+        document.getElementById("ddlClient").classList.remove('mandatory-FormContent-focus');
+        document.getElementById("dateWeeklyTimesheet").classList.remove('mandatory-FormContent-focus');
     }
     //Functions related to HolidayMaster
     private GetHolidayMasterDataByClientName = async (WeekStartDate, selectedClientName, trFormdata) => {
@@ -2546,7 +2807,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
             let weekEnd = addDays(new Date(weekStart), 6);
             let weekStartArr = weekStart.toDateString().split(" ");
             let weekEndArr = weekEnd.toDateString().split(" ")
-            weekstartWeekEnd = "      (" + weekStartArr[1] + "-" + weekStartArr[2] + "-" + weekStartArr[3] + " To " + weekEndArr[1] + "-" + weekEndArr[2] + "-" + weekEndArr[3] + " )";
+            weekstartWeekEnd = " (" + weekStartArr[1] + "-" + weekStartArr[2] + "-" + weekStartArr[3] + " To " + weekEndArr[1] + "-" + weekEndArr[2] + "-" + weekEndArr[3] + " )";
             return weekstartWeekEnd
         }
     }
@@ -2580,11 +2841,11 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                     <ModalPopUp title={this.state.modalTitle} modalText={this.state.modalText} isVisible={this.state.showHideModal} onClose={this.handlefullClose} isSuccess={this.state.isSuccess}></ModalPopUp>
                     {
                         this.state.ConfirmPopupMessage == "" ? "" :
-                            this.state.ConfirmPopupMessage == "Are you sure you want to delete this row?" ? <ModalPopUpConfirm message={this.state.ConfirmPopupMessage} title={''} isVisible={this.state.showConfirmDeletePopup} isSuccess={false} onConfirm={this.RemoveCurrentRow} onCancel={this.CancelDeleteRow}></ModalPopUpConfirm> :
-                                ["Are you sure you want to submit?", "Are you sure you want to submit for current week?"].includes(this.state.ConfirmPopupMessage) ? <ModalPopUpConfirm message={this.state.ConfirmPopupMessage} title={''} isVisible={this.state.showConfirmDeletePopup} isSuccess={false} onConfirm={this.handleSubmitorSave} onCancel={this.CancelDeleteRow}></ModalPopUpConfirm> :
-                                    this.state.ConfirmPopupMessage == "Are you sure you want to approve?" ? <ModalPopUpConfirm message={this.state.ConfirmPopupMessage} title={''} isVisible={this.state.showConfirmDeletePopup} isSuccess={false} onConfirm={this.handleApprove} onCancel={this.CancelDeleteRow}></ModalPopUpConfirm> :
-                                        this.state.ConfirmPopupMessage == "Are you sure you want to reject?" ? <ModalPopUpConfirm message={this.state.ConfirmPopupMessage} title={''} isVisible={this.state.showConfirmDeletePopup} isSuccess={false} onConfirm={this.handleReject} onCancel={this.CancelDeleteRow}></ModalPopUpConfirm> :
-                                            this.state.ConfirmPopupMessage == "Are you sure you want to revoke?" ? <ModalPopUpConfirm message={this.state.ConfirmPopupMessage} title={''} isVisible={this.state.showConfirmDeletePopup} isSuccess={false} onConfirm={this.handleRevoke} onCancel={this.CancelDeleteRow}></ModalPopUpConfirm> : ""
+                            this.state.ConfirmPopupMessage == "Are you sure you want to delete this row?" ? <ModalPopUpConfirm message={this.state.ConfirmPopupMessage} title={''} isVisible={this.state.showConfirmDeletePopup} isSuccess={false} onConfirm={this.RemoveCurrentRow} onCancel={this.CloseConfirmationPopup}></ModalPopUpConfirm> :
+                                ["Are you sure you want to submit?", "Are you sure you want to submit for current week?"].includes(this.state.ConfirmPopupMessage) ? <ModalPopUpConfirm message={this.state.ConfirmPopupMessage} title={''} isVisible={this.state.showConfirmDeletePopup} isSuccess={false} onConfirm={this.handleSubmitorSave} onCancel={this.CloseConfirmationPopup}></ModalPopUpConfirm> :
+                                    this.state.ConfirmPopupMessage == "Are you sure you want to approve?" ? <ModalPopUpConfirm message={this.state.ConfirmPopupMessage} title={''} isVisible={this.state.showConfirmDeletePopup} isSuccess={false} onConfirm={this.handleApprove} onCancel={this.CloseConfirmationPopup}></ModalPopUpConfirm> :
+                                        this.state.ConfirmPopupMessage == "Are you sure you want to reject?" ? <ModalPopUpConfirm message={this.state.ConfirmPopupMessage} title={''} isVisible={this.state.showConfirmDeletePopup} isSuccess={false} onConfirm={this.handleReject} onCancel={this.CloseConfirmationPopup}></ModalPopUpConfirm> :
+                                            this.state.ConfirmPopupMessage == "Are you sure you want to revoke?" ? <ModalPopUpConfirm message={this.state.ConfirmPopupMessage} title={''} isVisible={this.state.showConfirmDeletePopup} isSuccess={false} onConfirm={this.handleRevoke} onCancel={this.CloseConfirmationPopup}></ModalPopUpConfirm> : ""
                     }
                     <div id="content" className="content p-2 pt-2">
                         <div className="container-fluid">
