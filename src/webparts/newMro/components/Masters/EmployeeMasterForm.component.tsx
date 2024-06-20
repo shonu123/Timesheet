@@ -472,7 +472,7 @@ class EmployeeMasterForm extends React.Component<EmployeeMasterFormProps, Employ
                                                     <div className="custom-peoplepicker" id="divEmployee">
                                                         <PeoplePicker
                                                             context={this.props.context}
-                                                            titleText=""
+                                                            titleText="Employee"
                                                             personSelectionLimit={1}
                                                             showtooltip={false}
                                                             disabled={this.state.isDisabled}
@@ -481,7 +481,8 @@ class EmployeeMasterForm extends React.Component<EmployeeMasterFormProps, Employ
                                                             required={true}
                                                             defaultSelectedUsers={[this.state.EmployeeEmail]}
                                                             principalTypes={[PrincipalType.User]} placeholder=""
-                                                            resolveDelay={1000} peoplePickerCntrlclassName={"input-peoplePicker-custom"} />
+                                                            resolveDelay={1000} peoplePickerCntrlclassName={"input-peoplePicker-custom"}
+                                                             />
                                                     </div>
                                                 </div>
 
@@ -503,8 +504,7 @@ class EmployeeMasterForm extends React.Component<EmployeeMasterFormProps, Employ
                                                 <div className="light-text div-readonly">
                                                     <label className="z-in-9">Date of Joining <span className="mandatoryhastrick">*</span></label>
                                                     <div className="custom-datepicker" id="divDateofJoining">
-
-                                                        <DatePicker onDatechange={this.UpdateDate} selectedDate={this.state.DateOfJoining} isDisabled={this.state.isDisabled} />
+                                                        <DatePicker onDatechange={this.UpdateDate} selectedDate={this.state.DateOfJoining} isDisabled={this.state.isDisabled} title={"Date of Joining"}/>
                                                     </div>
                                                 </div>
                                             </div>
@@ -512,7 +512,7 @@ class EmployeeMasterForm extends React.Component<EmployeeMasterFormProps, Employ
                                             <div className="col-md-3">
                                                 <div className="light-text">
                                                     <label>Holiday Calendar<span className="mandatoryhastrick">*</span></label>
-                                                    <select className="form-control" required={true} name="HolidayType" title="HolidayType" id='HolidayType' ref={this.HolidayType} onChange={this.handleChangeEvents} disabled={this.state.isDisabled}>
+                                                    <select className="form-control" required={true} name="HolidayType" title="Holiday Calendar" id='HolidayType' ref={this.HolidayType} onChange={this.handleChangeEvents} disabled={this.state.isDisabled}>
                                                         <option value=''>None</option>
                                                         {this.state.HolidaysObject.map((option) => (
                                                             <option value={option} selected={option == this.state.HolidayType}>{option}</option>
@@ -531,7 +531,7 @@ class EmployeeMasterForm extends React.Component<EmployeeMasterFormProps, Employ
                                                     <div className="custom-peoplepicker" id="divReportingManager">
                                                         <PeoplePicker
                                                             context={this.props.context}
-                                                            titleText=""
+                                                            titleText="Reporting Manager"
                                                             personSelectionLimit={10}
                                                             showtooltip={false}
                                                             disabled={this.state.isDisabled}
@@ -551,7 +551,7 @@ class EmployeeMasterForm extends React.Component<EmployeeMasterFormProps, Employ
                                                     <div className="custom-peoplepicker" id="divReviewer">
                                                         <PeoplePicker
                                                             context={this.props.context}
-                                                            titleText=""
+                                                            titleText="Synergy Reviewer"
                                                             personSelectionLimit={10}
                                                             showtooltip={false}
                                                             disabled={this.state.isDisabled}
@@ -567,7 +567,7 @@ class EmployeeMasterForm extends React.Component<EmployeeMasterFormProps, Employ
                                             <div className="col-md-3">
                                                 <div className="light-text">
                                                     <label>Week Start Day</label>
-                                                    <select className="form-control" name="weekStartDay" title="WeekStartDay" id='WeekStartDay' disabled={this.state.isDisabled} ref={this.WeekStartDay} onChange={this.handleChangeEvents} value={this.state.weekStartDay}>
+                                                    <select className="form-control" name="weekStartDay" title="Week Start Day" id='WeekStartDay' disabled={this.state.isDisabled} ref={this.WeekStartDay} onChange={this.handleChangeEvents} value={this.state.weekStartDay}>
                                                         <option value='Monday'>Monday</option>
                                                         <option value='Tuesday'>Tuesday</option>
                                                         <option value='Wednesday'>Wednesday</option>
@@ -582,7 +582,7 @@ class EmployeeMasterForm extends React.Component<EmployeeMasterFormProps, Employ
                                             <div className="col-md-3">
                                                 <div className="light-text">
                                                     <label>Is Description Mandatory</label>
-                                                    <select className="form-control" name="MandatoryDescription" title="MandatoryDescription" id='MandatoryDescription' ref={this.MandatoryDescription} onChange={this.handleChangeEvents} value={this.state.MandatoryDescription}>
+                                                    <select className="form-control" name="MandatoryDescription" title="Is Description Mandatory" id='MandatoryDescription' ref={this.MandatoryDescription} onChange={this.handleChangeEvents} value={this.state.MandatoryDescription}>
                                                         <option value='No'>No</option>
                                                         <option value='Yes'>Yes</option>
                                                     </select>
@@ -656,7 +656,7 @@ class EmployeeMasterForm extends React.Component<EmployeeMasterFormProps, Employ
                                             <div className="col-md-3">
                                                 <div className="light-text">
                                                     <label>Is Project Code Mandatory</label>
-                                                    <select className="form-control" name="MandatoryProjectCode" title="MandatoryProjectCode" id='MandatoryProjectCode' ref={this.MandatoryProjectCode} onChange={this.handleChangeEvents} value={this.state.MandatoryProjectCode}>
+                                                    <select className="form-control" name="MandatoryProjectCode" title="Is Project Code Mandatory" id='MandatoryProjectCode' ref={this.MandatoryProjectCode} onChange={this.handleChangeEvents} value={this.state.MandatoryProjectCode}>
                                                         <option value='No'>No</option>
                                                         <option value='Yes'>Yes</option>
                                                     </select>
@@ -703,8 +703,8 @@ class EmployeeMasterForm extends React.Component<EmployeeMasterFormProps, Employ
                                 </div>
                                 <div className="row mx-1" id="">
                                     <div className="col-sm-12 text-center my-2" id="">
-                                        <button type="button" className="SubmitButtons btn" onClick={this.showToaster}>Submit</button>
-                                        <button type="button" className="CancelButtons btn" onClick={this.handleCancel}>Cancel</button>
+                                        <button type="button" className="SubmitButtons btn" onClick={this.showToaster} title='Submit'>Submit</button>
+                                        <button type="button" className="CancelButtons btn" onClick={this.handleCancel} title='Cancel'>Cancel</button>
                                     </div>
                                 </div>
                             </div>

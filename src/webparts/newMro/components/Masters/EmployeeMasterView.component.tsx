@@ -3,6 +3,7 @@ import { NavLink } from 'react-router-dom';
 import TableGenerator from '../Shared/TableGenerator';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faXmark, faEdit, faCheck, faPlus } from '@fortawesome/free-solid-svg-icons';
+import { highlightCurrentNav } from '../../Utilities/HighlightCurrentComponent';
 import { SPHttpClient} from '@microsoft/sp-http';
 import { sp } from '@pnp/sp';
 import "@pnp/sp/webs";
@@ -45,6 +46,7 @@ class EmployeeMasterView extends React.Component<EmployeeMasterViewProps, Employ
 
     public componentDidMount() {
         this.setState({ loading: true});
+        highlightCurrentNav("employeemaster");
         this.EmployeeMasterData();
         if(!["",undefined,null].includes(this.props.match.params.message)){
             this.setState({showToaster:true})

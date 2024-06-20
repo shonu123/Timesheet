@@ -39,13 +39,13 @@ const ModalForwardApprovals = ({ message, modalHeader, title, isVisible, onConfi
                             </div>
                             <div className="light-text height-auto">
                             <label className="floatingTextarea2 top-12">Comments<span className='mandatoryhastrick'>*</span></label>
-                            <textarea className="position-static form-control requiredinput" onChange={changeEvent} value={commentsValue} placeholder="" maxLength={500} id="txtComments" name="comments" disabled={false}></textarea>
+                            <textarea className="position-static form-control requiredinput" onChange={changeEvent} value={commentsValue} placeholder="" maxLength={500} id="txtComments" name="comments" title='Comments' disabled={false}></textarea>
                         </div>
                         </div>
                     </div>
                     <div className="modal-footer">
-                        <button type="button" onClick={onConfirm} className={`btn SubmitButtons txt-white modalclosesuccess `} data-dismiss="modal">Forward</button>
-                        <button type="button" onClick={onCancel} className={`btn CancelButtons txt-white modalclosesuccess`} data-dismiss="modal">Cancel</button>
+                        <button type="button" onClick={onConfirm} className={`btn SubmitButtons txt-white modalclosesuccess `} title='Forward' data-dismiss="modal">Forward</button>
+                        <button type="button" onClick={onCancel} className={`btn CancelButtons txt-white modalclosesuccess`} title='Cancel' data-dismiss="modal">Cancel</button>
                     </div>
                 </div>
             </div>

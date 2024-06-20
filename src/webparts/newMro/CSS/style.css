@@ -2689,7 +2689,8 @@ top: 3px;
       width: 195px;
     }
     .th-Project-Code{
-      width: 115px;
+      /* width: 115px; commented on 6/13/2024 to give space for '*' */
+      width: 118px;
     text-align: center;
     margin: auto;
     }
@@ -3007,16 +3008,87 @@ span.iconArrow {
 
   /* 5/27/2024 */
   .tblWeeklyTimesheetReport{
-    border: 1px solid black;
+    /* Commented on 6/17/2024 */
+    /* border: 1px solid black;
     border-collapse: collapse;
-    font-size: 14px;
+    font-size: 14px; */
+    font-family: sans-serif;
+		border-collapse: collapse;
+		text-align: left;
+		border: 1px solid lightgray;
   }
-
-.tblWeeklyTimesheetReport th,.tblWeeklyTimesheetReport td{
+    /* Commented on 6/17/2024 */
+/* .tblWeeklyTimesheetReport th,.tblWeeklyTimesheetReport td{
     border: 1px solid black;
     padding: 3px;
+} */
+
+.tblWeeklyTimesheetReport th{
+  padding: 19px 10px;
+		font-size: 15px;
+		font-weight: normal;
+		border-color: #252525;
 }
 
+.tblWeeklyTimesheetReport td{
+  padding: 12px 6px;
+  border-color: #f1f1f1;
+}
+
+.tr-brd{
+  background: black;
+  color: white;
+  border-color: #212121;
+}
+.tr-brd-2{
+  background: #063b55;
+  color: white;
+  border-color: #063b55;
+}
+
+.Billable-Salary{
+  text-align: center;
+  font-size: 21px;
+  font-weight: bold;
+  background: #c2dce7;
+}
+.Billable-Salary td{
+  padding: 12px;
+}
+.span-green{
+  display: inline-block;
+  padding: 2px 7px;
+  background-color: #d9e7c8;
+  border-radius: 22px;
+  font-size: 15px;
+  border: 2px solid #a1cb70;
+}
+.span-rejected{
+  display: inline-block;
+  padding: 2px 7px;
+  background-color: #f7d3d3;
+  border-radius: 22px;
+  font-size: 15px;
+  border: 2px solid #f19891;
+}
+
+.span-blue {
+  display: inline-block;
+  padding: 2px 7px;
+  background-color: #c2dce7;
+  border-radius: 22px;
+  font-size: 15px;
+  border: 2px solid #c2dce7;
+}
+
+.table-data td{
+  color: #4b4b4b;
+  background-image: linear-gradient(180deg, #f3f3f3, transparent);
+}
+.text-dark{
+  color: black!important;
+}
+/* ----------------- */
 .txt-center{
   text-align: center;
 }

@@ -355,13 +355,22 @@ class Clients extends Component<ClientProps, ClientState> {
             SaveUpdateText: 'Submit', addNewClient: false,isRedirect:true
         });
     }
+
+    private  handleRowClicked = (row) => {
+        window.location.hash=`#/ClientMaster/${row.Id}`;
+        this.props.match.params.id = row.Id
+        this.onEditClickHandler(row.Id)
+      }
+      
     private cancelHandler = () => {
         this.resetHolidayMasterForm();
     }
+
     public handleClose = () => {
         this.setState({ showHideModal: false});
         this.resetHolidayMasterForm();
     }
+
     private addNewClientMaster = () => {
         var formdata = { ...this.state.formData };
         this.setState({ addNewClient: true, showLabel: false, formData: formdata });
@@ -504,7 +513,7 @@ class Clients extends Component<ClientProps, ClientState> {
                                                     <div className="custom-peoplepicker" id="divDelegateTo">
                                                         <PeoplePicker
                                                             context={this.props.context}
-                                                            titleText=""
+                                                            titleText="Delegate To"
                                                             personSelectionLimit={10}
                                                             showtooltip={false}
                                                             defaultSelectedUsers={this.state.DelegateToEMail}
@@ -544,7 +553,7 @@ class Clients extends Component<ClientProps, ClientState> {
                                         </div>
                                         {this.state.showToaster&&<Toaster /> }
                                         <div className="c-v-table table-head-1st-td">
-                                            <TableGenerator columns={columns} data={this.state.ClientsObj} fileName={'Clients'}showExportExcel={true} ExportExcelCustomisedColumns={ExportExcelreportColumns} ExportExcelCustomisedData={this.state.ExportExcelData} wrapColumns={"DelegateTo"}></TableGenerator>
+                                            <TableGenerator columns={columns} data={this.state.ClientsObj} fileName={'Clients'}showExportExcel={true} ExportExcelCustomisedColumns={ExportExcelreportColumns} ExportExcelCustomisedData={this.state.ExportExcelData} wrapColumns={"DelegateTo"} onRowClick={this.handleRowClicked}></TableGenerator>
                                         </div>
                                     </div>
                                 </div>

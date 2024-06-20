@@ -21,7 +21,7 @@ const ModalPopUp = ({ modalText, isVisible, onClose, title , isSuccess } : modal
             <p>{modalText}</p>
           </div>
           <div className="modal-footer">
-            <button type="button" onClick={onClose} className={`btn bc-dblue txt-white modalclosesuccess ${isSuccess ? 'bc-dblue':'bc-burgundy'}`} data-dismiss="modal">Ok</button>
+            <button type="button" onClick={onClose} className={`btn bc-dblue txt-white modalclosesuccess ${isSuccess ? 'bc-dblue':'bc-burgundy'}`} title="Ok" data-dismiss="modal">Ok</button>
           </div>
         </div>
       </div>

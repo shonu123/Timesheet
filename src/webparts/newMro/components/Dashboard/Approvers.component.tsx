@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { NavLink } from 'react-router-dom';
+import { NavLink, Navigate } from 'react-router-dom';
 import TableGenerator from '../Shared/TableGenerator';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEdit } from '@fortawesome/free-solid-svg-icons';
@@ -61,6 +61,8 @@ class ApproversApprovals extends React.Component<ApproversProps, ApproversState>
         SelectedRows: [],
         SelectedValue: '',
         DelegateToUsers: [],
+        TimesheetID:"",
+        redirect:false,
         //  AssignedToId:'',
         //  DelegateToId:'',
     };
@@ -68,6 +70,11 @@ class ApproversApprovals extends React.Component<ApproversProps, ApproversState>
     public componentDidMount() {
         this.ReportingManagerApproval();
     }
+
+    private  handleRowClicked = (row) => {
+        let ID = row.Id
+        this.setState({TimesheetID:ID,redirect:true})
+      }
     // this function is used to get 1 month records of weeklytime data of the employees who's manager is current logged in user from weeklytimesheet list
     private ReportingManagerApproval = async () => {
         this.setState({ loading: true });
@@ -361,13 +368,17 @@ if(Data.length>0){
                 sortable: true
             }
         ];
+        if(this.state.redirect){
+            let url = `/WeeklyTimesheet/${this.state.TimesheetID}`;
+        return (<Navigate to={url}/>);
+        }
         return (
             <React.Fragment>
                 <ModalForwardApprovals changeEvent={this.handleChangeEvents} dropdownObject={this.state.DelegateToUsers} isVisible={this.state.showHideModal} message='Are you sure you want to forward the selected Timesheets?' modalHeader='modal-header-reject' onCancel={this.handleCancel} onConfirm={this.forwardApprovals} selectedValue={this.state.SelectedValue} title='' commentsValue={this.state.comments}></ModalForwardApprovals>
                 <div>
                     <div className='table-head-1st-td'>
                         <TableGenerator columns={columns} data={this.state.ReportingManager} fileName={''} showExportExcel={false}
-                            showAddButton={false} customBtnClass='' btnDivID='' navigateOnBtnClick='' btnSpanID='' btnCaption='' btnTitle='Forward Approvals' searchBoxLeft={true} selectableRows={this.state.ReportingManager.length>0?true:false} handleSelectedRows={this.getSelectedRows} customButton={this.state.SelectedRows.length > 0 ? true : false} customButtonClick={this.ShowPopUp}></TableGenerator>
+                            showAddButton={false} customBtnClass='' btnDivID='' navigateOnBtnClick='' btnSpanID='' btnCaption='' btnTitle='Forward Approvals' searchBoxLeft={true} selectableRows={this.state.ReportingManager.length>0?true:false} handleSelectedRows={this.getSelectedRows} customButton={this.state.SelectedRows.length > 0 ? true : false} customButtonClick={this.ShowPopUp} onRowClick={this.handleRowClicked}></TableGenerator>
                     </div>
                 </div>
                 <Toaster />

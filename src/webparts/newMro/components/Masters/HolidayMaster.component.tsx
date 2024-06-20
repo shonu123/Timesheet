@@ -593,6 +593,13 @@ class HolidaysList extends Component<HolidaysListProps, HolidaysListState> {
             isSuccess: false
         });
     }
+
+    private  handleRowClicked = (row) => {
+        window.location.hash=`#/HolidayMaster/${row.Id}`;
+        this.props.match.params.id = row.Id
+        this.onEditClickHandler(row.Id)
+      }
+
     public render() {
         let ExportExcelreportColumns = [
             {
@@ -738,7 +745,7 @@ class HolidaysList extends Component<HolidaysListProps, HolidaysListState> {
                                                             <div className="col-md-4">
                                                                 <div className="light-text">
                                                                     <label>Client<span className="mandatoryhastrick">*</span></label>
-                                                                    <select className="form-control" required={true} name="ClientName" title="ClientName" value={this.state.formData.ClientName} onChange={this.handleChange} ref={this.Client}>
+                                                                    <select className="form-control" required={true} name="ClientName" title="Client" value={this.state.formData.ClientName} onChange={this.handleChange} ref={this.Client}>
                                                                         <option value=''>None</option>
                                                                         {this.state.ClientsObj.map((option) => (
                                                                     <option value={option.Title} selected={option.Title ==this.state.formData.ClientName}>{option.Title}</option>
@@ -777,7 +784,7 @@ class HolidaysList extends Component<HolidaysListProps, HolidaysListState> {
                                                                 <label className="z-in-9">Holiday Date<span className="mandatoryhastrick">*</span></label>
                                                                     <div className="custom-datepicker" id="divDateofJoining">
                                                         
-                                                                <DatePicker onDatechange={this.UpdateDate} selectedDate={new Date(this.state.formData.HolidayDate)}/>
+                                                                <DatePicker onDatechange={this.UpdateDate} selectedDate={new Date(this.state.formData.HolidayDate)} title={'Holiday Date'}/>
                                                                 </div>
                                                                 </div>
                                                             </div>
@@ -806,7 +813,7 @@ class HolidaysList extends Component<HolidaysListProps, HolidaysListState> {
                                         </div>
                                         {this.state.showToaster&&<Toaster />  }
                                         <div className="c-v-table table-head-1st-td">
-                                            <TableGenerator columns={columns} data={this.state.HolidayListObj} fileName={'Holidays List'}showExportExcel={true} ExportExcelCustomisedColumns={ExportExcelreportColumns} ></TableGenerator>
+                                            <TableGenerator columns={columns} data={this.state.HolidayListObj} fileName={'Holidays List'}showExportExcel={true} ExportExcelCustomisedColumns={ExportExcelreportColumns} onRowClick={this.handleRowClicked} ></TableGenerator>
                                         </div>
                                     </div>
                                 </div>

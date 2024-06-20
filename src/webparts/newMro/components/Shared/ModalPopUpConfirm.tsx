@@ -21,8 +21,8 @@ const ModalPopUpConfirm =({ message,title,isVisible,isSuccess, onConfirm, onCanc
               <p>{`Would you like to update the item`}</p>
             </div> */}
             <div className="modal-footer">
-              <button type="button" onClick={onConfirm} className={`btn RejectButtons txt-white modalclosesuccess `} data-dismiss="modal">Ok</button>
-              <button type="button" onClick={onCancel} className={`btn CancelButtons txt-white modalclosesuccess`} data-dismiss="modal">Cancel</button>
+              <button type="button" onClick={onConfirm} className={`btn RejectButtons txt-white modalclosesuccess `} title='Ok' data-dismiss="modal">Ok</button>
+              <button type="button" onClick={onCancel} className={`btn CancelButtons txt-white modalclosesuccess`} data-dismiss="modal" title='Cancel'>Cancel</button>
             </div>
           </div>
         </div>

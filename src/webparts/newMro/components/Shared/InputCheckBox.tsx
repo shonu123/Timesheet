@@ -7,13 +7,14 @@ interface InputTextProps {
     onChange: any;
     isforMasters:boolean;
     isdisable:boolean;
+    title?:string;
     //isRequired: boolean;
     //refElement: any;
 }
 
 
 
-const InputCheckBox = ({ label, name, checked, onChange,isforMasters,isdisable=false}: InputTextProps) => {
+const InputCheckBox = ({ label, name, checked, onChange,isforMasters,isdisable=false,title=label}: InputTextProps) => {
 
     return isforMasters?(
         <div className="col-md-4">
@@ -23,7 +24,7 @@ const InputCheckBox = ({ label, name, checked, onChange,isforMasters,isdisable=f
                 </div>
                 {/* {isRequired && <span className="mandatoryhastrick">*</span>} */}
                 <div className="col-sm-7">
-                    <input type='checkbox' checked={checked} required={true} onChange={onChange} name={name} autoComplete="off"/>
+                    <input type='checkbox' checked={checked} required={true} onChange={onChange} name={name} autoComplete="off" title={title}/>
                 </div>
             </div>
         </div>

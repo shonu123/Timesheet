@@ -8,6 +8,7 @@ const DatePickercontrol = (props,ref) => {
     let selDate=null;
     let reference = ref
     let id = props.id
+    let title = props.title
     if(selectedDate !=null)
     {
     //   let month =selectedDate.getMonth()+1;
@@ -76,6 +77,7 @@ const DatePickercontrol = (props,ref) => {
         //  ref={reference}
          disabled={props.isDisabled}
          id={id}
+         title={title}
         />
      );
   };

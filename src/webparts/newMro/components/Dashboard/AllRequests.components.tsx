@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { NavLink } from 'react-router-dom';
+import { NavLink, Navigate } from 'react-router-dom';
 import TableGenerator from '../Shared/TableGenerator';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPlus, faEye } from '@fortawesome/free-solid-svg-icons';
@@ -17,17 +17,17 @@ export interface AllRequestsProps {
     history: any;
 }
 export interface AllRequestsState {
-    AllRequests: Array<Object>;
-    loading:boolean;
-    message : string;
-    title : string;
-    showHideModal : boolean;
-    isSuccess : boolean;
-    comments :  string;
-    Action : string;
-    errorMessage: string;
-    ItemID : Number;
-    ExportExcelData:any;
+    // AllRequests: Array<Object>;
+    // loading:boolean;
+    // message : string;
+    // title : string;
+    // showHideModal : boolean;
+    // isSuccess : boolean;
+    // comments :  string;
+    // Action : string;
+    // errorMessage: string;
+    // ItemID : Number;
+    // ExportExcelData:any;
 }
 
 class AllRequests extends React.Component<AllRequestsProps,AllRequestsState> {
@@ -36,8 +36,8 @@ class AllRequests extends React.Component<AllRequestsProps,AllRequestsState> {
         sp.setup({
             spfxContext: this.props.context
         });
-        this.state = {AllRequests: [], loading:false,message:'',title:'',showHideModal:false,isSuccess:true,comments:'',Action:'',errorMessage:'',ItemID:0,ExportExcelData:[]};
     }
+   public state = {AllRequests: [], loading:false,message:'',title:'',showHideModal:false,isSuccess:true,comments:'',Action:'',errorMessage:'',ItemID:0,ExportExcelData:[],TimesheetID:'',redirect:false,};
 
     public componentDidMount() {
         this.setState({ loading: true });
@@ -127,6 +127,10 @@ class AllRequests extends React.Component<AllRequestsProps,AllRequestsState> {
             }
         return Status
     }
+    private  handleRowClicked = (row) => {
+        let ID = row.Id
+        this.setState({TimesheetID:ID,redirect:true})
+      }
     public render() {
         const columns = [
             {
@@ -137,7 +141,7 @@ class AllRequests extends React.Component<AllRequestsProps,AllRequestsState> {
                     return (
                         <React.Fragment>
                             <div style={{ paddingLeft: '10px' }}>
-                                <NavLink title="Edit"  className="csrLink ms-draggable" to={`/WeeklyTimesheet/${record.Id}`}>
+                                <NavLink title="View"  className="csrLink ms-draggable" to={`/WeeklyTimesheet/${record.Id}`}>
                                     <FontAwesomeIcon icon={faEye}></FontAwesomeIcon>
                                 </NavLink>
                             </div>
@@ -295,6 +299,10 @@ class AllRequests extends React.Component<AllRequestsProps,AllRequestsState> {
                 sortable: true
             }
         ];
+        if(this.state.redirect){
+            let url = `/WeeklyTimesheet/${this.state.TimesheetID}`;
+        return (<Navigate to={url}/>);
+        }
         return (
             <React.Fragment>
             <div className="">
@@ -305,7 +313,7 @@ class AllRequests extends React.Component<AllRequestsProps,AllRequestsState> {
                         </button></NavLink>
                 </div></div>
                 <div className='c-v-table table-head-1st-td'>
-                    <TableGenerator columns={columns} data={this.state.AllRequests} fileName={'All Timesheets'} showExportExcel={true} ExportExcelCustomisedColumns={Exportcolumns} ExportExcelCustomisedData={this.state.ExportExcelData} wrapColumns={["RM","Client"]}></TableGenerator>
+                    <TableGenerator columns={columns} data={this.state.AllRequests} fileName={'All Timesheets'} showExportExcel={true} ExportExcelCustomisedColumns={Exportcolumns} ExportExcelCustomisedData={this.state.ExportExcelData} wrapColumns={["RM","Client"]} onRowClick={this.handleRowClicked}></TableGenerator>
                 </div>
             </div>
             {this.state.loading && <Loader />}

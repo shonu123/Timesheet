@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { NavLink } from 'react-router-dom';
+import { NavLink, Navigate } from 'react-router-dom';
 import TableGenerator from '../Shared/TableGenerator';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEdit } from '@fortawesome/free-solid-svg-icons';
@@ -29,7 +29,8 @@ export interface MyTeamState {
     comments: string;
     Action: string;
     errorMessage: string;
-    ItemID: Number
+    ItemID: Number;
+    redirect:boolean;
 }
 
 class MyTeam extends React.Component<MyTeamProps, MyTeamState> {
@@ -38,7 +39,7 @@ class MyTeam extends React.Component<MyTeamProps, MyTeamState> {
         sp.setup({
             spfxContext: this.props.context
         });
-        this.state = { MyTeamMembers: [], loading: false, message: '', title: '', showHideModal: false, isSuccess: true, comments: '', Action: '', errorMessage: '', ItemID: 0 };
+        this.state = { MyTeamMembers: [], loading: false, message: '', title: '', showHideModal: false, isSuccess: true, comments: '', Action: '', errorMessage: '', ItemID: 0,redirect:false };
     }
 
     public componentDidMount() {
@@ -72,7 +73,10 @@ class MyTeam extends React.Component<MyTeamProps, MyTeamState> {
                 console.log('Failed to fetch data.', err);
             });
     }
-
+    private  handleRowClicked = (row) => {
+        let ID = row.Id
+        this.setState({ItemID:ID,redirect:true})
+      }
     public render() {
         const columns = [
             {
@@ -117,12 +121,16 @@ class MyTeam extends React.Component<MyTeamProps, MyTeamState> {
                 sortable: true
             },
         ];
+        if(this.state.redirect){
+            let url = `/EmployeeMasterForm/${this.state.ItemID}/Edit`;
+        return (<Navigate to={url}/>);
+        }
         return (
             <React.Fragment>
                 <div>
                     <div className='table-head-1st-td'>
                         <TableGenerator columns={columns} data={this.state.MyTeamMembers} fileName={'My Team'} showExportExcel={false}
-                            showAddButton={false} customBtnClass='' btnDivID='' navigateOnBtnClick='' btnSpanID='' btnCaption='' btnTitle='' searchBoxLeft={true}></TableGenerator>
+                            showAddButton={false} customBtnClass='' btnDivID='' navigateOnBtnClick='' btnSpanID='' btnCaption='' btnTitle='' searchBoxLeft={true} onRowClick={this.handleRowClicked}></TableGenerator>
                     </div>
                 </div>
                 {this.state.loading && <Loader />}

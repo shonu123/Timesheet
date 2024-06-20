@@ -9,14 +9,14 @@ import "@pnp/sp/webs";
 import "@pnp/sp/lists";
 import "@pnp/sp/items";
 import Loader from '../Shared/Loader';
-export interface MyRequestsProps {
+export interface MyPTOsProps {
     match: any;
     spContext: any;
     spHttpClient: SPHttpClient;
     context: any;
     history: any;
 }
-export interface MyRequestsState {
+export interface MyPTOsState {
     Requests: Array<Object>;
     loading:boolean;
     message : string;
@@ -27,48 +27,49 @@ export interface MyRequestsState {
     Action : string;
     errorMessage: string;
     ItemID : Number;
-    TimesheetID:string;
-    redirect:boolean;
+    PTOID:string;
+    redirect: boolean;
 }
 
-class MyRequests extends React.Component<MyRequestsProps, MyRequestsState> {
-    constructor(props: MyRequestsProps) {
+class MyPTOs extends React.Component<MyPTOsProps, MyPTOsState> {
+    constructor(props: MyPTOsProps) {
         super(props);
         sp.setup({
             spfxContext: this.props.context
         });
-        this.state = {Requests: [], loading:false,message:'',title:'',showHideModal:false,isSuccess:true,comments:'',Action:'',errorMessage:'',ItemID:0,TimesheetID:'',redirect:false};
+        this.state = {Requests: [], loading:false,message:'',title:'',showHideModal:false,isSuccess:true,comments:'',Action:'',errorMessage:'',ItemID:0,PTOID:'',redirect: false};
     }
 
     public componentDidMount() {
-        this.MyRequests();
+        this.MyPTOs();
     }
 // this function is used to get 1 month records of weeklytime data of the current logged in user from weeklytimesheet list
-    private MyRequests = async () => {
+    private MyPTOs = async () => {
         this.setState({ loading: true });
         const userId = this.props.spContext.userId;
         let dateFilter = new Date()
         dateFilter.setDate(new Date().getDate()-60);
         let date = `${dateFilter.getMonth() + 1}/${dateFilter.getDate()}/${dateFilter.getFullYear()}`
-        var filterQuery = "and WeekStartDate ge '"+date+"'"
+        var filterQuery = "and From ge '"+date+"'"
 
-        var filterString = "Initiator/Id eq '"+userId+"' "+filterQuery
+        var filterString = "Employee/Id eq '"+userId+"' "+filterQuery
 
-        sp.web.lists.getByTitle('WeeklyTimeSheet').items.top(2000).filter(filterString).expand("Initiator").select('Initiator/Title','*').orderBy('Modified', false).get()
+        sp.web.lists.getByTitle('PTO').items.top(2000).filter(filterString).expand("Employee").select('Employee/Title','*').orderBy('Modified', false).get()
             .then((response) => {
                 // console.log(response)
                 let Data = [];
                 for (const d of response) {
-                    let date;
-                    if(!["",undefined,null].includes(d.WeekStartDate)){
-                        date = new Date(d.WeekStartDate)
-                        date = `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`
-                    }
+                    let fromDate = new Date(d.From)
+                    let toDate = new Date(d.To)
 
                     Data.push({
                         Id : d.Id,
-                        Date : date,
-                        Company: d.ClientName,
+                        Client: d.Client,
+                        EmployeeType: d.EmployeeType,
+                        PTOType: d.PTOType,
+                        FromDate : fromDate.toLocaleDateString('en-US'),
+                        ToDate: toDate.toLocaleDateString('en-US'),
+                        TotalHrs: parseFloat(d.TotalHours),
                         PendingWith: d.PendingWith == "Approver" ||d.PendingWith == "Manager" ?"Reporting Manager":d.PendingWith,
                         Status : this.getStatus(d.Status),
                     })
@@ -95,9 +96,10 @@ class MyRequests extends React.Component<MyRequestsProps, MyRequestsState> {
             }
         return Status
     }
+
     private  handleRowClicked = (row) => {
         let ID = row.Id
-        this.setState({TimesheetID:ID,redirect:true})
+        this.setState({PTOID:ID,redirect:true})
       }
 
     public render() {
@@ -110,7 +112,7 @@ class MyRequests extends React.Component<MyRequestsProps, MyRequestsState> {
                     return (
                         <React.Fragment>
                             <div style={{ paddingLeft: '10px' }}>
-                                <NavLink title="Edit"  className="csrLink ms-draggable" to={`/WeeklyTimesheet/${record.Id}`}>
+                                <NavLink title="Edit"  className="csrLink ms-draggable" to={`/PTOForm/${record.Id}`}>
                                     <FontAwesomeIcon icon={faEdit}></FontAwesomeIcon>
                                 </NavLink>
                             </div>
@@ -119,13 +121,33 @@ class MyRequests extends React.Component<MyRequestsProps, MyRequestsState> {
                 },
             },
             {
-                name: "Week Start Date",
-                selector: (row, i) => row.Date,
+                name: "Client",
+                selector: (row, i) => row.Client,
                 sortable: true
             },
             {
-                name: "Client",
-                selector: (row, i) => row.Company,
+                name: "Employee Type",
+                selector: (row, i) => row.EmployeeType,
+                sortable: true
+            },
+            {
+                name: "PTO Type",
+                selector: (row, i) => row.PTOType,
+                sortable: true
+            },
+            {
+                name: "From",
+                selector: (row, i) => row.FromDate ,
+                sortable: true
+            },
+            {
+                name: "To",
+                selector: (row, i) => row.ToDate,
+                sortable: true
+            },
+            {
+                name: "Total Hours",
+                selector: (row, i) => row.TotalHrs,
                 sortable: true
             },
             {
@@ -140,14 +162,14 @@ class MyRequests extends React.Component<MyRequestsProps, MyRequestsState> {
             }
         ];
         if(this.state.redirect){
-            let url = `/WeeklyTimesheet/${this.state.TimesheetID}`;
+            let url = `/PTOForm/${this.state.PTOID}`;
         return (<Navigate to={url}/>);
         }
         return (
             <React.Fragment>
             <div>
                 <div className='table-head-1st-td'>
-                    <TableGenerator columns={columns} data={this.state.Requests} fileName={'My Timesheets'} showExportExcel={false} showAddButton={true} customBtnClass='px-1 text-right' navigateOnBtnClick={`/WeeklyTimesheet`} btnDivID='divAddNewWeeklyTimeSheet' btnSpanID='newWeeklyTimeSheet' btnCaption=' New' btnTitle='New Weekly Timesheet' searchBoxLeft={false} onRowClick={this.handleRowClicked}></TableGenerator>
+                    <TableGenerator columns={columns} data={this.state.Requests} fileName={'My PTOs'} showExportExcel={false} showAddButton={true} customBtnClass='px-1 text-right' navigateOnBtnClick={`/PTOForm`} btnDivID='divAddNewWeeklyTimeSheet' btnSpanID='newWeeklyTimeSheet' btnCaption=' New' btnTitle='New PTO' searchBoxLeft={false} onRowClick={this.handleRowClicked}></TableGenerator>
                 </div>
             </div>
             {this.state.loading && <Loader />}
@@ -155,4 +177,4 @@ class MyRequests extends React.Component<MyRequestsProps, MyRequestsState> {
         );
     }
 }
-export default MyRequests
+export default MyPTOs

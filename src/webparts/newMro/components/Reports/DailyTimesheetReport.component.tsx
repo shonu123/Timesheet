@@ -14,7 +14,7 @@ import "@pnp/sp/files";
 import "@pnp/sp/folders";
 import "@pnp/sp/site-users/web";
 import "@pnp/sp/site-groups";
-import { highlightCurrentNav } from '../../Utilities/HighlightCurrentComponent';
+import { highlightCurrentNav2 } from '../../Utilities/HighlightCurrentComponent';
 import DatePicker from "../Shared/DatePickerField";
 import { Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
@@ -78,7 +78,7 @@ class DailyTimesheetReport extends React.Component<DailyTimesheetReportProps, Da
     }
 
     public componentDidMount() {
-        highlightCurrentNav("DailyTimesheetReport");
+        highlightCurrentNav2("DailyTimesheetReport");
         this.setState({ loading: true });
         this.getOnLoadData()
     }

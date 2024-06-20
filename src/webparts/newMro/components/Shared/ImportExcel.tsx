@@ -88,7 +88,7 @@ Heading.push(row);
         readExcel(file, e);
       }} hidden></input>
       {/* <button id="btnImport" style={{ width: "inherit" }} className="SubmitButtons btn" type="button" onClick={submitData}>Import Excel</button> */}
-      <button id="btnImport" className="SubmitButtons btn" style={{ width: "inherit" }} onClick={openDialog} type="button">Import Excel</button>
+      <button id="btnImport" className="SubmitButtons btn" style={{ width: "inherit" }} onClick={openDialog} type="button" title='Import Excel'>Import Excel</button>
     </React.Fragment>
   );
 };

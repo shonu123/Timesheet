@@ -34,7 +34,7 @@ const ModalApprovePopUp = ({ message, modalHeader, title, isVisible, isSuccess, 
 
               <div className="light-text height-auto">
                 <label className="floatingTextarea2 top-12">Comments{!isSuccess && <span className='mandatoryhastrick'>*</span>} </label>
-                <textarea className="position-static form-control requiredinput" onChange={comments} value={commentsValue} placeholder="" maxLength={500} id="txtComments" name="comments" disabled={false}></textarea>
+                <textarea className="position-static form-control requiredinput" onChange={comments} value={commentsValue} placeholder="" maxLength={500} id="txtComments" name="comments" disabled={false} title='Comments'></textarea>
               </div>
               {!isSuccess&&
               <div className="light-text" id=''>
@@ -54,9 +54,9 @@ const ModalApprovePopUp = ({ message, modalHeader, title, isVisible, isSuccess, 
             </div>
           </div>
           <div className="modal-footer">
-            {isSuccess && <button type="button" onClick={onConfirm} className={`btn SubmitButtons txt-white modalclosesuccess `} data-dismiss="modal">Approve</button>}
-            {!isSuccess && <button type="button" onClick={onConfirm} className={`btn RejectButtons txt-white modalclosesuccess `} data-dismiss="modal">Reject</button>}
-            <button type="button" onClick={onCancel} className={`btn CancelButtons txt-white modalclosesuccess`} data-dismiss="modal">Cancel</button>
+            {isSuccess && <button type="button" onClick={onConfirm} className={`btn SubmitButtons txt-white modalclosesuccess `} data-dismiss="modal" title='Approve'>Approve</button>}
+            {!isSuccess && <button type="button" onClick={onConfirm} className={`btn RejectButtons txt-white modalclosesuccess `} data-dismiss="modal" title='Reject'>Reject</button>}
+            <button type="button" onClick={onCancel} className={`btn CancelButtons txt-white modalclosesuccess`} data-dismiss="modal" title='Cancel'>Cancel</button>
           </div>
         </div>
       </div>

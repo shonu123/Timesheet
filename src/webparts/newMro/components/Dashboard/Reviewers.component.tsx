@@ -24,7 +24,7 @@ export interface ReviewerApprovalsProps {
 }
 
 export interface ReviewerApprovalsState {
-    Reviewers: Array<Object>;
+    Reviewers: any;
     loading:boolean;
     message : string;
     title : string;
@@ -41,6 +41,9 @@ export interface ReviewerApprovalsState {
     ModalHeader: string;
     IsClientApprovalNeed:boolean;
     ExportExcelData:any;
+    currentTimesheetStatus:string;
+    TimesheetID:string;
+    redirect:boolean;
 }
 
 class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, ReviewerApprovalsState> {
@@ -49,7 +52,7 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
         sp.setup({
             spfxContext: this.props.context
         });
-        this.state = {Reviewers: [], loading:false,message:'',title:'',showHideModal:false,isSuccess:false,comments:'',Action:'',errorMessage:'',ItemID:0,siteURL : this.props.spContext.webAbsoluteUrl,modalTitle:'',modalText:'',successPopUp:false,ModalHeader:'modal-header-Approve',IsClientApprovalNeed:false,ExportExcelData:[]};
+        this.state = {Reviewers: [], loading:false,message:'',title:'',showHideModal:false,isSuccess:false,comments:'',Action:'',errorMessage:'',ItemID:0,siteURL : this.props.spContext.webAbsoluteUrl,modalTitle:'',modalText:'',successPopUp:false,ModalHeader:'modal-header-Approve',IsClientApprovalNeed:false,ExportExcelData:[],currentTimesheetStatus:'',TimesheetID:'',redirect:false,};
     }
 
     public componentDidMount() {
@@ -215,6 +218,17 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
         this.setState({ loading: true });
         let data =  await sp.web.lists.getByTitle('WeeklyTimeSheet').items.filter(filterString).select('Initiator/ID,Initiator/Title,*').expand('Initiator').get()
         // console.log(data)
+        
+       let Initialstatus =  this.state.Reviewers.filter(record => { 
+        if (recordId == record.Id) return record }
+    )
+        
+    if(Initialstatus[0].Status == this.getStatus(data[0].Status)){
+        customToaster('toster-warning', ToasterTypes.Warning,"Attention: This PTO has been modified. Please review the changes.", 3000);
+        this.setState({showHideModal : false,isSuccess:true,ModalHeader:'',comments:'',IsClientApprovalNeed:false})
+        this.ReviewerApproval();
+        return false
+    }
         let commentsObj = JSON.parse(data[0].CommentsHistory)
         if(commentsObj == null)
         commentsObj = [];
@@ -273,6 +287,16 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
             var filterString = "Id eq '"+recordId+"'"
             this.setState({showHideModal:false, successPopUp:false,loading: true });
             let data =  await sp.web.lists.getByTitle('WeeklyTimeSheet').items.filter(filterString).select('Initiator/ID,Initiator/Title,*').expand('Initiator').orderBy('WeekStartDate,DateSubmitted', false).get()
+
+            let Initialstatus =  this.state.Reviewers.filter(record => { 
+                if (recordId == record.Id) return record }
+            )       
+            if(Initialstatus[0].Status != this.getStatus(data[0].Status)){
+                customToaster('toster-warning', ToasterTypes.Warning,"Attention: This PTO has been modified. Please review the changes.", 3000);
+                this.setState({showHideModal : false,isSuccess:true,ModalHeader:'',comments:'',IsClientApprovalNeed:false})
+                this.ReviewerApproval();
+                return false
+            } 
             // console.log(data)
             let commentsObj = JSON.parse(data[0].CommentsHistory)
             commentsObj.push({
@@ -360,11 +384,16 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
     //this function calls handleApprove/handleReject function based on the user action
     private handleAction = (e) =>{
         this.setState({loading : true})
-         if(this.state.Action == StatusType.Approved)
+         if(this.state.Action == "Approve")
         this.handleApprove(e)
         else
          this.handleReject(e)
     }
+
+    private  handleRowClicked = (row) => {
+        let ID = row.Id
+        this.setState({TimesheetID:ID,redirect:true})
+      }
 
     public render() {
             const columns = [
@@ -482,6 +511,10 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
                     // width: '100px'
                 }
             ];
+            if(this.state.redirect){
+                let url = `/WeeklyTimesheet/${this.state.TimesheetID}`;
+            return (<Navigate to={url}/>);
+            }
             return (
                 <React.Fragment>
                     {/* this popup is show after the approve/reject action completes */}
@@ -492,7 +525,7 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
                 
                 <div>
                     <div className='table-head-1st-td'>
-                        <TableGenerator columns={columns} data={this.state.Reviewers} fileName={'My Reviews'} showExportExcel={false} showAddButton={false} searchBoxLeft={true} ExportExcelCustomisedData={this.state.ExportExcelData}></TableGenerator>
+                        <TableGenerator columns={columns} data={this.state.Reviewers} fileName={'My Reviews'} showExportExcel={false} showAddButton={false} searchBoxLeft={true} ExportExcelCustomisedData={this.state.ExportExcelData} onRowClick={this.handleRowClicked}></TableGenerator>
                     </div>
                 </div>
                     <Toaster />  

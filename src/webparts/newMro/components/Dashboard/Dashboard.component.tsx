@@ -2,7 +2,7 @@ import * as React from 'react';
 import ReviewerApprovals from './Reviewers.component'
 import { SPHttpClient} from '@microsoft/sp-http';
 import { sp } from '@pnp/sp';
-import {highlightCurrentNav} from '../../Utilities/HighlightCurrentComponent';
+import {highlightCurrentNav2} from '../../Utilities/HighlightCurrentComponent';
 import "../Shared/Menuhandler";
 import "@pnp/sp/site-users/web";
 import ApproversApprovals from './Approvers.component';
@@ -98,6 +98,9 @@ class Dashboard extends React.Component<DashboardProps, DashboardState> {
                             break;
                         case StatusType.Reject:
                             customToaster('toster-success',ToasterTypes.Success,'Weekly timesheet '+StatusType.Reject.toLowerCase()+ ' succesfully',2000)
+                            break; 
+                        case StatusType.RecordModified:
+                            customToaster('toster-warning', ToasterTypes.Warning,"Attention: This weekly timesheet has been modified.Please review the changes.", 3000);
                             break; 
                         case "Invalid":
                             customToaster('toster-error',ToasterTypes.Error,'No data found!',4000)
@@ -268,7 +271,7 @@ class Dashboard extends React.Component<DashboardProps, DashboardState> {
             <React.Fragment>
             
             {this.state.isEmployeeConfigured&&<div id="content" className="content p-2 pt-2">
-                {highlightCurrentNav("liDashboard")}
+                {highlightCurrentNav2("liDashboard")}
                 <div id="content" className="content p-2 pt-2">
                 <div className="container-fluid">
                     <div className='FormContent'>

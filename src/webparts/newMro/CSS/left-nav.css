@@ -296,3 +296,38 @@ transform: rotate(-45deg);
 left: 8px;
 }
 /*End*/
+
+/* 6/05/2024 */
+/* Top navigation css */
+.nav-item.dropdown a {
+  font-size: 14px !important;
+}
+
+.nav-item.dropdown .dropdown-item {
+  margin: 0;
+  border-bottom: 0;
+  padding: 7px 7px;
+}
+.nav-item.dropdown .dropdown-item:hover{
+  background-color: #efefef;
+}
+.nav-click.dropdown-item{
+  background-color: #efefef!important;
+
+}
+#world-menu .dropdown-item.active, a.dropdown-item:active{
+  background-color: #efefef!important;
+
+}
+
+.heighlightMasters{
+  border-bottom: 2px solid #2b81c7;
+  font-weight: 700;
+  color: #000 !important;
+}
+
+.nav-click2 a{
+  border-bottom: 2px solid #2b81c7;
+  font-weight: 700;
+  color: #000 !important;
+}

@@ -76,6 +76,8 @@ class DelegateApprovals extends React.Component<DelegateApprovalsProps, Delegate
         showTable: false,
         clearRows:true,
         selectedClient:'',
+        TimesheetID:"",
+        redirect:false,
         // DelegateToEmail: [],
     }
 
@@ -333,7 +335,10 @@ class DelegateApprovals extends React.Component<DelegateApprovalsProps, Delegate
         }
 
     }
-
+    private  handleRowClicked = (row) => {
+        let ID = row.Id
+        this.setState({TimesheetID:ID,redirect:true})
+      }
     // this function is used to close popup
     private handleClose = () => {
         this.setState({ loading: false, showHideModal: false, message: '', Homeredirect: true })
@@ -415,6 +420,10 @@ class DelegateApprovals extends React.Component<DelegateApprovalsProps, Delegate
                 sortable: true
             }
         ];
+        if(this.state.redirect){
+            let url = `/WeeklyTimesheet/${this.state.TimesheetID}`;
+        return (<Navigate to={url}/>);
+        }
         return (
             <React.Fragment>
                 {/* <ModalPopUp title={this.state.modalTitle} modalText={this.state.modalText} isVisible={this.state.showHideModal} onClose={this.handleClose} isSuccess={true}></ModalPopUp> */}
@@ -445,7 +454,7 @@ class DelegateApprovals extends React.Component<DelegateApprovalsProps, Delegate
                                         <div className="col-md-3">
                                             <div className="light-text">
                                                 <label>Reporting Manager<span className="mandatoryhastrick">*</span></label>
-                                                <select className="form-control" required={true} name="ReportingManagerId" title="ReportingManager" id='' ref={this.ReportingManager} onChange={this.handleChangeEvents} disabled={this.state.isDisabled}>
+                                                <select className="form-control" required={true} name="ReportingManagerId" title="Reporting Manager" id='' ref={this.ReportingManager} onChange={this.handleChangeEvents} disabled={this.state.isDisabled}>
                                                     <option value=''>None</option>
                                                     {this.state.ReportingManagers.map((option) => (
                                                         <option value={option.ID} selected={option.ID == this.state.ReportingManagerId}>{option.Title}</option>
@@ -459,7 +468,7 @@ class DelegateApprovals extends React.Component<DelegateApprovalsProps, Delegate
                             </div>
                             <div className="row mx-1" id="">
                                     <div className="col-sm-12 text-center my-2" id="">
-                                        <button type="button" className="SubmitButtons btn" onClick={this.showToaster}>Submit</button>
+                                        <button type="button" className="SubmitButtons btn" title='Submit' onClick={this.showToaster}>Submit</button>
                                         {/* <button type="button" className="CancelButtons btn" onClick={this.handleCancel}>Cancel</button>
                                         need to write cancel button functionality */}
                                     </div>
@@ -469,7 +478,7 @@ class DelegateApprovals extends React.Component<DelegateApprovalsProps, Delegate
                                     <ModalForwardApprovals changeEvent={this.handleChangeEvents} dropdownObject={this.state.DelegateToUsers} isVisible={this.state.showHideModal} message='Are you sure you want to forward the selected Timesheets?' modalHeader='modal-header-Approve' onCancel={this.handleCancel} onConfirm={this.forwardApprovals} selectedValue={this.state.SelectedValue} title='' commentsValue={this.state.comments}></ModalForwardApprovals>
                                     <div className='table-head-1st-td'>
                                         <TableGenerator columns={columns} data={this.state.ApprovalsData} fileName={''} showExportExcel={false}
-                                            showAddButton={false} customBtnClass='' btnDivID='' navigateOnBtnClick='' btnSpanID='' btnCaption='' btnTitle='Forward Approvals' searchBoxLeft={true} selectableRows={this.state.ApprovalsData.length > 0 ? true : false} handleSelectedRows={this.getSelectedRows} customButton={this.state.SelectedRows.length > 0 ? true : false} customButtonClick={this.ShowPopUp} clearSelectedRows={this.state.clearRows}></TableGenerator>
+                                            showAddButton={false} customBtnClass='' btnDivID='' navigateOnBtnClick='' btnSpanID='' btnCaption='' btnTitle='Forward Approvals' searchBoxLeft={true} selectableRows={this.state.ApprovalsData.length > 0 ? true : false} handleSelectedRows={this.getSelectedRows} customButton={this.state.SelectedRows.length > 0 ? true : false} customButtonClick={this.ShowPopUp} clearSelectedRows={this.state.clearRows} onRowClick={this.handleRowClicked}></TableGenerator>
                                     </div>
                                 </div>
                             }
