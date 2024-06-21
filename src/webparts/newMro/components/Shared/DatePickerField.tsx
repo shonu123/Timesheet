@@ -70,7 +70,7 @@ const DatePickercontrol = (props,ref) => {
       
     // />
     <div className="date-picker-container">
-    <FontAwesomeIcon icon={faCalendarAlt} className="calendar-icon" />
+    {/* <FontAwesomeIcon icon={faCalendarAlt} className="calendar-icon" /> */}
     <DatePicker 
     selected={selectedDay } 
     dateFormat={'MM/dd/yyyy'} 
@@ -82,6 +82,8 @@ const DatePickercontrol = (props,ref) => {
          disabled={props.isDisabled}
          id={id}
          titleText={title}
+         showIcon
+         toggleCalendarOnIconClick
         />
         </div>
      );

@@ -2292,7 +2292,7 @@ top: 43.5%;
 }
 
 
-.custom-datepicker{
+.custom-datepicker, .custom-datepicker-disabled-dates{
 position: relative;
 }
 
@@ -3194,41 +3194,14 @@ padding: 0;
   border: none;
 }
 /* Calendar icon CSS */
-.date-picker-container {
+.custom-datepicker .react-datepicker-wrapper {
   position: relative;
-}
-.calendar-icon {
-  position: absolute;
-  top: 50%;
-  right: 10px; /* Adjust the distance from the right edge of the input box */
-  transform: translateY(-50%);
-  pointer-events: none; /* Ensures the icon doesn't block interactions with the input box */
-  z-index: 1;
-  height: 15px;
-}
-.col-md-3 .calendar-icon-custom {
-  position: absolute;
-  top: 50%;
-  right: 125px; /* Adjust the distance from the right edge of the input box */
-  transform: translateY(-50%);
-  pointer-events: none; /* Ensures the icon doesn't block interactions with the input box */
-  z-index: 1;
-  height: 15px;
-}
-.col-md-4 .calendar-icon-custom {
-  position: absolute;
-  top: 50%;
-  right: 200px; /* Adjust the distance from the right edge of the input box */
-  transform: translateY(-50%);
-  pointer-events: none; /* Ensures the icon doesn't block interactions with the input box */
-  z-index: 1;
-  height: 15px;
-}
-.calendar-icon:hover{
-  cursor:pointer;
-}
-.react-datepicker-wrapper {
-  position: relative;
+  width: -webkit-fill-available;
+} 
+.react-datepicker__calendar-icon
+{
+  right: 3px;
+  font-size: large;
 }
 #tablePDF div{
   cursor: pointer;

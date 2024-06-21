@@ -1102,37 +1102,37 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
         this.setState({ RowType: TypeofRow, rowCount: CountOfRow })
     }
     private showConfirmSubmit = async (event) => {
-        let data = {};
-        // new onbehalf changes
-        { this.state.onBehalf ? data['Employee'] = { val: this.state.currentUserId, required: true, Name: 'Employee', Type: ControlType.number, Focusid: this.EmployeeDropdown } : '' }
-        data['ClientName'] = { val: this.state.trFormdata.ClientName, required: true, Name: 'Client Name', Type: ControlType.string, Focusid: this.Client }
-        data['WeeklyStartDate'] = { val: this.state.trFormdata.WeekStartDate, required: true, Name: 'Weekly Start Date', Type: ControlType.date, Focusid: "divWeekStartDate" }
-        var formdata = { ...this.state.trFormdata };
-        let isValid = Formvalidator.checkValidations(data);
-        if (isValid.status) {
-            isValid = this.validateTimeControls(formdata, "Submit");
-        }
-        if (isValid.status) {
-            let CurrWeekStartDate = this.getCurrentWeekStartDate(formdata.WeekStartDay);
-             //new condition for instance action without refreshing
-            var itemStatus = await this.getItemStatusBeforeActionPerform(this.state.ItemID);
-            if(itemStatus==this.state.trFormdata.Status) {
-               
-                if (formdata.WeekStartDate.getMonth() + 1 + "/" + formdata.WeekStartDate.getDate() + "/" + formdata.WeekStartDate.getFullYear() == CurrWeekStartDate.getMonth() + 1 + "/" + CurrWeekStartDate.getDate() + "/" + CurrWeekStartDate.getFullYear())
-                    this.setState({ showConfirmDeletePopup: true, ConfirmPopupMessage: 'Are you sure you want to submit for current week?', ActionButtonId: event.target.id });
-                else
-                    this.setState({ showConfirmDeletePopup: true, ConfirmPopupMessage: 'Are you sure you want to submit?', ActionButtonId: event.target.id });
+         //new condition for instance action without refreshing
+         var itemStatus = await this.getItemStatusBeforeActionPerform(this.state.ItemID);
+         if(itemStatus==this.state.trFormdata.Status) {
+            let data = {};
+            // new onbehalf changes
+            { this.state.onBehalf ? data['Employee'] = { val: this.state.currentUserId, required: true, Name: 'Employee', Type: ControlType.number, Focusid: this.EmployeeDropdown } : '' }
+            data['ClientName'] = { val: this.state.trFormdata.ClientName, required: true, Name: 'Client Name', Type: ControlType.string, Focusid: this.Client }
+            data['WeeklyStartDate'] = { val: this.state.trFormdata.WeekStartDate, required: true, Name: 'Weekly Start Date', Type: ControlType.date, Focusid: "divWeekStartDate" }
+            var formdata = { ...this.state.trFormdata };
+            let isValid = Formvalidator.checkValidations(data);
+            if (isValid.status) {
+                isValid = this.validateTimeControls(formdata, "Submit");
+            }
+            if (isValid.status) {
+                let CurrWeekStartDate = this.getCurrentWeekStartDate(formdata.WeekStartDay);
+    
+                    if (formdata.WeekStartDate.getMonth() + 1 + "/" + formdata.WeekStartDate.getDate() + "/" + formdata.WeekStartDate.getFullYear() == CurrWeekStartDate.getMonth() + 1 + "/" + CurrWeekStartDate.getDate() + "/" + CurrWeekStartDate.getFullYear())
+                        this.setState({ showConfirmDeletePopup: true, ConfirmPopupMessage: 'Are you sure you want to submit for current week?', ActionButtonId: event.target.id });
+                    else
+                        this.setState({ showConfirmDeletePopup: true, ConfirmPopupMessage: 'Are you sure you want to submit?', ActionButtonId: event.target.id });
             }
             else {
-                //Info message for action not completed
-                this.setState({ ActionToasterMessage: 'Success-' +StatusType.RecordModified, loading: false, redirect: true })
-
+                customToaster('toster-error', ToasterTypes.Error, isValid.message, 4000)
             }
-
         }
         else {
-            customToaster('toster-error', ToasterTypes.Error, isValid.message, 4000)
+            //Info message for action not completed
+            this.setState({ ActionToasterMessage: 'Success-' +StatusType.RecordModified, loading: false, redirect: true })
+
         }
+        
     }
     private showConfirmApprove = async (event) => {
         //new condition for instance action without refreshing
@@ -1146,40 +1146,43 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
         }
     }
     private showConfirmReject = async (event) => {
-        if ([null, undefined, ""].includes(this.state.trFormdata.Comments.trim())) {
-            customToaster('toster-error', ToasterTypes.Error, 'Comments cannot be blank.', 4000)
-            document.getElementById("txtComments").focus();
-            document.getElementById("txtComments").classList.add('mandatory-FormContent-focus');
-        }
-        else {
-            //new condition for instance action without refreshing
-            var itemStatus = await this.getItemStatusBeforeActionPerform(this.state.ItemID);
-            if(itemStatus==this.state.trFormdata.Status) {
-                this.setState({ showConfirmDeletePopup: true, ConfirmPopupMessage: 'Are you sure you want to reject?', ActionButtonId: event.target.id });    
+        //new condition for instance action without refreshing
+        var itemStatus = await this.getItemStatusBeforeActionPerform(this.state.ItemID);
+        if(itemStatus==this.state.trFormdata.Status) {
+            if ([null, undefined, ""].includes(this.state.trFormdata.Comments.trim())) {
+                customToaster('toster-error', ToasterTypes.Error, 'Comments cannot be blank.', 4000)
+                document.getElementById("txtComments").focus();
+                document.getElementById("txtComments").classList.add('mandatory-FormContent-focus');
             }
             else {
-                //Info message for action not completed
-                this.setState({ ActionToasterMessage: 'Success-' +StatusType.RecordModified, loading: false, redirect: true })
-            }
+                
+                    this.setState({ showConfirmDeletePopup: true, ConfirmPopupMessage: 'Are you sure you want to reject?', ActionButtonId: event.target.id });    
+            }    
         }
+        else {
+            //Info message for action not completed
+            this.setState({ ActionToasterMessage: 'Success-' +StatusType.RecordModified, loading: false, redirect: true })
+        }
+        
     }
     private showConfirmRevoke = async (event) => {
-        if ([null, undefined, ""].includes(this.state.trFormdata.Comments.trim())) {
-            customToaster('toster-error', ToasterTypes.Error, 'Comments cannot be blank.', 4000)
-            document.getElementById("txtComments").focus();
-            document.getElementById("txtComments").classList.add('mandatory-FormContent-focus');
-        }
-        else {
-             //new condition for instance action without refreshing
-             var itemStatus = await this.getItemStatusBeforeActionPerform(this.state.ItemID);
-             if(itemStatus==this.state.trFormdata.Status) {
-                 this.setState({ showConfirmDeletePopup: true, ConfirmPopupMessage: 'Are you sure you want to revoke?', ActionButtonId: event.target.id });
+         //new condition for instance action without refreshing
+         var itemStatus = await this.getItemStatusBeforeActionPerform(this.state.ItemID);
+         if(itemStatus==this.state.trFormdata.Status) {
+            if ([null, undefined, ""].includes(this.state.trFormdata.Comments.trim())) {
+                customToaster('toster-error', ToasterTypes.Error, 'Comments cannot be blank.', 4000)
+                document.getElementById("txtComments").focus();
+                document.getElementById("txtComments").classList.add('mandatory-FormContent-focus');
             }
-            else {
-                //Info message for action not completed
-                this.setState({ ActionToasterMessage: 'Success-' +StatusType.RecordModified, loading: false, redirect: true })
+            else { 
+                     this.setState({ showConfirmDeletePopup: true, ConfirmPopupMessage: 'Are you sure you want to revoke?', ActionButtonId: event.target.id });
             }
-        }
+       }
+       else {
+           //Info message for action not completed
+           this.setState({ ActionToasterMessage: 'Success-' +StatusType.RecordModified, loading: false, redirect: true })
+       }
+       
 
     }
     //functions related to CRUD operations
@@ -2600,22 +2603,22 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
             //WeeklyHrs row
             for (var index in formdata.WeeklyItemsData) {
              val =parseFloat(formdata.WeeklyItemsData[index][prop].toString());
-                formdata.WeeklyItemsData[index][prop]= Number.isNaN(val)?'':parseFloat(formdata.WeeklyItemsData[index][prop].toString());
+                formdata.WeeklyItemsData[index][prop]= Number.isNaN(val)?'':parseFloat(formdata.WeeklyItemsData[index][prop].toString()).toString();
             }
             //OverTimeHrs row
             for (var index in formdata.OTItemsData) {
              val =parseFloat(formdata.OTItemsData[index][prop].toString());
-                formdata.OTItemsData[index][prop]= Number.isNaN(val)?'':parseFloat(formdata.OTItemsData[index][prop].toString());
+                formdata.OTItemsData[index][prop]= Number.isNaN(val)?'':parseFloat(formdata.OTItemsData[index][prop].toString()).toString();
             }
             //SynergyOfficeHrs row
              val =parseFloat(formdata.SynergyOfficeHrs[0][prop].toString());
-            formdata.SynergyOfficeHrs[0][prop]= Number.isNaN(val)?'':parseFloat(formdata.SynergyOfficeHrs[0][prop].toString());
+            formdata.SynergyOfficeHrs[0][prop]= Number.isNaN(val)?'':parseFloat(formdata.SynergyOfficeHrs[0][prop].toString()).toString();
             //ClientHolidayHrs row
              val =parseFloat(formdata.ClientHolidayHrs[0][prop].toString());
-            formdata.ClientHolidayHrs[0][prop]= Number.isNaN(val)?'':parseFloat(formdata.ClientHolidayHrs[0][prop].toString());
+            formdata.ClientHolidayHrs[0][prop]= Number.isNaN(val)?'':parseFloat(formdata.ClientHolidayHrs[0][prop].toString()).toString();
             //PTOHrs row
              val =parseFloat(formdata.PTOHrs[0][prop].toString());
-            formdata.PTOHrs[0][prop]= Number.isNaN(val)?'':parseFloat(formdata.PTOHrs[0][prop].toString());
+            formdata.PTOHrs[0][prop]= Number.isNaN(val)?'':parseFloat(formdata.PTOHrs[0][prop].toString()).toString();
         }
                 return formdata;
     }
@@ -2912,7 +2915,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                                         <div className={this.state.isAdmin ? "col-md-3 divWeeklyStartDate" : "col-md-4 divWeeklyStartDate"}>
                                             <div className="light-text div-readonly">
 
-                                                <div className="custom-datepicker" id="divWeekStartDate">
+                                                <div className="custom-datepicker-disabled-dates" id="divWeekStartDate">
                                                     <CustomDatePicker
                                                         handleChange={this.WeekStartDateChange}
                                                         selectedDate={this.state.trFormdata.WeekStartDate}

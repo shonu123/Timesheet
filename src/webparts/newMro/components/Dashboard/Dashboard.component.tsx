@@ -100,7 +100,7 @@ class Dashboard extends React.Component<DashboardProps, DashboardState> {
                             customToaster('toster-success',ToasterTypes.Success,'Weekly timesheet '+StatusType.Reject.toLowerCase()+ ' succesfully',2000)
                             break; 
                         case StatusType.RecordModified:
-                            customToaster('toster-warning', ToasterTypes.Warning,"Attention: This weekly timesheet has been modified.Please review the changes.", 3000);
+                            customToaster('toster-warning', ToasterTypes.Warning,"Attention: This weekly timesheet has been modified.Please review the changes.", 4000);
                             break; 
                         case "Invalid":
                             customToaster('toster-error',ToasterTypes.Error,'No data found!',4000)

@@ -117,7 +117,7 @@ class DelegateApprovals extends React.Component<DelegateApprovalsProps, Delegate
         let value = event.target.type == 'checkbox' ? event.target.checked : event.target.value;
         let { name } = event.target;
         if(name == "selectedClient"){
-            this.setState({loading:true})
+            this.setState({loading:true,ReportingManagerId: '', ApprovalsData: [],showTable: false})
             this.bindReportingManagers(value)
         }
         if (name == "ReportingManagerId") {
