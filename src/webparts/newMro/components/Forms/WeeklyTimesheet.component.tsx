@@ -341,7 +341,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
             else {
                 this.setState({ isSubmitted: true, loading: false });
             }
-            if (userGroups.includes('Timesheet Administrators')) {
+            if (userGroups.includes('Timesheet Administrators')||userGroups.includes('Dashboard Admins')) {
                 this.setState({ isAdmin: true, isSubmitted: false })
             }
         }
@@ -2072,11 +2072,12 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
     }
     //this function is used to hide and show Approve/Reject/Submit/Save/Revoke buttons based on logged in user and current record respective users
     private showApproveAndRejectButton(trFormdata) {
-        let value = trFormdata.Status != StatusType.Save ? true : false;
+        //let value = trFormdata.Status != StatusType.Save ? true : false;
+        let value =![StatusType.Save,StatusType.Revoke,StatusType.ManagerReject,StatusType.ReviewerReject].includes(trFormdata.Status) ? true : false;
         let userGroups = this.state.UserGoups;
         let userEmail = this.props.spContext.userEmail;
         let isAdmin = false;
-        if (userGroups.includes('Timesheet Administrators')) {
+        if (userGroups.includes('Timesheet Administrators') || userGroups.includes('Dashboard Admins')) {
             isAdmin = true
         }
         //for show/hide of SubmitSave Revoke buttons
@@ -2105,7 +2106,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
             else
                 this.setState({ showRevokebtn: false })
 
-            if (isAdmin)  //to show revoke button only for admin if status is Submit/Approved
+            if (isAdmin)  //to show revoke button only for admin or Dashboard admin if status is Submit/Approved
             {
                 if ([Approve, submit].includes(trFormdata.Status))
                     this.setState({ showRevokebtn: true })
