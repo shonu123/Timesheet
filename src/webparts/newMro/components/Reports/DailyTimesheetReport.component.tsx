@@ -110,6 +110,7 @@ class DailyTimesheetReport extends React.Component<DailyTimesheetReportProps, Da
                 EmpObj.push({ ID: name.Employee.ID, Title: name.Employee.Title })
             }
         }
+        EmpObj.sort((a, b) => a.Title.localeCompare(b.Title));
         if (Clients.length > 0)
             this.setState({ AllEmployees: EmpObj, EmployeesObj: EmpObj, ClientsObject: Clients, loading: false, isHavingClients: true, showToaster: true })
         else
@@ -138,6 +139,7 @@ class DailyTimesheetReport extends React.Component<DailyTimesheetReportProps, Da
                     EmpObj.push({ ID: name.Employee.ID, Title: name.Employee.Title })
                 }
             }
+            EmpObj.sort((a, b) => a.Title.localeCompare(b.Title));
             if (EmpObj.length > 0)
                 this.setState({ EmployeesObj: EmpObj, loading: false, isHavingEmployees: true, InitiatorId: '0' })
             else {
