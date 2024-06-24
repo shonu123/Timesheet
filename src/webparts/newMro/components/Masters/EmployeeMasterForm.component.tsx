@@ -144,8 +144,8 @@ class EmployeeMasterForm extends React.Component<EmployeeMasterFormProps, Employ
             else {
                 this.setState({ isPageAccessable: false })
             }
-            // let filterdHolidays = this.getHolidays(Holidays,'None')
-            this.setState({ ClientsObject: clients, GlobalHolidayList: Holidays, HolidaysObject: Holidays, loading: false })
+            let filterdHolidays = this.getHolidays(Holidays,'None')
+            this.setState({ ClientsObject: clients, GlobalHolidayList: Holidays, HolidaysObject: filterdHolidays, loading: false })
         }
         // console.log("current user deatils")
         // console.log(this.props.context.pageContext)
@@ -208,8 +208,8 @@ class EmployeeMasterForm extends React.Component<EmployeeMasterFormProps, Employ
         else {
             this.setState({ isPageAccessable: false })
         }
-        // let filterdHolidays = this.getHolidays(Holidays, data[0].ClientName)
-        this.setState({ ClientsObject: Clients, ItemID: ID, EmployeeEmail: data[0].Employee.EMail, EmployeeId: data[0].Employee.ID, ClientName: data[0].ClientName, isActive: data[0].IsActive, DateOfJoining: date, SelectedEmployee: data[0].Employee.ID, SelectedClient: data[0].ClientName, HolidayType: data[0].HolidayType, weekStartDay: data[0].WeekStartDay, MandatoryProjectCode: data[0].MandatoryProjectCode ? "Yes" : "No", MandatoryDescription: data[0].MandatoryDescription ? "Yes" : "No", EligibleforPTO: data[0].EligibleforPTO, ReportingManagerEmail: ReportingManagersEmail, ReportingManagerId: ReportingManagerIds, ReviewerEmail: ReviewersEMail, ReviewerId: ReviewerIds,HolidaysObject: Holidays, GlobalHolidayList: Holidays, isDisabled: disabled, isPageAccessable: pageAccessable, showToaster: true, loading: false })
+        let filterdHolidays = this.getHolidays(Holidays, data[0].ClientName)
+        this.setState({ ClientsObject: Clients, ItemID: ID, EmployeeEmail: data[0].Employee.EMail, EmployeeId: data[0].Employee.ID, ClientName: data[0].ClientName, isActive: data[0].IsActive, DateOfJoining: date, SelectedEmployee: data[0].Employee.ID, SelectedClient: data[0].ClientName, HolidayType: data[0].HolidayType, weekStartDay: data[0].WeekStartDay, MandatoryProjectCode: data[0].MandatoryProjectCode ? "Yes" : "No", MandatoryDescription: data[0].MandatoryDescription ? "Yes" : "No", EligibleforPTO: data[0].EligibleforPTO, ReportingManagerEmail: ReportingManagersEmail, ReportingManagerId: ReportingManagerIds, ReviewerEmail: ReviewersEMail, ReviewerId: ReviewerIds,HolidaysObject: filterdHolidays, GlobalHolidayList: Holidays, isDisabled: disabled, isPageAccessable: pageAccessable, showToaster: true, loading: false })
     }
 
     // this function is used to bind users to people pickers
@@ -242,15 +242,19 @@ class EmployeeMasterForm extends React.Component<EmployeeMasterFormProps, Employ
         // let Holidays = await  sp.web.lists.getByTitle('HolidaysList').items.top(2000).filter("Year eq '"+Year+"'").select('*').orderBy('ClientName').get()
         let HolidayClients = []
         let filteredData = HolidaysList.filter(item => {
-            const lowerCaseItem = item.ClientName.toLowerCase();
+            // const lowerCaseItem = item.ClientName.toLowerCase();
+            const lowerCaseItem = item.toLowerCase();
             let selectedClient = selectedClientName.toLowerCase()
             return lowerCaseItem.includes(selectedClient) || lowerCaseItem.includes('synergy');
         });
 
         //   console.log(filteredData);
         for (const client of filteredData) {
-            if (!HolidayClients.includes(client.ClientName)) {
-                HolidayClients.push(client.ClientName)
+            // if (!HolidayClients.includes(client.ClientName)) {
+            //     HolidayClients.push(client.ClientName)
+            // }
+            if (!HolidayClients.includes(client)) {
+                HolidayClients.push(client)
             }
         }
         return HolidayClients;
@@ -264,15 +268,15 @@ class EmployeeMasterForm extends React.Component<EmployeeMasterFormProps, Employ
         // console.log(value);
         let { name } = event.target;
         this.setState({ [name]: value });
-        // if (name == 'ClientName') {
-        //     if (value != '') {
-        //         // let HolidayClients = this.getHolidays(this.state.GlobalHolidayList, value)
-        //         // this.setState({ HolidaysObject: HolidayClients, HolidayType: '' })
-        //     }
-        //     else {
-        //         this.setState({ HolidaysObject: [], HolidayType: '' })
-        //     }
-        // }
+        if (name == 'ClientName') {
+            if (value != '') {
+                let HolidayClients = this.getHolidays(this.state.GlobalHolidayList, value)
+                this.setState({ HolidaysObject: HolidayClients, HolidayType: '' })
+            }
+            else {
+                this.setState({ HolidaysObject: [], HolidayType: '' })
+            }
+        }
     }
 
     // this function is used to set date to the date feild
