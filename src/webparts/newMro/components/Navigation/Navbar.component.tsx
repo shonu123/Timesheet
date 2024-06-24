@@ -78,7 +78,7 @@ class NavBar extends React.Component<NavBarProps, NavBarState> {
                         <ul className="list-unstyled ul-leftnav components mb-0 mt-2">
 
 
-                            {this.props.currentUserGroups.includes('Timesheet Administrators') || this.props.currentUserGroups.includes('Dashboard Admins')?
+                            {this.props.currentUserGroups.includes('Timesheet Administrators')?
                              <li className={`nav-item dropdown`} id="Masters">
                              <a className="nav-link dropdown-toggle" href="#" role="button" data-toggle="dropdown" aria-expanded="false">Masters</a>
                             <div className={`dropdown-menu ${this.state.expandNav?'show':''}`} id="divNavMasterItems">
