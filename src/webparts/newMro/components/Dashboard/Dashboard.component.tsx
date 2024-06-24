@@ -147,7 +147,7 @@ class Dashboard extends React.Component<DashboardProps, DashboardState> {
             userGroup.push(grp.Title)
         }
         let showTab =false;
-        if(userGroup.includes('Timesheet Administrators')|| userGroup.includes('Timesheet Members') || userGroup.includes('Dashboard Admins')){
+        if(userGroup.includes('Timesheet Administrators')|| userGroup.includes('Synergycom Timesheet Members') || userGroup.includes('Dashboard Admins')){
             showTab =true;
         }
         if(showTab && isEmployee){

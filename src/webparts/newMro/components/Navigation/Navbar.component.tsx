@@ -136,14 +136,14 @@ class NavBar extends React.Component<NavBarProps, NavBarState> {
                                     </li> : ''
                             } */}
                             {
-                                (this.props.currentUserGroups.includes('Timesheet Members') || this.props.currentUserGroups.includes('Timesheet Administrators') || this.props.currentUserGroups.includes('Dashboard Admins') || this.props.currentUserGroups.includes('Timesheet HR')) ?
+                                (this.props.currentUserGroups.includes('Synergycom Timesheet Members') || this.props.currentUserGroups.includes('Timesheet Administrators') || this.props.currentUserGroups.includes('Dashboard Admins') || this.props.currentUserGroups.includes('Timesheet HR')) ?
                                     <li className="nav-click2" id="liDashboard" onClick={(event) => this.onNavItemClick2(event)}>
                                         <NavLink className="" to="/Dashboard"><span className=""><span className="">Dashboard</span></span></NavLink>
                                     </li> : ''
                             }
                                     {/*--------- PTO Dashboard ---------  */}
                             {/* {
-                                (this.props.currentUserGroups.includes('Timesheet Members') || this.props.currentUserGroups.includes('Timesheet Administrators') || this.props.currentUserGroups.includes('Dashboard Admins') || this.props.currentUserGroups.includes('Timesheet HR')) ?
+                                (this.props.currentUserGroups.includes('Synergycom Timesheet Members') || this.props.currentUserGroups.includes('Timesheet Administrators') || this.props.currentUserGroups.includes('Dashboard Admins') || this.props.currentUserGroups.includes('Timesheet HR')) ?
                                     <li className="nav-click2" id="liPTODashboard" onClick={(event) => this.onNavItemClick2(event)}>
                                         <NavLink className="" to="/PTODashboard"><span className=""><span className="">PTODashboard</span></span></NavLink>
                                     </li> : ''
@@ -173,7 +173,7 @@ class NavBar extends React.Component<NavBarProps, NavBarState> {
                                 {/* --------------- Weekly Reports ----------- */}
 
                             {/* {
-                                (this.props.currentUserGroups.includes('Timesheet Members') || this.props.currentUserGroups.includes('Timesheet Administrators') || this.props.currentUserGroups.includes('Dashboard Admins')) ?
+                                (this.props.currentUserGroups.includes('Synergycom Timesheet Members') || this.props.currentUserGroups.includes('Timesheet Administrators') || this.props.currentUserGroups.includes('Dashboard Admins')) ?
                                     <li className="nav-click" id="PTOForm" onClick={(event) => this.onNavItemClick(event)}>
                                         <NavLink className="" to="/PTOForm"><span className=""><span className="">PTOForm</span></span></NavLink>
                                     </li> : ''
