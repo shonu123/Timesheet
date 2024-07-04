@@ -175,6 +175,16 @@ class HolidaysList extends Component<HolidaysListProps, HolidaysListState> {
         }
     }
 
+
+    private addBrowserwrtServer(date) {
+        if (date != '') {
+            var utcOffsetMinutes = date.getTimezoneOffset();
+            var newDate = new Date(date.getTime());
+            newDate.setTime(newDate.getTime() + ((this.props.spContext.webTimeZoneData.Bias - utcOffsetMinutes + this.props.spContext.webTimeZoneData.DaylightBias) * 60 * 1000));
+            return newDate;
+        }
+    }
+
     private checkDuplicates = (formData, id) => {
         let HolidaysList = 'HolidaysList';
         formData['Year'] = new Date(formData.HolidayDate).getFullYear()+""
@@ -204,7 +214,7 @@ class HolidaysList extends Component<HolidaysListProps, HolidaysListState> {
                     }
                     else {
                         // this.insertorupdateListitem(formData, HolidaysList);
-
+                        formData.HolidayDate = this.addBrowserwrtServer(new Date(formData.HolidayDate));
                         this.setState({ loading: true });
                         if (id > 0) {                       //update existing record
                             //console.log(this.props);

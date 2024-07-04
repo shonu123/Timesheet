@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { NavLink } from 'react-router-dom';
+import { NavLink, Navigate } from 'react-router-dom';
 import TableGenerator from '../Shared/TableGenerator';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faXmark, faEdit, faCheck, faPlus } from '@fortawesome/free-solid-svg-icons';
@@ -33,6 +33,7 @@ export interface EmployeeMasterViewState {
     errorMessage: string;
     ItemID : Number;
     showToaster:boolean;
+    redirect:boolean;
 }
 
 class EmployeeMasterView extends React.Component<EmployeeMasterViewProps, EmployeeMasterViewState> {
@@ -41,7 +42,7 @@ class EmployeeMasterView extends React.Component<EmployeeMasterViewProps, Employ
         sp.setup({
             spfxContext: this.props.context
         });
-        this.state = {Details: [], loading:false,message:'',title:'',showHideModal:false,isSuccess:true,comments:'',Action:'',errorMessage:'',ItemID:0,showToaster:false};
+        this.state = {Details: [], loading:false,message:'',title:'',showHideModal:false,isSuccess:true,comments:'',Action:'',errorMessage:'',ItemID:0,showToaster:false,redirect:false};
     }
 
     public componentDidMount() {
@@ -111,6 +112,11 @@ class EmployeeMasterView extends React.Component<EmployeeMasterViewProps, Employ
                 console.log('Failed to fetch data.', err);
             });
     }
+
+    private  handleRowClicked = (row) => {
+        let ID = row.Id
+        this.setState({ItemID:ID,redirect:true})
+      }
 
     public render() {
         const columns = [
@@ -189,6 +195,11 @@ class EmployeeMasterView extends React.Component<EmployeeMasterViewProps, Employ
                 width: '100px',
             }
         ];
+        
+        if(this.state.redirect){
+            let url = `/EmployeeMasterForm/${this.state.ItemID}`;
+        return (<Navigate to={url}/>);
+        }
         return (
             <React.Fragment>
             <div id="content" className="content p-2 pt-2">
@@ -207,7 +218,7 @@ class EmployeeMasterView extends React.Component<EmployeeMasterViewProps, Employ
             {this.state.loading && <Loader />}
                 <div className='table-head-1st-td'>
                     <TableGenerator columns={columns} data={this.state.Details} fileName={'My Details'} showExportExcel={false}
-                    showAddButton={true} customBtnClass='px-1 text-right mt-2' btnDivID='divAddNewEmployeeMaster' navigateOnBtnClick={`/EmployeeMasterForm`} btnSpanID='newEmployeeMasterForm' btnCaption=' New' btnTitle='New Approval Matrix' searchBoxLeft={false}></TableGenerator>
+                    showAddButton={true} customBtnClass='px-1 text-right mt-2' btnDivID='divAddNewEmployeeMaster' navigateOnBtnClick={`/EmployeeMasterForm`} btnSpanID='newEmployeeMasterForm' btnCaption=' New' btnTitle='New Approval Matrix' searchBoxLeft={false}  onRowClick={this.handleRowClicked}></TableGenerator>
                 </div>
             </div>
             </div>

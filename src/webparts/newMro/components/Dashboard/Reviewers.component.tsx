@@ -58,6 +58,21 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
     public componentDidMount() {
         this.ReviewerApproval();
     }
+
+    private showDelegatedRecords(startDate,endDate){
+        let today = new Date();
+        let start = new Date(startDate);
+        let end = new Date(endDate);
+        today.setHours(0, 0, 0, 0);
+        start.setHours(0, 0, 0, 0);
+        end.setHours(0, 0, 0, 0);
+    
+        if (today >= start && today <= end) {
+            return true;
+        } 
+        return false;
+    }
+
 // this function is used to get 1 month records of weeklytime data of the employees who's Reviewer is current logged in user from weeklytimesheet list
     private ReviewerApproval = async () => {
         this.setState({ loading: true });
@@ -70,11 +85,40 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
         // var filterString = "Reviewers/Id eq '"+userId+"' and PendingWith eq 'Reviewer' and Status eq '"+StatusType.ManagerApprove+"'"
         var filterString = "(AssignedTo/Id eq '"+userId+"' or Reviewers/Id eq '"+userId+"') and PendingWith eq 'Reviewer'";
 
-        sp.web.lists.getByTitle('WeeklyTimeSheet').items.top(5000).filter(filterString+filterQuery).expand("Reviewers").select('Reviewers/Title','*').orderBy('WeekStartDate,Modified', false).get()
-            .then((response) => {
-                // console.log(response)
+
+        let delegationQuery = "DelegateTo/Id eq '"+userId+"'"
+        try {
+        let [responseData,ManagerDelegations] = await Promise.all([
+            sp.web.lists.getByTitle('WeeklyTimeSheet').items.top(5000).filter(filterString+filterQuery).expand("Reviewers").select('Reviewers/Title','*').orderBy('WeekStartDate,Modified', false).get(),
+            sp.web.lists.getByTitle('Delegations').items.filter(delegationQuery).expand("ReportingManager,DelegateTo").select('ReportingManager/Title,ReportingManager/ID,DelegateTo/ID,*').orderBy('ReportingManager/ID', false).get(),
+        ])
+                // let getDelegateRecords = this.showDelegatedRecords(ManagerDelegations[0].startDate,ManagerDelegations[0].endDate)
+                let managers = []
+                for (const row of ManagerDelegations) {
+                    let isApplicable = this.showDelegatedRecords(row.From,row.To)
+                    if(isApplicable){
+                        managers.push(row)
+                    }
+                }
+                console.log(managers)
+                let getDelTSQry = ''
+                if(managers.length){
+                    if(managers.length>2){
+                        for (const row of managers) {
+                            getDelTSQry+="ReportingManager/Id eq '"+row.ReportingManager.ID+"' or"
+                        }
+                        getDelTSQry = getDelTSQry.substring(0, getDelTSQry.lastIndexOf("or"));
+                    }
+                    else{
+                        getDelTSQry = "ReportingManager/Id eq '"+managers[0].ReportingManager.ID+"'"
+                    }
+                }
+                let delRmData = []
+                if(managers.length)
+                    delRmData = await sp.web.lists.getByTitle('WeeklyTimeSheet').items.top(2000).filter(getDelTSQry).expand("ReportingManager,Initiator").select('ReportingManager/Title,ReportingManager/EMail,Initiator/EMail,*').orderBy('WeekStartDate,DateSubmitted', false).get()
+
                 let Data = [];
-                for (const d of response) {
+                for (const d of responseData) {
                     let date = new Date(d.WeekStartDate)
                     let isBillable = true;
                     if(d.ClientName.toLowerCase().includes('synergy')){
@@ -96,12 +140,47 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
                         GrandTotal: parseFloat(parseFloat(d.GrandTotal).toFixed(2))
                     })
                 }
-                this.setState({ExportExcelData:Data})
+                // this.setState({ExportExcelData:Data})
                 // console.log(Data);
-                this.setState({ Reviewers: Data,loading: false});
-            }).catch(err => {
-                console.log('Failed to fetch data.', err);
-            });
+                this.setState({ Reviewers: Data,ExportExcelData:Data,loading: false});
+
+                if(delRmData.length){
+                    for (const d of delRmData) {
+                        let date = new Date(d.WeekStartDate)
+                        let isBillable = true;
+                        if (d.ClientName.toLowerCase().includes('synergy')) {
+                            isBillable = false
+                        }
+                        // var managerEmails = []
+                        // for (const e of d.ReportingManager) {
+                        //     managerEmails.push(e.EMail)
+                        // }
+                        Data.push({
+                            Id: d.Id,
+                            Date: `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`,
+                            EmployeName: d.Name,
+                            PendingWith: d.PendingWith == "Approver" || d.PendingWith == "Manager" ? "Reporting Manager" : d.PendingWith,
+                            Status: d.Status == StatusType.ReviewerReject ? 'Rejected by Synergy' : d.Status == StatusType.ManagerReject ? 'Rejected by Reporting Manager' : d.Status,
+                            BillableTotalHrs: isBillable ?parseFloat(parseFloat(d.WeeklyTotalHrs).toFixed(2)) : parseFloat(parseFloat(JSON.parse(d.SynergyOfficeHrs)[0].Total).toFixed(2)),
+                            OTTotalHrs: parseFloat(parseFloat(d.OTTotalHrs).toFixed(2)),
+                            TotalBillable: parseFloat(parseFloat(d.BillableTotalHrs).toFixed(2)),
+                            // NonBillableTotalHrs: d.NonBillableTotalHrs,
+                            HolidayHrs: parseFloat(parseFloat(JSON.parse(d.ClientHolidayHrs)[0].Total).toFixed(2)),
+                            PTOHrs: parseFloat(parseFloat(JSON.parse(d.PTOHrs)[0].Total).toFixed(2)),
+                            GrandTotal: parseFloat(parseFloat(d.GrandTotal).toFixed(2)),
+                            Client: d.ClientName,
+                            EmployeeEmail: d.Initiator.EMail,
+                            ReportingManagerEmails: d.ReportingManager.map(e => e.EMail),
+                            commentsObj: JSON.parse(d.CommentsHistory),
+                            SynergyOfficeHrs: d.SynergyOfficeHrs,
+                            ClientHolidayHrs: d.ClientHolidayHrs,
+                        })
+                    }
+                }
+            }
+            catch (error) {
+                console.log("Sorry something went wrong!", error)
+            }
     }
     private getStatus(value){
         let Status=value

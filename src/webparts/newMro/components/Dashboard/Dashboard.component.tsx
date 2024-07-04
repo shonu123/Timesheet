@@ -10,6 +10,8 @@ import MyRequests from './Myrequests.component';
 import AllRequests from './AllRequests.components';
 import MyTeam from '../Masters/MyTeam.component';
  import DelegateApprovals from './DelegateApprovals.component';
+ import ReviewerDelegationsView from './ReviewerDelegationsView.componets'
+ import ManagerDelegationsView from './ManagerDelegationsViews.component';
 import Loader from '../Shared/Loader';
 import customToaster from '../Shared/Toaster.component';
 import { StatusType, ToasterTypes } from '../../Constants/Constants';
@@ -44,6 +46,7 @@ export interface DashboardState {
     showToaster:boolean;
     isEmployeeConfigured:boolean;
     showMyTeamComp:boolean;
+    showReviewerDelegationsViewComp:boolean;
 }
 
 class Dashboard extends React.Component<DashboardProps, DashboardState> {
@@ -74,6 +77,7 @@ class Dashboard extends React.Component<DashboardProps, DashboardState> {
             isEmployeeConfigured:true,
             showMyTeamComp:false,
             showMyTeamTab:false,
+            showReviewerDelegationsViewComp:false,
         };
     }
     public componentDidMount() {
@@ -101,7 +105,10 @@ class Dashboard extends React.Component<DashboardProps, DashboardState> {
                             break; 
                         case StatusType.RecordModified:
                             customToaster('toster-warning', ToasterTypes.Warning,"Attention: This weekly timesheet has been modified.Please review the changes.", 4000);
-                            break; 
+                            break;
+                            case "Delegated":
+                            customToaster('toster-success',ToasterTypes.Success,'Your weekly timesheets will be delegated for the mentioned period',2000)
+                            break;  
                         case "Invalid":
                             customToaster('toster-error',ToasterTypes.Error,'No data found!',4000)
                             break; 
@@ -193,7 +200,7 @@ class Dashboard extends React.Component<DashboardProps, DashboardState> {
         item.classList.remove('show');
         });
 
-        let showReviewerComp = false; let showApproveComp = false; let showMyRequestsComp = false; let showApproved = false; let showExported = false; let isAdmin = false,showMyTeamComp = false,showDelegateApprovalsComp=false;
+        let showReviewerComp = false; let showApproveComp = false; let showMyRequestsComp = false; let showApproved = false; let showExported = false; let isAdmin = false,showMyTeamComp = false,showDelegateApprovalsComp=false,showReviewerDelegationsViewComp=false;
         if (url === 'Reviewers')
         {
             document.getElementById('ReviewersApprovals-tab').classList.add('active');
@@ -205,6 +212,7 @@ class Dashboard extends React.Component<DashboardProps, DashboardState> {
             showMyRequestsComp = false;
             isAdmin = false;
             showDelegateApprovalsComp =false;
+            showReviewerDelegationsViewComp = false;
         }
         else if (url === 'Approvers')
          { 
@@ -217,6 +225,7 @@ class Dashboard extends React.Component<DashboardProps, DashboardState> {
             showMyRequestsComp = false;
             isAdmin = false;
             showDelegateApprovalsComp = false;
+            showReviewerDelegationsViewComp = false;
         }
         else if (url === 'MyTeam')
          { 
@@ -229,6 +238,7 @@ class Dashboard extends React.Component<DashboardProps, DashboardState> {
             showMyRequestsComp = false;
             isAdmin = false;
             showDelegateApprovalsComp = false;
+            showReviewerDelegationsViewComp = false;
         }
         else if (url === 'MyRequests'){
             document.getElementById('MyRequests-tab').classList.add('active');
@@ -240,6 +250,7 @@ class Dashboard extends React.Component<DashboardProps, DashboardState> {
             showReviewerComp = false;
             isAdmin = false;
             showDelegateApprovalsComp = false;
+            showReviewerDelegationsViewComp = false;
         }
         else if(url == 'AllRequests'){
             document.getElementById('AllRequests-tab').classList.add('active');
@@ -251,6 +262,7 @@ class Dashboard extends React.Component<DashboardProps, DashboardState> {
             showMyRequestsComp = false;
             isAdmin = true;
             showDelegateApprovalsComp = false;
+            showReviewerDelegationsViewComp = false;
         }
         else if(url == 'DelegateApprovals'){
             document.getElementById('DelegateApprovals-tab').classList.add('active');
@@ -262,9 +274,22 @@ class Dashboard extends React.Component<DashboardProps, DashboardState> {
             showMyRequestsComp = false;
             isAdmin = false;
             showDelegateApprovalsComp = true;
+            showReviewerDelegationsViewComp = false;
+        }
+        else if(url=="ReviewerDelegationsView"){
+            document.getElementById('ReviewerDelegationsView-tab').classList.add('active');
+            document.getElementById('ReviewerDelegationsView').classList.add('active');
+            document.getElementById('ReviewerDelegationsView').classList.add('show');
+            showApproveComp = false;
+            showMyTeamComp = false;
+            showReviewerComp = false;
+            showMyRequestsComp = false;
+            isAdmin = false;
+            showReviewerDelegationsViewComp = true;
+            showDelegateApprovalsComp = false;
         }
         
-        this.setState({ showReviewerComp: showReviewerComp, showApproveComp: showApproveComp, showMyRequestsComp: showMyRequestsComp, showExported: showExported,isAdmin:isAdmin,showMyTeamComp:showMyTeamComp,showDelegateApprovalsComp:showDelegateApprovalsComp});
+        this.setState({ showReviewerComp: showReviewerComp, showApproveComp: showApproveComp, showMyRequestsComp: showMyRequestsComp, showExported: showExported,isAdmin:isAdmin,showMyTeamComp:showMyTeamComp,showDelegateApprovalsComp:showDelegateApprovalsComp,showReviewerDelegationsViewComp:showReviewerDelegationsViewComp});
     }
     public render() {
         return (
@@ -290,11 +315,14 @@ class Dashboard extends React.Component<DashboardProps, DashboardState> {
                                     {this.state.showMyApprovalsTab &&   <li className="nav-item" role="presentation" onClick={() => this.onHandleClick('Approvers')} >
                                         <a className="nav-link active" id="Approvers-tab" data-toggle="tab" href="#/Approvers" role="tab" aria-controls="home" aria-selected="true">My Approvals</a>
                                     </li>}
-                                    {this.state.showAllRequestsTab &&<li className="nav-item" role="presentation" onClick={() => this.onHandleClick('DelegateApprovals')} >
+                                    {(this.state.showAllRequestsTab || this.state.showMyApprovalsTab) &&<li className="nav-item" role="presentation" onClick={() => this.onHandleClick('DelegateApprovals')} >
                                         <a className="nav-link" id="DelegateApprovals-tab" data-toggle="tab" href="#/DelegateApprovals" role="tab" aria-controls="DelegateApprovals" aria-selected="false">Delegate Approvals</a>
                                     </li>}
                                     {this.state.showMyReviewersTab &&<li className="nav-item" role="presentation" onClick={() => this.onHandleClick('Reviewers')} >
                                         <a className="nav-link" id="ReviewersApprovals-tab" data-toggle="tab" href="#/Reviewers" role="tab" aria-controls="profile" aria-selected="false">My Reviews</a>
+                                    </li>}
+                                    {(this.state.showAllRequestsTab || this.state.showMyReviewersTab) &&<li className="nav-item" role="presentation" onClick={() => this.onHandleClick('ReviewerDelegationsView')} >
+                                        <a className="nav-link" id="ReviewerDelegationsView-tab" data-toggle="tab" href="#/DelegateReviews" role="tab" aria-controls="ReviewerDelegationsView" aria-selected="false">Delegate Reviews</a>
                                     </li>}
                                     {this.state.showMyApprovalsTab &&   <li className="nav-item" role="presentation" onClick={() => this.onHandleClick('MyTeam')} >
                                         <a className="nav-link" id="MyTeam-tab" data-toggle="tab" href="#/MyTeam" role="tab" aria-controls="MyTeam" aria-selected="true">My Team</a>
@@ -329,7 +357,13 @@ class Dashboard extends React.Component<DashboardProps, DashboardState> {
                                     </div>
                                     <div className="tab-pane fade csDelegateApprovals" id="DelegateApprovals" role="tabpanel" aria-labelledby="DelegateApprovals-tab">
                                         <div className="border-box-shadow light-box table-responsive dataTables_wrapper-overflow p-2">
-                                        {this.state.showDelegateApprovalsComp && <DelegateApprovals {...this.props} />}
+                                        {/* {this.state.showDelegateApprovalsComp && <DelegateApprovals {...this.props} />} */}
+                                        {this.state.showDelegateApprovalsComp && <ManagerDelegationsView {...this.props} />}
+                                        </div>
+                                    </div>
+                                    <div className="tab-pane fade csReviewerDelegationsView" id="ReviewerDelegationsView" role="tabpanel" aria-labelledby="ReviewerDelegationsView-tab">
+                                        <div className="border-box-shadow light-box table-responsive dataTables_wrapper-overflow p-2">
+                                        {this.state.showReviewerDelegationsViewComp && <ReviewerDelegationsView {...this.props} />}
                                         </div>
                                     </div>
                                      {/* <div className="tab-pane fade csMyRequests" id="MyRequests" role="tabpanel" aria-labelledby="MyRequests-tab">

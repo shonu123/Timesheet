@@ -262,6 +262,7 @@ class Clients extends Component<ClientProps, ClientState> {
                     let delegateToString = ""
                     let delegateToStringExcel = "";
                     if(d.DelegateTo!=undefined){
+                        d.DelegateTo.sort((a, b) => a.Title.localeCompare(b.Title));
                     if(d.DelegateTo.length>0)
                         {
                             for(let r of d.DelegateTo){

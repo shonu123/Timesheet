@@ -75,7 +75,29 @@ class ApproversApprovals extends React.Component<ApproversProps, ApproversState>
         let ID = row.Id
         this.setState({TimesheetID:ID,redirect:true})
       }
-    // this function is used to get 1 month records of weeklytime data of the employees who's manager is current logged in user from weeklytimesheet list
+
+    private showDelegatedRecords(startDate,endDate){
+        // let today = new Date().toLocaleDateString()
+        // startDate = new Date(startDate).toLocaleDateString()
+        // endDate = new Date(endDate).toLocaleDateString()
+        // if(today>=startDate || today<=endDate){
+        //     return true
+        // }
+        // return false
+        let today = new Date();
+        let start = new Date(startDate);
+        let end = new Date(endDate);
+        today.setHours(0, 0, 0, 0);
+        start.setHours(0, 0, 0, 0);
+        end.setHours(0, 0, 0, 0);
+    
+        if (today >= start && today <= end) {
+            return true;
+        } 
+        return false;
+    }
+    // this function is used to get 2 month records of weeklytime data of the employees who's manager is current logged in user from weeklytimesheet list
+
     private ReportingManagerApproval = async () => {
         this.setState({ loading: true });
         const userId = this.props.spContext.userId;
@@ -85,11 +107,39 @@ class ApproversApprovals extends React.Component<ApproversProps, ApproversState>
         var filterQuery = "and WeekStartDate ge '" + date + "'"
         // var filterString = "ReportingManager/Id eq '"+userId+"' and PendingWith eq 'Manager' and Status eq '"+StatusType.Submit+"'"
         var filterString = "(AssignedTo/Id eq '" + userId + "' or ReportingManager/Id eq '"+userId+"') and PendingWith eq 'Manager'";
-        sp.web.lists.getByTitle('WeeklyTimeSheet').items.top(2000).filter(filterString + filterQuery).expand("ReportingManager,Initiator").select('ReportingManager/Title,ReportingManager/EMail,Initiator/EMail,*').orderBy('WeekStartDate,DateSubmitted', false).get()
-            .then((response) => {
-                // console.log(response)
+        let delegationQuery = "DelegateTo/Id eq '"+userId+"'"
+        try {
+        let [responseData,ManagerDelegations] = await Promise.all([
+            sp.web.lists.getByTitle('WeeklyTimeSheet').items.top(2000).filter(filterString+filterQuery).expand("ReportingManager,Initiator").select('ReportingManager/Title,ReportingManager/EMail,Initiator/EMail,*').orderBy('WeekStartDate,DateSubmitted', false).get(),
+            sp.web.lists.getByTitle('Delegations').items.filter(delegationQuery).expand("ReportingManager,DelegateTo").select('ReportingManager/Title,ReportingManager/ID,DelegateTo/ID,*').orderBy('ReportingManager/ID', false).get(),
+        ])
+                // let getDelegateRecords = this.showDelegatedRecords(ManagerDelegations[0].startDate,ManagerDelegations[0].endDate)
+                let managers = []
+                for (const row of ManagerDelegations) {
+                    let isApplicable = this.showDelegatedRecords(row.From,row.To)
+                    if(isApplicable){
+                        managers.push(row)
+                    }
+                }
+                console.log(managers)
+                let getDelTSQry = ''
+                if(managers.length){
+                    if(managers.length>2){
+                        for (const row of managers) {
+                            getDelTSQry+="ReportingManager/Id eq '"+row.ReportingManager.ID+"' or"
+                        }
+                        getDelTSQry = getDelTSQry.substring(0, getDelTSQry.lastIndexOf("or"));
+                    }
+                    else{
+                        getDelTSQry = "ReportingManager/Id eq '"+managers[0].ReportingManager.ID+"'"
+                    }
+                }
+                let delRmData = []
+                if(managers.length)
+                    delRmData = await sp.web.lists.getByTitle('WeeklyTimeSheet').items.top(2000).filter(getDelTSQry).expand("ReportingManager,Initiator").select('ReportingManager/Title,ReportingManager/EMail,Initiator/EMail,*').orderBy('WeekStartDate,DateSubmitted', false).get()
+
                 let Data = [];
-                for (const d of response) {
+                for (const d of responseData) {
                     let date = new Date(d.WeekStartDate)
                     let isBillable = true;
                     if (d.ClientName.toLowerCase().includes('synergy')) {
@@ -120,14 +170,52 @@ class ApproversApprovals extends React.Component<ApproversProps, ApproversState>
                         ClientHolidayHrs: d.ClientHolidayHrs,
                     })
                 }
+                if(delRmData.length){
+                    for (const d of delRmData) {
+                        let date = new Date(d.WeekStartDate)
+                        let isBillable = true;
+                        if (d.ClientName.toLowerCase().includes('synergy')) {
+                            isBillable = false
+                        }
+                        // var managerEmails = []
+                        // for (const e of d.ReportingManager) {
+                        //     managerEmails.push(e.EMail)
+                        // }
+                        Data.push({
+                            Id: d.Id,
+                            Date: `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`,
+                            EmployeName: d.Name,
+                            PendingWith: d.PendingWith == "Approver" || d.PendingWith == "Manager" ? "Reporting Manager" : d.PendingWith,
+                            Status: d.Status == StatusType.ReviewerReject ? 'Rejected by Synergy' : d.Status == StatusType.ManagerReject ? 'Rejected by Reporting Manager' : d.Status,
+                            BillableTotalHrs: isBillable ?parseFloat(parseFloat(d.WeeklyTotalHrs).toFixed(2)) : parseFloat(parseFloat(JSON.parse(d.SynergyOfficeHrs)[0].Total).toFixed(2)),
+                            OTTotalHrs: parseFloat(parseFloat(d.OTTotalHrs).toFixed(2)),
+                            TotalBillable: parseFloat(parseFloat(d.BillableTotalHrs).toFixed(2)),
+                            // NonBillableTotalHrs: d.NonBillableTotalHrs,
+                            HolidayHrs: parseFloat(parseFloat(JSON.parse(d.ClientHolidayHrs)[0].Total).toFixed(2)),
+                            PTOHrs: parseFloat(parseFloat(JSON.parse(d.PTOHrs)[0].Total).toFixed(2)),
+                            GrandTotal: parseFloat(parseFloat(d.GrandTotal).toFixed(2)),
+                            Client: d.ClientName,
+                            EmployeeEmail: d.Initiator.EMail,
+                            ReportingManagerEmails: d.ReportingManager.map(e => e.EMail),
+                            commentsObj: JSON.parse(d.CommentsHistory),
+                            SynergyOfficeHrs: d.SynergyOfficeHrs,
+                            ClientHolidayHrs: d.ClientHolidayHrs,
+                        })
+                    }
+                }
                 // console.log(Data);
                 
-                this.getClientDeligates(Data)
+                // this.getClientDeligates(Data)
+                this.setState({ ReportingManager: Data,loading: false });
 
+            }
+            catch (error) {
+                console.log("Sorry something went wrong!", error)
+            }
 
-            }).catch(err => {
-                console.log('Failed to fetch data.', err);
-            });
+            // catch(err => {
+            //     console.log('Failed to fetch data.', err);
+            // });
     }
 
     private async getClientDeligates(Data) {
@@ -378,8 +466,9 @@ if(Data.length>0){
                 <div>
                     <div className='table-head-1st-td'>
                         <TableGenerator columns={columns} data={this.state.ReportingManager} fileName={''} showExportExcel={false}
-                            showAddButton={false} customBtnClass='' btnDivID='' navigateOnBtnClick='' btnSpanID='' btnCaption='' btnTitle='Forward Approvals' searchBoxLeft={true} selectableRows={this.state.ReportingManager.length>0?true:false} handleSelectedRows={this.getSelectedRows} customButton={this.state.SelectedRows.length > 0 ? true : false} customButtonClick={this.ShowPopUp} onRowClick={this.handleRowClicked}></TableGenerator>
+                            showAddButton={false} customBtnClass='' btnDivID='' navigateOnBtnClick='' btnSpanID='' btnCaption='' btnTitle='Forward Approvals' searchBoxLeft={true} selectableRows={false} handleSelectedRows={this.getSelectedRows} customButton={this.state.SelectedRows.length > 0 ? true : false} customButtonClick={this.ShowPopUp} onRowClick={this.handleRowClicked}></TableGenerator>
                     </div>
+                    {/*selectableRows={this.state.ReportingManager.length>0?true:false} replace this to show delegations */}
                 </div>
                 <Toaster />
                 {this.state.loading && <Loader />}

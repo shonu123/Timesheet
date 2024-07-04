@@ -7,10 +7,12 @@ import { faCalendarAlt} from '@fortawesome/free-solid-svg-icons';
 const DatePickercontrol = (props,ref) => {
     var [selectedDay,setDate] = useState(null);
     let selectedDate = props.selectedDate!=null?props.selectedDate:null;
-    let selDate=null;
-    let reference = ref
-    let id = props.id
-    let title = props.title
+    let selDate=null,reference = ref,id = props.id,title = props.title,customDate,minDate= props.minDate,maxDate= props.maxDate
+    if([null,undefined,""].includes(props.customDate))
+      customDate = false
+      else
+      customDate = props.customDate
+    
     if(selectedDate !=null)
     {
     //   let month =selectedDate.getMonth()+1;
@@ -69,6 +71,25 @@ const DatePickercontrol = (props,ref) => {
     //   format='M/D/YYYY'
       
     // />
+    customDate?<div className="date-picker-container">
+    {/* <FontAwesomeIcon icon={faCalendarAlt} className="calendar-icon" /> */}
+    <DatePicker 
+    selected={selectedDay } 
+    dateFormat={'MM/dd/yyyy'} 
+          showBorder ={true}       
+          onChange={handlechangeevent}
+          placeholderText={'MM/DD/YYYY'}
+          className="form-control DatePicker"//{props.isDisabled ? "form-control DatePicker c-input-readonly" : "form-control DatePicker"}//"form-control DatePicker" // custom class
+        //  ref={reference}
+         disabled={props.isDisabled}
+         id={id}
+         titleText={title}
+         showIcon
+         minDate = {minDate}
+        //  maxDate = {maxDate}
+         toggleCalendarOnIconClick
+        />
+        </div>:
     <div className="date-picker-container">
     {/* <FontAwesomeIcon icon={faCalendarAlt} className="calendar-icon" /> */}
     <DatePicker 
@@ -86,6 +107,8 @@ const DatePickercontrol = (props,ref) => {
          toggleCalendarOnIconClick
         />
         </div>
+
+
      );
   };
 

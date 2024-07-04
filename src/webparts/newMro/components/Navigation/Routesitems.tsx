@@ -25,6 +25,9 @@ import TimesheetReport from '../Reports/TimesheetReport.component';
 import DailyTimesheetReport from '../Reports/DailyTimesheetReport.component';
 import WeeklyTimesheetReport from '../Reports/WeeklyTimesheetReport.component';
 import PTOForm from '../Forms/PTOForm.component';
+import DelegateManagerApprovals from '../Forms/AutoManagerDelegtion.component'
+import DelegateReviewerApprovals from '../Forms/Test.component';
+// import DelegateReviewerApprovals from '../Forms/AutoReviewerDelegation.component';
 export interface RoutesProps {
     spContext: any;
     spHttpClient: SPHttpClient;
@@ -102,6 +105,14 @@ class Routesitems extends Component<RoutesProps, RoutesState> {
             let params =useParams();
             return <PTOForm {...this.context}{...this.props}  {...{...props, match: {params}} } />
           }
+          const WrapperManagerDelegatesForm = (props) => {
+            let params =useParams();
+            return <DelegateManagerApprovals {...this.context}{...this.props}  {...{...props, match: {params}} } />
+          }
+          const WrapperReviewerDelegatesForm = (props) => {
+            let params =useParams();
+            return <DelegateReviewerApprovals {...this.context}{...this.props}  {...{...props, match: {params}} } />
+          }
         return (
             <Suspense fallback={<div></div>}>
                 <Routes>
@@ -111,6 +122,8 @@ class Routesitems extends Component<RoutesProps, RoutesState> {
                    <Route path='/WeeklyTimesheet/:id?' element ={<WrapperWeeklyTimesheet/>} />
                    <Route path='/EmployeeMasterForm/:id?/:redirect?' element ={<WrapperEmployeeMasterForm/>} />
                    <Route path='/PTOForm/:id?' element ={<WrapperPTOForm/>} />
+                   <Route path='/DelegateApprovalTimesheets/:id?' element ={<WrapperManagerDelegatesForm/>} />
+                   <Route path='/DelegateReviewTimesheets/:id?' element ={<WrapperReviewerDelegatesForm/>} />
                    <Route path='/EmployeeMasterView/:message?' element ={<WrapperMasterView/>} />
                    <Route path='/HolidayMaster/:id?' element ={<WrapperHolidayMaster/>} />
                    <Route path='/ClientMaster/:id?' element ={<WrapperClientMaster/>} />
