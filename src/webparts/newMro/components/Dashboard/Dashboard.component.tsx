@@ -12,6 +12,7 @@ import MyTeam from '../Masters/MyTeam.component';
  import DelegateApprovals from './DelegateApprovals.component';
  import ReviewerDelegationsView from './ReviewerDelegationsView.componets'
  import ManagerDelegationsView from './ManagerDelegationsViews.component';
+ import TimesheetDelegation from './DelegateTimesheets.component';
 import Loader from '../Shared/Loader';
 import customToaster from '../Shared/Toaster.component';
 import { StatusType, ToasterTypes } from '../../Constants/Constants';
@@ -179,7 +180,7 @@ class Dashboard extends React.Component<DashboardProps, DashboardState> {
             this.onHandleClick('AllRequests')
             EmployeeConfigured = true
         }
-        this.setState({loading:false,isEmployeeConfigured: EmployeeConfigured})
+        this.setState({isEmployeeConfigured: EmployeeConfigured,isReviewer:isReviewer,loading:false})
     }
 
     private onMenuItemClick(event) {
@@ -276,18 +277,18 @@ class Dashboard extends React.Component<DashboardProps, DashboardState> {
             showDelegateApprovalsComp = true;
             showReviewerDelegationsViewComp = false;
         }
-        else if(url=="ReviewerDelegationsView"){
-            document.getElementById('ReviewerDelegationsView-tab').classList.add('active');
-            document.getElementById('ReviewerDelegationsView').classList.add('active');
-            document.getElementById('ReviewerDelegationsView').classList.add('show');
-            showApproveComp = false;
-            showMyTeamComp = false;
-            showReviewerComp = false;
-            showMyRequestsComp = false;
-            isAdmin = false;
-            showReviewerDelegationsViewComp = true;
-            showDelegateApprovalsComp = false;
-        }
+        // else if(url=="ReviewerDelegationsView"){
+        //     document.getElementById('ReviewerDelegationsView-tab').classList.add('active');
+        //     document.getElementById('ReviewerDelegationsView').classList.add('active');
+        //     document.getElementById('ReviewerDelegationsView').classList.add('show');
+        //     showApproveComp = false;
+        //     showMyTeamComp = false;
+        //     showReviewerComp = false;
+        //     showMyRequestsComp = false;
+        //     isAdmin = false;
+        //     showReviewerDelegationsViewComp = true;
+        //     showDelegateApprovalsComp = false;
+        // }
         
         this.setState({ showReviewerComp: showReviewerComp, showApproveComp: showApproveComp, showMyRequestsComp: showMyRequestsComp, showExported: showExported,isAdmin:isAdmin,showMyTeamComp:showMyTeamComp,showDelegateApprovalsComp:showDelegateApprovalsComp,showReviewerDelegationsViewComp:showReviewerDelegationsViewComp});
     }
@@ -315,15 +316,15 @@ class Dashboard extends React.Component<DashboardProps, DashboardState> {
                                     {this.state.showMyApprovalsTab &&   <li className="nav-item" role="presentation" onClick={() => this.onHandleClick('Approvers')} >
                                         <a className="nav-link active" id="Approvers-tab" data-toggle="tab" href="#/Approvers" role="tab" aria-controls="home" aria-selected="true">My Approvals</a>
                                     </li>}
-                                    {(this.state.showAllRequestsTab || this.state.showMyApprovalsTab) &&<li className="nav-item" role="presentation" onClick={() => this.onHandleClick('DelegateApprovals')} >
-                                        <a className="nav-link" id="DelegateApprovals-tab" data-toggle="tab" href="#/DelegateApprovals" role="tab" aria-controls="DelegateApprovals" aria-selected="false">Delegate Approvals</a>
-                                    </li>}
                                     {this.state.showMyReviewersTab &&<li className="nav-item" role="presentation" onClick={() => this.onHandleClick('Reviewers')} >
                                         <a className="nav-link" id="ReviewersApprovals-tab" data-toggle="tab" href="#/Reviewers" role="tab" aria-controls="profile" aria-selected="false">My Reviews</a>
                                     </li>}
-                                    {(this.state.showAllRequestsTab || this.state.showMyReviewersTab) &&<li className="nav-item" role="presentation" onClick={() => this.onHandleClick('ReviewerDelegationsView')} >
-                                        <a className="nav-link" id="ReviewerDelegationsView-tab" data-toggle="tab" href="#/DelegateReviews" role="tab" aria-controls="ReviewerDelegationsView" aria-selected="false">Delegate Reviews</a>
+                                    {(this.state.showAllRequestsTab || this.state.showMyApprovalsTab || this.state.isReviewer) &&<li className="nav-item" role="presentation" onClick={() => this.onHandleClick('DelegateApprovals')} >
+                                        <a className="nav-link" id="DelegateApprovals-tab" data-toggle="tab" href="#/DelegateApprovals" role="tab" aria-controls="DelegateApprovals" aria-selected="false">Delegate Timesheets</a>
                                     </li>}
+                                    {/* {(this.state.showAllRequestsTab || this.state.showMyReviewersTab) &&<li className="nav-item" role="presentation" onClick={() => this.onHandleClick('ReviewerDelegationsView')} >
+                                        <a className="nav-link" id="ReviewerDelegationsView-tab" data-toggle="tab" href="#/DelegateReviews" role="tab" aria-controls="ReviewerDelegationsView" aria-selected="false">Delegate Reviews</a>
+                                    </li>} */}
                                     {this.state.showMyApprovalsTab &&   <li className="nav-item" role="presentation" onClick={() => this.onHandleClick('MyTeam')} >
                                         <a className="nav-link" id="MyTeam-tab" data-toggle="tab" href="#/MyTeam" role="tab" aria-controls="MyTeam" aria-selected="true">My Team</a>
                                     </li>}
@@ -358,15 +359,16 @@ class Dashboard extends React.Component<DashboardProps, DashboardState> {
                                     <div className="tab-pane fade csDelegateApprovals" id="DelegateApprovals" role="tabpanel" aria-labelledby="DelegateApprovals-tab">
                                         <div className="border-box-shadow light-box table-responsive dataTables_wrapper-overflow p-2">
                                         {/* {this.state.showDelegateApprovalsComp && <DelegateApprovals {...this.props} />} */}
-                                        {this.state.showDelegateApprovalsComp && <ManagerDelegationsView {...this.props} />}
+                                        {/* {this.state.showDelegateApprovalsComp && <ManagerDelegationsView {...this.props} />} */}
+                                        {this.state.showDelegateApprovalsComp && <TimesheetDelegation {...this.props} />}
                                         </div>
                                     </div>
-                                    <div className="tab-pane fade csReviewerDelegationsView" id="ReviewerDelegationsView" role="tabpanel" aria-labelledby="ReviewerDelegationsView-tab">
+                                    {/* <div className="tab-pane fade csReviewerDelegationsView" id="ReviewerDelegationsView" role="tabpanel" aria-labelledby="ReviewerDelegationsView-tab">
                                         <div className="border-box-shadow light-box table-responsive dataTables_wrapper-overflow p-2">
                                         {this.state.showReviewerDelegationsViewComp && <ReviewerDelegationsView {...this.props} />}
                                         </div>
                                     </div>
-                                     {/* <div className="tab-pane fade csMyRequests" id="MyRequests" role="tabpanel" aria-labelledby="MyRequests-tab">
+                                     <div className="tab-pane fade csMyRequests" id="MyRequests" role="tabpanel" aria-labelledby="MyRequests-tab">
                                         <div className="border-box-shadow light-box table-responsive dataTables_wrapper-overflow p-2">
                                             {this.state.showMyRequestsComp && <MyRequests {...this.props} />}
                                         </div> 

@@ -90,7 +90,7 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
         try {
         let [responseData,ManagerDelegations] = await Promise.all([
             sp.web.lists.getByTitle('WeeklyTimeSheet').items.top(5000).filter(filterString+filterQuery).expand("Reviewers").select('Reviewers/Title','*').orderBy('WeekStartDate,Modified', false).get(),
-            sp.web.lists.getByTitle('Delegations').items.filter(delegationQuery).expand("ReportingManager,DelegateTo").select('ReportingManager/Title,ReportingManager/ID,DelegateTo/ID,*').orderBy('ReportingManager/ID', false).get(),
+            sp.web.lists.getByTitle('Delegations').items.filter(delegationQuery).expand("Authorizer,DelegateTo").select('Authorizer/Title,Authorizer/ID,DelegateTo/ID,*').orderBy('Authorizer/ID', false).get(),
         ])
                 // let getDelegateRecords = this.showDelegatedRecords(ManagerDelegations[0].startDate,ManagerDelegations[0].endDate)
                 let managers = []
@@ -105,12 +105,12 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
                 if(managers.length){
                     if(managers.length>2){
                         for (const row of managers) {
-                            getDelTSQry+="ReportingManager/Id eq '"+row.ReportingManager.ID+"' or"
+                            getDelTSQry+="ReportingManager/Id eq '"+row.Authorizer.ID+"' or"
                         }
                         getDelTSQry = getDelTSQry.substring(0, getDelTSQry.lastIndexOf("or"));
                     }
                     else{
-                        getDelTSQry = "ReportingManager/Id eq '"+managers[0].ReportingManager.ID+"'"
+                        getDelTSQry = "ReportingManager/Id eq '"+managers[0].Authorizer.ID+"'"
                     }
                 }
                 let delRmData = []
