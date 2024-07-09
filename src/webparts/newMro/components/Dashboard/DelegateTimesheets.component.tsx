@@ -618,7 +618,7 @@ class TimesheetDelegation extends Component<TimesheetDelegationProps, TimesheetD
       }
       
     private cancelHandler(){
-        this.resetForm();
+        this.resetForm()
     }
 
     public handleClose = () => {
