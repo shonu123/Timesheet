@@ -2,6 +2,6 @@
   "$schema": "https://developer.microsoft.com/json-schemas/spfx-build/spfx-serve.schema.json",
   "port": 4321,
   "https": true,
-  "initialPage": "https://synergycomcom.sharepoint.com/sites/Billing.Timesheet/_layouts/workbench.aspx"
+  "initialPage": "https://synergycomcom.sharepoint.com/sites/SynergyDev/SynergyComTimesheet/_layouts/workbench.aspx"
   
 }

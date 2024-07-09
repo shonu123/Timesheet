@@ -1,6 +1,6 @@
 {
   "$schema": "https://developer.microsoft.com/json-schemas/spfx/client-side-web-part-manifest.schema.json",
-  "id": "008b3b6a-73eb-4763-8b3f-0fc9afbbb775",
+  "id": "008b3b6a-73eb-4763-8b3f-0fc9afbbb143",
   "alias": "Timesheet",
   "componentType": "WebPart",
 
@@ -14,11 +14,11 @@
   "preconfiguredEntries": [{
     "groupId": "5c03119e-3074-46fd-976b-c60198311f70", 
     "group": { "default": "Advanced" },
-    "title": { "default": "TimesheetPROD" },
-    "description": { "default": "Timesheet description Production" }, 
+    "title": { "default": "TimesheetDEV" },
+    "description": { "default": "Timesheet description Development" }, 
     "officeFabricIconFontName": "Page",
     "properties": {
-      "description": "Timesheet-PROD"
+      "description": "Timesheet-DEV"
     }
   }]
 }

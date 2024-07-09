@@ -622,7 +622,7 @@ class TimesheetDelegation extends Component<TimesheetDelegationProps, TimesheetD
     }
 
     public handleClose = () => {
-        this.setState({ showHideModal: false});
+        // this.setState({ showHideModal: false});
         this.resetForm();
     }
 
@@ -1015,7 +1015,7 @@ class TimesheetDelegation extends Component<TimesheetDelegationProps, TimesheetD
                                                     <div className="row mx-1" id="">
                                                         <div className="col-sm-12 text-center my-2" id="">
                                                             <button type="button" onClick={this.handleSubmit} id="btnSubmit" className="SubmitButtons btn" title={this.state.SaveUpdateText}>{this.state.SaveUpdateText}</button>
-                                                            <button type="button" id="btnCancel" className="CancelButtons btn" onClick={this.cancelHandler} title='Cancel'>Cancel</button>
+                                                            <button type="button" id="btnCancel" className="CancelButtons btn" onClick={this.handleClose} title='Cancel'>Cancel</button>
                                                         </div>
                                                     </div>
 
