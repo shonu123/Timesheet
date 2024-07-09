@@ -86,7 +86,7 @@ class TimesheetDelegation extends Component<TimesheetDelegationProps, TimesheetD
     };
 
     public componentDidMount() {
-        highlightCurrentNav("liDashboard");
+        
         this.setState({ loading: true });
         this.getOnLoadData();
     }
