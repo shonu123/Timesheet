@@ -86,7 +86,7 @@ class TimesheetDelegation extends Component<TimesheetDelegationProps, TimesheetD
     };
 
     public componentDidMount() {
-        
+
         this.setState({ loading: true });
         this.getOnLoadData();
     }
@@ -588,7 +588,7 @@ class TimesheetDelegation extends Component<TimesheetDelegationProps, TimesheetD
             DelegateToId: '',
             DelegateToName:'',
             DelegateToObj: [],
-            DelegateToEMail:'',
+            DelegateToEMail:null,
             // ClientDeligatesObj:[],
             // ClientManagersObj:[],
             From: null,
@@ -617,7 +617,7 @@ class TimesheetDelegation extends Component<TimesheetDelegationProps, TimesheetD
         this.onEditClickHandler(row.Id)
       }
       
-    private cancelHandler = () => {
+    private cancelHandler(){
         this.resetForm();
     }
 
@@ -636,7 +636,23 @@ class TimesheetDelegation extends Component<TimesheetDelegationProps, TimesheetD
         item.classList.toggle('menu-hide');
     }
 
-    handleSubmit = () =>{
+
+
+    async delegateToGroups(id,postObject){
+        //  return user
+        let   user = await sp.web.siteUsers.getById(id).groups.get()
+        // console.log(user)
+        let ugrps = []
+        for (const row of user) {
+            ugrps.push(row.Title)
+        }
+        if(ugrps.includes('Timesheet Administrators')|| ugrps.includes('Synergycom Timesheet Members') || ugrps.includes('Dashboard Admins'))
+        this.InsertorUpdatedata(postObject, '');
+        else
+        customToaster('toster-error',ToasterTypes.Error,'Selected DelegateTo does not have access to Timesheet page',4000);
+    }
+
+     handleSubmit = () =>{
         let data;
         if(this.state.isAdmin){
             if(!this.state.Client.toLowerCase().includes('synergy')){
@@ -678,6 +694,7 @@ class TimesheetDelegation extends Component<TimesheetDelegationProps, TimesheetD
             return false
         }
         else{
+            // this.state.userGroups
             let preDH = this.state.PreviousDateHistory,history = this.state.ActionHistory,from=this.addBrowserwrtServer(new Date(this.state.From)).toLocaleDateString(),to = this.addBrowserwrtServer(new Date(this.state.To)).toLocaleDateString()
             preDH.push({From:from,To:to,DelegateToId:this.state.DelegateToId,DelegateTo:this.state.DelegateToName})
             history.push({
@@ -698,8 +715,9 @@ class TimesheetDelegation extends Component<TimesheetDelegationProps, TimesheetD
                 Comments: this.state.Comments,
                 Client:this.state.Client,
             }
-            console.log(postObject)
-            this.InsertorUpdatedata(postObject, '');
+            this.delegateToGroups(this.state.DelegateToId,postObject)
+            // console.log(postObject)
+            // this.InsertorUpdatedata(postObject, '');
         }
     }
 

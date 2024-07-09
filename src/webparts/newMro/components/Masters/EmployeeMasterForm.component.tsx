@@ -380,7 +380,7 @@ class EmployeeMasterForm extends React.Component<EmployeeMasterFormProps, Employ
                 ReviewersId: this.state.ReviewerId,
                 // DelegateToId: this.state.DelegateToId,
                 // NotifiersId : this.state.NotifierId,
-                DateOfJoining: this.state.DateOfJoining,
+                DateOfJoining: this.addBrowserwrtServer(new Date(this.state.DateOfJoining)),//this.state.DateOfJoining,
                 MandatoryDescription: this.state.MandatoryDescription == 'Yes' ? true : false,
                 MandatoryProjectCode: this.state.MandatoryProjectCode == 'Yes' ? true : false,
                 EligibleforPTO: this.state.EligibleforPTO,
@@ -397,6 +397,15 @@ class EmployeeMasterForm extends React.Component<EmployeeMasterFormProps, Employ
                 this.setState({ errorMessage: '' })
                 this.InsertorUpdatedata(postObject, '');
             }
+        }
+    }
+
+    private addBrowserwrtServer(date) {
+        if (date != '') {
+            var utcOffsetMinutes = date.getTimezoneOffset();
+            var newDate = new Date(date.getTime());
+            newDate.setTime(newDate.getTime() + ((this.props.spContext.webTimeZoneData.Bias - utcOffsetMinutes + this.props.spContext.webTimeZoneData.DaylightBias) * 60 * 1000));
+            return newDate;
         }
     }
 
