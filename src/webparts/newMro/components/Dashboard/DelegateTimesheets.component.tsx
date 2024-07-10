@@ -133,26 +133,39 @@ class TimesheetDelegation extends Component<TimesheetDelegationProps, TimesheetD
         if (name == "AuthorizerId") {
             this.setState({ AuthorizerId: parseInt(value),loading:true })
             if(value!='None'){
-            // let title = event.target.selectedOptions[0].getAttribute('data-name');
-            // let obj = {Title:title,ID:value}
-            let mangers =  this.state.EmployeeMasterObj.filter(obj => {
-                return obj.ReportingManager.some(m => {
-                    return m.ID == parseInt(value);
-                });
-            });
-            if(mangers.length==0){
-                mangers =  this.state.EmployeeMasterObj.filter(obj => {
-                    return obj.Reviewers.some(m => {
+            let EMail = event.target.selectedOptions[0].getAttribute('data-EMail');
+            let ClientName,Delegateobj = [],mangers
+            if(EMail.toLowerCase().includes('synergy')){
+              let obj=  this.state.ClientDeligatesObj.find(item=>{
+                    return item.Client.toLowerCase().includes('synergy')
+                })
+                ClientName = obj.Client
+            }
+            else{
+                // let obj = {Title:title,ID:value}
+                 mangers =  this.state.EmployeeMasterObj.filter(obj => {
+                    return obj.ReportingManager.some(m => {
                         return m.ID == parseInt(value);
                     });
                 });
+                ClientName = mangers[0].ClientName
             }
+
+            // if(mangers.length==0){
+            //     mangers =  this.state.EmployeeMasterObj.filter(obj => {
+            //         return obj.Reviewers.some(m => {
+            //             return m.ID == parseInt(value);
+            //         });
+            //     });
+            // }
+
             // let empObj = mangers.find(obj => {
             //     return obj.ReportingManager.some(m => {
             //         return m.ID == parseInt(value);
             //     });
             // });
-            let ClientName = mangers[0].ClientName,Delegateobj = []
+
+
             if(!ClientName.toLowerCase().includes('synergy')){
                 // let Delegateobj =[] 
                 let Delegates = this.state.ClientDeligatesObj.find(item=>{
@@ -187,7 +200,7 @@ class TimesheetDelegation extends Component<TimesheetDelegationProps, TimesheetD
         let data = await  sp.web.lists.getByTitle('Delegations').items.filter("Authorizer/ID eq'"+ManagerID+"'").expand('ReportingManager,DelegateTo').select('ReportingManager/Title,ReportingManager/ID,DelegateTo/Title,DelegateTo/ID,*').orderBy('ReportingManager/Title', true).get()
         if(data.length>0){
           let res = data[0]
-          if(!res.Client.toLowerCase().includes('synergy')){
+          if(!Client.toLowerCase().includes('synergy')){
           // this.setState({AuthorizerId:res.AuthorizerId,DelegateToId:res.DelegateToId,Client:res.Client,DelegateToObj:Delegateobj,From:new Date(res.From),To:new Date(res.To),Comments:res.Comments,ActionHistory:JSON.parse(res.ActionHistory),PreviousDateHistory:JSON.parse(res.PreviousDateHistory),ItemID:res.ID,DelegateToName:res.DelegateTo.Title,loading:false})
           this.setState({isSynergyEmployee:false,Client:res.Client,DelegateToObj:Delegateobj,ActionHistory:JSON.parse(res.ActionHistory),PreviousDateHistory:JSON.parse(res.PreviousDateHistory),ItemID:res.ID,loading:false})
           }
@@ -251,7 +264,7 @@ class TimesheetDelegation extends Component<TimesheetDelegationProps, TimesheetD
     private async getOnLoadData() {
         // this.setState({isRedirect:false})
         let [Authorizer,Clients,groups,DelegationData] = await Promise.all([
-            sp.web.lists.getByTitle('EmployeeMaster').items.filter("IsActive eq '1'").expand('ReportingManager,Reviewers').select('ReportingManager/Title,ReportingManager/ID,Reviewers/Title,Reviewers/ID,*').orderBy('ReportingManager/Title', true).getAll(),
+            sp.web.lists.getByTitle('EmployeeMaster').items.filter("IsActive eq '1'").expand('ReportingManager,Reviewers').select('ReportingManager/Title,ReportingManager/ID,ReportingManager/EMail,Reviewers/Title,Reviewers/ID,Reviewers/EMail,*').orderBy('ReportingManager/Title', true).getAll(),
             sp.web.lists.getByTitle('Client').items.select('DelegateTo/ID,DelegateTo/Title,*').expand('DelegateTo').orderBy("Title", false).getAll(),
             sp.web.currentUser.groups(),
             sp.web.lists.getByTitle('Delegations').items.expand('Authorizer,DelegateTo').select('Authorizer/Title,Authorizer/ID,DelegateTo/Title,DelegateTo/ID,*').orderBy('Authorizer/Title', true).getAll()
@@ -941,7 +954,7 @@ class TimesheetDelegation extends Component<TimesheetDelegationProps, TimesheetD
                                                     <select className="form-control" required={true} name="AuthorizerId" title="Name" id='Authorizer' ref={this.Authorizer} onChange={this.handleChangeEvents}>
                                                         <option value='None'>None</option>
                                                         {this.state.AuthorizerObj.map((option) => (
-                                                            <option value={option.ID} data-name={option.Title} selected={option.ID == this.state.AuthorizerId}>{option.Title}</option>
+                                                            <option value={option.ID} data-name={option.Title} data-EMail = {option.EMail} selected={option.ID == this.state.AuthorizerId}>{option.Title}</option>
                                                         ))}
                                                     </select>
                                                 </div>
