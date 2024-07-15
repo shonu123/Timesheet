@@ -54,6 +54,8 @@ class Clients extends Component<ClientProps, ClientState> {
         formData: {
             Title : '',
             IsActive: true,
+            Comments: '',
+            AuditHistory:[],
             DelegateToId: { results: [] },
         },
         ClientsObj : [],
@@ -89,6 +91,8 @@ class Clients extends Component<ClientProps, ClientState> {
                 formData: {
                     Title : '',
                     IsActive: true,
+                    Comments: '',
+                    AuditHistory:[],        
                     DelegateToId: { results: [] },
                 },DelegateToEMail:[],
                 SaveUpdateText: 'Submit', addNewClient: false
@@ -168,6 +172,15 @@ class Clients extends Component<ClientProps, ClientState> {
                         customToaster('toster-error',ToasterTypes.Error,'Duplicate record is not accepted',4000)
                     }
                     else {
+                        let History = formData.AuditHistory
+                        History.push({
+                            User: this.props.spContext.userDisplayName,
+                            Comments: this.state.formData.Comments.trim(),
+                            Date: new Date().toISOString()
+                        })
+                       formData.AuditHistory = JSON.stringify(History)
+                       formData.Comments = formData.Comments.trim()
+                        
                         // this.insertorupdateListitem(formData, HolidaysList);
                         if (id > 0) {                       //update existing record
                             //console.log(this.props);
@@ -191,7 +204,7 @@ class Clients extends Component<ClientProps, ClientState> {
                         else {                             //Add New record
                             try {
                                 // this.setState({ loading: true });
-                                sp.web.lists.getByTitle(ClientList).items.add({ ...this.state.formData })
+                                sp.web.lists.getByTitle(ClientList).items.add(formData)
                                     .then((res) => {
                                         customToaster('toster-success',ToasterTypes.Success,'Client added successfully',2000)
                                         this.resetHolidayMasterForm();
@@ -275,14 +288,16 @@ class Clients extends Component<ClientProps, ClientState> {
                     ExcelData.push({
                        ClientName: d.Title,
                        IsActive: d.IsActive?"Active":"In-Active",
-                       DelegateTo:delegateToStringExcel
+                       Comments: d.Comments,
+                       DelegateTo:delegateToStringExcel,
                     })
                 
                 Data.push({
                     Id: d.Id, 
                     ClientName: d.Title, 
                     IsActive: d.IsActive,
-                    DelegateTo:delegateToString
+                    Comments: d.Comments,
+                    DelegateTo:delegateToString,
                 })
             }
                 this.setState({
@@ -334,6 +349,8 @@ class Clients extends Component<ClientProps, ClientState> {
                  {
                     Title: response.Title,
                   IsActive: response.IsActive,
+                  Comments: response.Comments,
+                  AuditHistory: JSON.parse(response.AuditHistory),
                   DelegateToId: DelegateToIds
                 },
                 DelegateToEMail:DelegateToEmails,
@@ -351,6 +368,8 @@ class Clients extends Component<ClientProps, ClientState> {
             formData: {
                 Title : '',
                 IsActive: true,
+                Comments: '',
+                AuditHistory:[],    
                 DelegateToId: {results:[]}
             },DelegateToEmail:[],
             SaveUpdateText: 'Submit', addNewClient: false,isRedirect:true
@@ -444,6 +463,15 @@ class Clients extends Component<ClientProps, ClientState> {
                 header: 'Holiday Date',
                 dataKey: 'HolidayDate'
             },
+            {
+                name: "Comments",
+                //selector: "Database",
+                selector: (row, i) => row.Comments,
+                sortable: true,
+                header: 'Comments',
+                dataKey: 'Comments'
+            }, 
+
            
         ];
         if(this.state.isRedirect){
@@ -508,24 +536,24 @@ class Clients extends Component<ClientProps, ClientState> {
                                                             />
 
 
-                                            <div className="col-md-3">
-                                                <div className="light-text">
-                                                    <label className='lblPeoplepicker'>Delegate To {/*<span className="mandatoryhastrick">*</span>*/}</label>
-                                                    <div className="custom-peoplepicker" id="divDelegateTo">
-                                                        <PeoplePicker
-                                                            context={this.props.context}
-                                                            titleText="Delegate To"
-                                                            personSelectionLimit={10}
-                                                            showtooltip={false}
-                                                            defaultSelectedUsers={this.state.DelegateToEMail}
-                                                            onChange={(e) => this._getPeoplePickerItems(e, 'DelegateToId')}
-                                                            ensureUser={true}
-                                                            required={true}
-                                                            principalTypes={[PrincipalType.User]} placeholder=""
-                                                            resolveDelay={1000} peoplePickerCntrlclassName={"input-peoplePicker-custom"} />
+                                                    <div className="col-md-3">
+                                                        <div className="light-text">
+                                                            <label className='lblPeoplepicker'>Delegate To {/*<span className="mandatoryhastrick">*</span>*/}</label>
+                                                            <div className="custom-peoplepicker" id="divDelegateTo">
+                                                                <PeoplePicker
+                                                                    context={this.props.context}
+                                                                    titleText="Delegate To"
+                                                                    personSelectionLimit={10}
+                                                                    showtooltip={false}
+                                                                    defaultSelectedUsers={this.state.DelegateToEMail}
+                                                                    onChange={(e) => this._getPeoplePickerItems(e, 'DelegateToId')}
+                                                                    ensureUser={true}
+                                                                    required={true}
+                                                                    principalTypes={[PrincipalType.User]} placeholder=""
+                                                                    resolveDelay={1000} peoplePickerCntrlclassName={"input-peoplePicker-custom"} />
+                                                            </div>
+                                                        </div>
                                                     </div>
-                                                </div>
-                                            </div>
                                                             
                                                     <div className="col-md-3">
                                                         <div className="light-text" id='chkIsActive'>
@@ -541,6 +569,12 @@ class Clients extends Component<ClientProps, ClientState> {
                                                     </div>
                                                             
                                                         </div>
+                                                        <div className="media-px-12,col-md-9">
+                                                    <div className="light-text height-auto">
+                                                        <label className="floatingTextarea2 top-11">Comments</label>
+                                                        <textarea className="position-static form-control requiredinput mt-3" onChange={this.handleChange} value={this.state.formData.Comments} maxLength={500} id="txtComments" name="Comments" disabled={false} title='Comments'></textarea>
+                                                    </div>
+                                                </div>
                                                     </div>
                                                     <div className="row mx-1" id="">
                                                         <div className="col-sm-12 text-center my-2" id="">
