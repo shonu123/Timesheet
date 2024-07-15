@@ -54,8 +54,8 @@ class Clients extends Component<ClientProps, ClientState> {
         formData: {
             Title: '',
             IsActive: true,
-            Comments: '',
-            AuditHistory: [],
+            // Comments: '',
+            // AuditHistory: [],
             DelegateToId: { results: [] },
         },
         ClientsObj: [],
@@ -91,8 +91,8 @@ class Clients extends Component<ClientProps, ClientState> {
                 formData: {
                     Title: '',
                     IsActive: true,
-                    Comments: '',
-                    AuditHistory: [],
+                    // Comments: '',
+                    // AuditHistory: [],
                     DelegateToId: { results: [] },
                 }, DelegateToEMail: [],
                 SaveUpdateText: 'Submit', addNewClient: false
@@ -172,14 +172,14 @@ class Clients extends Component<ClientProps, ClientState> {
                         customToaster('toster-error', ToasterTypes.Error, 'Duplicate record is not accepted', 4000)
                     }
                     else {
-                        let History = formData.AuditHistory
-                        History.push({
-                            User: this.props.spContext.userDisplayName,
-                            Comments: this.state.formData.Comments.trim(),
-                            Date: new Date().toISOString()
-                        })
-                        formData.AuditHistory = JSON.stringify(History)
-                        formData.Comments = formData.Comments.trim()
+                        // let History = formData.AuditHistory
+                        // History.push({
+                        //     User: this.props.spContext.userDisplayName,
+                        //     Comments: this.state.formData.Comments.trim(),
+                        //     Date: new Date().toISOString()
+                        // })
+                        // formData.AuditHistory = JSON.stringify(History)
+                        // formData.Comments = formData.Comments.trim()
 
                         // this.insertorupdateListitem(formData, HolidaysList);
                         if (id > 0) {                       //update existing record
@@ -287,7 +287,7 @@ class Clients extends Component<ClientProps, ClientState> {
                     ExcelData.push({
                         ClientName: d.Title,
                         IsActive: d.IsActive ? "Active" : "In-Active",
-                        Comments: d.Comments,
+                        // Comments: d.Comments,
                         DelegateTo: delegateToStringExcel,
                     })
 
@@ -295,7 +295,7 @@ class Clients extends Component<ClientProps, ClientState> {
                         Id: d.Id,
                         ClientName: d.Title,
                         IsActive: d.IsActive,
-                        Comments: d.Comments,
+                        // Comments: d.Comments,
                         DelegateTo: delegateToString,
                     })
                 }
@@ -348,8 +348,8 @@ class Clients extends Component<ClientProps, ClientState> {
                 {
                     Title: response.Title,
                     IsActive: response.IsActive,
-                    Comments: response.Comments,
-                    AuditHistory: JSON.parse(response.AuditHistory),
+                    // Comments: response.Comments,
+                    // AuditHistory: JSON.parse(response.AuditHistory),
                     DelegateToId: DelegateToIds
                 },
                 DelegateToEMail: DelegateToEmails,
@@ -367,8 +367,8 @@ class Clients extends Component<ClientProps, ClientState> {
             formData: {
                 Title: '',
                 IsActive: true,
-                Comments: '',
-                AuditHistory: [],
+                // Comments: '',
+                // AuditHistory: [],
                 DelegateToId: { results: [] }
             }, DelegateToEmail: [],
             SaveUpdateText: 'Submit', addNewClient: false, isRedirect: true
@@ -462,14 +462,14 @@ class Clients extends Component<ClientProps, ClientState> {
                 header: 'Holiday Date',
                 dataKey: 'HolidayDate'
             },
-            {
-                name: "Comments",
-                //selector: "Database",
-                selector: (row, i) => row.Comments,
-                sortable: true,
-                header: 'Comments',
-                dataKey: 'Comments'
-            },
+            // {
+            //     name: "Comments",
+            //     //selector: "Database",
+            //     selector: (row, i) => row.Comments,
+            //     sortable: true,
+            //     header: 'Comments',
+            //     dataKey: 'Comments'
+            // },
 
 
         ];
@@ -566,12 +566,12 @@ class Clients extends Component<ClientProps, ClientState> {
                                                         </div>
 
                                                     </div>
-                                                    <div className="media-px-12,col-md-9">
+                                                    {/* <div className="media-px-12,col-md-9">
                                                         <div className="light-text height-auto">
                                                             <label className="floatingTextarea2 top-11">Comments</label>
                                                             <textarea className="position-static form-control requiredinput mt-3" onChange={this.handleChange} value={this.state.formData.Comments} maxLength={500} id="txtComments" name="Comments" disabled={false} title='Comments'></textarea>
                                                         </div>
-                                                    </div>
+                                                    </div> */}
                                                 </div>
                                                 <div className="row mx-1" id="">
                                                     <div className="col-sm-12 text-center my-2" id="">
