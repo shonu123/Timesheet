@@ -80,7 +80,7 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
         let dateFilter = new Date()
         dateFilter.setDate(new Date().getDate()-60);
         let date = `${dateFilter.getMonth() + 1}/${dateFilter.getDate()}/${dateFilter.getFullYear()}`
-        var filterQuery = "and WeekStartDate ge '"+date+"'"
+        var filterQuery = " and WeekStartDate ge '"+date+"'"
 
         // var filterString = "Reviewers/Id eq '"+userId+"' and PendingWith eq 'Reviewer' and Status eq '"+StatusType.ManagerApprove+"'"
         var filterString = "(AssignedTo/Id eq '"+userId+"' or Reviewers/Id eq '"+userId+"') and PendingWith eq 'Reviewer'";
@@ -105,21 +105,22 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
                 if(managers.length){
                     if(managers.length>2){
                         for (const row of managers) {
-                            getDelTSQry+="ReportingManager/Id eq '"+row.Authorizer.ID+"' or"
+                            getDelTSQry+="(Reviewers/Id eq '"+row.Authorizer.ID+"' or"
                         }
                         getDelTSQry = getDelTSQry.substring(0, getDelTSQry.lastIndexOf("or"));
                     }
                     else{
-                        getDelTSQry = "ReportingManager/Id eq '"+managers[0].Authorizer.ID+"'"
+                        getDelTSQry = "(Reviewers/Id eq '"+managers[0].Authorizer.ID+"'"
                     }
                 }
+                getDelTSQry+= ") and PendingWith eq 'Reviewer'";
                 let delRmData = []
                 if(managers.length)
                     delRmData = await sp.web.lists.getByTitle('WeeklyTimeSheet').items.top(2000).filter(getDelTSQry).expand("ReportingManager,Initiator").select('ReportingManager/Title,ReportingManager/EMail,Initiator/EMail,*').orderBy('WeekStartDate,DateSubmitted', false).get()
 
                 let Data = [];
                 for (const d of responseData) {
-                    let date = new Date(d.WeekStartDate)
+                    let date = new Date(d.WeekStartDate.split('-')[1]+'/'+d.WeekStartDate.split('-')[2].split('T')[0]+'/'+d.WeekStartDate.split('-')[0])
                     let isBillable = true;
                     if(d.ClientName.toLowerCase().includes('synergy')){
                         isBillable = false
@@ -146,7 +147,7 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
 
                 if(delRmData.length){
                     for (const d of delRmData) {
-                        let date = new Date(d.WeekStartDate)
+                        let date = new Date(d.WeekStartDate.split('-')[1]+'/'+d.WeekStartDate.split('-')[2].split('T')[0]+'/'+d.WeekStartDate.split('-')[0])
                         let isBillable = true;
                         if (d.ClientName.toLowerCase().includes('synergy')) {
                             isBillable = false
@@ -302,7 +303,7 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
         if (recordId == record.Id) return record }
     )
         
-    if(Initialstatus[0].Status == this.getStatus(data[0].Status)){
+    if(Initialstatus[0].Status != this.getStatus(data[0].Status)){
         customToaster('toster-warning', ToasterTypes.Warning,"Attention: This PTO has been modified. Please review the changes.", 3000);
         this.setState({showHideModal : false,isSuccess:true,ModalHeader:'',comments:'',IsClientApprovalNeed:false})
         this.ReviewerApproval();

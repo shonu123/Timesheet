@@ -317,7 +317,7 @@ class HolidaysList extends Component<HolidaysListProps, HolidaysListState> {
                 this.setState({
                     HolidayListObj: response.map(o => ({
                         Id: o.Id, ClientName: o.ClientName, HolidayName: o.HolidayName,
-                         HolidayDate: `${new Date(o.HolidayDate).getMonth() + 1}/${new Date(o.HolidayDate).getDate()}/${new Date(o.HolidayDate).getFullYear()}`,
+                         HolidayDate: o.HolidayDate.split('-')[1]+'/'+o.HolidayDate.split('-')[2].split('T')[0]+'/'+o.HolidayDate.split('-')[0],
                          IsActive:o.IsActive?"Active":"In-Active"
                     })),
                     SaveUpdateText: 'Submit',
@@ -352,7 +352,7 @@ class HolidaysList extends Component<HolidaysListProps, HolidaysListState> {
                  {
                   ClientName: response.ClientName,
                   HolidayName: response.HolidayName,
-                  HolidayDate: response.HolidayDate, 
+                  HolidayDate:  new Date(response.HolidayDate.split('-')[1]+'/'+response.HolidayDate.split('-')[2].split('T')[0]+'/'+response.HolidayDate.split('-')[0]), 
                   Year: response.Year,
                   IsActive:response.IsActive,
                 },

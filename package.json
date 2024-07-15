@@ -30,6 +30,7 @@
     "jspdf": "^2.5.1",
     "jspdf-autotable": "^3.5.28",
     "office-ui-fabric-react": "^7.199.1",
+    "pdfmake": "^0.2.10",
     "react": "17.0.1",
     "react-bootstrap": "^1.6.6",
     "react-confirm-box": "^1.2.0",

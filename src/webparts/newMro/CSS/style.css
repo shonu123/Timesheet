@@ -2694,6 +2694,9 @@ top: 3px;
     text-align: center;
     margin: auto;
     }
+    .th-AddDel-Icon{
+      width: 60px;
+  }
     .th-total{
       width: 70px;
     margin: auto;
@@ -3205,4 +3208,8 @@ padding: 0;
 }
 #tablePDF div{
   cursor: pointer;
+}
+
+.icon-export-pdf{
+color:#ad0b00 !important;
 }

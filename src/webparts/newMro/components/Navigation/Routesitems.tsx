@@ -23,7 +23,8 @@ import EmployeeMasterView from '../Masters/EmployeeMasterView.component';
 import Clients from '../Masters/ClientMaster.component';
 import TimesheetReport from '../Reports/TimesheetReport.component';
 import DailyTimesheetReport from '../Reports/DailyTimesheetReport.component';
-import WeeklyTimesheetReport from '../Reports/WeeklyTimesheetReport.component';
+//import WeeklyTimesheetReport from '../Reports/WeeklyTimesheetReport.component';
+import WeeklyTimesheetReport from '../Reports/WeeklyTimesheetReportPDF.component';
 import PTOForm from '../Forms/PTOForm.component';
 import DelegateManagerApprovals from '../Forms/AutoManagerDelegtion.component'
 import DelegateReviewerApprovals from '../Forms/Test.component';

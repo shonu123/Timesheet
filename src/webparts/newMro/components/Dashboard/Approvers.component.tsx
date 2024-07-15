@@ -126,21 +126,22 @@ class ApproversApprovals extends React.Component<ApproversProps, ApproversState>
                 if(managers.length){
                     if(managers.length>2){
                         for (const row of managers) {
-                            getDelTSQry+="ReportingManager/Id eq '"+row.Authorizer.ID+"' or"
+                            getDelTSQry+="(ReportingManager/Id eq '"+row.Authorizer.ID+"' or"
                         }
                         getDelTSQry = getDelTSQry.substring(0, getDelTSQry.lastIndexOf("or"));
                     }
                     else{
-                        getDelTSQry = "ReportingManager/Id eq '"+managers[0].Authorizer.ID+"'"
+                        getDelTSQry = "(ReportingManager/Id eq '"+managers[0].Authorizer.ID+"'"
                     }
                 }
+                getDelTSQry+= ") and PendingWith eq 'Manager'";
                 let delRmData = []
                 if(managers.length)
                     delRmData = await sp.web.lists.getByTitle('WeeklyTimeSheet').items.top(2000).filter(getDelTSQry).expand("ReportingManager,Initiator").select('ReportingManager/Title,ReportingManager/EMail,Initiator/EMail,*').orderBy('WeekStartDate,DateSubmitted', false).get()
 
                 let Data = [];
                 for (const d of responseData) {
-                    let date = new Date(d.WeekStartDate)
+                    let date = new Date(d.WeekStartDate.split('-')[1]+'/'+d.WeekStartDate.split('-')[2].split('T')[0]+'/'+d.WeekStartDate.split('-')[0])
                     let isBillable = true;
                     if (d.ClientName.toLowerCase().includes('synergy')) {
                         isBillable = false
@@ -172,7 +173,7 @@ class ApproversApprovals extends React.Component<ApproversProps, ApproversState>
                 }
                 if(delRmData.length){
                     for (const d of delRmData) {
-                        let date = new Date(d.WeekStartDate)
+                        let date = new Date(d.WeekStartDate.split('-')[1]+'/'+d.WeekStartDate.split('-')[2].split('T')[0]+'/'+d.WeekStartDate.split('-')[0])
                         let isBillable = true;
                         if (d.ClientName.toLowerCase().includes('synergy')) {
                             isBillable = false

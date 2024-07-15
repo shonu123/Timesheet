@@ -45,6 +45,7 @@
         color: white;
         font-size: 14px;
         padding-top: 2px;
+        margin-left: 5px;
     }
     .span-fa-plus:hover{
         cursor: pointer;

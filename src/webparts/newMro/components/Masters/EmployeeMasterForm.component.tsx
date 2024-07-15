@@ -163,7 +163,7 @@ class EmployeeMasterForm extends React.Component<EmployeeMasterFormProps, Employ
         // let Holidays = await  sp.web.lists.getByTitle('HolidaysList').items.top(2000).filter("Year eq '"+Year+"'").select('*').orderBy('ClientName').get()
 
         // console.log(data)
-        let date = new Date(data[0].DateOfJoining)
+        let date = new Date(data[0].DateOfJoining.split('-')[1]+'/'+data[0].DateOfJoining.split('-')[2].split('T')[0]+'/'+data[0].DateOfJoining.split('-')[0])
         let ReportingManagersEmail = []
         let ReportingManagerIds = { results: [] }
         let ReviewerIds = { results: [] }

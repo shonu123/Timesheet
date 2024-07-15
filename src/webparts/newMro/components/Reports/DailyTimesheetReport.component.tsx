@@ -14,7 +14,7 @@ import "@pnp/sp/files";
 import "@pnp/sp/folders";
 import "@pnp/sp/site-users/web";
 import "@pnp/sp/site-groups";
-import { highlightCurrentNav2 } from '../../Utilities/HighlightCurrentComponent';
+import { highlightCurrentNav } from '../../Utilities/HighlightCurrentComponent';
 import DatePicker from "../Shared/DatePickerField";
 import { Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
@@ -78,7 +78,7 @@ class DailyTimesheetReport extends React.Component<DailyTimesheetReportProps, Da
     }
 
     public componentDidMount() {
-        highlightCurrentNav2("DailyTimesheetReport");
+        highlightCurrentNav("DailyTimesheetReport");
         this.setState({ loading: true });
         this.getOnLoadData()
     }
@@ -304,7 +304,7 @@ class DailyTimesheetReport extends React.Component<DailyTimesheetReportProps, Da
             let headerDates = []
             reportData.forEach(report => {
                 let { Initiator, WeekStartDate, TotalHrs, ClientName, Status } = report;
-                const startDate = new Date(WeekStartDate);
+                const startDate = new Date(WeekStartDate.split('-')[1]+'/'+WeekStartDate.split('-')[2].split('T')[0]+'/'+WeekStartDate.split('-')[0]);
                 let weekDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
                 TotalHrs = JSON.parse(TotalHrs)
                 let dates = []
@@ -397,8 +397,6 @@ finalArray.sort((a, b) => {
         else {
             customToaster('toster-error', ToasterTypes.Error, 'No data found!', 4000);
         }
-
-
     }
 
     private getStatusFromExcelData(client, initiator, date) {
@@ -604,7 +602,7 @@ for (let i = 7; i < workSheetRows.length; i++) {
     SampleData.push(dataObj);
 }
 
-console.log(SampleData);
+ //console.log(SampleData);
 
         
 

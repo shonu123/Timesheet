@@ -5,7 +5,8 @@ import Search from './Search';
 import { NavLink } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPlus,faArrowTurnRight } from '@fortawesome/free-solid-svg-icons';
-import ExportExcelwithStyles from './ExportExcelwithStyles'
+import ExportExcelwithStyles from './ExportExcelwithStyles';
+import ExportToPDF from './ExportPDF';
 const customStyles = {
   rows: {
     style: {
@@ -37,6 +38,8 @@ interface TableGeneratorProps {
   data: any;
   fileName: string;
   showExportExcel?: boolean;
+  showExportPDF?:boolean;
+  logoUrlToPDF?:string;
   ExportExcelCustomisedColumns?:any;
   ExportExcelCustomisedData?:any;
   prvPageNumber?: number;
@@ -62,7 +65,7 @@ interface TableGeneratorProps {
   onRowClick?:any;
 }
 
-const TableGenerator = ({ columns, data, fileName,showExportExcel, ExportExcelCustomisedColumns,ExportExcelCustomisedData, prvPageNumber,prvSort,prvDirection,onChange,onSortChange,onSortDirection,showAddButton,btnSpanID,btnTitle,navigateOnBtnClick,btnCaption,customBtnClass,btnDivID,searchBoxLeft,wrapColumns,selectableRows,handleSelectedRows,customButton=false,customButtonClick,onRowClick,clearSelectedRows=true}: TableGeneratorProps) => {
+const TableGenerator = ({ columns, data, fileName,showExportExcel,showExportPDF=false,logoUrlToPDF, ExportExcelCustomisedColumns,ExportExcelCustomisedData, prvPageNumber,prvSort,prvDirection,onChange,onSortChange,onSortDirection,showAddButton,btnSpanID,btnTitle,navigateOnBtnClick,btnCaption,customBtnClass,btnDivID,searchBoxLeft,wrapColumns,selectableRows,handleSelectedRows,customButton=false,customButtonClick,onRowClick,clearSelectedRows=true}: TableGeneratorProps) => {
   //let lsMyrequests = localStorage.getItem('PrvData');
  // const tableData = { columns, data };
   const [totalData, setData] = useState([]);
@@ -113,12 +116,12 @@ const TableGenerator = ({ columns, data, fileName,showExportExcel, ExportExcelCu
                     </NavLink>
                     </div> 
         </div>}
-        {showExportExcel &&
-          <div className="col-6 text-right">
-            {/* <ExportExcel tableData={ExportExcelCustomisedData ? ExportExcelCustomisedData : data} filename={fileName} columns={ExportExcelCustomisedColumns ? ExportExcelCustomisedColumns : columns}></ExportExcel> */}
-            <ExportExcelwithStyles tableData={ExportExcelCustomisedData ? ExportExcelCustomisedData : data} filename={fileName} columns={ExportExcelCustomisedColumns ? ExportExcelCustomisedColumns : columns} wrapColumnsArray={wrapColumns}></ExportExcelwithStyles>
-          </div> 
-        }
+       {
+       <div className="col-6 text-right">
+         {/* <ExportExcel tableData={ExportExcelCustomisedData ? ExportExcelCustomisedData : data} filename={fileName} columns={ExportExcelCustomisedColumns ? ExportExcelCustomisedColumns : columns}></ExportExcel> */}
+          { showExportExcel && <ExportExcelwithStyles tableData={ExportExcelCustomisedData ? ExportExcelCustomisedData : data} filename={fileName} columns={ExportExcelCustomisedColumns ? ExportExcelCustomisedColumns : columns} wrapColumnsArray={wrapColumns}></ExportExcelwithStyles>}
+          { showExportPDF && <ExportToPDF AllTimesheetsData={data} filename={fileName}  LogoImgUrl={logoUrlToPDF}></ExportToPDF>}
+            </div> }
       </div>
 
       {/* <div>

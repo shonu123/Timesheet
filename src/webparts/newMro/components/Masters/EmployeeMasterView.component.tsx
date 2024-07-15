@@ -93,7 +93,7 @@ class EmployeeMasterView extends React.Component<EmployeeMasterViewProps, Employ
                     // }
                     // ----------------------------------
 
-                    let date = new Date(d.DateOfJoining)
+                    let date = new Date(d.DateOfJoining.split('-')[1]+'/'+d.DateOfJoining.split('-')[2].split('T')[0]+'/'+d.DateOfJoining.split('-')[0]);
                     Data.push({
                         Id : d.Id,
                         Employee : d.Employee.Title,

@@ -53,11 +53,9 @@ class MyTeam extends React.Component<MyTeamProps, MyTeamState> {
 
         sp.web.lists.getByTitle('EmployeeMaster').items.top(2000).filter(filterString).expand("Employee").select('Employee/Title', '*').orderBy('Employee/Title', false).get()
             .then((response) => {
-                console.log("My Team")
-                console.log(response)
                 let Data = [];
                 for (const d of response) {
-                    let date = new Date(d.DateOfJoining)
+                    let date = new Date(d.DateOfJoining.split('-')[1]+'/'+d.DateOfJoining.split('-')[2].split('T')[0]+'/'+d.DateOfJoining.split('-')[0]);
                     
                     Data.push({
                         Id: d.Id,

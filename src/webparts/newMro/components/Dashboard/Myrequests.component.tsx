@@ -61,7 +61,7 @@ class MyRequests extends React.Component<MyRequestsProps, MyRequestsState> {
                 for (const d of response) {
                     let date;
                     if(!["",undefined,null].includes(d.WeekStartDate)){
-                        date = new Date(d.WeekStartDate)
+                        date = new Date(d.WeekStartDate.split('-')[1]+'/'+d.WeekStartDate.split('-')[2].split('T')[0]+'/'+d.WeekStartDate.split('-')[0])
                         date = `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`
                     }
 

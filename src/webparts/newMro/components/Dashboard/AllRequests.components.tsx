@@ -58,6 +58,7 @@ class AllRequests extends React.Component<AllRequestsProps,AllRequestsState> {
                 for (const d of response) {
                     let Rm = '';
                     let ExcelRm = ''
+                    d.ReportingManager.sort((a, b) => a.Title.localeCompare(b.Title));
                     if(d.ReportingManager.length>0)
                     {
                         for(let r of d.ReportingManager){
@@ -66,7 +67,7 @@ class AllRequests extends React.Component<AllRequestsProps,AllRequestsState> {
                         }
                         // ExcelRm = ExcelRm.substring(0, ExcelRm.lastIndexOf("\n"));
                     }
-                    let date = new Date(d.WeekStartDate)
+                    let date = new Date(d.WeekStartDate.split('-')[1]+'/'+d.WeekStartDate.split('-')[2].split('T')[0]+'/'+d.WeekStartDate.split('-')[0]);
                     let isBillable = true;
                     if(d.ClientName.toLowerCase().includes('synergy')){
                         isBillable = false

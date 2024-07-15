@@ -47,8 +47,19 @@ class NavBar extends React.Component<NavBarProps, NavBarState> {
             });
         }
         event.currentTarget.className = 'nav-click dropdown-item';
-        document.getElementById('divNavMasterItems').classList.remove('show')
-        document.getElementById('Masters').classList.add('heighlightMasters')
+        if(event.currentTarget.parentElement.id=='divNavReportItems')
+        {
+            document.getElementById('divNavReportItems').classList.remove('show')
+            document.getElementById('Reports').classList.add('heighlightMasters')
+            document.getElementById('divNavMasterItems').classList.remove('show')
+            document.getElementById('Masters').classList.remove('heighlightMasters')
+        }
+        else{
+            document.getElementById('divNavMasterItems').classList.remove('show')
+            document.getElementById('Masters').classList.add('heighlightMasters')
+            document.getElementById('divNavReportItems').classList.remove('show')
+            document.getElementById('Reports').classList.remove('heighlightMasters')
+        }
         // event.currentTarget.classList.add('nav-click')
     }
     public onNavItemClick2(event) {
@@ -62,6 +73,8 @@ class NavBar extends React.Component<NavBarProps, NavBarState> {
         event.currentTarget.className = 'nav-click2';
         document.getElementById('divNavMasterItems').classList.remove('show')
         document.getElementById('Masters').classList.remove('heighlightMasters')
+        document.getElementById('divNavReportItems').classList.remove('show')
+        document.getElementById('Reports').classList.remove('heighlightMasters')
     }
     public render() {
         return (
@@ -158,9 +171,17 @@ class NavBar extends React.Component<NavBarProps, NavBarState> {
                             } */}
                             {
                                 (this.props.currentUserGroups.includes('Timesheet Administrators') || this.props.currentUserGroups.includes('Dashboard Admins')) ?
-                                    <li className="nav-click2" id="DailyTimesheetReport" onClick={(event) => this.onNavItemClick2(event)}>
-                                        <NavLink className="" to="/DailyTimesheetReport"><span className=""><span className="">Reports</span></span></NavLink>
-                                    </li> : ''
+                                <li  className={`nav-item dropdown`} id="Reports">
+                             <a className="nav-link dropdown-toggle" href="#" role="button" data-toggle="dropdown" aria-expanded="false">Reports</a>
+                             <div className={`dropdown-menu ${this.state.expandNav?'show':''}`} id="divNavReportItems">
+                                <NavLink className="dropdown-item" to="/DailyTimesheetReport" id="DailyTimesheetReport" onClick={(event) => this.onNavItemClick(event)}><span className=""><span className="">Daily Reports</span></span></NavLink>
+                                <NavLink className="dropdown-item" to="/WeeklyTimesheetReport" id="WeeklyTimesheetReport" onClick={(event) => this.onNavItemClick(event)}><span className=""><span className="">Weekly Reports</span></span></NavLink>
+                            </div>
+                                </li>
+                                    // <li className="nav-click2" id="DailyTimesheetReport" onClick={(event) => this.onNavItemClick2(event)}>
+                                    //     <NavLink className="" to="/DailyTimesheetReport"><span className=""><span className="">Reports</span></span></NavLink>
+                                    // </li> : ''
+                                    :''
                             }
 
                                 {/* --------------- Weekly Reports ----------- */}
