@@ -1462,7 +1462,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                         }
                     }
                     for (let Rew of formdata.ReviewersEmail) {
-                        if (DelegatedRM == Rew) {
+                        if (DelegatedRM == Rew && DelegatedRM == currentActioner) {
                             IsReportingManagerReviewerSame = true;
                             break;
                         }
