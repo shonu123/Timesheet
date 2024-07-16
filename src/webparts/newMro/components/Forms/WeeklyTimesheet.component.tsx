@@ -1925,7 +1925,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                     break;
                 }
             }
-            let WeekStartDate = new Date(new Date(ExistRecordData[0].WeekStartDate).getMonth() + 1 + "/" + new Date(ExistRecordData[0].WeekStartDate).getDate() + "/" + new Date(ExistRecordData[0].WeekStartDate).getFullYear());
+            let WeekStartDate = new Date(trFormdata.WeekStartDate.getMonth() + 1 + "/" + trFormdata.WeekStartDate.getDate() + "/" + trFormdata.WeekStartDate.getFullYear());
             let DateOfjoining = new Date(trFormdata.DateOfJoining.getMonth() + 1 + "/" + trFormdata.DateOfJoining.getDate() + "/" + trFormdata.DateOfJoining.getFullYear());
             this.WeekHeadings = [];
             this.WeekHeadings.push({

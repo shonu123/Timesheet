@@ -268,7 +268,7 @@ class WeeklyTimesheetReport extends React.Component<WeeklyTimesheetReportProps, 
             this.setState({ WeeklyData: weeklyData })
         }
         else {
-            customToaster('toster-error', ToasterTypes.Error, 'No data found!', 4000);
+            customToaster('toster-error', ToasterTypes.Error, 'No approved timesheets found!', 4000);
         }
     }
     public render() {
