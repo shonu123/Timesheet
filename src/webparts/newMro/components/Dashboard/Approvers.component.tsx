@@ -121,7 +121,7 @@ class ApproversApprovals extends React.Component<ApproversProps, ApproversState>
                         managers.push(row)
                     }
                 }
-                console.log(managers)
+                // console.log(managers)
                 let getDelTSQry = ''
                 if(managers.length){
                     if(managers.length>2){

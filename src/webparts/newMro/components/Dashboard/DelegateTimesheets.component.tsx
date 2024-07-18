@@ -171,11 +171,14 @@ class TimesheetDelegation extends Component<TimesheetDelegationProps, TimesheetD
                     let Delegates = this.state.ClientDeligatesObj.find(item => {
                         return item.Client == ClientName
                     })
-                    Delegates.DelegateTo.forEach(obj => {
-                        if (obj.ID !== parseInt(value)) {
-                            Delegateobj.push(obj);
-                        }
+                    if(Delegates.DelegateTo!=undefined){
+                        Delegates.DelegateTo.forEach(obj => {
+                            if (obj.ID !== parseInt(value)) {
+                                Delegateobj.push(obj);
+                            }
+                        Delegates.sort((a, b) => a.Title.localeCompare(b.Title));
                     });
+                }
                     // this.setState({DelegateToObj: Delegateobj,Client:manager.Client});
                 }
                 this.getAuthorizerData(parseInt(value), Delegateobj, ClientName)
@@ -305,7 +308,7 @@ class TimesheetDelegation extends Component<TimesheetDelegationProps, TimesheetD
                 }
             });
         });
-
+        AuthorizersObj.sort((a, b) => a.Title.localeCompare(b.Title));
         let tableDataObj = []
         let excelData = []
         for (const d of filterDelegates) {
@@ -351,11 +354,14 @@ class TimesheetDelegation extends Component<TimesheetDelegationProps, TimesheetD
                 let Delegates = ClientDeligates.find(item=>{
                 return item.Client == manager.ClientName
                 })
-                Delegates.DelegateTo.forEach(obj => {
-                    if (obj.ID !== parseInt(this.props.spContext.userId)) {
-                        Delegateobj.push(obj);
-                    }
-                });
+                if(Delegates.DelegateTo != undefined){
+                    Delegates.DelegateTo.forEach(obj => {
+                        if (obj.ID !== parseInt(this.props.spContext.userId)) {
+                            Delegateobj.push(obj);
+                        }
+                    });
+                    Delegates.sort((a, b) => a.Title.localeCompare(b.Title));
+                }
                 if(manager.ClientName.toLowerCase().includes('synegry')){
                     isSynergyEmployee = true
                 }

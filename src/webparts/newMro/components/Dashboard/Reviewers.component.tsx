@@ -100,7 +100,7 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
                         managers.push(row)
                     }
                 }
-                console.log(managers)
+                // console.log(managers)
                 let getDelTSQry = ''
                 if(managers.length){
                     if(managers.length>2){
