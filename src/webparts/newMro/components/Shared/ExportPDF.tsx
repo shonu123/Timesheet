@@ -270,10 +270,12 @@ const ExportToPDF = ({ AllTimesheetsData, filename,LogoImgUrl}) => {
         return HistoryRows;
     }
     return (
+        <>
         <a type="button" id="btnDownloadFile" className="icon-export-b" onClick={(e) => generatePDF()}>
             <FontAwesomeIcon icon={faFilePdf} className='icon-export-b icon-export-pdf'></FontAwesomeIcon>
-            {loading && <Loader />}
         </a>
+        {loading && <Loader />}
+        </>
     );
 };
 export default ExportToPDF;

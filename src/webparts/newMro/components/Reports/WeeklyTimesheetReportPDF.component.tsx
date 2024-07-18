@@ -75,6 +75,7 @@ class WeeklyTimesheetReport extends React.Component<WeeklyTimesheetReportProps, 
         ExportExcelData: [],
         weekStartDay: 'Monday',
         WeeklyData: [],
+        fileName:''
     }
 
     public componentDidMount() {
@@ -119,12 +120,11 @@ class WeeklyTimesheetReport extends React.Component<WeeklyTimesheetReportProps, 
         this.setState({ loading: true });
         let { name } = event.target;
         let value = event.target.value;
-        this.setState({ [name]: value });
-        this.setState({ WeeklyData: [] });
+        this.setState({ [name]: value,WeeklyData: [],fileName:value });
         this.getClientEmployees(value)
     }
     private async getClientEmployees(value) {
-        if (value != "All") {
+        if (value != "All Clients") {
             let selectQuery = "Employee/ID,Employee/Title,WeekStartDay"
             let filterQuery = "ClientName eq '" + value + "'"
             let clientEmployees = await sp.web.lists.getByTitle('EmployeeMaster').items.filter(filterQuery).expand('Employee').select(selectQuery).orderBy('Employee/Title', true).getAll()
@@ -157,10 +157,11 @@ class WeeklyTimesheetReport extends React.Component<WeeklyTimesheetReportProps, 
     private handleStartDate = (dateprops) => {
         if (dateprops != null) {
             let date = new Date(dateprops)
-            this.setState({ startDate: date, WeeklyData: [] });
+            let formatedFilename=this.state.ClientName+' ('+((date.getMonth().toString().length==1?'0'+(date.getMonth()+1):date.getMonth()+1)+'-'+(date.getDate().toString().length==1?'0'+date.getDate():date.getDate())+'-'+date.getFullYear())+') Timesheet Weekly Report';
+            this.setState({ startDate: date, WeeklyData: [],fileName:formatedFilename});
         }
         else {
-            this.setState({ startDate: null, WeeklyData: [] });
+            this.setState({ startDate: null, WeeklyData: [],fileName:this.state.ClientName });
         }
     }
     private handleCancel = async (e) => {
@@ -204,6 +205,7 @@ class WeeklyTimesheetReport extends React.Component<WeeklyTimesheetReportProps, 
         return Status
     }
     private getReportData = async (postObject) => {
+        this.setState({ loading: true });
         let client = postObject.Client
         let Employee = postObject.Employee
         let date = postObject.StartDate
@@ -213,7 +215,7 @@ class WeeklyTimesheetReport extends React.Component<WeeklyTimesheetReportProps, 
         let prev = `${prevDate.getMonth() + 1}/${prevDate.getDate()}/${prevDate.getFullYear()}`
         let next = `${nextDate.getMonth() + 1}/${nextDate.getDate()}/${nextDate.getFullYear()}`
         let filterQuery = ''
-        if (client == "All") {
+        if (client == "All Clients") {
             if (Employee == 0) {
                 filterQuery = "WeekStartDate gt '" + prev + "' and WeekStartDate lt '" + next + "'"
             }
@@ -265,10 +267,12 @@ class WeeklyTimesheetReport extends React.Component<WeeklyTimesheetReportProps, 
                 })
                 row++;
             });
-            this.setState({ WeeklyData: weeklyData })
+            this.setState({ WeeklyData: weeklyData,loading: false })
         }
         else {
             customToaster('toster-error', ToasterTypes.Error, 'No approved timesheets found!', 4000);
+            this.setState({loading: false })
+
         }
     }
     public render() {
@@ -403,7 +407,7 @@ class WeeklyTimesheetReport extends React.Component<WeeklyTimesheetReportProps, 
                                 </div>
                             </div>
                         {this.state.WeeklyData.length > 0 ? <div className='border-box-shadow light-box table-responsive mb-3 dataTables_wrapper-overflow p-2'><div className='c-v-table table-head-1st-td'>
-                            <TableGenerator columns={columns} data={this.state.WeeklyData} fileName={'All Timesheets'} showExportExcel={false} showExportPDF={true} searchBoxLeft={true} logoUrlToPDF={this.siteURL+'/PublishingImages/SynergyLogo.png'}></TableGenerator>
+                            <TableGenerator columns={columns} data={this.state.WeeklyData} fileName={this.state.fileName} showExportExcel={false} showExportPDF={true} searchBoxLeft={true} logoUrlToPDF={this.siteURL+'/PublishingImages/SynergyLogo.png'}></TableGenerator>
                         </div></div> : ''}
                     </div>
                 </div>
