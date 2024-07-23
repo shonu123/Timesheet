@@ -51,8 +51,11 @@ class NavBar extends React.Component<NavBarProps, NavBarState> {
         {
             document.getElementById('divNavReportItems').classList.remove('show')
             document.getElementById('Reports').classList.add('heighlightMasters')
-            document.getElementById('divNavMasterItems').classList.remove('show')
-            document.getElementById('Masters').classList.remove('heighlightMasters')
+            if(this.props.currentUserGroups.includes('Timesheet Administrators'))
+            {
+                document.getElementById('divNavMasterItems').classList.remove('show')
+                document.getElementById('Masters').classList.remove('heighlightMasters')
+            }
         }
         else{
             document.getElementById('divNavMasterItems').classList.remove('show')
@@ -71,8 +74,11 @@ class NavBar extends React.Component<NavBarProps, NavBarState> {
             });
         }
         event.currentTarget.className = 'nav-click2';
+        if(this.props.currentUserGroups.includes('Timesheet Administrators'))
+        {
         document.getElementById('divNavMasterItems').classList.remove('show')
         document.getElementById('Masters').classList.remove('heighlightMasters')
+        }
         document.getElementById('divNavReportItems').classList.remove('show')
         document.getElementById('Reports').classList.remove('heighlightMasters')
     }

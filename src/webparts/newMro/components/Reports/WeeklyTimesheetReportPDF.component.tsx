@@ -232,7 +232,8 @@ class WeeklyTimesheetReport extends React.Component<WeeklyTimesheetReportProps, 
                 filterQuery = "ClientName eq'" + client + "' and InitiatorId eq '" + Employee + "' and WeekStartDate gt '" + prev + "' and WeekStartDate lt '" + next + "'"
             }
         }
-        filterQuery += "and Status eq '" + StatusType.Approved + "'"
+        //filterQuery += "and Status eq '" + StatusType.Approved + "'";
+        filterQuery += "and (Status eq '" + StatusType.Approved + "' or Status eq '" + StatusType.ManagerApprove + "')";
         let reportData = await sp.web.lists.getByTitle('WeeklyTimeSheet').items.top(5000).filter(filterQuery).expand('Initiator').select('Initiator/Title,TotalHrs,BillableSubtotalHrs,NonBillableSubTotalHrs,ClientName,WeekStartDate,Status,*').orderBy('WeekStartDate,ClientName,Initiator/Title', true).getAll()
         if (reportData.length > 0) {
             let weeklyData = []
