@@ -326,7 +326,7 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
         // console.log(emailData)
         let toEmail = [];
         let ccEmail = [];
-        toEmail.push(emailData[0].Employee.EMail);
+        toEmail.push(emailData[0].Initiator.EMail);
         // let approvers = emailData[0].ReportingManager
         let isDeligated = emailData[0].IsDelegated
         let approvers;
@@ -387,7 +387,7 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
                 Date : new Date().toISOString()
             })
             commentsObj = JSON.stringify(commentsObj);
-            // var filterString = "Employee/ID eq '"+data[0].Initiator.ID+"' and ClientName eq '"+data[0].ClientName+"'"
+            // var filterString = "Initiator/ID eq '"+data[0].Initiator.ID+"' and ClientName eq '"+data[0].ClientName+"'"
             var selectString = 'Initiator/EMail,Reviewers/EMail,ReportingManager/EMail,DelegateTo/EMail,*'
             let emailData = await sp.web.lists.getByTitle('WeeklyTimeSheet').items.filter(filterString).select(selectString).expand('Initiator,Reviewers,ReportingManager,DelegateTo').get();
             // console.log(emailData)
