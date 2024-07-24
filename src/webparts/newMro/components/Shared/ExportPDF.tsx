@@ -1,11 +1,12 @@
-import * as React from 'react';
+import React, { useState } from "react";
 import pdfMake from 'pdfmake/build/pdfmake';
 import pdfFonts from 'pdfmake/build/vfs_fonts';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faFileExcel, faFilePdf } from '@fortawesome/free-solid-svg-icons';
 import Loader from '../Shared/Loader';
 const ExportToPDF = ({ AllTimesheetsData, filename,LogoImgUrl}) => {
-    var loading=false;
+    // var loading=false;
+    const [loading,setLoading] = useState(false)
     pdfMake.vfs = pdfFonts.pdfMake.vfs;
     const fetchImageAsBase64 = async (imageUrl) => {
         try {
@@ -74,7 +75,7 @@ const ExportToPDF = ({ AllTimesheetsData, filename,LogoImgUrl}) => {
         },
     };
     const generatePDF = async () => {
-        loading=true;
+        setLoading(true);
         // Convert local image to Base64 data URL
         const logoBase64 = await fetchImageAsBase64(LogoImgUrl);
         // Create a pdfMake document definition
@@ -170,9 +171,12 @@ const ExportToPDF = ({ AllTimesheetsData, filename,LogoImgUrl}) => {
         }
         documentDefinition.content=tables;
         // Generate PDF and download
-        pdfMake.createPdf(documentDefinition).download(`${filename}.pdf`);
-        loading=false;
+        pdfMake.createPdf(documentDefinition).download(`${filename}.pdf`,closeLoader);
+        
     };
+    const closeLoader=()=>{
+        setLoading(false)
+    }
     const getEmployeeData=(TimesheetData) =>{
         var EmpData=[];
         EmpData.push([{text:'Name',style:styles.Employee_header},{text:'Client',style:styles.Employee_header},{text:'Weekly Start Date',style:styles.Employee_header}]);
@@ -271,10 +275,10 @@ const ExportToPDF = ({ AllTimesheetsData, filename,LogoImgUrl}) => {
     }
     return (
         <>
+        {loading && <Loader />}
         <a type="button" id="btnDownloadFile" className="icon-export-b" onClick={(e) => generatePDF()}>
             <FontAwesomeIcon icon={faFilePdf} className='icon-export-b icon-export-pdf'></FontAwesomeIcon>
         </a>
-        {loading && <Loader />}
         </>
     );
 };
