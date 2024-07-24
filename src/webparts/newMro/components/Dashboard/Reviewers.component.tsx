@@ -241,7 +241,7 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
         let postObject = {
             Status : Status,
             CommentsHistory : Comments,
-            PendingWith : 'Initiator',
+            PendingWith : Status == StatusType.Approved?'NA':'Initiator',
             IsClientApprovalNeed : clinetApproval,
             Revised: true,
         }
