@@ -59,16 +59,16 @@ class MyPTOs extends React.Component<MyPTOsProps, MyPTOsState> {
                 // console.log(response)
                 let Data = [];
                 for (const d of response) {
-                    let fromDate = new Date(d.From)
-                    let toDate = new Date(d.To)
+                    let fromDate = new Date(d.From.split('-')[1]+'/'+d.From.split('-')[2].split('T')[0]+'/'+d.From.split('-')[0]);
+                    let toDate = new Date(d.To.split('-')[1]+'/'+d.To.split('-')[2].split('T')[0]+'/'+d.To.split('-')[0]);
 
                     Data.push({
                         Id : d.Id,
                         Client: d.Client,
                         EmployeeType: d.EmployeeType,
                         PTOType: d.PTOType,
-                        FromDate : fromDate.toLocaleDateString('en-US'),
-                        ToDate: toDate.toLocaleDateString('en-US'),
+                        FromDate : `${fromDate.getMonth() + 1}/${fromDate.getDate()}/${fromDate.getFullYear()}`,
+                        ToDate: `${toDate.getMonth() + 1}/${toDate.getDate()}/${toDate.getFullYear()}`,
                         TotalHrs: parseFloat(d.TotalHours),
                         PendingWith: d.PendingWith == "Approver" ||d.PendingWith == "Manager" ?"Reporting Manager":d.PendingWith,
                         Status : this.getStatus(d.Status),

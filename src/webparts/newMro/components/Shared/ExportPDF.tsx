@@ -23,6 +23,42 @@ const ExportToPDF = ({ AllTimesheetsData, filename,LogoImgUrl}) => {
             return null;
         }
     };
+    //To filter necessary fields
+    const getStatus=(value)=>{
+        let Status=value
+        if(value =="approved by Manager")
+        {
+            Status = "Approved by Reporting Manager"
+        }
+        else if(value == "rejected by Manager"){
+                Status = "Rejected by Reporting Manager"
+            }
+        else if(value =="rejected by Synergy")
+            {
+                Status = "Rejected by Synergy"
+            }
+        return Status
+    }
+    var FilteredTimehseets=[];
+    AllTimesheetsData.forEach(timesheet => {
+        var WeekStartDate = new Date(timesheet.WeekStartDate.split('-')[1] + '/' + timesheet.WeekStartDate.split('-')[2].split('T')[0] + '/' + timesheet.WeekStartDate.split('-')[0]);
+        FilteredTimehseets.push(
+            {
+            Date: `${WeekStartDate.getMonth() + 1}/${WeekStartDate.getDate()}/${WeekStartDate.getFullYear()}`,
+            EmployeName: timesheet.Name,
+            Status: getStatus(timesheet.Status),
+            Client: timesheet.ClientName,
+            //properties required for PDF download
+            WeeklyHrs: JSON.parse(timesheet.WeeklyHrs),
+            OverTimeHrs: JSON.parse(timesheet.OverTimeHrs),
+            SynergyOfficeHrs: JSON.parse(timesheet.SynergyOfficeHrs),
+            ClientHolidayHrs: JSON.parse(timesheet.ClientHolidayHrs),
+            TimeOffHrs: JSON.parse(timesheet.PTOHrs),
+            BillableSubtotalHrs: JSON.parse(timesheet.BillableSubtotalHrs),
+            TotalHrs: JSON.parse(timesheet.TotalHrs),
+            CommentsHistory: JSON.parse(timesheet.CommentsHistory),
+            })
+    })
       // Define styles for the tables
       const styles = {
         Employee_header: {
@@ -91,11 +127,11 @@ const ExportToPDF = ({ AllTimesheetsData, filename,LogoImgUrl}) => {
             // },
         };
         var tables=[];
-        for(let index in AllTimesheetsData)
+        for(let index in FilteredTimehseets)
         {
-            let employeeTable= getEmployeeData(AllTimesheetsData[index])
-            let timesheetTable=getTimesheetData(AllTimesheetsData[index]);
-            //let historyTable=(AllTimesheetsData[index].CommentsHistory.length>0)?getActionHistoryData(AllTimesheetsData[index]):['','','',''];
+            let employeeTable= getEmployeeData(FilteredTimehseets[index])
+            let timesheetTable=getTimesheetData(FilteredTimehseets[index]);
+            //let historyTable=(FilteredTimehseets[index].CommentsHistory.length>0)?getActionHistoryData(FilteredTimehseets[index]):['','','',''];
             tables.push(
                 { 
                     image:logoBase64, 
@@ -165,7 +201,7 @@ const ExportToPDF = ({ AllTimesheetsData, filename,LogoImgUrl}) => {
                 //     },
                 //     style: 'tableBorder',
                 // },
-                (Number(index)==AllTimesheetsData.length-1)?{ text: '\n' }:
+                (Number(index)==FilteredTimehseets.length-1)?{ text: '\n' }:
                 { text: '\n',pageBreak: 'after' }, // Add space between tables and page breaks of each timesheet except last  timesheet
             );
         }

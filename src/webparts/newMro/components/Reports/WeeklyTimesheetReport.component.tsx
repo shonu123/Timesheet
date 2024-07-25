@@ -19,6 +19,7 @@ import CustomDatePicker from "../Shared/DatePicker";
 import { Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import customToaster from '../Shared/Toaster.component';
+import ExportToPDF from '../Shared/ExportPDF';
 import { ToasterTypes } from '../../Constants/Constants';
 import { addDays } from 'office-ui-fabric-react';
 import * as XLSX from 'xlsx-js-style';
@@ -72,8 +73,11 @@ class WeeklyTimesheetReport extends React.Component<WeeklyTimesheetReportProps, 
         isHavingEmployees: true,
         ColumnsHeaders: [],
         ExportExcelData: [],
-        weekStartDay:'Monday',
-        WeeklyData:[],
+        weekStartDay: 'Monday',
+        WeeklyData: [],
+        PDFData: [],
+        fileName: ''
+
     }
 
     public componentDidMount() {
@@ -119,8 +123,7 @@ class WeeklyTimesheetReport extends React.Component<WeeklyTimesheetReportProps, 
         this.setState({ loading: true });
         let { name } = event.target;
         let value = event.target.value;
-        this.setState({ [name]: value });
-        this.setState({ WeeklyData: [] });
+        this.setState({ [name]: value, WeeklyData: [], fileName: 'Weekly Timesheet Report - ' + value });
         this.getClientEmployees(value)
     }
 
@@ -139,9 +142,9 @@ class WeeklyTimesheetReport extends React.Component<WeeklyTimesheetReportProps, 
                 }
             }
             if (EmpObj.length > 0)
-                this.setState({ EmployeesObj: EmpObj, loading: false, isHavingEmployees: true, InitiatorId: '0',weekStartDay:clientEmployees[0].WeekStartDay })
+                this.setState({ EmployeesObj: EmpObj, loading: false, isHavingEmployees: true, InitiatorId: '0', weekStartDay: clientEmployees[0].WeekStartDay })
             else {
-                this.setState({ EmployeesObj: EmpObj, loading: false, isHavingEmployees: false, InitiatorId: '-1',weekStartDay:weekDay })
+                this.setState({ EmployeesObj: EmpObj, loading: false, isHavingEmployees: false, InitiatorId: '-1', weekStartDay: weekDay })
                 customToaster('toster-error', ToasterTypes.Error, 'There are no employees associated with this client', 4000);
             }
         }
@@ -158,12 +161,13 @@ class WeeklyTimesheetReport extends React.Component<WeeklyTimesheetReportProps, 
     }
 
     private handleStartDate = (dateprops) => {
-        if (dateprops!= null) {
+        if (dateprops != null) {
             let date = new Date(dateprops)
-            this.setState({ startDate: date, WeeklyData: [] });
+            let formatedFilename = 'Weekly Timesheet Report - ' + this.state.ClientName + ' (' + ((date.getMonth().toString().length == 1 ? '0' + (date.getMonth() + 1) : date.getMonth() + 1) + '-' + (date.getDate().toString().length == 1 ? '0' + date.getDate() : date.getDate()) + '-' + date.getFullYear()) + ')';
+            this.setState({ startDate: date, WeeklyData: [], fileName: formatedFilename });
         }
         else {
-            this.setState({ startDate: null, WeeklyData: [] });
+            this.setState({ startDate: null, WeeklyData: [], fileName: 'Weekly Timesheet Report - ' + this.state.ClientName });
         }
     }
 
@@ -175,7 +179,7 @@ class WeeklyTimesheetReport extends React.Component<WeeklyTimesheetReportProps, 
         let data = {
             Client: { val: this.state.ClientName, required: true, Name: 'Client', Type: ControlType.string, Focusid: this.client },
             Employee: { val: parseInt(this.state.InitiatorId), required: true, Name: 'Employee', Type: ControlType.number, Focusid: this.EmployeeDropdown },
-            WeeklyStartDate :{ val: this.state.startDate, required: true, Name: 'Weekly Start Date', Type: ControlType.date, Focusid: "divWeekStartDate" }
+            WeeklyStartDate: { val: this.state.startDate, required: true, Name: 'Weekly Start Date', Type: ControlType.date, Focusid: "divWeekStartDate" }
         }
         let isValid = Formvalidator.checkValidations(data)
         if (!isValid.status) {
@@ -197,19 +201,17 @@ class WeeklyTimesheetReport extends React.Component<WeeklyTimesheetReportProps, 
         this.getReportData(postObject)
     }
 
-    private getStatus(value){
-        let Status=value
-        if(value =="approved by Manager")
-        {
+    private getStatus(value) {
+        let Status = value
+        if (value == "approved by Manager") {
             Status = "Approved by Reporting Manager"
         }
-        else if(value == "rejected by Manager"){
-                Status = "Rejected by Reporting Manager"
-            }
-        else if(value =="rejected by Synergy")
-            {
-                Status = "Rejected by Synergy"
-            }
+        else if (value == "rejected by Manager") {
+            Status = "Rejected by Reporting Manager"
+        }
+        else if (value == "rejected by Synergy") {
+            Status = "Rejected by Synergy"
+        }
         return Status
     }
 
@@ -240,9 +242,11 @@ class WeeklyTimesheetReport extends React.Component<WeeklyTimesheetReportProps, 
             }
         }
         filterQuery += "and Status ne '" + StatusType.Save + "' and Status ne '" + StatusType.Revoke + "'"
-        let reportData = await sp.web.lists.getByTitle('WeeklyTimeSheet').items.top(5000).filter(filterQuery).expand('Initiator').select('Initiator/Title,TotalHrs,BillableSubtotalHrs,NonBillableSubTotalHrs,ClientName,WeekStartDate,Status').orderBy('WeekStartDate,ClientName,Initiator/Title', true).getAll()
+        let reportData = await sp.web.lists.getByTitle('WeeklyTimeSheet').items.top(5000).filter(filterQuery).expand('Initiator').select('Initiator/Title,TotalHrs,BillableSubtotalHrs,NonBillableSubTotalHrs,ClientName,WeekStartDate,Status,*').orderBy('WeekStartDate,ClientName,Initiator/Title', true).getAll()
         if (reportData.length > 0) {
-            let weeklyData = []
+            var PDFData = [];
+            PDFData = reportData.filter(report => [StatusType.Approved, StatusType.ManagerApprove].includes(report.Status));
+            let weeklyData = [];
             let row = 1;
             reportData.forEach(report => {
                 let { Initiator, WeekStartDate, TotalHrs, ClientName, Status } = report;
@@ -263,388 +267,396 @@ class WeeklyTimesheetReport extends React.Component<WeeklyTimesheetReportProps, 
                 });
 
                 let BillHrs = JSON.parse(report.BillableSubtotalHrs)[0]
-                let NonBillhrs = JSON.parse(report.NonBillableSubTotalHrs)[0] 
+                let NonBillhrs = JSON.parse(report.NonBillableSubTotalHrs)[0]
                 let Totalhrs = JSON.parse(report.TotalHrs)[0]
-                let blanksHrs = {Mon:'',Tue:'',Wed:'',Thu:'',Fri:'',Sat:'',Sun:'',Total:'0'}
-                report.ClientName.toLowerCase().includes('synergy')?BillHrs=blanksHrs:NonBillhrs = blanksHrs
+                let blanksHrs = { Mon: '', Tue: '', Wed: '', Thu: '', Fri: '', Sat: '', Sun: '', Total: '0' }
+                report.ClientName.toLowerCase().includes('synergy') ? BillHrs = blanksHrs : NonBillhrs = blanksHrs
                 weeklyData.push({
                     SNo: row,
-                    Employee:report.Initiator.Title,
-                    MNB:NonBillhrs.Mon,
-                    MB:BillHrs.Mon,
-                    TNB:NonBillhrs.Tue,
-                    TB:BillHrs.Tue,
-                    WNB:NonBillhrs.Wed,
-                    WB:BillHrs.Wed,
-                    ThNB:NonBillhrs.Thu,
-                    ThB:BillHrs.Thu,
-                    FB:BillHrs.Fri,
-                    FNB:NonBillhrs.Fri,
-                    SB:BillHrs.Sat==""?"0":BillHrs.Sat,
-                    SNB:NonBillhrs.Sat==""?"0":NonBillhrs.Sat,
-                    SuB:BillHrs.Sun==""?"0":BillHrs.Sun,
-                    SuNB:NonBillhrs.Sun==""?"0":NonBillhrs.Sun,
-                    Status:this.getStatus(report.Status),
-                    TotalNB:NonBillhrs.Total,
-                    TotalB:BillHrs.Total,
-                    TotalH:Totalhrs.Total,
+                    Employee: report.Initiator.Title,
+                    MNB: NonBillhrs.Mon,
+                    MB: BillHrs.Mon,
+                    TNB: NonBillhrs.Tue,
+                    TB: BillHrs.Tue,
+                    WNB: NonBillhrs.Wed,
+                    WB: BillHrs.Wed,
+                    ThNB: NonBillhrs.Thu,
+                    ThB: BillHrs.Thu,
+                    FB: BillHrs.Fri,
+                    FNB: NonBillhrs.Fri,
+                    SB: BillHrs.Sat == "" ? "0" : BillHrs.Sat,
+                    SNB: NonBillhrs.Sat == "" ? "0" : NonBillhrs.Sat,
+                    SuB: BillHrs.Sun == "" ? "0" : BillHrs.Sun,
+                    SuNB: NonBillhrs.Sun == "" ? "0" : NonBillhrs.Sun,
+                    Status: this.getStatus(report.Status),
+                    TotalNB: NonBillhrs.Total,
+                    TotalB: BillHrs.Total,
+                    TotalH: Totalhrs.Total,
                 })
                 row++;
             });
-            console.log(weeklyData)
-            this.setState({WeeklyData:weeklyData})
+            // Sort the final array based on client and initiator
+            PDFData.sort((a, b) => {
+                if (a.ClientName !== b.ClientName) {
+                    return a.ClientName.localeCompare(b.ClientName);
+                } else {
+                    return a.Name.localeCompare(b.Name);
+                }
+            });
+            this.setState({ WeeklyData: weeklyData, PDFData: PDFData, loading: false });
         }
         else {
-            customToaster('toster-error', ToasterTypes.Error, 'No data found!', 4000);
+            customToaster('toster-error', ToasterTypes.Error, 'No timesheets found!', 4000);
+            this.setState({ loading: false });
         }
     }
-private downloadExcel(startDate){
-    
-    const wb = XLSX.utils.book_new();
-    let Excelheaders = this.constructExcelHeader()
-    let finalData = this.generateExcelData(this.state.WeeklyData,Excelheaders)
+    private downloadExcel(startDate) {
+
+        const wb = XLSX.utils.book_new();
+        let Excelheaders = this.constructExcelHeader()
+        let finalData = this.generateExcelData(this.state.WeeklyData, Excelheaders)
 
         const finalWorkshetData = XLSX.utils.aoa_to_sheet(finalData)
         // finalWorkshetData['!autofilter'] = { ref: 'A7:B7' };
         // mention the range of merge for individual row/item accordingly
         const merge = [
-                { s: { r: 1, c: 1 }, e: { r: 1, c: 20 } },
-                { s: { r: 2, c: 2 }, e: { r: 2, c: 16 } },
-                // 3rd row days merge
-                { s: { r: 3, c: 2 }, e: { r: 3, c: 3 } },
-                { s: { r: 3, c: 4 }, e: { r: 3, c: 5 } },
-                { s: { r: 3, c: 6 }, e: { r: 3, c: 7 } },
-                { s: { r: 3, c: 8 }, e: { r: 3, c: 9 } },
-                { s: { r: 3, c: 10 }, e: { r: 3, c: 11 } },
-                { s: { r: 3, c: 12 }, e: { r: 3, c: 13 } },
-                { s: { r: 3, c: 14 }, e: { r: 3, c: 15 } },
-                // 4th row dates merge
-                { s: { r: 4, c: 2 }, e: { r: 4, c: 3 } },
-                { s: { r: 4, c: 4 }, e: { r: 4, c: 5 } },
-                { s: { r: 4, c: 6 }, e: { r: 4, c: 7 } },
-                { s: { r: 4, c: 8 }, e: { r: 4, c: 9 } },
-                { s: { r: 4, c: 10 }, e: { r: 4, c: 11 } },
-                { s: { r: 4, c: 12 }, e: { r: 4, c: 13 } },
-                { s: { r: 4, c: 14 }, e: { r: 4, c: 15 } },
-                // 4th row column merge
-                { s: { r: 4, c: 16 }, e: { r: 5, c: 16 } },
-                { s: { r: 4, c: 17 }, e: { r: 5, c: 17 } },
-                { s: { r: 4, c: 18 }, e: { r: 5, c: 18 } },
-                { s: { r: 4, c: 19 }, e: { r: 5, c: 19 } },
-                { s: { r: 4, c: 20 }, e: { r: 5, c: 20 } },
-              ];
-      
-          finalWorkshetData["!merges"] = merge;
+            { s: { r: 1, c: 1 }, e: { r: 1, c: 20 } },
+            { s: { r: 2, c: 2 }, e: { r: 2, c: 16 } },
+            // 3rd row days merge
+            { s: { r: 3, c: 2 }, e: { r: 3, c: 3 } },
+            { s: { r: 3, c: 4 }, e: { r: 3, c: 5 } },
+            { s: { r: 3, c: 6 }, e: { r: 3, c: 7 } },
+            { s: { r: 3, c: 8 }, e: { r: 3, c: 9 } },
+            { s: { r: 3, c: 10 }, e: { r: 3, c: 11 } },
+            { s: { r: 3, c: 12 }, e: { r: 3, c: 13 } },
+            { s: { r: 3, c: 14 }, e: { r: 3, c: 15 } },
+            // 4th row dates merge
+            { s: { r: 4, c: 2 }, e: { r: 4, c: 3 } },
+            { s: { r: 4, c: 4 }, e: { r: 4, c: 5 } },
+            { s: { r: 4, c: 6 }, e: { r: 4, c: 7 } },
+            { s: { r: 4, c: 8 }, e: { r: 4, c: 9 } },
+            { s: { r: 4, c: 10 }, e: { r: 4, c: 11 } },
+            { s: { r: 4, c: 12 }, e: { r: 4, c: 13 } },
+            { s: { r: 4, c: 14 }, e: { r: 4, c: 15 } },
+            // 4th row column merge
+            { s: { r: 4, c: 16 }, e: { r: 5, c: 16 } },
+            { s: { r: 4, c: 17 }, e: { r: 5, c: 17 } },
+            { s: { r: 4, c: 18 }, e: { r: 5, c: 18 } },
+            { s: { r: 4, c: 19 }, e: { r: 5, c: 19 } },
+            { s: { r: 4, c: 20 }, e: { r: 5, c: 20 } },
+        ];
+
+        finalWorkshetData["!merges"] = merge;
 
         let excelName = 'Weekly Timesheet Report '
         let date = new Date(this.state.startDate)
         let endDate = addDays(new Date(date), 6).toLocaleDateString('en-US');
-        let SD = startDate.replaceAll("/","-")
+        let SD = startDate.replaceAll("/", "-")
         XLSX.utils.book_append_sheet(wb, finalWorkshetData, `WE ${SD}`);
         // STEP 4: Write Excel file to browser
         XLSX.writeFile(wb, `${excelName}(${startDate} to ${endDate}).xlsx`);
 
-}
-
-private constructTable(weeklyData){
-    let date = new Date(this.state.startDate)
-    let dateArray = []
-    let days = ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"]
-    dateArray.push("Monday "+new Date(this.state.startDate).toLocaleDateString('en-US'))
-    for(let i=0;i<6;i++){
-        date.setDate(date.getDate()+1)
-        dateArray.push(days[i+1]+" "+new Date(date).toLocaleDateString('en-US'))
     }
-    return (
-        
-        <div className='border-box-shadow light-box table-responsive dataTables_wrapper-overflow p-2'>
-            <div style={{backgroundColor:"#fff"}} className=' txt-center'> <a type="button" id="btnDownloadFile" className="icon-export-b txt-center" onClick={(e) => this.downloadExcel(new Date(this.state.startDate).toLocaleDateString('en-US'))}>
-          <FontAwesomeIcon icon={faFileExcel} className='icon-export-b'></FontAwesomeIcon>
-        </a></div>
-    <table className="tblWeeklyTimesheetReport" width="100%">
-                <thead>
-              <tr className='tr-brd'>
-                <th></th>
-                <th></th>
-                {/* <th className='min-width210'>{dateArray[0]} - {dateArray[dateArray.length-1]}</th> */}
-                {dateArray.map((date) =>(
-                    <th colSpan={2}  className=''>{date}</th>
-                ))}
-                <th className=''></th>
-                <th className=''></th>
-                <th className=''></th>
-                <th className=''></th>
-              </tr>
-              <tr className='tr-brd-2'>
-              <th className="text-center">S.NO</th>
-                <th>Employee Name</th>
-                <th>Non Billable</th>
-                <th>Billable</th>
-                <th>Non Billable</th>
-                <th>Billable</th>
-                <th>Non Billable</th>
-                <th>Billable</th>
-                <th>Non Billable</th>
-                <th>Billable</th>
-                <th>Non Billable</th>
-                <th>Billable</th>
-                <th>Non Billable</th>
-                <th>Billable</th>
-                <th>Non Billable</th>
-                <th>Billable</th>
-                <th>Total Non Billable</th>
-                <th>Total Billable</th>
-                <th>Total Hours</th>
-                <th className="text-center">Approval Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr className='Billable-Salary'>
-                <td></td>
-                <td></td>
-                <td className='text-center' colSpan={14}>{this.state.ClientName.toLowerCase().includes('synergy')?'Billable Salary':'Billable Hourly'}</td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
+    private constructTable(weeklyData) {
+        let date = new Date(this.state.startDate)
+        let dateArray = []
+        let days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
+        dateArray.push("Monday " + new Date(this.state.startDate).toLocaleDateString('en-US'))
+        for (let i = 0; i < 6; i++) {
+            date.setDate(date.getDate() + 1)
+            dateArray.push(days[i + 1] + " " + new Date(date).toLocaleDateString('en-US'))
+        }
+        return (
+
+            <div className='border-box-shadow light-box table-responsive dataTables_wrapper-overflow p-2'>
+                <div style={{ backgroundColor: "#fff" }} className=' txt-center'> <a type="button" id="btnDownloadFile" className="icon-export-b txt-center" onClick={(e) => this.downloadExcel(new Date(this.state.startDate).toLocaleDateString('en-US'))}>
+                    <FontAwesomeIcon icon={faFileExcel} className='icon-export-b'></FontAwesomeIcon>
+                </a>
+                    <ExportToPDF AllTimesheetsData={this.state.PDFData} LogoImgUrl={this.siteURL + '/PublishingImages/SynergyLogo.png'} filename={this.state.fileName}></ExportToPDF>
+                </div>
+                <table className="tblWeeklyTimesheetReport" width="100%">
+                    <thead>
+                        <tr className='tr-brd'>
+                            <th></th>
+                            <th></th>
+                            {/* <th className='min-width210'>{dateArray[0]} - {dateArray[dateArray.length-1]}</th> */}
+                            {dateArray.map((date) => (
+                                <th colSpan={2} className=''>{date}</th>
+                            ))}
+                            <th className=''></th>
+                            <th className=''></th>
+                            <th className=''></th>
+                            <th className=''></th>
+                        </tr>
+                        <tr className='tr-brd-2'>
+                            <th className="text-center">S.NO</th>
+                            <th>Employee Name</th>
+                            <th>Non Billable</th>
+                            <th>Billable</th>
+                            <th>Non Billable</th>
+                            <th>Billable</th>
+                            <th>Non Billable</th>
+                            <th>Billable</th>
+                            <th>Non Billable</th>
+                            <th>Billable</th>
+                            <th>Non Billable</th>
+                            <th>Billable</th>
+                            <th>Non Billable</th>
+                            <th>Billable</th>
+                            <th>Non Billable</th>
+                            <th>Billable</th>
+                            <th>Total Non Billable</th>
+                            <th>Total Billable</th>
+                            <th>Total Hours</th>
+                            <th className="text-center">Approval Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr className='Billable-Salary'>
+                            <td></td>
+                            <td></td>
+                            <td className='text-center' colSpan={14}>{this.state.ClientName.toLowerCase().includes('synergy') ? 'Billable Salary' : 'Billable Hourly'}</td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                        {/*dynamic data */}
+                        {this.generateTableRows(weeklyData)}
+                    </tbody>
+                </table>
+            </div>
+        );
+    }
+    private generateTableRows(weeklyData) {
+        // let statusClass=''
+        return weeklyData.map((item, index) => (
+            // statusClass= this.getStatusClass(item.Status),
+            <tr className='table-data' key={index}>
+                <td className='txt-center'>{item.SNo}</td>
+                <td className='text-dark'>{item.Employee}</td>
+                <td className=''>{item.MNB}</td>
+                <td className=''>{item.MB}</td>
+                <td className=''>{item.TNB}</td>
+                <td className=''>{item.TB}</td>
+                <td className=''>{item.WNB}</td>
+                <td className=''>{item.WB}</td>
+                <td className=''>{item.ThNB}</td>
+                <td className=''>{item.ThB}</td>
+                <td className=''>{item.FNB}</td>
+                <td className=''>{item.FB}</td>
+                <td className=''>{item.SNB}</td>
+                <td className=''>{item.SB}</td>
+                <td className=''>{item.SuNB}</td>
+                <td className=''>{item.SuB}</td>
+                <td className=''>{item.TotalNB}</td>
+                <td className=''>{item.TotalB}</td>
+                <td className=''>{item.TotalH}</td>
+                <td className='text-center'><span className={this.getStatusClass(item.Status)}>{item.Status}</span></td>
             </tr>
-             {/*dynamic data */}
-             {this.generateTableRows(weeklyData)}
-            </tbody>
-          </table>
-        </div>
-      );
-}
-
-private generateTableRows(weeklyData) {
-    // let statusClass=''
-    return weeklyData.map((item, index) => (
-        // statusClass= this.getStatusClass(item.Status),
-        <tr className='table-data' key={index}>
-            <td className='txt-center'>{item.SNo}</td>
-            <td className='text-dark'>{item.Employee}</td>
-            <td className=''>{item.MNB}</td>
-            <td className=''>{item.MB}</td>
-            <td className=''>{item.TNB}</td>
-            <td className=''>{item.TB}</td>
-            <td className=''>{item.WNB}</td>
-            <td className=''>{item.WB}</td>
-            <td className=''>{item.ThNB}</td>
-            <td className=''>{item.ThB}</td>
-            <td className=''>{item.FNB}</td>
-            <td className=''>{item.FB}</td>
-            <td className=''>{item.SNB}</td>
-            <td className=''>{item.SB}</td>
-            <td className=''>{item.SuNB}</td>
-            <td className=''>{item.SuB}</td>
-            <td className=''>{item.TotalNB}</td>
-            <td className=''>{item.TotalB}</td>
-            <td className=''>{item.TotalH}</td>
-            <td className='text-center'><span className={this.getStatusClass(item.Status)}>{item.Status}</span></td>
-        </tr>
-    ));
-}
-
-private getStatusClass(Status){
-    if(Status == "Submitted"){
-        return "span-blue"
-    }
-    else if(Status == "Approved"){
-        return "span-green"
-    }
-    else if(Status == "Approved by Reporting Manager"){
-        return "span-manager-approve"
-    }
-    else if(Status == "Rejected by Reporting Manager"){
-        return "span-rejected"
-    }
-    else if(Status == "Rejected by Synergy"){
-        return "span-rejected"
-    }
-}
-//-------- Modiefied on 6/17/2024 ----------------
-
-// private constructTable(weeklyData){
-//         let date = new Date(this.state.startDate)
-//         let dateArray = []
-//         dateArray.push(new Date(this.state.startDate).toLocaleDateString('en-US'))
-//         for(let i=0;i<6;i++){
-//             date.setDate(date.getDate()+1)
-//             dateArray.push(new Date(date).toLocaleDateString('en-US'))
-//         }
-//         return (
-//             <div className='border-box-shadow light-box table-responsive dataTables_wrapper-overflow p-2'>
-//         <table className="tblWeeklyTimesheetReport" width="100%">
-//                     <thead>
-//                   <tr className='WR-LBlue'>
-//                     <th></th>
-//                     <th colSpan={18} className='fz-20 txt-center'>Synergy Computer Solutions, Inc.</th>
-//                     <th style={{backgroundColor:"#fff"}} className=' txt-center'> <a type="button" id="btnDownloadFile" className="icon-export-b txt-center" onClick={(e) => this.downloadExcel(new Date(this.state.startDate).toLocaleDateString('en-US'))}>
-//               <FontAwesomeIcon icon={faFileExcel} className='icon-export-b'></FontAwesomeIcon>
-//             </a></th>
-//                   </tr>
-//                   <tr className='WR-LBlue'>
-//                     <th></th>
-//                     <th className='customTh'>{this.state.ClientName}</th>
-//                     <th colSpan={15} className='txt-center fz-15'>Weekly Time sheet</th>
-//                     <th></th>
-//                     <th></th>
-//                     <th></th>
-//                   </tr>
-//                   <tr className='greyCells'>
-//                     <th className='overRidedBlue'></th>
-//                     <th className='min-width210'>Week Start - End Date</th>
-//                     <th colSpan={2}>Monday</th>
-//                     <th colSpan={2}>Tuesday</th>
-//                     <th colSpan={2}>Wednesday</th>
-//                     <th colSpan={2}>Thursday</th>
-//                     <th colSpan={2}>Friday</th>
-//                     <th colSpan={2} className='WR-ORWood'>Saturday</th>
-//                     <th colSpan={2} className='WR-ORWood'>Sunday</th>
-//                     <th></th>
-//                     <th></th>
-//                     <th></th>
-//                     <th></th>
-//                   </tr>
-//                   <tr>
-//                     <th className='WR-LBlue'></th>
-//                     <th className='min-width210'>{dateArray[0]} - {dateArray[dateArray.length-1]}</th>
-//                     {dateArray.map((date) =>(
-//                         <th colSpan={2}  className='lightGreyCells'>{date}</th>
-//                     ))}
-//                     <th rowSpan={2} className='WR-CRed lightGreyCells'>Total Non Billable</th>
-//                     <th rowSpan={2} className='lightGreyCells'>Total Billable</th>
-//                     <th rowSpan={2} className='WR-LPurple'>Total Hours</th>
-//                     <th rowSpan={2} className='WR-LGreen min-width125'>Approval Status</th>
-//                   </tr>
-//                   <tr>
-//                     <th className='WR-LBlue txt-center'>S.NO</th>
-//                     <th>Employee Name</th>
-//                     <th className='lightGreyCells'>Non Billable</th>
-//                     <th>Billable</th>
-//                     <th className='lightGreyCells'>Non Billable</th>
-//                     <th>Billable</th>
-//                     <th className='lightGreyCells'>Non Billable</th>
-//                     <th>Billable</th>
-//                     <th className='lightGreyCells'>Non Billable</th>
-//                     <th>Billable</th>
-//                     <th className='lightGreyCells'>Non Billable</th>
-//                     <th>Billable</th>
-//                     <th className='WR-LWood'>Non Billable</th>
-//                     <th>Billable</th>
-//                     <th className='WR-LWood'>Non Billable</th>
-//                     <th>Billable</th>
-//                   </tr>
-//                 </thead>
-//                 <tbody>
-//                   <tr>
-//                     <td className='WR-LBlue'></td>
-//                     <td className='customTh'>{this.state.ClientName.toLowerCase().includes('synergy')?'Billable Salary':'Billable Hourly'}</td>
-//                     <td className="lightGreyCells"></td>
-//                     <td className="lightGreyCells"></td>
-//                     <td className="lightGreyCells"></td>
-//                     <td className="lightGreyCells"></td>
-//                     <td className="lightGreyCells"></td>
-//                     <td className="lightGreyCells"></td>
-//                     <td className="lightGreyCells"></td>
-//                     <td className="lightGreyCells"></td>
-//                     <td className="lightGreyCells"></td>
-//                     <td className="lightGreyCells"></td>
-//                     <td className="WR-LWood"></td>
-//                     <td className="lightGreyCells"></td>
-//                     <td className="WR-LWood"></td>
-//                     <td className="lightGreyCells"></td>
-//                     <td className="lightGreyCells"></td>
-//                     <td className="lightGreyCells"></td>
-//                     <td className="WR-LPurple"></td>
-//                     <td className="lightGreyCells"></td>
-//                   </tr>
-//                  {/*dynamic data */}
-//                  {this.generateTableRows(weeklyData)}
-//                 </tbody>
-//               </table>
-//             </div>
-//           );
-// }
-
-// private generateTableRows(weeklyData) {
-//     return weeklyData.map((item, index) => (
-//         <tr key={index}>
-//             <td className='WR-LBlue txt-center'>{item.SNo}</td>
-//             <td className=''>{item.Employee}</td>
-//             <td className='lightGreyCells'>{item.MNB}</td>
-//             <td className=''>{item.MB}</td>
-//             <td className='lightGreyCells'>{item.TNB}</td>
-//             <td className=''>{item.TB}</td>
-//             <td className='lightGreyCells'>{item.WNB}</td>
-//             <td className=''>{item.WB}</td>
-//             <td className='lightGreyCells'>{item.ThNB}</td>
-//             <td className=''>{item.ThB}</td>
-//             <td className='lightGreyCells'>{item.FNB}</td>
-//             <td className=''>{item.FB}</td>
-//             <td className='WR-LWood'>{item.SNB}</td>
-//             <td className=''>{item.SB}</td>
-//             <td className='WR-LWood'>{item.SuNB}</td>
-//             <td className=''>{item.SuB}</td>
-//             <td className='WR-CRed'>{item.TotalNB}</td>
-//             <td className=''>{item.TotalB}</td>
-//             <td className='WR-LPurple'>{item.TotalH}</td>
-//             <td className=''>{item.Status}</td>
-//         </tr>
-//     ));
-// }
-
-//-------------- Modified on 6/17/2024 ----------------------
-
-private generateCellStyle(fillColor, isLastRow = false,CellBorders,color='000000',isbold=false) {
-
-    const defaultStyle = { font: { bold: isbold,color: { rgb: color } }, fill: { fgColor: { rgb: fillColor } }, border: CellBorders };
- if (isLastRow) {
-        return { ...defaultStyle, border: { bottom: { style: 'thin', color: { rgb: "000000" } } } };
-    }
-    return defaultStyle;
-}
-
-private generateExcelData(reportData, WorksheetData) {
-    const sheetData = WorksheetData;
-    const allBorders = {
-        top: { style: 'thin', color: { rgb: "000000" } },
-        left: { style: 'thin', color: { rgb: "000000" } },
-        bottom: { style: 'thin', color: { rgb: "000000" } },
-        right: { style: 'thin', color: { rgb: "000000" } },
-    };
-
-    for (let i = 0; i < reportData.length; i++) {
-        const d = reportData[i];
-        const isLastRow = i === reportData.length - 1;
-        const rowData = [
-            { v: i + 1, t: "s", s: this.generateCellStyle('dbf6ff',false,allBorders) },
-            { v: d.Employee, t: "s", s: this.generateCellStyle('ffffff', isLastRow,{}) },
-            { v: d.MNB, t: "s", s: this.generateCellStyle('E7E6E6', isLastRow,{}) },
-            { v: d.MB, t: "s", s: this.generateCellStyle('ffffff', isLastRow,{}) },
-            { v: d.TNB, t: "s", s: this.generateCellStyle('E7E6E6', isLastRow,{}) },
-            { v: d.TB, t: "s", s: this.generateCellStyle('ffffff', isLastRow,{}) },
-            { v: d.WNB, t: "s", s: this.generateCellStyle('E7E6E6', isLastRow,{}) },
-            { v: d.WB, t: "s", s: this.generateCellStyle('ffffff', isLastRow,{}) },
-            { v: d.ThNB, t: "s", s: this.generateCellStyle('E7E6E6', isLastRow,{}) },
-            { v: d.ThB, t: "s", s: this.generateCellStyle('ffffff', isLastRow,{}) },
-            { v: d.FNB, t: "s", s: this.generateCellStyle('E7E6E6', isLastRow,{}) },
-            { v: d.FB, t: "s", s: this.generateCellStyle('ffffff', isLastRow,{}) },
-            { v: d.SNB, t: "s", s: this.generateCellStyle('FCE4D6', isLastRow,{}) },
-            { v: d.SB, t: "s", s: this.generateCellStyle('ffffff', isLastRow,{}) },
-            { v: d.SuNB, t: "s", s: this.generateCellStyle('FCE4D6', isLastRow,{}) },
-            { v: d.SuB, t: "s", s: this.generateCellStyle('ffffff', isLastRow,{right: { style: 'thin', color: { rgb: "000000" } }}) },
-            { v: d.TotalNB, t: "s", s: isLastRow?{font: { color: { rgb: "FF0000" } },fill: { fgColor: { rgb: 'ffffff' }},border: allBorders  }:this.generateCellStyle('ffffff', isLastRow,{bottom: { style: 'thin', color: { rgb: "000000" } },right: { style: 'thin', color: { rgb: "000000" } }},'FF0000') },
-            { v: d.TotalB, t: "s", s: isLastRow?{ font: { bold: false }, fill: { fgColor: { rgb: 'ffffff' }},border: allBorders  }:this.generateCellStyle('ffffff', isLastRow,{bottom: { style: 'thin', color: { rgb: "000000" } },right: { style: 'thin', color: { rgb: "000000" } }}) },
-            { v: d.TotalH, t: "s", s: { font: { bold: true }, fill: { fgColor: { rgb: 'D9E1F2' }}, border: allBorders  } },
-            { v: d.Status, t: "s", s: isLastRow?{ font: { bold: false }, fill: { fgColor: { rgb: 'ffffff' }},border: allBorders  }:this.generateCellStyle('ffffff', isLastRow,{bottom: { style: 'thin', color: { rgb: "000000" } },right: { style: 'thin', color: { rgb: "000000" } }}) },
-            { v: '', t: "s", s: isLastRow?{ font: { bold: false }, fill: { fgColor: { rgb: 'ffffff' }},border: allBorders }:this.generateCellStyle('ffffff', isLastRow,{bottom: { style: 'thin', color: { rgb: "000000" } },right: { style: 'thin', color: { rgb: "000000" } }}) }
-        ];
-        sheetData.push(rowData);
+        ));
     }
 
-    return sheetData;
-}
+    private getStatusClass(Status) {
+        if (Status == "Submitted") {
+            return "span-blue"
+        }
+        else if (Status == "Approved") {
+            return "span-green"
+        }
+        else if (Status == "Approved by Reporting Manager") {
+            return "span-manager-approve"
+        }
+        else if (Status == "Rejected by Reporting Manager") {
+            return "span-rejected"
+        }
+        else if (Status == "Rejected by Synergy") {
+            return "span-rejected"
+        }
+    }
+    //-------- Modiefied on 6/17/2024 ----------------
+
+    // private constructTable(weeklyData){
+    //         let date = new Date(this.state.startDate)
+    //         let dateArray = []
+    //         dateArray.push(new Date(this.state.startDate).toLocaleDateString('en-US'))
+    //         for(let i=0;i<6;i++){
+    //             date.setDate(date.getDate()+1)
+    //             dateArray.push(new Date(date).toLocaleDateString('en-US'))
+    //         }
+    //         return (
+    //             <div className='border-box-shadow light-box table-responsive dataTables_wrapper-overflow p-2'>
+    //         <table className="tblWeeklyTimesheetReport" width="100%">
+    //                     <thead>
+    //                   <tr className='WR-LBlue'>
+    //                     <th></th>
+    //                     <th colSpan={18} className='fz-20 txt-center'>Synergy Computer Solutions, Inc.</th>
+    //                     <th style={{backgroundColor:"#fff"}} className=' txt-center'> <a type="button" id="btnDownloadFile" className="icon-export-b txt-center" onClick={(e) => this.downloadExcel(new Date(this.state.startDate).toLocaleDateString('en-US'))}>
+    //               <FontAwesomeIcon icon={faFileExcel} className='icon-export-b'></FontAwesomeIcon>
+    //             </a></th>
+    //                   </tr>
+    //                   <tr className='WR-LBlue'>
+    //                     <th></th>
+    //                     <th className='customTh'>{this.state.ClientName}</th>
+    //                     <th colSpan={15} className='txt-center fz-15'>Weekly Time sheet</th>
+    //                     <th></th>
+    //                     <th></th>
+    //                     <th></th>
+    //                   </tr>
+    //                   <tr className='greyCells'>
+    //                     <th className='overRidedBlue'></th>
+    //                     <th className='min-width210'>Week Start - End Date</th>
+    //                     <th colSpan={2}>Monday</th>
+    //                     <th colSpan={2}>Tuesday</th>
+    //                     <th colSpan={2}>Wednesday</th>
+    //                     <th colSpan={2}>Thursday</th>
+    //                     <th colSpan={2}>Friday</th>
+    //                     <th colSpan={2} className='WR-ORWood'>Saturday</th>
+    //                     <th colSpan={2} className='WR-ORWood'>Sunday</th>
+    //                     <th></th>
+    //                     <th></th>
+    //                     <th></th>
+    //                     <th></th>
+    //                   </tr>
+    //                   <tr>
+    //                     <th className='WR-LBlue'></th>
+    //                     <th className='min-width210'>{dateArray[0]} - {dateArray[dateArray.length-1]}</th>
+    //                     {dateArray.map((date) =>(
+    //                         <th colSpan={2}  className='lightGreyCells'>{date}</th>
+    //                     ))}
+    //                     <th rowSpan={2} className='WR-CRed lightGreyCells'>Total Non Billable</th>
+    //                     <th rowSpan={2} className='lightGreyCells'>Total Billable</th>
+    //                     <th rowSpan={2} className='WR-LPurple'>Total Hours</th>
+    //                     <th rowSpan={2} className='WR-LGreen min-width125'>Approval Status</th>
+    //                   </tr>
+    //                   <tr>
+    //                     <th className='WR-LBlue txt-center'>S.NO</th>
+    //                     <th>Employee Name</th>
+    //                     <th className='lightGreyCells'>Non Billable</th>
+    //                     <th>Billable</th>
+    //                     <th className='lightGreyCells'>Non Billable</th>
+    //                     <th>Billable</th>
+    //                     <th className='lightGreyCells'>Non Billable</th>
+    //                     <th>Billable</th>
+    //                     <th className='lightGreyCells'>Non Billable</th>
+    //                     <th>Billable</th>
+    //                     <th className='lightGreyCells'>Non Billable</th>
+    //                     <th>Billable</th>
+    //                     <th className='WR-LWood'>Non Billable</th>
+    //                     <th>Billable</th>
+    //                     <th className='WR-LWood'>Non Billable</th>
+    //                     <th>Billable</th>
+    //                   </tr>
+    //                 </thead>
+    //                 <tbody>
+    //                   <tr>
+    //                     <td className='WR-LBlue'></td>
+    //                     <td className='customTh'>{this.state.ClientName.toLowerCase().includes('synergy')?'Billable Salary':'Billable Hourly'}</td>
+    //                     <td className="lightGreyCells"></td>
+    //                     <td className="lightGreyCells"></td>
+    //                     <td className="lightGreyCells"></td>
+    //                     <td className="lightGreyCells"></td>
+    //                     <td className="lightGreyCells"></td>
+    //                     <td className="lightGreyCells"></td>
+    //                     <td className="lightGreyCells"></td>
+    //                     <td className="lightGreyCells"></td>
+    //                     <td className="lightGreyCells"></td>
+    //                     <td className="lightGreyCells"></td>
+    //                     <td className="WR-LWood"></td>
+    //                     <td className="lightGreyCells"></td>
+    //                     <td className="WR-LWood"></td>
+    //                     <td className="lightGreyCells"></td>
+    //                     <td className="lightGreyCells"></td>
+    //                     <td className="lightGreyCells"></td>
+    //                     <td className="WR-LPurple"></td>
+    //                     <td className="lightGreyCells"></td>
+    //                   </tr>
+    //                  {/*dynamic data */}
+    //                  {this.generateTableRows(weeklyData)}
+    //                 </tbody>
+    //               </table>
+    //             </div>
+    //           );
+    // }
+
+    // private generateTableRows(weeklyData) {
+    //     return weeklyData.map((item, index) => (
+    //         <tr key={index}>
+    //             <td className='WR-LBlue txt-center'>{item.SNo}</td>
+    //             <td className=''>{item.Employee}</td>
+    //             <td className='lightGreyCells'>{item.MNB}</td>
+    //             <td className=''>{item.MB}</td>
+    //             <td className='lightGreyCells'>{item.TNB}</td>
+    //             <td className=''>{item.TB}</td>
+    //             <td className='lightGreyCells'>{item.WNB}</td>
+    //             <td className=''>{item.WB}</td>
+    //             <td className='lightGreyCells'>{item.ThNB}</td>
+    //             <td className=''>{item.ThB}</td>
+    //             <td className='lightGreyCells'>{item.FNB}</td>
+    //             <td className=''>{item.FB}</td>
+    //             <td className='WR-LWood'>{item.SNB}</td>
+    //             <td className=''>{item.SB}</td>
+    //             <td className='WR-LWood'>{item.SuNB}</td>
+    //             <td className=''>{item.SuB}</td>
+    //             <td className='WR-CRed'>{item.TotalNB}</td>
+    //             <td className=''>{item.TotalB}</td>
+    //             <td className='WR-LPurple'>{item.TotalH}</td>
+    //             <td className=''>{item.Status}</td>
+    //         </tr>
+    //     ));
+    // }
+
+    //-------------- Modified on 6/17/2024 ----------------------
+
+    private generateCellStyle(fillColor, isLastRow = false, CellBorders, color = '000000', isbold = false) {
+
+        const defaultStyle = { font: { bold: isbold, color: { rgb: color } }, fill: { fgColor: { rgb: fillColor } }, border: CellBorders };
+        if (isLastRow) {
+            return { ...defaultStyle, border: { bottom: { style: 'thin', color: { rgb: "000000" } } } };
+        }
+        return defaultStyle;
+    }
+
+    private generateExcelData(reportData, WorksheetData) {
+        const sheetData = WorksheetData;
+        const allBorders = {
+            top: { style: 'thin', color: { rgb: "000000" } },
+            left: { style: 'thin', color: { rgb: "000000" } },
+            bottom: { style: 'thin', color: { rgb: "000000" } },
+            right: { style: 'thin', color: { rgb: "000000" } },
+        };
+
+        for (let i = 0; i < reportData.length; i++) {
+            const d = reportData[i];
+            const isLastRow = i === reportData.length - 1;
+            const rowData = [
+                { v: i + 1, t: "s", s: this.generateCellStyle('dbf6ff', false, allBorders) },
+                { v: d.Employee, t: "s", s: this.generateCellStyle('ffffff', isLastRow, {}) },
+                { v: d.MNB, t: "s", s: this.generateCellStyle('E7E6E6', isLastRow, {}) },
+                { v: d.MB, t: "s", s: this.generateCellStyle('ffffff', isLastRow, {}) },
+                { v: d.TNB, t: "s", s: this.generateCellStyle('E7E6E6', isLastRow, {}) },
+                { v: d.TB, t: "s", s: this.generateCellStyle('ffffff', isLastRow, {}) },
+                { v: d.WNB, t: "s", s: this.generateCellStyle('E7E6E6', isLastRow, {}) },
+                { v: d.WB, t: "s", s: this.generateCellStyle('ffffff', isLastRow, {}) },
+                { v: d.ThNB, t: "s", s: this.generateCellStyle('E7E6E6', isLastRow, {}) },
+                { v: d.ThB, t: "s", s: this.generateCellStyle('ffffff', isLastRow, {}) },
+                { v: d.FNB, t: "s", s: this.generateCellStyle('E7E6E6', isLastRow, {}) },
+                { v: d.FB, t: "s", s: this.generateCellStyle('ffffff', isLastRow, {}) },
+                { v: d.SNB, t: "s", s: this.generateCellStyle('FCE4D6', isLastRow, {}) },
+                { v: d.SB, t: "s", s: this.generateCellStyle('ffffff', isLastRow, {}) },
+                { v: d.SuNB, t: "s", s: this.generateCellStyle('FCE4D6', isLastRow, {}) },
+                { v: d.SuB, t: "s", s: this.generateCellStyle('ffffff', isLastRow, { right: { style: 'thin', color: { rgb: "000000" } } }) },
+                { v: d.TotalNB, t: "s", s: isLastRow ? { font: { color: { rgb: "FF0000" } }, fill: { fgColor: { rgb: 'ffffff' } }, border: allBorders } : this.generateCellStyle('ffffff', isLastRow, { bottom: { style: 'thin', color: { rgb: "000000" } }, right: { style: 'thin', color: { rgb: "000000" } } }, 'FF0000') },
+                { v: d.TotalB, t: "s", s: isLastRow ? { font: { bold: false }, fill: { fgColor: { rgb: 'ffffff' } }, border: allBorders } : this.generateCellStyle('ffffff', isLastRow, { bottom: { style: 'thin', color: { rgb: "000000" } }, right: { style: 'thin', color: { rgb: "000000" } } }) },
+                { v: d.TotalH, t: "s", s: { font: { bold: true }, fill: { fgColor: { rgb: 'D9E1F2' } }, border: allBorders } },
+                { v: d.Status, t: "s", s: isLastRow ? { font: { bold: false }, fill: { fgColor: { rgb: 'ffffff' } }, border: allBorders } : this.generateCellStyle('ffffff', isLastRow, { bottom: { style: 'thin', color: { rgb: "000000" } }, right: { style: 'thin', color: { rgb: "000000" } } }) },
+                { v: '', t: "s", s: isLastRow ? { font: { bold: false }, fill: { fgColor: { rgb: 'ffffff' } }, border: allBorders } : this.generateCellStyle('ffffff', isLastRow, { bottom: { style: 'thin', color: { rgb: "000000" } }, right: { style: 'thin', color: { rgb: "000000" } } }) }
+            ];
+            sheetData.push(rowData);
+        }
+
+        return sheetData;
+    }
 
     // let lastRow = []
     // for(let i=0;i<21;i++){
@@ -652,11 +664,11 @@ private generateExcelData(reportData, WorksheetData) {
     // }
     // sheetData.push(lastRow)
 
-    private constructExcelHeader(){
-         
-        let worksheetRows =[]
+    private constructExcelHeader() {
+
+        let worksheetRows = []
         worksheetRows.push([])
-        let row1=[{
+        let row1 = [{
             v: '', t: "s", s: {
                 alignment: { vertical: "center", horizontal: "left" }, font: { bold: true, sz: 16 }, fill: { fgColor: { rgb: 'dbf6ff' } }, border: {
                     top: { style: 'thin', color: { rgb: "000000" } },
@@ -676,7 +688,7 @@ private generateExcelData(reportData, WorksheetData) {
                 }
             }
         })
-        for(let i=0;i<19;i++){
+        for (let i = 0; i < 19; i++) {
             row1.push({
                 v: '', t: "s", s: {
                     alignment: { vertical: "center", horizontal: "center" }, font: { bold: true, sz: 16 }, fill: { fgColor: { rgb: 'dbf6ff' } }, border: {
@@ -689,10 +701,10 @@ private generateExcelData(reportData, WorksheetData) {
             })
         }
         worksheetRows.push(row1)
-        let row2 =[];
-         row2=[{
+        let row2 = [];
+        row2 = [{
             v: '', t: "s", s: {
-                alignment: { vertical: "center", horizontal: "left" }, font: { bold: true, sz: 12,color: { rgb: "00000" } }, fill: { fgColor: { rgb: 'dbf6ff' } }, border: {
+                alignment: { vertical: "center", horizontal: "left" }, font: { bold: true, sz: 12, color: { rgb: "00000" } }, fill: { fgColor: { rgb: 'dbf6ff' } }, border: {
                     top: { style: 'thin', color: { rgb: "000000" } },
                     left: { style: 'thin', color: { rgb: "000000" } },
                     bottom: { style: 'thin', color: { rgb: "000000" } },
@@ -702,7 +714,7 @@ private generateExcelData(reportData, WorksheetData) {
         }]
         row2.push({
             v: this.state.ClientName, t: "s", s: {
-                alignment: { vertical: "center", horizontal: "left" }, font: { bold: true, sz: 12,color: { rgb: "FF0000" } }, fill: { fgColor: { rgb: 'fafa66' } }, border: {
+                alignment: { vertical: "center", horizontal: "left" }, font: { bold: true, sz: 12, color: { rgb: "FF0000" } }, fill: { fgColor: { rgb: 'fafa66' } }, border: {
                     top: { style: 'thin', color: { rgb: "000000" } },
                     left: { style: 'thin', color: { rgb: "000000" } },
                     bottom: { style: 'thin', color: { rgb: "000000" } },
@@ -712,7 +724,7 @@ private generateExcelData(reportData, WorksheetData) {
         })
         row2.push({
             v: 'Weekly Time sheet', t: "s", s: {
-                alignment: { vertical: "center", horizontal: "center" }, font: { bold: true, sz: 12,color: { rgb: "00000" } }, fill: { fgColor: { rgb: 'dbf6ff' } }, border: {
+                alignment: { vertical: "center", horizontal: "center" }, font: { bold: true, sz: 12, color: { rgb: "00000" } }, fill: { fgColor: { rgb: 'dbf6ff' } }, border: {
                     top: { style: 'thin', color: { rgb: "000000" } },
                     left: { style: 'thin', color: { rgb: "000000" } },
                     bottom: { style: 'thin', color: { rgb: "000000" } },
@@ -720,10 +732,10 @@ private generateExcelData(reportData, WorksheetData) {
                 }
             }
         })
-        for(let i=0;i<18;i++){
+        for (let i = 0; i < 18; i++) {
             row2.push({
                 v: '', t: "s", s: {
-                    alignment: { vertical: "center", horizontal: "left" }, font: { bold: true, sz: 12,color: { rgb: "000000" } }, fill: { fgColor: { rgb: 'dbf6ff' } }, border: {
+                    alignment: { vertical: "center", horizontal: "left" }, font: { bold: true, sz: 12, color: { rgb: "000000" } }, fill: { fgColor: { rgb: 'dbf6ff' } }, border: {
                         top: { style: 'thin', color: { rgb: "000000" } },
                         left: { style: 'thin', color: { rgb: "000000" } },
                         bottom: { style: 'thin', color: { rgb: "000000" } },
@@ -734,10 +746,10 @@ private generateExcelData(reportData, WorksheetData) {
         }
         worksheetRows.push(row2)
         //same formate required form here on so using row2 structure
-        row2=[];
-        row2=[{
+        row2 = [];
+        row2 = [{
             v: '', t: "s", s: {
-                alignment: { vertical: "center", horizontal: "left" }, font: { bold: false, sz: 12,color: { rgb: "000000" } }, fill: { fgColor: { rgb: 'dbf6ff' } }, border: {
+                alignment: { vertical: "center", horizontal: "left" }, font: { bold: false, sz: 12, color: { rgb: "000000" } }, fill: { fgColor: { rgb: 'dbf6ff' } }, border: {
                     top: { style: 'thin', color: { rgb: "000000" } },
                     left: { style: 'thin', color: { rgb: "000000" } },
                     bottom: { style: 'thin', color: { rgb: "000000" } },
@@ -747,7 +759,7 @@ private generateExcelData(reportData, WorksheetData) {
         }]
         row2.push({
             v: 'Week Start Date - Week End Date ', t: "s", s: {
-                alignment: { vertical: "center", horizontal: "left" }, font: { bold: true, sz: 12,color: { rgb: "000000" } }, fill: { fgColor: { rgb: 'BEBABA' } }, border: {
+                alignment: { vertical: "center", horizontal: "left" }, font: { bold: true, sz: 12, color: { rgb: "000000" } }, fill: { fgColor: { rgb: 'BEBABA' } }, border: {
                     top: { style: 'thin', color: { rgb: "000000" } },
                     left: { style: 'thin', color: { rgb: "000000" } },
                     bottom: { style: 'thin', color: { rgb: "000000" } },
@@ -756,20 +768,20 @@ private generateExcelData(reportData, WorksheetData) {
             }
         })
         let startDate = this.state.startDate
-        let days = ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"]
-        let dates =[]
+        let days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
+        let dates = []
         dates.push(new Date(startDate).toLocaleDateString('en-US'))
         let date = new Date(startDate)
-        for(let i=0;i<6;i++){
-            date.setDate(date.getDate()+1)
+        for (let i = 0; i < 6; i++) {
+            date.setDate(date.getDate() + 1)
             dates.push(new Date(date).toLocaleDateString('en-US'))
         }
         for (const day of days) {
             let bgColor = "BEBABA";
-            ["Saturday","Sunday"].includes(day)?bgColor="FCE4D6":bgColor//f7ead7
+            ["Saturday", "Sunday"].includes(day) ? bgColor = "FCE4D6" : bgColor//f7ead7
             row2.push({
                 v: day, t: "s", s: {
-                    alignment: { vertical: "center", horizontal: "left" }, font: { bold: false, sz: 12,color: { rgb: "000000" } }, fill: { fgColor: { rgb: bgColor } }, border: {
+                    alignment: { vertical: "center", horizontal: "left" }, font: { bold: false, sz: 12, color: { rgb: "000000" } }, fill: { fgColor: { rgb: bgColor } }, border: {
                         top: { style: 'thin', color: { rgb: "000000" } },
                         left: { style: 'thin', color: { rgb: "000000" } },
                         bottom: { style: 'thin', color: { rgb: "000000" } },
@@ -779,7 +791,7 @@ private generateExcelData(reportData, WorksheetData) {
             })
             row2.push({
                 v: '', t: "s", s: {
-                    alignment: { vertical: "center", horizontal: "left" }, font: { bold: false, sz: 12,color: { rgb: "000000" } }, fill: { fgColor: { rgb: bgColor } }, border: {
+                    alignment: { vertical: "center", horizontal: "left" }, font: { bold: false, sz: 12, color: { rgb: "000000" } }, fill: { fgColor: { rgb: bgColor } }, border: {
                         top: { style: 'thin', color: { rgb: "000000" } },
                         left: { style: 'thin', color: { rgb: "000000" } },
                         bottom: { style: 'thin', color: { rgb: "000000" } },
@@ -788,11 +800,11 @@ private generateExcelData(reportData, WorksheetData) {
                 }
             })
         }
-        for(let i=0;i<5;i++){// d4cfcf ~ BEBABA
+        for (let i = 0; i < 5; i++) {// d4cfcf ~ BEBABA
             let bgColor = "BEBABA";
             row2.push({
                 v: '', t: "s", s: {
-                    alignment: { vertical: "center", horizontal: "left" }, font: { bold: true, sz: 12,color: { rgb: "000000" } }, fill: { fgColor: { rgb: bgColor } }, border: {
+                    alignment: { vertical: "center", horizontal: "left" }, font: { bold: true, sz: 12, color: { rgb: "000000" } }, fill: { fgColor: { rgb: bgColor } }, border: {
                         top: { style: 'thin', color: { rgb: "000000" } },
                         left: { style: 'thin', color: { rgb: "000000" } },
                         bottom: { style: 'thin', color: { rgb: "000000" } },
@@ -802,10 +814,10 @@ private generateExcelData(reportData, WorksheetData) {
             })
         }
         worksheetRows.push(row2)
-        row2 =[]
-        row2=[{
+        row2 = []
+        row2 = [{
             v: '', t: "s", s: {
-                alignment: { vertical: "center", horizontal: "left" }, font: { bold: false, sz: 12,color: { rgb: "000000" } }, fill: { fgColor: { rgb: 'dbf6ff' } }, border: {
+                alignment: { vertical: "center", horizontal: "left" }, font: { bold: false, sz: 12, color: { rgb: "000000" } }, fill: { fgColor: { rgb: 'dbf6ff' } }, border: {
                     top: { style: 'thin', color: { rgb: "000000" } },
                     left: { style: 'thin', color: { rgb: "000000" } },
                     bottom: { style: 'thin', color: { rgb: "000000" } },
@@ -814,8 +826,8 @@ private generateExcelData(reportData, WorksheetData) {
             }
         }]
         row2.push({
-            v: dates[0]+" - "+dates[dates.length-1], t: "s", s: {
-                alignment: { vertical: "center", horizontal: "left" }, font: { bold: true, sz: 12,color: { rgb: "00000" } }, fill: { fgColor: { rgb: 'ffffff' } }, border: {
+            v: dates[0] + " - " + dates[dates.length - 1], t: "s", s: {
+                alignment: { vertical: "center", horizontal: "left" }, font: { bold: true, sz: 12, color: { rgb: "00000" } }, fill: { fgColor: { rgb: 'ffffff' } }, border: {
                     top: { style: 'thin', color: { rgb: "000000" } },
                     left: { style: 'thin', color: { rgb: "000000" } },
                     bottom: { style: 'thin', color: { rgb: "000000" } },
@@ -849,7 +861,7 @@ private generateExcelData(reportData, WorksheetData) {
         row2.push(
             {
                 v: 'Total Non Billable', t: "s", s: {
-                    alignment: {wrapText: true, vertical: "center", horizontal: "left" }, font: { bold: false, sz: 12, color: { rgb: "FF0000" } }, fill: { fgColor: { rgb: 'E7E6E6' } }, border: {
+                    alignment: { wrapText: true, vertical: "center", horizontal: "left" }, font: { bold: false, sz: 12, color: { rgb: "FF0000" } }, fill: { fgColor: { rgb: 'E7E6E6' } }, border: {
                         top: { style: 'thin', color: { rgb: "000000" } },
                         left: { style: 'thin', color: { rgb: "000000" } },
                         bottom: { style: 'thin', color: { rgb: "000000" } },
@@ -861,7 +873,7 @@ private generateExcelData(reportData, WorksheetData) {
         row2.push(
             {
                 v: 'Total Billable', t: "s", s: {
-                    alignment: {wrapText: true, vertical: "center", horizontal: "left" }, font: { bold: true, sz: 12, color: { rgb: "000000" } }, fill: { fgColor: { rgb: 'E7E6E6' } }, border: {
+                    alignment: { wrapText: true, vertical: "center", horizontal: "left" }, font: { bold: true, sz: 12, color: { rgb: "000000" } }, fill: { fgColor: { rgb: 'E7E6E6' } }, border: {
                         top: { style: 'thin', color: { rgb: "000000" } },
                         left: { style: 'thin', color: { rgb: "000000" } },
                         bottom: { style: 'thin', color: { rgb: "000000" } },
@@ -873,7 +885,7 @@ private generateExcelData(reportData, WorksheetData) {
         row2.push(
             {
                 v: 'Total Hours', t: "s", s: {
-                    alignment: {wrapText: true, vertical: "center", horizontal: "left" }, font: { bold: true, sz: 12, color: { rgb: "000000" } }, fill: { fgColor: { rgb: 'D9E1F2' } }, border: {
+                    alignment: { wrapText: true, vertical: "center", horizontal: "left" }, font: { bold: true, sz: 12, color: { rgb: "000000" } }, fill: { fgColor: { rgb: 'D9E1F2' } }, border: {
                         top: { style: 'thin', color: { rgb: "000000" } },
                         left: { style: 'thin', color: { rgb: "000000" } },
                         bottom: { style: 'thin', color: { rgb: "000000" } },
@@ -885,7 +897,7 @@ private generateExcelData(reportData, WorksheetData) {
         row2.push(
             {
                 v: 'Approval Status', t: "s", s: {
-                    alignment: {wrapText: true, vertical: "center", horizontal: "left" }, font: { bold: true, sz: 12, color: { rgb: "000000" } }, fill: { fgColor: { rgb: '609c75' } }, border: {// 2a7042
+                    alignment: { wrapText: true, vertical: "center", horizontal: "left" }, font: { bold: true, sz: 12, color: { rgb: "000000" } }, fill: { fgColor: { rgb: '609c75' } }, border: {// 2a7042
                         top: { style: 'thin', color: { rgb: "000000" } },
                         left: { style: 'thin', color: { rgb: "000000" } },
                         bottom: { style: 'thin', color: { rgb: "000000" } },
@@ -897,7 +909,7 @@ private generateExcelData(reportData, WorksheetData) {
         row2.push(
             {
                 v: 'Notes & Remarks', t: "s", s: {
-                    alignment: {wrapText: true, vertical: "center", horizontal: "left" }, font: { bold: false, sz: 12, color: { rgb: "000000" } }, fill: { fgColor: { rgb: 'E7E6E6' } }, border: {
+                    alignment: { wrapText: true, vertical: "center", horizontal: "left" }, font: { bold: false, sz: 12, color: { rgb: "000000" } }, fill: { fgColor: { rgb: 'E7E6E6' } }, border: {
                         top: { style: 'thin', color: { rgb: "000000" } },
                         left: { style: 'thin', color: { rgb: "000000" } },
                         bottom: { style: 'thin', color: { rgb: "000000" } },
@@ -907,10 +919,10 @@ private generateExcelData(reportData, WorksheetData) {
             }
         )
         worksheetRows.push(row2)
-        row2 =[]
-        row2=[{
+        row2 = []
+        row2 = [{
             v: 'S.No', t: "s", s: {
-                alignment: { vertical: "center", horizontal: "left" }, font: { bold: false, sz: 12,color: { rgb: "000000" } }, fill: { fgColor: { rgb: 'dbf6ff' } }, border: {
+                alignment: { vertical: "center", horizontal: "left" }, font: { bold: false, sz: 12, color: { rgb: "000000" } }, fill: { fgColor: { rgb: 'dbf6ff' } }, border: {
                     top: { style: 'thin', color: { rgb: "000000" } },
                     left: { style: 'thin', color: { rgb: "000000" } },
                     bottom: { style: 'thin', color: { rgb: "000000" } },
@@ -920,7 +932,7 @@ private generateExcelData(reportData, WorksheetData) {
         }]
         row2.push({
             v: 'Employee Name', t: "s", s: {
-                alignment: { vertical: "center", horizontal: "left" }, font: { bold: true, sz: 12,color: { rgb: "00000" } }, fill: { fgColor: { rgb: 'ffffff' } }, border: {
+                alignment: { vertical: "center", horizontal: "left" }, font: { bold: true, sz: 12, color: { rgb: "00000" } }, fill: { fgColor: { rgb: 'ffffff' } }, border: {
                     top: { style: 'thin', color: { rgb: "000000" } },
                     left: { style: 'thin', color: { rgb: "000000" } },
                     bottom: { style: 'thin', color: { rgb: "000000" } },
@@ -929,30 +941,30 @@ private generateExcelData(reportData, WorksheetData) {
             }
         })
         let data = {
-            value : "Non Billable",
-            isBold : false,
+            value: "Non Billable",
+            isBold: false,
             bgColor: 'E7E6E6',
             wrapText: true
         }
-        for(let i=1;i<=14;i++){
-            if(i%2!=0){
+        for (let i = 1; i <= 14; i++) {
+            if (i % 2 != 0) {
                 data.value = "Non Billable"
                 data.isBold = false
-                data.wrapText= true
-                if([11,13].includes(i))
-                    data.bgColor= 'FCE4D6'
+                data.wrapText = true
+                if ([11, 13].includes(i))
+                    data.bgColor = 'FCE4D6'
                 else
-                data.bgColor= 'E7E6E6'
+                    data.bgColor = 'E7E6E6'
             }
-            else{
+            else {
                 data.value = "Billable"
                 data.isBold = false
-                data.bgColor= 'ffffff'
-                data. wrapText= false
+                data.bgColor = 'ffffff'
+                data.wrapText = false
             }
             row2.push({
-                v:  data.value, t: "s", s: {
-                    alignment: { wrapText: data.wrapText, vertical: "center", horizontal: "left" }, font: { bold: data.isBold, sz: 10,color: { rgb: "00000" } }, fill: { fgColor: { rgb: data.bgColor } }, border: {
+                v: data.value, t: "s", s: {
+                    alignment: { wrapText: data.wrapText, vertical: "center", horizontal: "left" }, font: { bold: data.isBold, sz: 10, color: { rgb: "00000" } }, fill: { fgColor: { rgb: data.bgColor } }, border: {
                         top: { style: 'thin', color: { rgb: "000000" } },
                         left: { style: 'thin', color: { rgb: "000000" } },
                         bottom: { style: 'thin', color: { rgb: "000000" } },
@@ -960,12 +972,12 @@ private generateExcelData(reportData, WorksheetData) {
                     }
                 }
             })
-           
+
         }
-        for(let i=0;i<5;i++){
+        for (let i = 0; i < 5; i++) {
             row2.push({
-                v:  '', t: "s", s: {
-                    alignment: { vertical: "center", horizontal: "left" }, font: { bold: data.isBold, sz: 12,color: { rgb: "00000" } }, fill: { fgColor: { rgb: 'E7E6E6' } }, border: {
+                v: '', t: "s", s: {
+                    alignment: { vertical: "center", horizontal: "left" }, font: { bold: data.isBold, sz: 12, color: { rgb: "00000" } }, fill: { fgColor: { rgb: 'E7E6E6' } }, border: {
                         top: { style: 'thin', color: { rgb: "000000" } },
                         left: { style: 'thin', color: { rgb: "000000" } },
                         bottom: { style: 'thin', color: { rgb: "000000" } },
@@ -975,10 +987,10 @@ private generateExcelData(reportData, WorksheetData) {
             })
         }
         worksheetRows.push(row2)
-        row2 =[]
-        row2=[{
+        row2 = []
+        row2 = [{
             v: '', t: "s", s: {
-                alignment: { vertical: "center", horizontal: "left" }, font: { bold: false, sz: 12,color: { rgb: "000000" } }, fill: { fgColor: { rgb: 'dbf6ff' } }, border: {
+                alignment: { vertical: "center", horizontal: "left" }, font: { bold: false, sz: 12, color: { rgb: "000000" } }, fill: { fgColor: { rgb: 'dbf6ff' } }, border: {
                     top: { style: 'thin', color: { rgb: "000000" } },
                     left: { style: 'thin', color: { rgb: "000000" } },
                     bottom: { style: 'thin', color: { rgb: "000000" } },
@@ -986,44 +998,44 @@ private generateExcelData(reportData, WorksheetData) {
                 }
             }
         }]
-        if(!this.state.ClientName.toLowerCase().includes('synergy'))
-        row2.push({
-            v: 'Billable Hourly', t: "s", s: {
-                alignment: { vertical: "center", horizontal: "left" }, font: { bold: true, sz: 12,color: { rgb: "FF0000" } }, fill: { fgColor: { rgb: 'fafa66' } }, border: {}
-            }
-        })
-        else{
+        if (!this.state.ClientName.toLowerCase().includes('synergy'))
+            row2.push({
+                v: 'Billable Hourly', t: "s", s: {
+                    alignment: { vertical: "center", horizontal: "left" }, font: { bold: true, sz: 12, color: { rgb: "FF0000" } }, fill: { fgColor: { rgb: 'fafa66' } }, border: {}
+                }
+            })
+        else {
             row2.push({
                 v: 'Billable Salary', t: "s", s: {
-                    alignment: { vertical: "center", horizontal: "left" }, font: { bold: true, sz: 12,color: { rgb: "FF0000" } }, fill: { fgColor: { rgb: 'fafa66' } }, border: {}
+                    alignment: { vertical: "center", horizontal: "left" }, font: { bold: true, sz: 12, color: { rgb: "FF0000" } }, fill: { fgColor: { rgb: 'fafa66' } }, border: {}
                 }
-            }) 
+            })
         }
 
-        for(let i=1;i<20;i++){
+        for (let i = 1; i < 20; i++) {
             let bgColor = "E7E6E6"
-            if(i==17){
+            if (i == 17) {
                 bgColor = "D9E1F2"// dbf6ff
             }
-            else if([11,13].includes(i))
+            else if ([11, 13].includes(i))
                 bgColor = 'FCE4D6'
-            if(i!=19)
-            row2.push({
-                v: '', t: "s", s: {
-                    alignment: { vertical: "center", horizontal: "left" }, font: { bold: false, sz: 12,color: { rgb: "000000" } }, fill: { fgColor: { rgb: bgColor } }, border: {}
-                }
-            })
+            if (i != 19)
+                row2.push({
+                    v: '', t: "s", s: {
+                        alignment: { vertical: "center", horizontal: "left" }, font: { bold: false, sz: 12, color: { rgb: "000000" } }, fill: { fgColor: { rgb: bgColor } }, border: {}
+                    }
+                })
             else
-            row2.push({
-                v: '', t: "s", s: {
-                    alignment: { vertical: "center", horizontal: "left" }, font: { bold: false, sz: 12,color: { rgb: "000000" } }, fill: { fgColor: { rgb: bgColor } }, border:             {
-                        top: { style: 'thin', color: { rgb: "000000" } },
-                        // left: { style: 'thin', color: { rgb: "000000" } },
-                        // bottom: { style: 'thin', color: { rgb: "000000" } },
-                        right: { style: 'thin', color: { rgb: "000000" } },
-                    }        
-                }
-            })
+                row2.push({
+                    v: '', t: "s", s: {
+                        alignment: { vertical: "center", horizontal: "left" }, font: { bold: false, sz: 12, color: { rgb: "000000" } }, fill: { fgColor: { rgb: bgColor } }, border: {
+                            top: { style: 'thin', color: { rgb: "000000" } },
+                            // left: { style: 'thin', color: { rgb: "000000" } },
+                            // bottom: { style: 'thin', color: { rgb: "000000" } },
+                            right: { style: 'thin', color: { rgb: "000000" } },
+                        }
+                    }
+                })
         }
         worksheetRows.push(row2)
         return worksheetRows
@@ -1100,7 +1112,7 @@ private generateExcelData(reportData, WorksheetData) {
                                         <button type="button" className="CancelButtons btn" onClick={this.handleCancel}>Cancel</button>
                                     </div>
                                 </div>
-                                    {this.state.WeeklyData.length>0?this.constructTable(this.state.WeeklyData):''}
+                                {this.state.WeeklyData.length > 0 ? this.constructTable(this.state.WeeklyData) : ''}
                             </div>
                         </div>
                     </div>

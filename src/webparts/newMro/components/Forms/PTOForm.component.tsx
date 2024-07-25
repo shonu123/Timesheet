@@ -141,19 +141,19 @@ class PTOForm extends React.Component<PTOFormProps, PTOFormState> {
                     Emails.push(user.EMail)
                 }
             }
-            this.setState({ ReportingManagerId: ReportingManagers, ReportingManagerEmails: Emails });
+            this.setState({ ReportingManagerId: ReportingManagers, ReportingManagerEmails: Emails,DateOfJoining:new Date(this.GetDateStringMMDDYYYY(Employee[0].DateOfJoining))});
         }
         let clients = []
         for (const client of Employee) {
             clients.push(client.ClientName)
         }
 
-        // let EmployeeHolidays = Holidays.filter(day=>{ if(day.ClientName==Employee[0].HolidayType) return new Date(day.HolidayDate).toLocaleDateString('en-US')})
+        // let EmployeeHolidays = Holidays.filter(day=>{ if(day.ClientName==Employee[0].HolidayType) return new Date(day.HolidayDate)})
         let EmployeeHolidayDates = Holidays.filter(day => {
             if (day.ClientName == Employee[0].HolidayType) {
                 return true;
             }
-        }).map(day => new Date(day.HolidayDate).toLocaleDateString('en-US'));
+        }).map(day => new Date(this.GetDateStringMMDDYYYY(day.HolidayDate)));
         // let HolidayDates =[]
         // for (const h of EmployeeHolidays) {
         //     HolidayDates.push(new Date(h.HolidayDate)) 
@@ -230,10 +230,10 @@ class PTOForm extends React.Component<PTOFormProps, PTOFormState> {
             EmployeeType: data[0].EmployeeType,
             SelectedPTO: data[0].PTOType,
             PTOTypesObj: PTOTypes,
-            FromDate: new Date(data[0].From),
-            fetchedFromDate: new Date(data[0].From),
-            ToDate: new Date(data[0].To),
-            fetchedToDate: new Date(data[0].To),
+            FromDate: new Date(this.GetDateStringMMDDYYYY(data[0].From)),
+            fetchedFromDate: new Date(this.GetDateStringMMDDYYYY(data[0].From)),
+            ToDate: new Date(this.GetDateStringMMDDYYYY(data[0].To)),
+            fetchedToDate: new Date(this.GetDateStringMMDDYYYY(data[0].To)),
             TotalHours: data[0].TotalHours,
             CommentsHistory: JSON.parse(data[0].CommentsHistory),
             ReportingManagerId: ReportingManagers,
@@ -246,7 +246,7 @@ class PTOForm extends React.Component<PTOFormProps, PTOFormState> {
             IsSubmitted: data[0].IsSubmitted,
             ItemID: parseInt(ID),
             Comments:'',
-            DateOfJoining: new Date(data[0].DateOfJoining).toLocaleDateString('en-US'),
+            DateOfJoining: new Date(this.GetDateStringMMDDYYYY(EmployeeData[0].DateOfJoining)),
             userGroups: userGroups,
         })
     }
@@ -356,18 +356,18 @@ class PTOForm extends React.Component<PTOFormProps, PTOFormState> {
 
         let isValid = { status: true, message: "" };
 
-        let currentDate = new Date(FromDate).toLocaleDateString('en-US');
-        const endDate = new Date(ToDate).toLocaleDateString('en-US');
+        let currentDate = new Date(FromDate);
+        const endDate = new Date(ToDate);
 
         while (new Date(currentDate) <= new Date(endDate)) {
 
-            if (new Date(currentDate).getDay() === 0 || new Date(currentDate).getDay() === 6 || HolidayDates.includes(new Date(currentDate).toLocaleDateString('en-US'))) {
+            if (new Date(currentDate).getDay() === 0 || new Date(currentDate).getDay() === 6 || HolidayDates.includes(new Date(currentDate))) {
                 isValid.status = false;
                 isValid.message = "Date range includes either a Saturday or Sunday, or holiday.";
                 break;
             }
             let nextDate = addDays(new Date(currentDate), 1)
-            currentDate = nextDate.toLocaleDateString('en-US')
+            currentDate = nextDate
         }
         return isValid;
     }
@@ -606,16 +606,16 @@ class PTOForm extends React.Component<PTOFormProps, PTOFormState> {
         let prev = `${prevDate.getMonth() + 1}/${prevDate.getDate()}/${prevDate.getFullYear()}`
         let next = `${nextDate.getMonth() + 1}/${nextDate.getDate()}/${nextDate.getFullYear()}`
         // filterQuery = "WeekStartDate gt '" + prev + "' and WeekStartDate lt '" + next + "'"
-        let from1 = this.state.FromDate.toLocaleDateString('en-US')
-        let from2 = this.state.fetchedFromDate != null ? this.state.fetchedFromDate.toLocaleDateString('en-US') : ''
-        let to1 = this.state.ToDate.toLocaleDateString('en-US')
-        let to2 = this.state.fetchedFromDate != null ? this.state.fetchedToDate.toLocaleDateString('en-US') : ''
+        let from1 = this.state.FromDate
+        let from2 = this.state.fetchedFromDate != null ? this.state.fetchedFromDate : ''
+        let to1 = this.state.ToDate
+        let to2 = this.state.fetchedFromDate != null ? this.state.fetchedToDate : ''
         if (this.state.selectedClient == this.state.fetchedClient && from1 == from2 && to1 == to2) {
             return isValid;
         }
         else {
-            let from = new Date(this.state.FromDate).toLocaleDateString('en-US')
-            let to = new Date(this.state.ToDate).toLocaleDateString('en-US')
+            let from = new Date(this.state.FromDate)
+            let to = new Date(this.state.ToDate)
             let filterQuery
             if (this.state.ItemID != 0) {
                 filterQuery = "Employee/Id eq '" + this.state.EmployeeId + "' and Client eq '" + this.state.selectedClient + "' and From gt '" + prev + "' and Status ne '" + StatusType.Withdraw + "' and ID ne '" + this.state.ItemID + "' "
@@ -647,8 +647,8 @@ class PTOForm extends React.Component<PTOFormProps, PTOFormState> {
         const fromDate = new Date(newFromDate);
         const toDate = new Date(newToDate);
         for (let record of records) {
-            const recordFromDate = new Date(record.From).toLocaleDateString('en-US');
-            const recordToDate = new Date(record.To).toLocaleDateString('en-US');
+            const recordFromDate = new Date(this.GetDateStringMMDDYYYY(record.From));
+            const recordToDate = new Date(this.GetDateStringMMDDYYYY(record.To));
             if (this.isOverlap(new Date(recordFromDate), new Date(recordToDate), fromDate, toDate)) {
                 return true; // There is an overlap
             }
@@ -719,6 +719,10 @@ class PTOForm extends React.Component<PTOFormProps, PTOFormState> {
             return newDate;
         }
     }
+    private GetDateStringMMDDYYYY(DateTimeSting) //this function is to get MM/DD/YYYY string from entire date time string
+    {
+        return DateTimeSting.split('-')[1] + '/' + DateTimeSting.split('-')[2].split('T')[0] + '/' + DateTimeSting.split('-')[0];
+    }
     // this functionis uesd to go to dashboard when clicked on cancel button
     private handleCancel = async (e) => {
         this.setState({ message: '', Homeredirect: true });
@@ -761,13 +765,13 @@ class PTOForm extends React.Component<PTOFormProps, PTOFormState> {
             customToaster('toster-error', ToasterTypes.Error, isValid.message, 4000)
             return false
         }
-        isValid = this.validateTotalPTOhours(this.state.FromDate.toLocaleDateString('en-US'), this.state.ToDate.toLocaleDateString('en-US'), this.state.TotalHours)
+        isValid = this.validateTotalPTOhours(this.state.FromDate, this.state.ToDate, this.state.TotalHours)
         if (!isValid.status) {
             customToaster('toster-error', ToasterTypes.Error, isValid.message, 4000)
             return false
         }
-        let doj  = new Date(this.state.DateOfJoining).toLocaleDateString('en-US')
-        let from = new Date(this.state.FromDate).toLocaleDateString('en-US')
+        let doj  = new Date(this.state.DateOfJoining)
+        let from = new Date(this.state.FromDate)
         if(new Date(doj)>new Date(from)){
             customToaster('toster-error', ToasterTypes.Error, "PTO cannot be applied for days preceding your date of joining.", 4000)
             return false
@@ -790,8 +794,8 @@ class PTOForm extends React.Component<PTOFormProps, PTOFormState> {
             Client: this.state.selectedClient,
             EmployeeType: this.state.EmployeeType,
             PTOType: this.state.SelectedPTO,
-            From: this.addBrowserwrtServer(new Date(this.state.FromDate)),
-            To: this.addBrowserwrtServer(new Date(this.state.ToDate)),
+            From: this.addBrowserwrtServer(new Date(this.state.FromDate.getMonth() + 1 + "/" + this.state.FromDate.getDate() + "/" + this.state.FromDate.getFullYear())),
+            To: this.addBrowserwrtServer(new Date(this.state.ToDate.getMonth() + 1 + "/" + this.state.ToDate.getDate() + "/" + this.state.ToDate.getFullYear())),
             TotalHours: this.state.TotalHours,
             CommentsHistory: JSON.stringify(commentsObj),
             Status: StatusType.Submit,
@@ -823,8 +827,8 @@ class PTOForm extends React.Component<PTOFormProps, PTOFormState> {
         {'Employee' : this.state.EmployeeName,
          'Employee Type': this.state.EmployeeType,
          'PTO Type': this.state.SelectedPTO,
-         'From': this.state.FromDate.toLocaleDateString('en-US'),
-         'To': this.state.ToDate.toLocaleDateString('en-US'),
+         'From':`${this.state.FromDate.getMonth() + 1}/${this.state.FromDate.getDate()}/${this.state.FromDate.getFullYear()}`,
+         'To': `${this.state.ToDate.getMonth() + 1}/${this.state.ToDate.getDate()}/${this.state.ToDate.getFullYear()}`,
          'Total Hours': this.state.TotalHours
         }
 
