@@ -234,6 +234,7 @@ class DailyTimesheetReport extends React.Component<DailyTimesheetReportProps, Da
         this.setState({Homeredirect : true});
     }
     private handleSubmit = () => {
+        this.setState({loading:true})
         let data = {
             Client: { val: this.state.ClientName, required: true, Name: 'Client', Type: ControlType.string, Focusid: this.client },
             Employee: { val: parseInt(this.state.InitiatorId), required: true, Name: 'Employee', Type: ControlType.number, Focusid: this.EmployeeDropdown },
@@ -241,6 +242,7 @@ class DailyTimesheetReport extends React.Component<DailyTimesheetReportProps, Da
         let isValid = this.checkIsvalid(data, this.state.startDate, this.state.endDate)
         if (!isValid.status) {
             customToaster('toster-error', ToasterTypes.Error, isValid.message, 4000);
+            this.setState({loading:false})
             return false
         }
         let date = new Date(this.state.startDate)
@@ -396,6 +398,7 @@ finalArray.sort((a, b) => {
         }
         else {
             customToaster('toster-error', ToasterTypes.Error, 'No data found!', 4000);
+            this.setState({loading:false})
         }
     }
 
@@ -612,7 +615,7 @@ for (let i = 7; i < workSheetRows.length; i++) {
                 requiredData.push(startDate)
                 requiredData.push(endDate)
                 requiredData.push(columnOrder.length)
-this.setState({ColumnsHeaders:hColumns,ReportData:SampleData,ExportExcelData:requiredData})
+this.setState({ColumnsHeaders:hColumns,ReportData:SampleData,ExportExcelData:requiredData,loading:false})
 
         // const finalWorkshetData = XLSX.utils.aoa_to_sheet(workSheetRows)
         // finalWorkshetData['!autofilter'] = { ref: 'A7:B7' };

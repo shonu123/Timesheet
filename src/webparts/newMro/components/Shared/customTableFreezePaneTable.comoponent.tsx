@@ -169,12 +169,13 @@
 
 // export default MyDataTable;
 
-import React, { useEffect,useMemo } from 'react';
+import React, { useEffect,useMemo, useState } from 'react';
 //import { useTable, useBlockLayout, useSortBy, useFilters, useGlobalFilter,usePagination} from 'react-table';
 import { useTable, useBlockLayout, useSortBy, useFilters, useGlobalFilter} from 'react-table';
 import { faFileExcel, faArrowDownLong, faArrowUpLong } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import * as XLSX from 'xlsx-js-style';
+import Loader from '../Shared/Loader';
 
 const MyDataTable = ({ columns, data, ExcelData }) => {
   useEffect(() => {
@@ -184,6 +185,8 @@ const MyDataTable = ({ columns, data, ExcelData }) => {
       document.documentElement.style.setProperty('--width-of-first-column', `${firstColumnWidth}px`);
     }
   }, []);
+
+  const [loading,setLoading] = useState(false)
 
   const {
     getTableProps,
@@ -216,6 +219,7 @@ const MyDataTable = ({ columns, data, ExcelData }) => {
   );
 
   const exportToExcel = (data) => {
+    setLoading(true)
     let workSheetRows = data[0];
     let filename = data[1];
     let startDate = data[2];
@@ -247,6 +251,7 @@ const MyDataTable = ({ columns, data, ExcelData }) => {
     XLSX.utils.book_append_sheet(wb, finalWorkshetData, `${filename}`);
     // STEP 4: Write Excel file to browser
     XLSX.writeFile(wb, `${filename}(${startDate} to ${endDate}).xlsx`);
+    setLoading(false)
 
   }
 //  // Function for extreme previous page
@@ -298,6 +303,7 @@ const { globalFilter } = state;
             <a type="button" id="btnDownloadFile" className="icon-export-b" onClick={(e) => exportToExcel(ExcelData)}>
               <FontAwesomeIcon icon={faFileExcel} className='icon-export-b'></FontAwesomeIcon>
             </a>
+            {loading && <Loader />}
           </div>
           <div className="table-container">
             <div {...getTableProps()} className="ReportTable">

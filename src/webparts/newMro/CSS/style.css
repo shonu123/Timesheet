@@ -3039,7 +3039,8 @@ span.iconArrow {
 }
 
 .tr-brd{
-  background: black;
+  /* background: black; */
+  background: #001b24;
   color: white;
   border-color: #212121;
 }
@@ -3058,7 +3059,7 @@ span.iconArrow {
 .Billable-Salary td{
   padding: 12px;
 }
-.span-green{
+.span-manager-approve {
   display: inline-block;
   padding: 2px 7px;
   background-color: #d9e7c8;
@@ -3081,7 +3082,17 @@ span.iconArrow {
   background-color: #c2dce7;
   border-radius: 22px;
   font-size: 15px;
-  border: 2px solid #c2dce7;
+  border: 2px solid #8ac6df;
+}
+
+
+.span-green{
+  display: inline-block;
+  padding: 2px 7px;
+  background-color: #a7d9b49e;
+  border-radius: 22px;
+  font-size: 15px;
+  border: 2px solid #26bd4ead;
 }
 
 .table-data td{
@@ -3213,4 +3224,135 @@ padding: 0;
 .icon-export-pdf{
 color:#ad0b00 !important;
 cursor: pointer;
+}
+
+/* Added on 25 july 2024 */
+.a-export-excel {
+	color: #016f38;
+    border: 1px solid #016f38;
+    margin-right: 3px;
+    border-radius: 22px;
+    padding: 5px 8px;
+    color: #404040 !important;
+    transition: all .4s ease 0s;
+    -webkit-transition: all .4s ease 0s;
+    display: flex;
+    max-width: 172px;
+    background-color: #f4f4f4;
+    text-decoration: none !important;
+    font-size: 15px;
+    align-items: center;
+}
+
+.a-export-excel .fa-file-excel {
+  padding: 0 0 0 7px;
+  height: 20px;
+  color: #016f38 !important;
+}
+ 
+.a-export-pdf {
+  border: 1px solid #e28282;
+border-radius: 22px;
+padding: 5px 8px;
+color: #404040 !important;
+transition: all .4s ease 0s;
+-webkit-transition: all .4s ease 0s;
+display: flex;
+max-width: 164px;
+background-color: #f4f4f4;
+text-decoration: none !important;
+font-size: 15px;
+align-items: center;
+margin-left: 5px;
+/* margin-right: 10px; */
+}
+
+.w-n-b {
+  min-width: 85px;
+}
+
+.a-export-pdf .fa-file-pdf {
+  padding: 0 0 0 7px;
+  height: 20px;
+  color: #ad0b00 !important;
+}
+
+.tblWeeklyTimesheetReport th{
+  font-size: 14px !important;
+  /* padding: 4px 6px !important; */
+  padding: 7px 6px !important;
+  border: 1px solid #282828;	
+}
+
+.tblWeeklyTimesheetReport td{
+  padding: 6px 6px !important;
+  border: 1px solid #b3b6b757 !important;
+  }
+
+  .t-div{
+    background-color: #fff;
+    display: flex;
+    justify-content: flex-end;
+  }
+
+  #WeeklyTableResponsive.dataTables_wrapper-overflow::-webkit-scrollbar-thumb {
+    background-color: #d9d9d9;
+    border-radius: 22px;
+}
+#WeeklyTableResponsive.dataTables_wrapper-overflow::-webkit-scrollbar {
+  width: 10px !important;
+  height: 9px !important;
+}
+#WeeklyTableResponsive.dataTables_wrapper-overflow {
+  margin: auto;
+  max-height: 400px;
+}
+
+#pdfMessage{
+  font-size: 12px;
+    flex: 50%;
+    text-align: left;
+    padding-top: 12px;
+    color: #5b5b5b;
+    font-weight: bold;
+}
+
+.weekly-report-AppStat{
+  padding: 4px 20px;
+  font-size: 13px;
+  /* border-radius: 4px; */
+  border-radius:22px;
+}
+
+.WR-w-155{
+  width: 155px !important;
+}
+
+.WR-w-160{
+  width: 160px !important;
+}
+
+.Wr-fz-16{
+  font-size: 16px;
+}
+
+/* hover colors */
+a#btnDownloadFile:hover {
+  background-color: #016f38;
+  color: #fff !important;
+  border-color: #fff;
+}
+ 
+a#btnDownloadFile:hover.a-export-excel .fa-file-excel {
+  color: #fff !important;
+}
+ 
+a#btnDownloadPDFFile:hover {
+ background-color: #ad0b00;
+ color: #fff !important;
+ border-color: #fff;
+}
+
+a#btnDownloadPDFFile:hover.a-export-pdf .fa-file-pdf {
+  color: #fff !important;
 }

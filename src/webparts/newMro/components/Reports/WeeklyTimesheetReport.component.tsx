@@ -176,6 +176,7 @@ class WeeklyTimesheetReport extends React.Component<WeeklyTimesheetReportProps, 
     }
 
     private handleSubmit = () => {
+        this.setState({loading:true})
         let data = {
             Client: { val: this.state.ClientName, required: true, Name: 'Client', Type: ControlType.string, Focusid: this.client },
             Employee: { val: parseInt(this.state.InitiatorId), required: true, Name: 'Employee', Type: ControlType.number, Focusid: this.EmployeeDropdown },
@@ -184,6 +185,7 @@ class WeeklyTimesheetReport extends React.Component<WeeklyTimesheetReportProps, 
         let isValid = Formvalidator.checkValidations(data)
         if (!isValid.status) {
             customToaster('toster-error', ToasterTypes.Error, isValid.message, 4000);
+            this.setState({loading:false})
             return false
         }
         let date = new Date(this.state.startDate)
@@ -197,7 +199,7 @@ class WeeklyTimesheetReport extends React.Component<WeeklyTimesheetReportProps, 
             StartDate: selectedStartDate,
             EndDate: selectedEndDate
         }
-        console.log(postObject)
+        // console.log(postObject)
         this.getReportData(postObject)
     }
 
@@ -266,11 +268,26 @@ class WeeklyTimesheetReport extends React.Component<WeeklyTimesheetReportProps, 
                     arrangedWeekDays.push(TotalHrs[0][day]);
                 });
 
-                let BillHrs = JSON.parse(report.BillableSubtotalHrs)[0]
-                let NonBillhrs = JSON.parse(report.NonBillableSubTotalHrs)[0]
-                let Totalhrs = JSON.parse(report.TotalHrs)[0]
-                let blanksHrs = { Mon: '', Tue: '', Wed: '', Thu: '', Fri: '', Sat: '', Sun: '', Total: '0' }
-                report.ClientName.toLowerCase().includes('synergy') ? BillHrs = blanksHrs : NonBillhrs = blanksHrs
+                let BillHrs = JSON.parse(report.BillableSubtotalHrs)[0],NonBillhrs = JSON.parse(report.NonBillableSubTotalHrs)[0],Totalhrs = JSON.parse(report.TotalHrs)[0],blanksHrs = { Mon: '', Tue: '', Wed: '', Thu: '', Fri: '', Sat: '', Sun: '', Total: '0' }
+                
+                let b={},PTOHours = JSON.parse(report.PTOHrs),ClientHolidayHrs = JSON.parse(report.ClientHolidayHrs)
+                report.ClientName.toLowerCase().includes('synergy') ? BillHrs = blanksHrs : ''
+                NonBillhrs = {
+                    Mon: NonBillhrs.Mon =="0.00"?PTOHours[0].Mon ==""?ClientHolidayHrs[0].Mon==""?'':ClientHolidayHrs[0].Mon:ClientHolidayHrs[0].Mon==""?PTOHours[0].Mon:Number(parseFloat(PTOHours[0].Mon)+parseFloat(ClientHolidayHrs[0].Mon)).toFixed(2)
+                    :NonBillhrs.Mon,
+                    Tue: NonBillhrs.Tue =="0.00"?PTOHours[0].Tue ==""?ClientHolidayHrs[0].Tue==""?'':ClientHolidayHrs[0].Tue:ClientHolidayHrs[0].Tue==""?PTOHours[0].Tue:Number(parseFloat(PTOHours[0].Tue)+parseFloat(ClientHolidayHrs[0].Tue)).toFixed(2)
+                    :NonBillhrs.Tue,
+                    Wed: NonBillhrs.Wed =="0.00"?PTOHours[0].Wed ==""?ClientHolidayHrs[0].Wed==""?'':ClientHolidayHrs[0].Wed:ClientHolidayHrs[0].Wed==""?PTOHours[0].Wed:Number(parseFloat(PTOHours[0].Wed)+parseFloat(ClientHolidayHrs[0].Wed)).toFixed(2)
+                    :NonBillhrs.Wed,
+                    Thu: NonBillhrs.Thu =="0.00"?PTOHours[0].Thu ==""?ClientHolidayHrs[0].Thu==""?'':ClientHolidayHrs[0].Thu:ClientHolidayHrs[0].Thu==""?PTOHours[0].Thu:Number(parseFloat(PTOHours[0].Thu)+parseFloat(ClientHolidayHrs[0].Thu)).toFixed(2)
+                    :NonBillhrs.Thu,
+                    Fri: NonBillhrs.Fri =="0.00"?PTOHours[0].Fri ==""?ClientHolidayHrs[0].Fri==""?'':ClientHolidayHrs[0].Fri:ClientHolidayHrs[0].Fri==""?PTOHours[0].Fri:Number(parseFloat(PTOHours[0].Fri)+parseFloat(ClientHolidayHrs[0].Fri)).toFixed(2)
+                    :NonBillhrs.Fri,
+                    Sat: NonBillhrs.Sat =="0.00"?PTOHours[0].Sat ==""?ClientHolidayHrs[0].Sat==""?'':ClientHolidayHrs[0].Sat:ClientHolidayHrs[0].Sat==""?PTOHours[0].Sat:Number(parseFloat(PTOHours[0].Sat)+parseFloat(ClientHolidayHrs[0].Sat)).toFixed(2)
+                    :NonBillhrs.Sat,
+                    Sun: NonBillhrs.Sun =="0.00"?PTOHours[0].Sun ==""?ClientHolidayHrs[0].Sun==""?'':ClientHolidayHrs[0].Sun:ClientHolidayHrs[0].Sun==""?PTOHours[0].Sun:Number(parseFloat(PTOHours[0].Sun)+parseFloat(ClientHolidayHrs[0].Sun)).toFixed(2)
+                    :NonBillhrs.Sun,
+                }
                 weeklyData.push({
                     SNo: row,
                     Employee: report.Initiator.Title,
@@ -284,10 +301,15 @@ class WeeklyTimesheetReport extends React.Component<WeeklyTimesheetReportProps, 
                     ThB: BillHrs.Thu,
                     FB: BillHrs.Fri,
                     FNB: NonBillhrs.Fri,
-                    SB: BillHrs.Sat == "" ? "0" : BillHrs.Sat,
-                    SNB: NonBillhrs.Sat == "" ? "0" : NonBillhrs.Sat,
-                    SuB: BillHrs.Sun == "" ? "0" : BillHrs.Sun,
-                    SuNB: NonBillhrs.Sun == "" ? "0" : NonBillhrs.Sun,
+                    // commented on 25 july 2024
+                    // SB: BillHrs.Sat == "" ? "0" : BillHrs.Sat,
+                    // SNB: NonBillhrs.Sat == "" ? "0" : NonBillhrs.Sat,
+                    // SuB: BillHrs.Sun == "" ? "0" : BillHrs.Sun,
+                    // SuNB: NonBillhrs.Sun == "" ? "0" : NonBillhrs.Sun,
+                    SB: BillHrs.Sat == BillHrs.Sat,
+                    SNB: NonBillhrs.Sat == NonBillhrs.Sat,
+                    SuB: BillHrs.Sun == BillHrs.Sun,
+                    SuNB: NonBillhrs.Sun == NonBillhrs.Sun,
                     Status: this.getStatus(report.Status),
                     TotalNB: NonBillhrs.Total,
                     TotalB: BillHrs.Total,
@@ -311,7 +333,7 @@ class WeeklyTimesheetReport extends React.Component<WeeklyTimesheetReportProps, 
         }
     }
     private downloadExcel(startDate) {
-
+        this.setState({loading:true})
         const wb = XLSX.utils.book_new();
         let Excelheaders = this.constructExcelHeader()
         let finalData = this.generateExcelData(this.state.WeeklyData, Excelheaders)
@@ -355,7 +377,7 @@ class WeeklyTimesheetReport extends React.Component<WeeklyTimesheetReportProps, 
         XLSX.utils.book_append_sheet(wb, finalWorkshetData, `WE ${SD}`);
         // STEP 4: Write Excel file to browser
         XLSX.writeFile(wb, `${excelName}(${startDate} to ${endDate}).xlsx`);
-
+        this.setState({loading:false})
     }
     private constructTable(weeklyData) {
         let date = new Date(this.state.startDate)
@@ -367,64 +389,69 @@ class WeeklyTimesheetReport extends React.Component<WeeklyTimesheetReportProps, 
             dateArray.push(days[i + 1] + " " + new Date(date).toLocaleDateString('en-US'))
         }
         return (
-
-            <div className='border-box-shadow light-box table-responsive dataTables_wrapper-overflow p-2'>
-                <div style={{ backgroundColor: "#fff" }} className=' txt-center'> <a type="button" id="btnDownloadFile" className="icon-export-b txt-center" onClick={(e) => this.downloadExcel(new Date(this.state.startDate).toLocaleDateString('en-US'))}>
-                    <FontAwesomeIcon icon={faFileExcel} className='icon-export-b'></FontAwesomeIcon>
-                </a>
+            <div className='border-box-shadow light-box p-2'>
+                <div className='t-div txt-center dataTables_wrapper-overflow'>
+                    <div id='pdfMessage'>Note: PDF button generates only manager/reviewer approved individual timesheets.</div>
+                     <a type="button" id="btnDownloadFile" title='Export to Excel complete data' className="a-export-excel txt-center" onClick={(e) => this.downloadExcel(new Date(this.state.startDate).toLocaleDateString('en-US'))}> Export to Excel
+                    <FontAwesomeIcon icon={faFileExcel} className=''></FontAwesomeIcon>
+                    </a>
                     <ExportToPDF AllTimesheetsData={this.state.PDFData} LogoImgUrl={this.siteURL + '/PublishingImages/SynergyLogo.png'} filename={this.state.fileName}></ExportToPDF>
                 </div>
-                <table className="tblWeeklyTimesheetReport" width="100%">
-                    <thead>
-                        <tr className='tr-brd'>
-                            <th></th>
-                            <th></th>
-                            {/* <th className='min-width210'>{dateArray[0]} - {dateArray[dateArray.length-1]}</th> */}
-                            {dateArray.map((date) => (
-                                <th colSpan={2} className=''>{date}</th>
-                            ))}
-                            <th className=''></th>
-                            <th className=''></th>
-                            <th className=''></th>
-                            <th className=''></th>
-                        </tr>
-                        <tr className='tr-brd-2'>
-                            <th className="text-center">S.NO</th>
-                            <th>Employee Name</th>
-                            <th>Non Billable</th>
-                            <th>Billable</th>
-                            <th>Non Billable</th>
-                            <th>Billable</th>
-                            <th>Non Billable</th>
-                            <th>Billable</th>
-                            <th>Non Billable</th>
-                            <th>Billable</th>
-                            <th>Non Billable</th>
-                            <th>Billable</th>
-                            <th>Non Billable</th>
-                            <th>Billable</th>
-                            <th>Non Billable</th>
-                            <th>Billable</th>
-                            <th>Total Non Billable</th>
-                            <th>Total Billable</th>
-                            <th>Total Hours</th>
-                            <th className="text-center">Approval Status</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr className='Billable-Salary'>
-                            <td></td>
-                            <td></td>
-                            <td className='text-center' colSpan={14}>{this.state.ClientName.toLowerCase().includes('synergy') ? 'Billable Salary' : 'Billable Hourly'}</td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                        </tr>
-                        {/*dynamic data */}
-                        {this.generateTableRows(weeklyData)}
-                    </tbody>
-                </table>
+                <div id="WeeklyTableResponsive" className='table-responsive dataTables_wrapper-overflow mt-2'>
+
+                    <table className="tblWeeklyTimesheetReport" width="100%">
+                        <thead>
+                            <tr className='tr-brd'>
+                                <th colSpan={2}><div className='Wr-fz-16'>{this.state.ClientName}</div></th>
+                                {/* <th></th> */}
+                                {/* <th className='min-width210'>{dateArray[0]} - {dateArray[dateArray.length-1]}</th> */}
+                                {dateArray.map((date) => (
+                                    <th colSpan={2} className=''><div>{date}</div></th>
+                                ))}
+                                <th className=''></th>
+                                <th className=''></th>
+                                <th className=''></th>
+                                <th className=''></th>
+                            </tr>
+                            <tr className='tr-brd-2'>
+                                <th className="text-center"><div>S.NO </div></th>
+                                <th><div className='WR-w-155'>Employee Name </div></th>
+                                <th ><div className='w-n-b'>Non Billable </div></th>
+                                <th><div>Billable </div></th>
+                                <th ><div className='w-n-b'>Non Billable </div></th>
+                                <th><div>Billable </div></th>
+                                <th ><div className='w-n-b'>Non Billable </div></th>
+                                <th><div>Billable </div></th>
+                                <th ><div className='w-n-b'>Non Billable </div></th>
+                                <th><div>Billable </div></th>
+                                <th ><div className='w-n-b'>Non Billable </div></th>
+                                <th><div>Billable </div></th>
+                                <th ><div className='w-n-b'>Non Billable </div></th>
+                                <th><div>Billable </div></th>
+                                <th ><div className='w-n-b'>Non Billable </div></th>
+                                <th><div>Billable </div></th>
+                                <th><div>Total Non Billable </div></th>
+                                <th><div>Total Billable </div></th>
+                                <th><div>Total Hours </div></th>
+                                <th className="text-center"><div className=' WR-w-160'>Approval Status </div></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr className='Billable-Salary'>
+                                {/* <td></td>
+                                <td></td> */} 
+                                {/* previosouly colspan 14 an drest td are uncommented */}
+                                <td className='text-center' colSpan={20}>{this.state.ClientName.toLowerCase().includes('synergy') ? 'Billable Salary' : 'Billable Hourly'}</td>
+                                {/* <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td> */}
+                            </tr>
+                            {/*dynamic data */}
+                            {this.generateTableRows(weeklyData)}
+                        </tbody>
+                    </table>
+                </div>
             </div>
         );
     }
@@ -452,9 +479,23 @@ class WeeklyTimesheetReport extends React.Component<WeeklyTimesheetReportProps, 
                 <td className=''>{item.TotalNB}</td>
                 <td className=''>{item.TotalB}</td>
                 <td className=''>{item.TotalH}</td>
-                <td className='text-center'><span className={this.getStatusClass(item.Status)}>{item.Status}</span></td>
+                <td className='text-center' title={this.getStatus(item.Status)}><span className={this.getStatusClass(item.Status)+" weekly-report-AppStat"}>{this.showRMStatus(item.Status)}</span></td>
             </tr>
         ));
+    }
+
+
+    private showRMStatus(status){
+        if(status == 'Approved by Reporting Manager'){
+            return 'RM Approved'
+        }
+        else if(status == 'Rejected by Reporting Manager'){
+            return "RM Rejected"
+        }
+        else if(status=="Rejected by Synergy"){
+            return "Reviewer Rejected"
+        }
+        return status
     }
 
     private getStatusClass(Status) {
@@ -1064,7 +1105,7 @@ class WeeklyTimesheetReport extends React.Component<WeeklyTimesheetReportProps, 
                             <div className="media-m-2 media-p-1">
                                 <div className="my-2">
                                     <div className="row pt-2 px-2">
-                                        <div className="col-md-3">
+                                        <div className="col-md-4">
                                             <div className="light-text">
                                                 <label>Client<span className="mandatoryhastrick">*</span></label>
                                                 <select className="form-control" required={true} name="ClientName" title="Client" id='client' ref={this.client} onChange={this.handleClientChange}>
@@ -1075,7 +1116,7 @@ class WeeklyTimesheetReport extends React.Component<WeeklyTimesheetReportProps, 
                                                 </select>
                                             </div>
                                         </div>
-                                        <div className="col-md-3">
+                                        <div className="col-md-4">
                                             <div className="light-text ">
                                                 <label>Employee<span className="mandatoryhastrick">*</span></label>
                                                 <select className="form-control" required={true} name="InitiatorId" title="Employee" onChange={this.handleChangeEvents} ref={this.EmployeeDropdown}>
@@ -1087,7 +1128,7 @@ class WeeklyTimesheetReport extends React.Component<WeeklyTimesheetReportProps, 
                                             </div>
                                         </div>
 
-                                        <div className="col-md-3">
+                                        <div className="col-md-4">
                                             <div className="light-text div-readonly">
                                                 <div className="custom-datepicker" id="divWeekStartDate">
                                                     <CustomDatePicker
