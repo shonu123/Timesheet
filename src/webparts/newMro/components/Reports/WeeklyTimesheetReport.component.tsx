@@ -287,6 +287,7 @@ class WeeklyTimesheetReport extends React.Component<WeeklyTimesheetReportProps, 
                     :NonBillhrs.Sat,
                     Sun: NonBillhrs.Sun =="0.00"?PTOHours[0].Sun ==""?ClientHolidayHrs[0].Sun==""?'':ClientHolidayHrs[0].Sun:ClientHolidayHrs[0].Sun==""?PTOHours[0].Sun:Number(parseFloat(PTOHours[0].Sun)+parseFloat(ClientHolidayHrs[0].Sun)).toFixed(2)
                     :NonBillhrs.Sun,
+                    Total: NonBillhrs.Total
                 }
                 weeklyData.push({
                     SNo: row,
