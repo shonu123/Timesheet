@@ -3281,7 +3281,9 @@ margin-left: 5px;
   font-size: 14px !important;
   /* padding: 4px 6px !important; */
   padding: 7px 6px !important;
-  border: 1px solid #282828;	
+  /* border: 1px solid #282828;	 */
+  border: 0;
+   box-shadow: inset 1px 1px 0px #3763847a !important;
 }
 
 .tblWeeklyTimesheetReport td{
@@ -3355,4 +3357,9 @@ a#btnDownloadPDFFile:hover {
 
 a#btnDownloadPDFFile:hover.a-export-pdf .fa-file-pdf {
   color: #fff !important;
+}
+
+#theadWeeklyTimesheetReport{
+  position: sticky;
+   top: 0;
 }

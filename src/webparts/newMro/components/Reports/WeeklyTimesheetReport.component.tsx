@@ -344,7 +344,11 @@ class WeeklyTimesheetReport extends React.Component<WeeklyTimesheetReportProps, 
         // mention the range of merge for individual row/item accordingly
         const merge = [
             { s: { r: 1, c: 1 }, e: { r: 1, c: 20 } },
-            { s: { r: 2, c: 2 }, e: { r: 2, c: 16 } },
+            // { s: { r: 2, c: 2 }, e: { r: 2, c: 16 } },
+            //======= new-start
+            // { s: { r: 2, c: 1 }, e: { r: 2, c: 3 } },
+            { s: { r: 2, c: 2 }, e: { r: 2, c: 19 } },
+            //======== end
             // 3rd row days merge
             { s: { r: 3, c: 2 }, e: { r: 3, c: 3 } },
             { s: { r: 3, c: 4 }, e: { r: 3, c: 5 } },
@@ -371,7 +375,7 @@ class WeeklyTimesheetReport extends React.Component<WeeklyTimesheetReportProps, 
 
         finalWorkshetData["!merges"] = merge;
 
-        let excelName = 'Weekly Timesheet Report '
+        let excelName = 'Weekly Timesheet Report - '+this.state.ClientName+' '
         let date = new Date(this.state.startDate)
         let endDate = addDays(new Date(date), 6).toLocaleDateString('en-US');
         let SD = startDate.replaceAll("/", "-")
@@ -393,7 +397,7 @@ class WeeklyTimesheetReport extends React.Component<WeeklyTimesheetReportProps, 
             <div className='border-box-shadow light-box p-2'>
                 <div className='t-div txt-center dataTables_wrapper-overflow'>
                     <div id='pdfMessage'>Note: PDF button generates only manager/reviewer approved individual timesheets.</div>
-                     <a type="button" id="btnDownloadFile" title='Export to Excel complete data' className="a-export-excel txt-center" onClick={(e) => this.downloadExcel(new Date(this.state.startDate).toLocaleDateString('en-US'))}> Export to Excel
+                     <a type="button" id="btnDownloadFile" title='Export all timesheets to excel' className="a-export-excel txt-center" onClick={(e) => this.downloadExcel(new Date(this.state.startDate).toLocaleDateString('en-US'))}> Export to Excel
                     <FontAwesomeIcon icon={faFileExcel} className=''></FontAwesomeIcon>
                     </a>
                     <ExportToPDF AllTimesheetsData={this.state.PDFData} LogoImgUrl={this.siteURL + '/PublishingImages/SynergyLogo.png'} filename={this.state.fileName}></ExportToPDF>
@@ -401,7 +405,7 @@ class WeeklyTimesheetReport extends React.Component<WeeklyTimesheetReportProps, 
                 <div id="WeeklyTableResponsive" className='table-responsive dataTables_wrapper-overflow mt-2'>
 
                     <table className="tblWeeklyTimesheetReport" width="100%">
-                        <thead>
+                        <thead id="theadWeeklyTimesheetReport">
                             <tr className='tr-brd'>
                                 <th colSpan={2}><div className='Wr-fz-16'>{this.state.ClientName}</div></th>
                                 {/* <th></th> */}
@@ -1061,20 +1065,33 @@ class WeeklyTimesheetReport extends React.Component<WeeklyTimesheetReportProps, 
             }
             else if ([11, 13].includes(i))
                 bgColor = 'FCE4D6'
-            if (i != 19)
+
+             if (![15,16,17,18].includes(i)){
+                i !=19?
                 row2.push({
                     v: '', t: "s", s: {
                         alignment: { vertical: "center", horizontal: "left" }, font: { bold: false, sz: 12, color: { rgb: "000000" } }, fill: { fgColor: { rgb: bgColor } }, border: {}
                     }
+                }):
+                row2.push({
+                    v: '', t: "s", s: {
+                        alignment: { vertical: "center", horizontal: "left" }, font: { bold: false, sz: 12, color: { rgb: "000000" } }, fill: { fgColor: { rgb: bgColor } }, border: {
+                            // top: { style: 'thin', color: { rgb: "000000" } },
+                            // left: { style: 'thin', color: { rgb: "000000" } },
+                            bottom: { style: 'thin', color: { rgb: "000000" } },
+                            right: { style: 'thin', color: { rgb: "000000" } },
+                        }
+                    }
                 })
+            }
             else
                 row2.push({
                     v: '', t: "s", s: {
                         alignment: { vertical: "center", horizontal: "left" }, font: { bold: false, sz: 12, color: { rgb: "000000" } }, fill: { fgColor: { rgb: bgColor } }, border: {
-                            top: { style: 'thin', color: { rgb: "000000" } },
+                            // top: { style: 'thin', color: { rgb: "000000" } },
                             // left: { style: 'thin', color: { rgb: "000000" } },
-                            // bottom: { style: 'thin', color: { rgb: "000000" } },
-                            right: { style: 'thin', color: { rgb: "000000" } },
+                            bottom: { style: 'thin', color: { rgb: "000000" } },
+                            // right: { style: 'thin', color: { rgb: "000000" } },
                         }
                     }
                 })
