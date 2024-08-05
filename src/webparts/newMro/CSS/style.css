@@ -1591,7 +1591,7 @@ div[id^="_TopSpan_NotificationSpan"]{
   }
   .col-md-3{
     width: 19%;
-    padding: 0 5px;
+    /* padding: 0 5px; */
     display: inline-block;
   }
   .col-sm-12{
@@ -2518,8 +2518,8 @@ li {
 .ms-BasePicker-itemsWrapper{
   width: 100%;
 }
-
-.divWeeklyStartDate{    
+/* These selectors are not required  after adding Reporting Manager(s) control in Timesheet form */
+/* .divWeeklyStartDate{    
   position: relative !important;
   left: 40px !important;
   width: 150px !important;
@@ -2535,7 +2535,7 @@ li {
   }
   .weeklysection1{
     margin-bottom: 1pc !important;
-  }
+  } */
 
   .dateWeeklyTimesheet,.txtEmployeeName{
     height: 35px !important;
@@ -3212,6 +3212,9 @@ padding: 0;
   position: relative;
   width: -webkit-fill-available;
 } 
+.custom-datepicker-disabled-dates .react-datepicker-wrapper{
+  display: block !important;
+}
 .react-datepicker__calendar-icon
 {
   right: 3px;

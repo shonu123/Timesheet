@@ -252,7 +252,7 @@ class WeeklyTimesheetReport extends React.Component<WeeklyTimesheetReportProps, 
             let row = 1;
             reportData.forEach(report => {
                 let { Initiator, WeekStartDate, TotalHrs, ClientName, Status } = report;
-                const startDate = new Date(WeekStartDate);
+                const startDate = new Date(report.WeekStartDate.split('-')[1] + '/' + report.WeekStartDate.split('-')[2].split('T')[0] + '/' + report.WeekStartDate.split('-')[0]);
                 let weekDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
                 TotalHrs = JSON.parse(TotalHrs)
                 let dates = []
@@ -307,10 +307,10 @@ class WeeklyTimesheetReport extends React.Component<WeeklyTimesheetReportProps, 
                     // SNB: NonBillhrs.Sat == "" ? "0" : NonBillhrs.Sat,
                     // SuB: BillHrs.Sun == "" ? "0" : BillHrs.Sun,
                     // SuNB: NonBillhrs.Sun == "" ? "0" : NonBillhrs.Sun,
-                    SB: BillHrs.Sat == BillHrs.Sat,
-                    SNB: NonBillhrs.Sat == NonBillhrs.Sat,
-                    SuB: BillHrs.Sun == BillHrs.Sun,
-                    SuNB: NonBillhrs.Sun == NonBillhrs.Sun,
+                    SB: BillHrs.Sat,
+                    SNB: NonBillhrs.Sat,
+                    SuB: BillHrs.Sun,
+                    SuNB: NonBillhrs.Sun,
                     Status: this.getStatus(report.Status),
                     TotalNB: NonBillhrs.Total,
                     TotalB: BillHrs.Total,
@@ -374,33 +374,29 @@ class WeeklyTimesheetReport extends React.Component<WeeklyTimesheetReportProps, 
         ];
 
         finalWorkshetData["!merges"] = merge;
-
-        let excelName = 'Weekly Timesheet Report - '+this.state.ClientName+' '
-        let date = new Date(this.state.startDate)
-        let endDate = addDays(new Date(date), 6).toLocaleDateString('en-US');
         let SD = startDate.replaceAll("/", "-")
         XLSX.utils.book_append_sheet(wb, finalWorkshetData, `WE ${SD}`);
         // STEP 4: Write Excel file to browser
-        XLSX.writeFile(wb, `${excelName}(${startDate} to ${endDate}).xlsx`);
+        XLSX.writeFile(wb, this.state.fileName+'.xlsx');
         this.setState({loading:false})
     }
     private constructTable(weeklyData) {
         let date = new Date(this.state.startDate)
         let dateArray = []
         let days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
-        dateArray.push("Monday " + new Date(this.state.startDate).toLocaleDateString('en-US'))
+        dateArray.push("Monday " + `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`)
         for (let i = 0; i < 6; i++) {
             date.setDate(date.getDate() + 1)
-            dateArray.push(days[i + 1] + " " + new Date(date).toLocaleDateString('en-US'))
+            dateArray.push(days[i + 1] + " " + `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`)
         }
         return (
             <div className='border-box-shadow light-box p-2'>
                 <div className='t-div txt-center dataTables_wrapper-overflow'>
                     <div id='pdfMessage'>Note: PDF button generates only manager/reviewer approved individual timesheets.</div>
-                     <a type="button" id="btnDownloadFile" title='Export all timesheets to excel' className="a-export-excel txt-center" onClick={(e) => this.downloadExcel(new Date(this.state.startDate).toLocaleDateString('en-US'))}> Export to Excel
+                     <a type="button" id="btnDownloadFile" title='Export all timesheets to excel' className="a-export-excel txt-center" onClick={(e) => this.downloadExcel(`${this.state.startDate.getMonth() + 1}/${this.state.startDate.getDate()}/${this.state.startDate.getFullYear()}`)}> Export to Excel
                     <FontAwesomeIcon icon={faFileExcel} className=''></FontAwesomeIcon>
                     </a>
-                    <ExportToPDF AllTimesheetsData={this.state.PDFData} LogoImgUrl={this.siteURL + '/PublishingImages/SynergyLogo.png'} filename={this.state.fileName}></ExportToPDF>
+                    <ExportToPDF AllTimesheetsData={this.state.PDFData} LogoImgUrl={this.siteURL + '/PublishingImages/SynergyLogo.png'} filename={this.state.fileName} btnTitle='Export manager/reviewer approved individual timesheets in PDF'></ExportToPDF>
                 </div>
                 <div id="WeeklyTableResponsive" className='table-responsive dataTables_wrapper-overflow mt-2'>
 
@@ -816,11 +812,11 @@ class WeeklyTimesheetReport extends React.Component<WeeklyTimesheetReportProps, 
         let startDate = this.state.startDate
         let days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
         let dates = []
-        dates.push(new Date(startDate).toLocaleDateString('en-US'))
+        dates.push(`${startDate.getMonth() + 1}/${startDate.getDate()}/${startDate.getFullYear()}`)
         let date = new Date(startDate)
         for (let i = 0; i < 6; i++) {
             date.setDate(date.getDate() + 1)
-            dates.push(new Date(date).toLocaleDateString('en-US'))
+            dates.push(`${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`)
         }
         for (const day of days) {
             let bgColor = "BEBABA";

@@ -4,7 +4,8 @@ import pdfFonts from 'pdfmake/build/vfs_fonts';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faFileExcel, faFilePdf } from '@fortawesome/free-solid-svg-icons';
 import Loader from '../Shared/Loader';
-const ExportToPDF = ({ AllTimesheetsData, filename,LogoImgUrl}) => {
+import { StatusType } from "../../Constants/Constants";
+const ExportToPDF = ({ AllTimesheetsData, filename,LogoImgUrl,btnTitle='Export to PDF'}) => {
     // var loading=false;
     const [loading,setLoading] = useState(false)
     pdfMake.vfs = pdfFonts.pdfMake.vfs;
@@ -40,14 +41,26 @@ const ExportToPDF = ({ AllTimesheetsData, filename,LogoImgUrl}) => {
         return Status
     }
     var FilteredTimehseets=[];
+    var weeks= ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    var  Months= ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
     AllTimesheetsData.forEach(timesheet => {
         var WeekStartDate = new Date(timesheet.WeekStartDate.split('-')[1] + '/' + timesheet.WeekStartDate.split('-')[2].split('T')[0] + '/' + timesheet.WeekStartDate.split('-')[0]);
-        FilteredTimehseets.push(
+        let WeekEnd=new Date(WeekStartDate);
+        var WeekEndDate=new Date(WeekEnd.setDate(WeekEnd.getDate() + 6));
+        var SubmittedDate = new Date(timesheet.DateSubmitted.split('-')[1] + '/' + timesheet.DateSubmitted.split('-')[2].split('T')[0] + '/' + timesheet.DateSubmitted.split('-')[0]);
+        var CommentsHistory=JSON.parse(timesheet.CommentsHistory);
+        var ApprovedDate=new Date(CommentsHistory[CommentsHistory.length-1].Date.split('-')[1] + '/' + CommentsHistory[CommentsHistory.length-1].Date.split('-')[2].split('T')[0] + '/' + CommentsHistory[CommentsHistory.length-1].Date.split('-')[0]);
+        var ApprovedBy=CommentsHistory[CommentsHistory.length-1].User;
+        FilteredTimehseets.push( 
             {
-            Date: `${WeekStartDate.getMonth() + 1}/${WeekStartDate.getDate()}/${WeekStartDate.getFullYear()}`,
             EmployeName: timesheet.Name,
-            Status: getStatus(timesheet.Status),
             Client: timesheet.ClientName,
+            StartDate: `${WeekStartDate.getDate().toString().length==1?'0'+WeekStartDate.getDate():WeekStartDate.getDate()}-${Months[WeekStartDate.getMonth()]}-${WeekStartDate.getFullYear()}`,
+            EndDate:`${WeekEndDate.getDate().toString().length==1?'0'+WeekEndDate.getDate():WeekEndDate.getDate()}-${Months[WeekEndDate.getMonth()]}-${WeekEndDate.getFullYear()}`,
+            SubmittedDate:`${SubmittedDate.getDate().toString().length==1?'0'+SubmittedDate.getDate():SubmittedDate.getDate()}-${Months[SubmittedDate.getMonth()]}-${SubmittedDate.getFullYear()}`,
+            ApprovedBy:[StatusType.Submit].includes(timesheet.Status)?'NA':ApprovedBy,
+            ApprovedDate:[StatusType.Submit].includes(timesheet.Status)?'NA':`${ApprovedDate.getDate().toString().length==1?'0'+ApprovedDate.getDate():ApprovedDate.getDate()}-${Months[ApprovedDate.getMonth()]}-${ApprovedDate.getFullYear()}`,
+            Status: getStatus(timesheet.Status),
             //properties required for PDF download
             WeeklyHrs: JSON.parse(timesheet.WeeklyHrs),
             OverTimeHrs: JSON.parse(timesheet.OverTimeHrs),
@@ -61,20 +74,40 @@ const ExportToPDF = ({ AllTimesheetsData, filename,LogoImgUrl}) => {
     })
       // Define styles for the tables
       const styles = {
+        Section_Header: {
+            fontSize:16,
+            bold: true,
+            alignment:'center',
+            color:'#ffffff',
+            margin:[0, 10, 0, 5],
+        },
+        Rectangle_Shape:
+            {
+                type: 'rect',
+                x: 0,  //horizontal position
+                y: 0,  //vertical position
+                w: 1000, // shape width
+                h: 30,  // shape height
+                r: 10,  // Border radius
+                lineColor: '#063b55',
+                lineWidth: 1,
+                fillColor: '#063b55'
+            }
+        ,
         Employee_header: {
-            fontSize:14,
+            fontSize:12,
             bold: true,
             margin: [0, 5, 0, 5],
         },
         Timesheet_header: {
-            fontSize:14,
+            fontSize:12,
             bold: true,
             margin: [0, 5, 0, 5],
             alignment: 'center',
         },
         Sat_Sun_header:{
             color: '#f15e5e',
-            fontSize:14,
+            fontSize:12,
             bold: true,
             margin: [0, 5, 0, 5],
             alignment: 'center',
@@ -103,7 +136,7 @@ const ExportToPDF = ({ AllTimesheetsData, filename,LogoImgUrl}) => {
            margin: [0, 150, 0, 0]
         },
         Desc_PrjCode_header: {
-            fontSize:14,
+            fontSize:12,
             bold: true,
             margin: [0, 20, 0, 0],
             alignment: 'center',
@@ -120,11 +153,18 @@ const ExportToPDF = ({ AllTimesheetsData, filename,LogoImgUrl}) => {
             ],
             pageSize: 'A4',
             pageOrientation: 'landscape',
-            // styles: {
-            //     Timesheet_header: styles.Timesheet_header,
-            //     cell: styles.cell,
-            //     tableBorder: styles.tableBorder,
-            // },
+            footer: function(currentPage, pageCount) {
+                return {
+                    margin: [40, 10],
+                    columns: [
+                        {
+                            text: 'Page ' + currentPage.toString() + ' of ' + pageCount,
+                            alignment: 'right',
+                            fontSize: 12
+                        }
+                    ]
+                };
+            },
         };
         var tables=[];
         for(let index in FilteredTimehseets)
@@ -135,25 +175,44 @@ const ExportToPDF = ({ AllTimesheetsData, filename,LogoImgUrl}) => {
             tables.push(
                 { 
                     image:logoBase64, 
-                    width: 150, 
-                    height:30,
+                    width: 170, 
+                    height:40,
                     alignment: 'left' 
+                },
+                //foe shapes
+                // {canvas:[styles.Rectangle_Shape],
+                // },
+                { text: '\n' }, // Add space between tables 
+                //Table form section header
+                {
+                    table: {
+                        headerRows: 1,
+                        widths: ['100%'],
+                        body: [[{text:'Employee Timehseet Details',style: styles.Section_Header}]]
+                    },
+                    layout:{
+                        fillColor: function (rowIndex, node, columnIndex) {
+                            return (rowIndex === 0) ? '#063b55' : null;  // Alternating row colors
+                        },
+                    },
                 },
                 { text: '\n' }, // Add space between tables 
                 {
                     table: {
                         headerRows: 1,
-                        widths: ['35%', '35%', '30%'],
+                        //widths: ['35%', '35%', '30%'],
+                        widths: ['15%', '1%','34%','15%', '1%','34%'],
                         body: employeeTable
                     },
-                    layout: 'lightHorizontalLines',
+                    //layout: 'lightHorizontalLines',
+                    layout: 'noBorders',
                     style: 'tableBorder',
                 },
                 { text: '\n' }, // Add space between tables
                 {
                     table: {
                         headerRows: 1,
-                        widths: ['15%', '30%', '15%', '5%', '5%', '5%', '5%', '5%', '5%', '5%', '5%'],
+                        widths: ['15%', '20%', '11%', '7%', '7%', '7%', '7%', '7%', '7%', '7%', '5%'],
                         body: timesheetTable,
                     },
                     layout:{
@@ -215,22 +274,24 @@ const ExportToPDF = ({ AllTimesheetsData, filename,LogoImgUrl}) => {
     }
     const getEmployeeData=(TimesheetData) =>{
         var EmpData=[];
-        EmpData.push([{text:'Name',style:styles.Employee_header},{text:'Client',style:styles.Employee_header},{text:'Weekly Start Date',style:styles.Employee_header}]);
-        EmpData.push([TimesheetData.EmployeName,TimesheetData.Client,TimesheetData. Date]);
+        //EmpData.push([{text:'Name',style:styles.Employee_header},{text:'Client',style:styles.Employee_header},{text:'Weekly Start Date',style:styles.Employee_header}]);
+        //EmpData.push([TimesheetData.EmployeName,TimesheetData.Client,TimesheetData. Date]);
+        EmpData.push([{text:'Name',style:styles.Employee_header},':',TimesheetData.EmployeName,{text:'Submitted Date',style:styles.Employee_header},':',TimesheetData.SubmittedDate]);
+        EmpData.push([{text:'Client',style:styles.Employee_header},':',TimesheetData.Client,{text:'Approved By',style:styles.Employee_header},':',TimesheetData.ApprovedBy]);
+        EmpData.push([{text:'Week Start Date',style:styles.Employee_header},':',TimesheetData.StartDate,{text:'Approved Date',style:styles.Employee_header},':',TimesheetData.ApprovedDate]);
+        EmpData.push([{text:'Week End Date',style:styles.Employee_header},':',TimesheetData.EndDate,{text:'Status',style:styles.Employee_header},':',TimesheetData.Status]);
         return EmpData;
     }
     const getTimesheetData=(TimesheetData) =>{
         var TimesheetRows=[];
-        var weeks= ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-        var  Months= ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
         //For table  heading row
         var tableHeadRow=[{ text: '', style: styles.Timesheet_header},
         { text: 'Description', style: styles.Desc_PrjCode_header },
         { text: 'Project Code', style: styles.Desc_PrjCode_header },];
-        var WeekStartDate=new Date(TimesheetData.Date);
+        var WeekStartDate=new Date(TimesheetData.StartDate);
         for(let i=0;i<=6;i++)
         {
-            let Obj={text:weeks[WeekStartDate.getDay()]+' '+(WeekStartDate.getDate().toString().length==1?'0'+WeekStartDate.getDate():WeekStartDate.getDate())+'  '+Months[WeekStartDate.getMonth()], style: ([0,6].includes(WeekStartDate.getDay()))?styles.Sat_Sun_header:styles.Timesheet_header};
+            let Obj={text:weeks[WeekStartDate.getDay()]+'       '+(WeekStartDate.getDate().toString().length==1?'0'+WeekStartDate.getDate():WeekStartDate.getDate())+'  '+Months[WeekStartDate.getMonth()], style: ([0,6].includes(WeekStartDate.getDay()))?styles.Sat_Sun_header:styles.Timesheet_header};
             tableHeadRow.push(Obj);
             WeekStartDate=new Date(WeekStartDate.setDate(WeekStartDate.getDate() + 1));
         }
@@ -278,9 +339,8 @@ const ExportToPDF = ({ AllTimesheetsData, filename,LogoImgUrl}) => {
     }
     const getTimesheetBodyRow=(TimesheetData,RowObj,Rotype,RowIndex)=>
     { 
-       var weeks= ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
        var tableBodyRow=[];
-       var WeekStartDate=new Date(TimesheetData.Date);
+       var WeekStartDate=new Date(TimesheetData.StartDate);
        Number(RowIndex)==0?tableBodyRow.push(Rotype):tableBodyRow.push('');
        ['Office Hours','Billable Hours','Overtime','Holiday','Time Off'].includes(Rotype)?tableBodyRow.push(RowObj.Description):tableBodyRow.push('');
        ['Office Hours','Billable Hours','Overtime','Holiday','Time Off'].includes(Rotype)?tableBodyRow.push(RowObj.ProjectCode):tableBodyRow.push('');
@@ -312,8 +372,8 @@ const ExportToPDF = ({ AllTimesheetsData, filename,LogoImgUrl}) => {
     return (
         <>
         {loading && <Loader />}
-        <a type="button" id="btnDownloadFile" className="icon-export-b" onClick={(e) => generatePDF()}>
-            <FontAwesomeIcon icon={faFilePdf} className='icon-export-b icon-export-pdf'></FontAwesomeIcon>
+        <a type="button" title={btnTitle} id="btnDownloadPDFFile" className="a-export-pdf txt-center" onClick={(e) => generatePDF()}>
+            Export to PDF<FontAwesomeIcon icon={faFilePdf} className=''></FontAwesomeIcon>
         </a>
         </>
     );

@@ -73,6 +73,7 @@ class NavBar extends React.Component<NavBarProps, NavBarState> {
                 item.className = '';
             });
         }
+        localStorage.setItem('PreviouslySelectedTab','');
         event.currentTarget.className = 'nav-click2';
         if(this.props.currentUserGroups.includes('Timesheet Administrators'))
         {

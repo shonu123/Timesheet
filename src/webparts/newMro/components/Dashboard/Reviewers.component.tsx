@@ -348,7 +348,7 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
             toEmail.push(user.EMail);
         }
         // this.setState({comments : comments })
-        let date = new Date(data[0].DateSubmitted)
+        let date = new Date(data[0].DateSubmitted.split('-')[1]+'/'+data[0].DateSubmitted.split('-')[2].split('T')[0]+'/'+data[0].DateSubmitted.split('-')[0])
         let tableContent = {'Name':data[0].Name,'Client':data[0].ClientName,'Submitted Date':`${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`,'Billable Hours':data[0].WeeklyTotalHrs,'OT Hours':data[0].OTTotalHrs,'Total Billable Hours':data[0].BillableTotalHrs,'Holiday Hours':JSON.parse(data[0].ClientHolidayHrs)[0].Total,'Time Off Hours':JSON.parse(data[0].PTOHrs)[0].Total,'Total Hours':data[0].GrandTotal}
         // console.log(tableContent)
         this.updateStatus(recordId,StatusType.Approved,commentsObj,toEmail,ccEmail,tableContent)
@@ -415,7 +415,7 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
             }
             // this.setState({comments : comments })
             let tableContent = {}
-            let date = new Date(data[0].DateSubmitted)
+            let date = new Date(data[0].DateSubmitted.split('-')[1]+'/'+data[0].DateSubmitted.split('-')[2].split('T')[0]+'/'+data[0].DateSubmitted.split('-')[0])
             if(data[0].ClientName.toLowerCase().includes("synergy")){
                 tableContent = {'Name':data[0].Name,'Client Name':data[0].ClientName,'Submitted Date':`${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`,'Office Hours':JSON.parse(data[0].SynergyOfficeHrs)[0].Total,'Holiday Hours':JSON.parse(data[0].ClientHolidayHrs)[0].Total,'Time Off Hours':JSON.parse(data[0].PTOHrs)[0].Total,'Grand Total Hours':data[0].GrandTotal,'Comments':this.state.comments}
             }

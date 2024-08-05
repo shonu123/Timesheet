@@ -19,6 +19,7 @@ interface DatePickerProps {
   handleChange: (e: any) => void;
   selectedDate: Date;
   className: string;
+  id?:string;
   labelName: string;
   isDisabled: boolean;
   ref: any;
@@ -55,7 +56,7 @@ const getStartDate = (date) => {
   }
 }
 
-const CustomDatePicker = ({ handleChange, selectedDate, className, labelName, isDisabled, ref, Day, isDateRange = true }: DatePickerProps) => {
+const CustomDatePicker = ({ handleChange, selectedDate, className,id='', labelName, isDisabled, ref, Day, isDateRange = true }: DatePickerProps) => {
 
   return (
       <>
@@ -74,7 +75,7 @@ const CustomDatePicker = ({ handleChange, selectedDate, className, labelName, is
           required={true}
           name={labelName}
           title={labelName}
-          id={className}
+          id={id}
           placeholderText={"MM/DD/YYYY"}
           showIcon
           toggleCalendarOnIconClick

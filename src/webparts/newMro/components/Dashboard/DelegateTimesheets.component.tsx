@@ -172,11 +172,11 @@ class TimesheetDelegation extends Component<TimesheetDelegationProps, TimesheetD
                         return item.Client == ClientName
                     })
                     if(Delegates.DelegateTo!=undefined){
+                        Delegates.DelegateTo.sort((a, b) => a.Title.localeCompare(b.Title));
                         Delegates.DelegateTo.forEach(obj => {
                             if (obj.ID !== parseInt(value)) {
                                 Delegateobj.push(obj);
                             }
-                        Delegates.sort((a, b) => a.Title.localeCompare(b.Title));
                     });
                 }
                     // this.setState({DelegateToObj: Delegateobj,Client:manager.Client});
@@ -206,6 +206,8 @@ class TimesheetDelegation extends Component<TimesheetDelegationProps, TimesheetD
           if(!Client.toLowerCase().includes('synergy')){
           // this.setState({AuthorizerId:res.AuthorizerId,DelegateToId:res.DelegateToId,Client:res.Client,DelegateToObj:Delegateobj,From:new Date(res.From),To:new Date(res.To),Comments:res.Comments,ActionHistory:JSON.parse(res.ActionHistory),PreviousDateHistory:JSON.parse(res.PreviousDateHistory),ItemID:res.ID,DelegateToName:res.DelegateTo.Title,loading:false})
           this.setState({isSynergyEmployee:false,Client:res.Client,DelegateToObj:Delegateobj,ActionHistory:JSON.parse(res.ActionHistory),PreviousDateHistory:JSON.parse(res.PreviousDateHistory),ItemID:res.ID,SaveUpdateText:'Update',loading:false})
+          if(Delegateobj.length==0)
+          customToaster('toster-error',ToasterTypes.Error,"'Delegate To' not configured for '"+Client+"' client.",4000);
           }
           else{
             this.setState({isSynergyEmployee:true,Client:Client,DelegateToObj:Delegateobj,ActionHistory:JSON.parse(res.ActionHistory),PreviousDateHistory:JSON.parse(res.PreviousDateHistory),ItemID:res.ID,SaveUpdateText:'Update',loading:false});
@@ -214,6 +216,8 @@ class TimesheetDelegation extends Component<TimesheetDelegationProps, TimesheetD
         else{
             if(!Client.toLowerCase().includes('synergy')){
                 this.setState({isSynergyEmployee:false,DelegateToObj: Delegateobj,SaveUpdateText:'Submit',Client:Client,DelegateToId:'',DelegateToName:'',From:null,To:null,Comments:'',loading:false});
+                if(Delegateobj.length==0)
+              customToaster('toster-error',ToasterTypes.Error,"'Delegate To' not configured for '"+Client+"' client.",4000);
             }
             else{
                 this.setState({isSynergyEmployee:true,DelegateToObj: [],SaveUpdateText:'Submit',Client:Client,DelegateToId:'',DelegateToName:'',From:null,To:null,Comments:'',loading:false});
@@ -355,12 +359,12 @@ class TimesheetDelegation extends Component<TimesheetDelegationProps, TimesheetD
                 return item.Client == manager.ClientName
                 })
                 if(Delegates.DelegateTo != undefined){
+                    Delegates.DelegateTo.sort((a, b) => a.Title.localeCompare(b.Title));
                     Delegates.DelegateTo.forEach(obj => {
                         if (obj.ID !== parseInt(this.props.spContext.userId)) {
                             Delegateobj.push(obj);
                         }
                     });
-                    Delegates.sort((a, b) => a.Title.localeCompare(b.Title));
                 }
                 if(manager.ClientName.toLowerCase().includes('synegry')){
                     isSynergyEmployee = true
@@ -569,21 +573,29 @@ class TimesheetDelegation extends Component<TimesheetDelegationProps, TimesheetD
                 return item.Client == data[0].Client
              })
              if(!this.state.isAdmin){
-                Delegates.DelegateTo.forEach(obj => {
-                    if (obj.ID !== parseInt(this.props.spContext.userId)) {
-                        Delegateobj.push(obj);
-                    }
-                });
+                if(![undefined,null,''].includes(Delegates.DelegateTo))
+                {
+                    Delegates.DelegateTo.forEach(obj => {
+                        if (obj.ID !== parseInt(this.props.spContext.userId)) {
+                            Delegateobj.push(obj);
+                        }
+                    });
+                }
              }
              else{
+                if(![undefined,null,''].includes(Delegates.DelegateTo))
+                {
                 Delegates.DelegateTo.forEach(obj => {
                     // if (!Delegateobj.includes(obj.ID)) {
                         Delegateobj.push(obj);
                     // }
                 });
+            }
              }
              if(!data[0].Client.toLowerCase().includes('synergy')){
                 this.setState({isSynergyEmployee:false,AuthorizerId:data[0].AuthorizerId,DelegateToId:data[0].DelegateToId,DelegateToObj: Delegateobj,DelegateToName:data[0].DelegateTo.Title,From :new Date(data[0].From.split('-')[1]+'/'+data[0].From.split('-')[2].split('T')[0]+'/'+data[0].From.split('-')[0]),To: new Date(data[0].To.split('-')[1]+'/'+data[0].To.split('-')[2].split('T')[0]+'/'+data[0].To.split('-')[0]),ActionHistory:JSON.parse(data[0].ActionHistory),PreviousDateHistory:JSON.parse(data[0].PreviousDateHistory),Client: data[0].Client,ItemID:data[0].ID,SaveUpdateText:'Update',addNewRequest:true,DelegateToEMail:data[0].DelegateTo.EMail,loading:false})
+                if(Delegateobj.length==0)
+                customToaster('toster-error',ToasterTypes.Error,"'Delegate To' not configured for '"+data[0].Client+"' client.",4000);
              }
              else{
                 this.setState({isSynergyEmployee:true,AuthorizerId:data[0].AuthorizerId,DelegateToId:data[0].DelegateToId,DelegateToObj: Delegateobj,DelegateToName:data[0].DelegateTo.Title,From :new Date(data[0].From.split('-')[1]+'/'+data[0].From.split('-')[2].split('T')[0]+'/'+data[0].From.split('-')[0]),To: new Date(data[0].To.split('-')[1]+'/'+data[0].To.split('-')[2].split('T')[0]+'/'+data[0].To.split('-')[0]),ActionHistory:JSON.parse(data[0].ActionHistory),PreviousDateHistory:JSON.parse(data[0].PreviousDateHistory),Client: data[0].Client,ItemID:data[0].ID,SaveUpdateText:'Update',addNewRequest:true,DelegateToEMail:data[0].DelegateTo.EMail,loading:false})

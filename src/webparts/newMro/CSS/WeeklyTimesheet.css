@@ -262,6 +262,26 @@
         font-size: 22px;
         color: #0d2f4b;
     }
+    #btnDownloadPDFFile{
+        margin-left: auto;
+    }
+    .SingleManagerDiv{
+        overflow: auto;
+        font-size: 12px;
+        height: 32px;
+        padding: 6px 2px 2px 7px !important;
+    }
+    .MultiManagerDiv{
+        overflow: auto;
+        font-size: 12px;
+        height: 45px;
+        padding: 6px 2px 2px 7px !important;
+    }
+    .tbodyRMDiv tr td{
+        padding: 0px;
+        white-space: pre;
+        padding-right: 11px;
+    }
     /*.ClientHoliday .TimeInput-input
     {
         color:hwb(263 9% 9%);

@@ -28,6 +28,7 @@ import ModalPopUpConfirm from '../Shared/ModalPopUpConfirm';
 import toast, { Toaster } from 'react-hot-toast';
 import customToaster from '../Shared/Toaster.component';
 import { ToasterTypes } from '../../Constants/Constants';
+import ExportToPDF from '../Shared/ExportPDF';
 
 export interface WeeklyTimesheetProps {
     match: any;
@@ -97,6 +98,8 @@ export interface WeeklyTimesheetState {
     ItemID: any,
     userRole: string,
     EmployeeEmail: any,
+    PDFData:any,
+    PDFFileName:any,
     //-------------------------------------
     SaveUpdateText: string;
     showLabel: boolean;
@@ -220,6 +223,8 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
             ItemID: 0,
             userRole: "",
             EmployeeEmail: [],
+            PDFData:[],
+            PDFFileName:'',
             //---------------------------------------------------   
             SaveUpdateText: StatusType.Save,
             showLabel: false,
@@ -326,7 +331,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
         for (const grp of groups) {
             userGroups.push(grp.Title)
         }
-        let trFormdata = this.state.trFormdata
+        let trFormdata = this.state.trFormdata;
         trFormdata['Name'] = this.currentUser
         AllSubmittedTimesheetsOfEmployee.sort((a, b) => {
             const dateA = new Date(a.WeekStartDate).getTime();
@@ -430,6 +435,16 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
             trFormdata.ClientName = ClientNames[0].ClientName;
             this.handleClientChange(ClientNames[0].ClientName);
         }
+        //For getting Reporting Manager names
+        if(this.props.match.params.id == undefined){
+        trFormdata.SuperviserNames=[];
+        for (var item of this.state.SuperviserNames) {
+            if (item.ClientName.toLowerCase() == trFormdata.ClientName.toLowerCase()) {
+                trFormdata.SuperviserNames.push(item.ReportingManager);
+
+            }
+        }
+    }
         this.GetHolidayMasterDataByClientName(trFormdata.WeekStartDate, trFormdata.HolidayType, trFormdata);
     }
     private async getItemData(TimesheetID, DelegationsData) {
@@ -562,7 +577,8 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                 this.WeekNames.push({ "day1": "Sun", "day2": "Mon", "day3": "Tue", "day4": "Wed", "day5": "Thu", "day6": "Fri", "day7": "Sat", "dayCode": "Sunday" });
                 break;
         }
-        this.setState({ trFormdata: trFormdata, currentWeeklyRowsCount: trFormdata.WeeklyItemsData.length, currentOTRowsCount: trFormdata.OTItemsData.length, EmployeeEmail: EmpEmail, loading: false, showBillable: false, showNonBillable: false });
+        let formatedFilename = 'Weekly Timesheet Report - ' + trFormdata.ClientName + ' (' + ((trFormdata.WeekStartDate.getMonth().toString().length == 1 ? '0' + (trFormdata.WeekStartDate.getMonth() + 1) : trFormdata.WeekStartDate.getMonth() + 1) + '-' + (trFormdata.WeekStartDate.getDate().toString().length == 1 ? '0' + trFormdata.WeekStartDate.getDate() : trFormdata.WeekStartDate.getDate()) + '-' + trFormdata.WeekStartDate.getFullYear()) + ')';
+        this.setState({ trFormdata: trFormdata, currentWeeklyRowsCount: trFormdata.WeeklyItemsData.length, currentOTRowsCount: trFormdata.OTItemsData.length, EmployeeEmail: EmpEmail, loading: false, showBillable: false, showNonBillable: false,PDFData:data,PDFFileName:formatedFilename});
         if ([StatusType.Submit, StatusType.Approved, StatusType.ManagerApprove].includes(data[0].Status)) {
             this.setState({ isSubmitted: true });
         }
@@ -628,14 +644,14 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
         this.setState({ EmployeesObj: EmpObj, loading: false, ClientNames: [] })
 
     }
-    private handleApplyingfor = (e) => {
+    private handleApplyingfor = async (e) => {
         this.setState({ loading: true })
         let value = e.target.value;
         const { name } = e.target;
         let trFormdata = { ...this.state.trFormdata }
         if (name == 'Applying') {
             if (value == 'Self') {
-                this.currentUser = this.props.spContext.userDisplayName;;
+                this.currentUser = this.props.spContext.userDisplayName;
                 trFormdata['ClientName'] = ''
                 trFormdata['Name'] = this.currentUser
                 trFormdata.WeekStartDate = null;
@@ -686,6 +702,13 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
         }
         //let WeekStartDate=new Date(date);
         const Formdata = { ...this.state.trFormdata };
+        Formdata.SuperviserNames=[];
+        for (var item of this.state.SuperviserNames) {
+            if (item.ClientName.toLowerCase() == Formdata.ClientName.toLowerCase()) {
+                Formdata.SuperviserNames.push(item.ReportingManager);
+
+            }
+        }
         Formdata.WeekStartDate = date;
         this.GetHolidayMasterDataByClientName(date, Formdata.HolidayType, Formdata);
         this.validateDuplicateRecord(date, Formdata.ClientName, Formdata);
@@ -707,7 +730,13 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
             this.setState({ showBillable: true, showNonBillable: true })
         }
         else {
-            this.setState({ showBillable: false, showNonBillable: false })
+            for (var item of this.state.SuperviserNames) {
+                if (item.ClientName.toLowerCase() == clientVal.toLowerCase()) {
+                    Formdata.SuperviserNames.push(item.ReportingManager);
+
+                }
+            }
+            this.setState({ showBillable: false, showNonBillable: false});
         }
         //For getting Dateofjoining of selected client
         for (var item of this.state.Clients_DateOfJoinings) {
@@ -1889,7 +1918,8 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
             // trFormdata.DelegateToEmails = DelToEmail;
             trFormdata.ReviewersEmail = ReviewEmail;
             trFormdata.NotifiersEmail = NotifyEmail;
-            this.setState({ trFormdata: trFormdata, currentWeeklyRowsCount: trFormdata.WeeklyItemsData.length, currentOTRowsCount: trFormdata.OTItemsData.length, ItemID: ExistRecordData[0].ID, EmployeeEmail: EmpEmail, errorMessage: '', loading: false, showBillable: false, showNonBillable: false });
+            let formatedFilename = 'Weekly Timesheet Report - ' + trFormdata.ClientName + ' (' + ((trFormdata.WeekStartDate.getMonth().toString().length == 1 ? '0' + (trFormdata.WeekStartDate.getMonth() + 1) : trFormdata.WeekStartDate.getMonth() + 1) + '-' + (trFormdata.WeekStartDate.getDate().toString().length == 1 ? '0' + trFormdata.WeekStartDate.getDate() : trFormdata.WeekStartDate.getDate()) + '-' + trFormdata.WeekStartDate.getFullYear()) + ')';
+            this.setState({ trFormdata: trFormdata, currentWeeklyRowsCount: trFormdata.WeeklyItemsData.length, currentOTRowsCount: trFormdata.OTItemsData.length, ItemID: ExistRecordData[0].ID, EmployeeEmail: EmpEmail, errorMessage: '', loading: false, showBillable: false, showNonBillable: false,PDFData:ExistRecordData,PDFFileName:formatedFilename });
             if ([StatusType.Submit, StatusType.Approved, StatusType.ManagerApprove].includes(ExistRecordData[0].Status)) {
                 this.setState({ isSubmitted: true });
             }
@@ -1982,7 +2012,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
             trFormdata.Status = StatusType.Save;
             trFormdata.CommentsHistoryData = [];
             trFormdata.Comments = "";
-            trFormdata.SuperviserNames = [];
+            trFormdata.SuperviserNames = trFormdata.SuperviserNames;
             trFormdata.Pendingwith = "NA";
             trFormdata.WeeklyItemsData.push({ Description: '', ProjectCode: '', Mon: '', Tue: '', Wed: '', Thu: '', Fri: '', Sat: '', Sun: '', Total: '0.00', });
             trFormdata.OTItemsData.push({ Description: '', ProjectCode: '', Mon: '', Tue: '', Wed: '', Thu: '', Fri: '', Sat: '', Sun: '', Total: '0.00', });
@@ -2167,7 +2197,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
             "IsDay7Holiday": { isHoliday: false, HolidayName: "" },
         })
 
-        this.setState({ trFormdata: trFormdata, currentWeeklyRowsCount: trFormdata.WeeklyItemsData.length, currentOTRowsCount: trFormdata.OTItemsData.length, ItemID: 0, EmployeeEmail: this.state.EmployeeEmail, isSubmitted: true, errorMessage: '', showBillable: false, loading: false });
+        this.setState({ trFormdata: trFormdata, currentWeeklyRowsCount: trFormdata.WeeklyItemsData.length, currentOTRowsCount: trFormdata.OTItemsData.length, ItemID: 0, EmployeeEmail: this.state.EmployeeEmail, isSubmitted: true, errorMessage: '', showBillable: false, loading: false});
 
         this.showApproveAndRejectButton(trFormdata);
         //To remove mandatory-FormContent-focus
@@ -2800,22 +2830,25 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
         return formdata;
     }
     private RemoveAll_mandatory_FormContent_focus = (formdata) => {
-        if (!formdata.ClientName.toLowerCase().includes("synergy")) {
-            for (let i in formdata.WeeklyItemsData) {
-                for (let key in formdata.WeeklyItemsData[i]) {
-                    document.getElementById(i + "_" + key + "_weekrow").classList.remove('mandatory-FormContent-focus');
+        if(formdata.ClientName!='')
+        {
+            if (!formdata.ClientName.toLowerCase().includes("synergy")) {
+                for (let i in formdata.WeeklyItemsData) {
+                    for (let key in formdata.WeeklyItemsData[i]) {
+                      document.getElementById(i + "_" + key + "_weekrow")==null?'':document.getElementById(i + "_" + key + "_weekrow").classList.remove('mandatory-FormContent-focus');
+                    }
+                }
+                for (let i in formdata.OTItemsData) {
+                    for (let key in formdata.OTItemsData[i]) {
+                        document.getElementById(i + "_" + key + "_otrow")==null?'':document.getElementById(i + "_" + key + "_otrow").classList.remove('mandatory-FormContent-focus');
+                    }
                 }
             }
-            for (let i in formdata.OTItemsData) {
-                for (let key in formdata.OTItemsData[i]) {
-                    document.getElementById(i + "_" + key + "_otrow").classList.remove('mandatory-FormContent-focus');
-                }
-            }
-        }
-        else {
-            for (let key in formdata.SynergyOfficeHrs[0]) {
-                if (!["Total", "Type"].includes(key)) {
-                    document.getElementById(0 + "_" + key + "_SynOffcHrs").classList.remove('mandatory-FormContent-focus');
+            else {
+                for (let key in formdata.SynergyOfficeHrs[0]) {
+                    if (!["Total", "Type"].includes(key)) {
+                        document.getElementById(0 + "_" + key + "_SynOffcHrs")==null?'':document.getElementById(0 + "_" + key + "_SynOffcHrs").classList.remove('mandatory-FormContent-focus');
+                    }
                 }
             }
         }
@@ -3046,11 +3079,12 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                                     </div>
                                     <div className="col-md-12 SynergyAddress">
                                         <label className='headerClient'>{this.state.trFormdata.ClientName}</label><span id='weekstartAndweekEnd'>{this.getWeekstartAndWeekEnd(this.state.trFormdata)}</span>
+                        { [StatusType.Submit.toString(),StatusType.Approved,StatusType.ManagerApprove].includes(this.state.trFormdata.Status)&&<ExportToPDF AllTimesheetsData={this.state.PDFData} LogoImgUrl={this.siteURL + '/PublishingImages/SynergyLogo.png'} filename={this.state.PDFFileName} btnTitle='Export to PDF'></ExportToPDF>}
                                     </div>
-                                    <div className="row pt-2 px-4 weeklysection1">
-                                        {/* new changes start */}
-                                        {this.state.isAdmin && this.props.match.params.id == undefined ?
-                                            <div className="col-md-3">
+                                    {/* <div className="row pt-2 px-4 weeklysection1"> */}
+                                    <div className="row justify-content-center my-3">
+                                        {/* {this.state.isAdmin && this.props.match.params.id == undefined ?
+                                            <div className="col-md-2">
                                                 <div className="light-text clientName">
                                                     <label>Applying for<span className="mandatoryhastrick">*</span></label>
                                                     <select className="ddlApplying" name="Applying" title="Applying for" onChange={this.handleApplyingfor}>
@@ -3059,8 +3093,6 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                                                     </select>
                                                 </div>
                                             </div> : ''}
-
-
                                         {this.state.onBehalf ?
                                             <div className={this.state.isAdmin ? "col-md-3" : "col-md-4"}>
                                                 <div className="light-text ">
@@ -3073,25 +3105,30 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                                                     </select>
                                                 </div>
                                             </div> :
-                                            <div className={this.state.isAdmin ? "col-md-3" : "col-md-4"}>
+                                            <div className={this.state.isAdmin ? "col-md-3" : "col-md-3"}>
                                                 <div className="light-text">
                                                     <label>Name</label>
                                                     <input className="txtEmployeeName" required={true} name="Name" title="Name" value={this.state.trFormdata.Name} readOnly />
                                                 </div>
                                             </div>
                                         }
-                                        <div className={this.state.isAdmin ? "col-md-3" : "col-md-4"}>
+                                        <div className={this.state.isAdmin ? "col-md-2" : "col-md-3"}>
                                             <div className="light-text clientName">
                                                 <label className='lblClient'>Client Name <span className="mandatoryhastrick">*</span></label>
                                                 <select className="ddlClient" required={true} id='ddlClient' name="ClientName" title="Client Name" onChange={this.handleClientChange} ref={this.Client} disabled={(this.state.ClientNames.length == 1 ? true : this.currentUser == this.state.trFormdata.Name || this.state.isAdmin ? false : true)}>
                                                     <option value=''>None</option>
                                                     {this.state.ClientNames.map((option) => <option value={option} selected={option == this.state.trFormdata.ClientName}>{option}</option>)}
-                                                    {/* {this.getClientNames()} */}
+                                                   {this.getClientNames()} 
                                                 </select>
                                             </div>
                                         </div>
-
-                                        <div className={this.state.isAdmin ? "col-md-3 divWeeklyStartDate" : "col-md-4 divWeeklyStartDate"}>
+                                        <div className={this.state.isAdmin ? "col-md-3" : "col-md-3"}>
+                                                <div className="light-text">
+                                                    <label>{"Reporting Manager(s)"}</label>
+                                                    <input className="txtReportingManager" required={true} name="ReportingManager" title="Reporting Manager(s)" value={this.state.AllReportingManagerNames} readOnly />
+                                                </div>
+                                        </div>
+                                        <div className={this.state.isAdmin ? "col-md-2 divWeeklyStartDate" : "col-md-3 divWeeklyStartDate"}>
                                             <div className="light-text div-readonly">
 
                                                 <div className="custom-datepicker-disabled-dates" id="divWeekStartDate">
@@ -3106,7 +3143,77 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                                                     />
                                                 </div>
                                             </div>
+                                        </div> */}
+                                        {/* new alignment changes start*/}
+                                        {this.state.isAdmin && this.props.match.params.id == undefined ?
+                                            <div className="col-md-2">
+                                                <div className="light-text">
+                                                    <label>Applying for<span className="mandatoryhastrick">*</span></label>
+                                                    <select className="form-control" name="Applying" title="Applying for" onChange={this.handleApplyingfor}>
+                                                        <option value='Self'>Self</option>
+                                                        <option value='onBehalf'>On Behalf</option>
+                                                    </select>
+                                                </div>
+                                            </div> : ''}
+
+                                        {this.state.onBehalf ?
+                                            <div className={this.state.isAdmin ? "col-md-2" : "col-md-3"}>
+                                                <div className="light-text ">
+                                                    <label>Employee<span className="mandatoryhastrick">*</span></label>
+                                                    <select className="form-control" required={true} name="Employee" title="Employee" onChange={this.handleApplyingfor} ref={this.EmployeeDropdown}>
+                                                        <option value='-1'>None</option>
+                                                        {this.state.EmployeesObj.map((option) => (
+                                                            <option value={option.ID} selected={this.state.currentUserId == option.ID}>{option.Title}</option>
+                                                        ))}
+                                                    </select>
+                                                </div>
+                                            </div> :
+                                            <div className={this.state.isAdmin ? "col-md-2" : "col-md-3"}>
+                                                <div className="light-text">
+                                                    <label>Name</label>
+                                                    <input className="form-control" required={true} name="Name" title="Name" value={this.state.trFormdata.Name} readOnly />
+                                                </div>
+                                            </div>
+                                        }
+                                        <div className={this.state.isAdmin ? "col-md-2" : "col-md-3"}>
+                                            <div className="light-text">
+                                                <label >Client Name <span className="mandatoryhastrick">*</span></label>
+                                                <select className="form-control" required={true} id='ddlClient' name="ClientName" title="Client Name" onChange={this.handleClientChange} ref={this.Client} disabled={(this.state.ClientNames.length == 1 ? true : this.currentUser == this.state.trFormdata.Name || this.state.isAdmin ? false : true)}>
+                                                    <option value=''>None</option>
+                                                    {this.state.ClientNames.map((option) => <option value={option} selected={option == this.state.trFormdata.ClientName}>{option}</option>)}
+                                                </select>
+                                            </div>
                                         </div>
+                                        <div className={this.state.isAdmin ? "col-md-2" : "col-md-3"}>
+                                            <div className="light-text">
+                                                <label>Reporting Manager(s)</label>
+                                                <div className={"form-control ManagersDiv"+([0,1].includes(this.state.trFormdata.SuperviserNames.length)?' SingleManagerDiv':' MultiManagerDiv')} title="Reporting Manager(s)">
+                                                    <table>
+                                                        <tbody className="tbodyRMDiv">
+                                                            {this.state.trFormdata.SuperviserNames.map((name)=><tr><td>{name}</td></tr>)}
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div className={this.state.isAdmin ? "col-md-2" : "col-md-3"}>
+                                            <div className="light-text div-readonly">
+                                                <div className="custom-datepicker-disabled-dates" id="divWeekStartDate">
+                                                    <CustomDatePicker
+                                                        handleChange={this.WeekStartDateChange}
+                                                        selectedDate={this.state.trFormdata.WeekStartDate}
+                                                        className='form-control'
+                                                        id='dateWeeklyTimesheet'
+                                                        labelName='Weekly Start Date'
+                                                        isDisabled={(this.currentUser == this.state.trFormdata.Name || this.state.isAdmin ? false : true)}
+                                                        ref={this.weekStartDate}
+                                                        Day={this.WeekNames[0].dayCode}
+                                                    />
+                                                    </div>
+                                            </div>
+                                        </div>
+                                    {/* new alignment changes end*/}
+
                                     </div>
                                     <div className="border-box-shadow light-box table-responsive table-NoScroll">
                                         <div className='table-outer'></div>
@@ -3425,25 +3532,24 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
 
                                 </div>
 
-                                {this.state.trFormdata.CommentsHistoryData.length > 0 ? <><div className="p-2">
+                                {this.state.trFormdata.CommentsHistoryData.length > 0 ? <><div className="light-box m-1 p-2 pt-3">
                                     <h4>History</h4>
-                                </div><div>
-                                        <table className="table table-bordered m-0 timetable">
-                                            <thead style={{ borderBottom: "4px solid #444444" }}>
-                                                <tr>
-                                                    {/* <th className="">Action By</th> */}
-                                                    <th className="" style={{ width: '250px' }}>Action By</th>
-                                                    <th className="" style={{ width: '150px' }}>Status</th>
-                                                    <th className="" style={{ width: '250px' }}>Date & Time (EST)</th>
-                                                    <th className="">Comments</th>
+                                    <table className="table table-bordered m-0 timetable">
+                                    <thead style={{ borderBottom: "4px solid #444444" }}>
+                                        <tr>
+                                            {/* <th className="">Action By</th> */}
+                                            <th className="" style={{ width: '250px' }}>Action By</th>
+                                            <th className="" style={{ width: '150px' }}>Status</th>
+                                            <th className="" style={{ width: '250px' }}>Date & Time (EST)</th>
+                                            <th className="">Comments</th>
 
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                {this.bindComments()}
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {this.bindComments()}
 
-                                            </tbody>
-                                        </table>
+                                    </tbody>
+                                    </table>
                                     </div></> : ""
                                 }
                             </div>
