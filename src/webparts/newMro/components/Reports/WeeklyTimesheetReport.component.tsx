@@ -173,6 +173,8 @@ class WeeklyTimesheetReport extends React.Component<WeeklyTimesheetReportProps, 
 
     private handleCancel = async (e) => {
         this.setState({ Homeredirect: true });
+        document.getElementById('divNavReportItems').classList.remove('show');
+        document.getElementById('Reports').classList.remove('heighlightMasters');
     }
 
     private handleSubmit = () => {
@@ -396,7 +398,7 @@ class WeeklyTimesheetReport extends React.Component<WeeklyTimesheetReportProps, 
                      <a type="button" id="btnDownloadFile" title='Export all timesheets to excel' className="a-export-excel txt-center" onClick={(e) => this.downloadExcel(`${this.state.startDate.getMonth() + 1}/${this.state.startDate.getDate()}/${this.state.startDate.getFullYear()}`)}> Export to Excel
                     <FontAwesomeIcon icon={faFileExcel} className=''></FontAwesomeIcon>
                     </a>
-                    <ExportToPDF AllTimesheetsData={this.state.PDFData} LogoImgUrl={this.siteURL + '/PublishingImages/SynergyLogo.png'} filename={this.state.fileName} btnTitle='Export manager/reviewer approved individual timesheets in PDF'></ExportToPDF>
+                    <ExportToPDF AllTimesheetsData={this.state.PDFData} LogoImgUrl={this.siteURL + '/PublishingImages/SynergyLogo.png'} filename={this.state.fileName} btnTitle='Export manager/reviewer approved individual timesheets in PDF' className='a-export-pdf-button'></ExportToPDF>
                 </div>
                 <div id="WeeklyTableResponsive" className='table-responsive dataTables_wrapper-overflow mt-2'>
 

@@ -232,6 +232,8 @@ class DailyTimesheetReport extends React.Component<DailyTimesheetReportProps, Da
     }
     private handleCancel = async (e)=>{
         this.setState({Homeredirect : true});
+        document.getElementById('divNavReportItems').classList.remove('show');
+        document.getElementById('Reports').classList.remove('heighlightMasters');
     }
     private handleSubmit = () => {
         this.setState({loading:true})

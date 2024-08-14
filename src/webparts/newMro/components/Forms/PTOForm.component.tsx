@@ -548,9 +548,11 @@ class PTOForm extends React.Component<PTOFormProps, PTOFormState> {
         if (name != "TotalHours")
             this.setState({ [name]: value });
         else {
-            if (/^\d+$/.test(value)) {
-                this.setState({ [name]: value });
-            }
+            value = value.match(/\d{0,5}(\.\d{0,2})?/)[0];
+            this.setState({ [name]: value });
+            // if (/^\d+$/.test(value)) {
+            //     this.setState({ [name]: value });
+            // }
         }
         let Employee = this.state.EmployeeObj.filter(employee => { if (value == employee.ClientName) return employee })
         if (name == "selectedClient") {
@@ -644,8 +646,8 @@ class PTOForm extends React.Component<PTOFormProps, PTOFormState> {
 
     // Function to check if all dates in the new date range are present in any of the record date ranges
     private checkDateRangeOverlap(records, newFromDate, newToDate) {
-        const fromDate = new Date(newFromDate);
-        const toDate = new Date(newToDate);
+        const fromDate = new Date(`${newFromDate.getMonth() + 1}/${newFromDate.getDate()}/${newFromDate.getFullYear()}`);
+        const toDate = new Date(`${newToDate.getMonth() + 1}/${newToDate.getDate()}/${newToDate.getFullYear()}`);
         for (let record of records) {
             const recordFromDate = new Date(this.GetDateStringMMDDYYYY(record.From));
             const recordToDate = new Date(this.GetDateStringMMDDYYYY(record.To));

@@ -6,6 +6,7 @@ interface modalProps {
   title: string;
   isVisible: boolean;
   isSuccess: boolean;
+  isManager?:boolean;
   errorMessage: string;
   onConfirm: (e: any) => void;
   onCancel: () => void;
@@ -15,7 +16,7 @@ interface modalProps {
   IsClientApprovalNeed: boolean;
 }
 
-const ModalApprovePopUp = ({ message, modalHeader, title, isVisible, isSuccess, onConfirm, onCancel, comments, errorMessage, commentsValue, IsClientApprovalNeed }: modalProps) => {
+const ModalApprovePopUp = ({ message, modalHeader, title, isVisible, isSuccess,isManager=true, onConfirm, onCancel, comments, errorMessage, commentsValue, IsClientApprovalNeed }: modalProps) => {
   return isVisible ? (
     // <div className="modal" tabIndex={-1} style={{display:'block',background:'rgb(165 165 165 / 25%)'}} >
     <div className="modal" tabIndex={-1} style={{ display: 'block' }} >
@@ -36,7 +37,7 @@ const ModalApprovePopUp = ({ message, modalHeader, title, isVisible, isSuccess, 
                 <label className="floatingTextarea2 top-12">Comments{!isSuccess && <span className='mandatoryhastrick'>*</span>} </label>
                 <textarea className="position-static form-control requiredinput" onChange={comments} value={commentsValue} placeholder="" maxLength={500} id="txtComments" name="comments" disabled={false} title='Comments'></textarea>
               </div>
-              {!isSuccess&&
+              {!isManager&&
               <div className="light-text" id=''>
                 <InputCheckBox
                   label={"Is Client Approval Needed?"}

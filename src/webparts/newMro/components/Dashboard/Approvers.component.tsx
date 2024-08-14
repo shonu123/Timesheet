@@ -14,6 +14,7 @@ import ModalForwardApprovals from '../Shared/ModalForwardApprovals.component';
 import { Toaster } from 'react-hot-toast';
 import customToaster from '../Shared/Toaster.component';
 import { ToasterTypes } from '../../Constants/Constants';
+import ModalApprovePopUp from '../Shared/ModalApprovePopUp';
 export interface ApproversProps {
     match: any;
     spContext: any;
@@ -53,6 +54,8 @@ class ApproversApprovals extends React.Component<ApproversProps, ApproversState>
         loading: false, message: '',
         title: '',
         showHideModal: false,
+        showApproveRejectPopup:false,
+        ModalHeader:'',
         isSuccess: true,
         comments: '',
         Action: '',
@@ -110,7 +113,7 @@ class ApproversApprovals extends React.Component<ApproversProps, ApproversState>
         let delegationQuery = "DelegateTo/Id eq '"+userId+"'"
         try {
         let [responseData,ManagerDelegations] = await Promise.all([
-            sp.web.lists.getByTitle('WeeklyTimeSheet').items.top(2000).filter(filterString+filterQuery).expand("ReportingManager,Initiator").select('ReportingManager/Title,ReportingManager/EMail,Initiator/EMail,*').orderBy('WeekStartDate,DateSubmitted', false).get(),
+            sp.web.lists.getByTitle('WeeklyTimeSheet').items.top(2000).filter(filterString+filterQuery).expand("ReportingManager,Reviewers,Initiator").select('ReportingManager/Title,ReportingManager/EMail,Reviewers/EMail,Reviewers/Id,Initiator/EMail,Initiator/Id,*').orderBy('WeekStartDate,DateSubmitted', false).get(),
             sp.web.lists.getByTitle('Delegations').items.filter(delegationQuery).expand("Authorizer,DelegateTo").select('Authorizer/Title,Authorizer/ID,DelegateTo/ID,*').orderBy('Authorizer/ID', false).get(),
         ])
                 // let getDelegateRecords = this.showDelegatedRecords(ManagerDelegations[0].startDate,ManagerDelegations[0].endDate)
@@ -137,7 +140,7 @@ class ApproversApprovals extends React.Component<ApproversProps, ApproversState>
                 getDelTSQry+= ") and PendingWith eq 'Manager'";
                 let delRmData = []
                 if(managers.length)
-                    delRmData = await sp.web.lists.getByTitle('WeeklyTimeSheet').items.top(2000).filter(getDelTSQry).expand("ReportingManager,Initiator").select('ReportingManager/Title,ReportingManager/EMail,Initiator/EMail,*').orderBy('WeekStartDate,DateSubmitted', false).get()
+                    delRmData = await sp.web.lists.getByTitle('WeeklyTimeSheet').items.top(2000).filter(getDelTSQry).expand("ReportingManager,Reviewers,Initiator").select('ReportingManager/Title,ReportingManager/EMail,Reviewers/EMail,Reviewers/Id,Initiator/EMail,Initiator/Id,*').orderBy('WeekStartDate,DateSubmitted', false).get()
 
                 let Data = [];
                 for (const d of responseData) {
@@ -166,6 +169,10 @@ class ApproversApprovals extends React.Component<ApproversProps, ApproversState>
                         Client: d.ClientName,
                         EmployeeEmail: d.Initiator.EMail,
                         ReportingManagerEmails: d.ReportingManager.map(e => e.EMail),
+                        ReviewerEmails: d.Reviewers.map(e => e.EMail),
+                        ReviewerIds: d.Reviewers.map(e => e.Id),
+                        EmployeeId:d.Initiator.Id,
+                        StatusInList:d.Status,
                         commentsObj: JSON.parse(d.CommentsHistory),
                         SynergyOfficeHrs: d.SynergyOfficeHrs,
                         ClientHolidayHrs: d.ClientHolidayHrs,
@@ -198,6 +205,10 @@ class ApproversApprovals extends React.Component<ApproversProps, ApproversState>
                             Client: d.ClientName,
                             EmployeeEmail: d.Initiator.EMail,
                             ReportingManagerEmails: d.ReportingManager.map(e => e.EMail),
+                            ReviewerEmails: d.Reviewers.map(e => e.EMail),
+                            ReviewerIds: d.Reviewers.map(e => e.Id),
+                            EmployeeId:d.Initiator.Id,
+                            StatusInList:d.Status,
                             commentsObj: JSON.parse(d.CommentsHistory),
                             SynergyOfficeHrs: d.SynergyOfficeHrs,
                             ClientHolidayHrs: d.ClientHolidayHrs,
@@ -206,7 +217,7 @@ class ApproversApprovals extends React.Component<ApproversProps, ApproversState>
                 }
                 // console.log(Data);
                 
-                // this.getClientDeligates(Data)
+                 //this.getClientDeligates(Data)
                 this.setState({ ReportingManager: Data,loading: false });
 
             }
@@ -218,7 +229,6 @@ class ApproversApprovals extends React.Component<ApproversProps, ApproversState>
             //     console.log('Failed to fetch data.', err);
             // });
     }
-
     private async getClientDeligates(Data) {
         let obj;
 if(Data.length>0){
@@ -236,15 +246,12 @@ if(Data.length>0){
         }
     }
 }
-
-        this.setState({ ReportingManager: Data, DelegateToUsers: obj, loading: false });
+this.setState({ ReportingManager: Data, DelegateToUsers: obj, loading: false });
     }
-
     private getSelectedRows = (rows) => {
         // setSelectedRows(rows.selectedRows);
         this.setState({ SelectedRows: rows.selectedRows });
     };
-
     private ShowPopUp = () => {
         this.setState({ showHideModal: true })
     }
@@ -300,7 +307,7 @@ if(Data.length>0){
     }
     private forwardApprovals = async () => {
         let selectedValue = this.state.SelectedValue;
-        let Comments = this.state.comments
+        let Comments = this.state.comments;
         document.getElementById('ddlDelegateTo').classList.remove('mandatory-FormContent-focus');
         document.getElementById('txtComments').classList.remove('mandatory-FormContent-focus');
         let isValid = this.checkIsValid(selectedValue, 'ddlDelegateTo', 'Please select the person you want to delegate the approvals to.')
@@ -382,9 +389,223 @@ if(Data.length>0){
         }
 
     }
+    //////////////// functions related to Multi Approve/Reject
+    private showConfirmApproveRejectPopup = (e) =>{
+        let name = e.target.name;
+        if(name == 'Approve')
+        {
+            this.setState({message : 'Are you sure you want to approve selected timesheets?',title : 'Approve', Action : 'Approve',showApproveRejectPopup : true,isSuccess:true,ModalHeader:'modal-header-Approve'});
+        }
+        else
+         if(name == 'Reject')
+        {
+            this.setState({message : 'Are you sure you want to reject selected timesheets?',title : 'Reject', Action :StatusType.Reject,showApproveRejectPopup : true,isSuccess:false,ModalHeader:'modal-header-reject'});
+        }
+        else{
+            this.setState({showApproveRejectPopup : false})
+        }
+    }
+    private closeApproveRejectPopup= () => {
+        this.setState({ showApproveRejectPopup: false, Action :'', errorMessage : '',comments:''});
+    }
+    private handleApproveReject = (e) =>{
+         if(this.state.Action == "Approve")
+        this.handleMultiApprove();
+        else
+         this.handleMultiReject();
+    }
+    private handleMultiApprove = async () => {
+        document.getElementById('txtComments').classList.remove('mandatory-FormContent-focus');
+        this.setState({ loading: true })
+        let selectedRows = this.state.SelectedRows;
+        try {
+            // Batch declaration
+            const batch = sp.web.createBatch();
+            let NotModifiedTimesheets=[];
+            for (const row of selectedRows) {
+                // Queue update operation for each item in the batch
+                let comments = row.commentsObj;
+                comments.push({
+                    Action: StatusType.Approved,
+                    Role: 'Manager',
+                    User: this.props.spContext.userDisplayName,
+                    Comments: this.state.comments,
+                    Date: new Date().toISOString()
+                })
+                //For handling  Reportimg Manager and Reviewer same case.
+                let IsReportingManagerReviewerSame = false;
+                let currentActioner = this.props.spContext.userEmail;
+                for (let Rew of row.ReviewerEmails) {
+                    if (currentActioner == Rew) {
+                        IsReportingManagerReviewerSame = true;
+                        break;
+                    }
 
+                }
+                let formData = {
+                    Status :IsReportingManagerReviewerSame?StatusType.Approved:StatusType.ManagerApprove,
+                    PendingWith : IsReportingManagerReviewerSame?"NA":"Reviewer",
+                    AssignedToId :IsReportingManagerReviewerSame?{"results": [] }: {"results": row.ReviewerIds },
+                    CommentsHistory: JSON.stringify(comments),
+                }
+                //let itemStatus = await this.getItemStatusBeforeActionPerform(row.Id,row.StatusInList);
+                // if(itemStatus==row.StatusInList)
+                // {
+                //      sp.web.lists.getByTitle('WeeklyTimeSheet').items.getById(row.Id).inBatch(batch).update(formData);
+                //      NotModifiedTimesheets.push(row);
+                // }
+               var  ItemsJustBeforeActionPerform= await this.GetAllItemsStatusBeforeActionPerform();
+               for(let T in ItemsJustBeforeActionPerform)
+               {
+                if(row.Id==ItemsJustBeforeActionPerform[T].Id &&row.StatusInList==ItemsJustBeforeActionPerform[T].Status)
+                {
+                    sp.web.lists.getByTitle('WeeklyTimeSheet').items.getById(row.Id).inBatch(batch).update(formData);
+                    NotModifiedTimesheets.push(row);
+                    break;
+                }
+               }     
+            }
+            // Execute the batch
+            await batch.execute();
+            customToaster('toster-success', ToasterTypes.Success, NotModifiedTimesheets.length+' Timesheet(s) Approved Sucessfully.'+(selectedRows.length-NotModifiedTimesheets.length!=0?' Attention: '+(selectedRows.length-NotModifiedTimesheets.length)+' Timesheet(s) has been modified Please Review the changes.':''), 2000);
+            this.setState({ comments: '',showApproveRejectPopup: false,SelectedRows:[], loading: false });
+            this.ReportingManagerApproval();
+        } catch (error) {
+            customToaster('toster-error', ToasterTypes.Error, 'Sorry! something went wrong', 4000)
+            this.setState({ loading: false })
+            console.log('Error occurred during multi approvals:', error);
+        }
 
+    }
+    private handleMultiReject = async () => {
+        let Comments = this.state.comments;
+        document.getElementById('txtComments').classList.remove('mandatory-FormContent-focus');
+        let isValid = this.checkIsValid(Comments, 'txtComments', 'Comments cannot be blank.');
+        if (isValid) {
+            this.setState({ loading: true })
+        let selectedRows = this.state.SelectedRows;
+        try {
+            // Batch declaration
+            const batch = sp.web.createBatch();
+            let NotModifiedTimesheets=[];
+            for (const row of selectedRows) {
+                // Queue update operation for each item in the batch
+                let comments = row.commentsObj
+                comments.push({
+                    Action: StatusType.Reject,
+                    Role: 'Manager',
+                    User: this.props.spContext.userDisplayName,
+                    Comments: this.state.comments,
+                    Date: new Date().toISOString()
+                })
+                let formData = {
+                    Status : StatusType.ManagerReject,
+                    PendingWith : "Initiator",
+                    AssignedToId : { "results": [row.EmployeeId] },
+                    CommentsHistory: JSON.stringify(comments),
+                }
+                //    let itemStatus = await this.getItemStatusBeforeActionPerform(row.Id,row.StatusInList);
+                //     if(itemStatus==row.StatusInList)
+                //     {
+                //         sp.web.lists.getByTitle('WeeklyTimeSheet').items.getById(row.Id).inBatch(batch).update(formData);
+                //         NotModifiedTimesheets.push(row);
+                //     }
+                    var  ItemsJustBeforeActionPerform= await this.GetAllItemsStatusBeforeActionPerform();
+                    for(let T in ItemsJustBeforeActionPerform)
+                    {
+                     if(row.Id==ItemsJustBeforeActionPerform[T].Id &&row.StatusInList==ItemsJustBeforeActionPerform[T].Status)
+                     {
+                         sp.web.lists.getByTitle('WeeklyTimeSheet').items.getById(row.Id).inBatch(batch).update(formData);
+                         NotModifiedTimesheets.push(row);
+                         break;
+                     }
+                    }
+            }
+            // Execute the batch
+            await batch.execute();
 
+            customToaster('toster-success', ToasterTypes.Success, NotModifiedTimesheets.length+' Timesheet(s) Rejected Sucessfully.'+(selectedRows.length-NotModifiedTimesheets.length!=0?' Attention: '+(selectedRows.length-NotModifiedTimesheets.length)+' Timesheet(s) has been modified Please Review the changes.':''), 2000);
+            this.setState({ comments: '',showApproveRejectPopup: false,SelectedRows:[], loading: false });
+            this.ReportingManagerApproval();
+        }
+        catch (error) {
+            customToaster('toster-error', ToasterTypes.Error, 'Sorry! something went wrong', 4000)
+            this.setState({ loading: false })
+            console.log('Error occurred during multi rejections:', error);
+        }
+
+        }
+    }
+    private async getItemStatusBeforeActionPerform(TimesheetID,OpenedTimeStatus) {
+        let filterQuery = "ID eq '" + TimesheetID + "'";
+        let data = await sp.web.lists.getByTitle('WeeklyTimeSheet').items.filter(filterQuery).select('Status').get();
+        if (data.length == 1)
+            return data[0].Status;
+        else
+            return OpenedTimeStatus;
+
+    }
+    private GetAllItemsStatusBeforeActionPerform = async () => {
+        const userId = this.props.spContext.userId;
+        let dateFilter = new Date()
+        dateFilter.setDate(new Date().getDate() - 60);
+        let date = `${dateFilter.getMonth() + 1}/${dateFilter.getDate()}/${dateFilter.getFullYear()}`
+        var filterQuery = "and WeekStartDate ge '" + date + "'"
+        // var filterString = "ReportingManager/Id eq '"+userId+"' and PendingWith eq 'Manager' and Status eq '"+StatusType.Submit+"'"
+        var filterString = "(AssignedTo/Id eq '" + userId + "' or ReportingManager/Id eq '"+userId+"') and PendingWith eq 'Manager'";
+        let delegationQuery = "DelegateTo/Id eq '"+userId+"'"
+        try {
+        let [responseData,ManagerDelegations] = await Promise.all([
+            sp.web.lists.getByTitle('WeeklyTimeSheet').items.top(2000).filter(filterString+filterQuery).expand("ReportingManager,Reviewers,Initiator").select('ReportingManager/Title,ReportingManager/EMail,Reviewers/EMail,Reviewers/Id,Initiator/EMail,Initiator/Id,*').orderBy('WeekStartDate,DateSubmitted', false).get(),
+            sp.web.lists.getByTitle('Delegations').items.filter(delegationQuery).expand("Authorizer,DelegateTo").select('Authorizer/Title,Authorizer/ID,DelegateTo/ID,*').orderBy('Authorizer/ID', false).get(),
+        ])
+                let managers = []
+                for (const row of ManagerDelegations) {
+                    let isApplicable = this.showDelegatedRecords(row.From,row.To)
+                    if(isApplicable){
+                        managers.push(row)
+                    }
+                }
+                let getDelTSQry = ''
+                if(managers.length){
+                    if(managers.length>2){
+                        for (const row of managers) {
+                            getDelTSQry+="(ReportingManager/Id eq '"+row.Authorizer.ID+"' or"
+                        }
+                        getDelTSQry = getDelTSQry.substring(0, getDelTSQry.lastIndexOf("or"));
+                    }
+                    else{
+                        getDelTSQry = "(ReportingManager/Id eq '"+managers[0].Authorizer.ID+"'"
+                    }
+                }
+                getDelTSQry+= ") and PendingWith eq 'Manager'";
+                let delRmData = []
+                if(managers.length)
+                    delRmData = await sp.web.lists.getByTitle('WeeklyTimeSheet').items.top(2000).filter(getDelTSQry).expand("ReportingManager,Reviewers,Initiator").select('ReportingManager/Title,ReportingManager/EMail,Reviewers/EMail,Reviewers/Id,Initiator/EMail,Initiator/Id,*').orderBy('WeekStartDate,DateSubmitted', false).get()
+
+                let ItemsJustBeforeActionPerform=[];
+                for (const d of responseData) {
+                    ItemsJustBeforeActionPerform.push({
+                        Id: d.Id,
+                        EmployeName: d.Name,
+                        Status: d.Status,
+                    })
+                }
+                if(delRmData.length){
+                    for (const d of delRmData) {
+                        ItemsJustBeforeActionPerform.push({
+                            Id: d.Id,
+                            EmployeName: d.Name,
+                            Status: d.Status ,
+                        })
+                    }
+                }
+             return ItemsJustBeforeActionPerform;
+            }
+            catch (error) {
+                console.log("Sorry something went wrong!", error)
+            }
+    }
     public render() {
         const columns = [
             {
@@ -464,10 +685,12 @@ if(Data.length>0){
         return (
             <React.Fragment>
                 <ModalForwardApprovals changeEvent={this.handleChangeEvents} dropdownObject={this.state.DelegateToUsers} isVisible={this.state.showHideModal} message='Are you sure you want to forward the selected Timesheets?' modalHeader='modal-header-reject' onCancel={this.handleCancel} onConfirm={this.forwardApprovals} selectedValue={this.state.SelectedValue} title='' commentsValue={this.state.comments}></ModalForwardApprovals>
+                {/* Popup for Multi Approve/Reject */}
+                <ModalApprovePopUp message={this.state.message} title={this.state.title} isVisible={this.state.showApproveRejectPopup} isSuccess={this.state.isSuccess} isManager={true} onConfirm={this.handleApproveReject} onCancel={this.closeApproveRejectPopup} comments={this.handleChangeEvents} errorMessage={this.state.errorMessage} commentsValue={this.state.comments} modalHeader={this.state.ModalHeader} IsClientApprovalNeed= {false}></ModalApprovePopUp>
                 <div>
                     <div className='table-head-1st-td'>
                         <TableGenerator columns={columns} data={this.state.ReportingManager} fileName={''} showExportExcel={false}
-                            showAddButton={false} customBtnClass='' btnDivID='' navigateOnBtnClick='' btnSpanID='' btnCaption='' btnTitle='Forward Approvals' searchBoxLeft={true} selectableRows={false} handleSelectedRows={this.getSelectedRows} customButton={this.state.SelectedRows.length > 0 ? true : false} customButtonClick={this.ShowPopUp} onRowClick={this.handleRowClicked}></TableGenerator>
+                            showAddButton={false} customBtnClass='' btnDivID='' navigateOnBtnClick='' btnSpanID='' btnCaption='' btnTitle='Forward Approvals' searchBoxLeft={true} selectableRows={this.state.ReportingManager.length>0?true:false} clearSelectedRows={true} handleSelectedRows={this.getSelectedRows} customButton={false} showMultiApproveOrReject={this.state.SelectedRows.length > 0 ? true : false} onClickApproveOrReject={this.showConfirmApproveRejectPopup}  customButtonClick={this.ShowPopUp} onRowClick={this.handleRowClicked}></TableGenerator>
                     </div>
                     {/*selectableRows={this.state.ReportingManager.length>0?true:false} replace this to show delegations */}
                 </div>

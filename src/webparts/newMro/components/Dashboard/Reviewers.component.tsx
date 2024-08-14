@@ -601,7 +601,7 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
                 <ModalPopUp title={this.state.modalTitle} modalText={this.state.modalText} isVisible={this.state.successPopUp} onClose={this.navigateAfterAction} isSuccess={this.state.isSuccess}></ModalPopUp>
 
                 {/* ModalApprovePopUp is a custom popup shown with Comments and to Approve or Reject the timesheet */}
-                <ModalApprovePopUp message={this.state.message} title={this.state.title} isVisible={this.state.showHideModal} isSuccess={this.state.isSuccess} onConfirm={this.handleAction} onCancel={this.handlefullClose} comments={this.handleComments} errorMessage={this.state.errorMessage} commentsValue={this.state.comments} modalHeader={this.state.ModalHeader} IsClientApprovalNeed= {this.state.IsClientApprovalNeed}></ModalApprovePopUp>
+                <ModalApprovePopUp message={this.state.message} title={this.state.title} isVisible={this.state.showHideModal} isSuccess={this.state.isSuccess}  isManager={false} onConfirm={this.handleAction} onCancel={this.handlefullClose} comments={this.handleComments} errorMessage={this.state.errorMessage} commentsValue={this.state.comments} modalHeader={this.state.ModalHeader} IsClientApprovalNeed= {this.state.IsClientApprovalNeed}></ModalApprovePopUp>
                 
                 <div>
                     <div className='table-head-1st-td'>

@@ -46,6 +46,7 @@ class EmployeeMasterForm extends React.Component<EmployeeMasterFormProps, Employ
     private MandatoryDescription;
     private MandatoryProjectCode;
     private EligibleforPTO;
+    private EmployeeClassification;   //PTO change
     constructor(props: EmployeeMasterFormProps) {
         super(props);
         this.siteURL = this.props.spContext.webAbsoluteUrl;
@@ -57,6 +58,7 @@ class EmployeeMasterForm extends React.Component<EmployeeMasterFormProps, Employ
         this.WeekStartDay = React.createRef();
         this.MandatoryDescription = React.createRef();
         this.MandatoryProjectCode = React.createRef();
+        this.EmployeeClassification = React.createRef(); //PTO change
         this.EligibleforPTO = React.createRef();
     }
 
@@ -68,6 +70,7 @@ class EmployeeMasterForm extends React.Component<EmployeeMasterFormProps, Employ
         ApproverId: { results: [] },
         ReviewerId: { results: [] },
         ClientsObject: [],
+        EmployeeClassificationObject:[], //PTO change
         HolidaysObject: [],
         DateOfJoining: new Date(),
         isActive: true,
@@ -91,6 +94,7 @@ class EmployeeMasterForm extends React.Component<EmployeeMasterFormProps, Employ
         message: "Success",
         showToaster: false,
         GlobalHolidayList: [],
+        EmployeeClassification:'',    //PTO change
         EligibleforPTO: false,
         isDisabled: false,
         // DelegateToId: { results: [] },
@@ -119,6 +123,11 @@ class EmployeeMasterForm extends React.Component<EmployeeMasterFormProps, Employ
             sp.web.lists.getByTitle('Client').items.filter("IsActive eq 1").select('*').orderBy('Title').get(),
             sp.web.currentUser.groups(),
         ])
+        // let [clients,EmployeeClassification, groups] = await Promise.all([
+        //     sp.web.lists.getByTitle('Client').items.filter("IsActive eq 1").select('*').orderBy('Title').get(),
+        //     sp.web.lists.getByTitle('EmployeeClassification').items.filter("").select('*').orderBy('Title').get(),
+        //     sp.web.currentUser.groups(),
+        // ])    //PTO change
         // this.setState({ClientsObject : clients})
         // console.log(clients);
         // this.setState({ loading: false});        this.setState({showToaster:true})
@@ -146,6 +155,7 @@ class EmployeeMasterForm extends React.Component<EmployeeMasterFormProps, Employ
             }
             let filterdHolidays = this.getHolidays(Holidays,'None')
             this.setState({ ClientsObject: clients, GlobalHolidayList: Holidays, HolidaysObject: filterdHolidays, loading: false })
+            // this.setState({ ClientsObject: clients,EmployeeClassificationObject:EmployeeClassification, GlobalHolidayList: Holidays, HolidaysObject: filterdHolidays, loading: false })  //PTO change
         }
         // console.log("current user deatils")
         // console.log(this.props.context.pageContext)
@@ -277,6 +287,15 @@ class EmployeeMasterForm extends React.Component<EmployeeMasterFormProps, Employ
                 this.setState({ HolidaysObject: [], HolidayType: '' })
             }
         }
+        // else if(name == 'EmployeeClassification')
+        // {
+        //     this.state.EmployeeClassificationObject.filter((option) =>{
+        //         if(option.Title==value)
+        //         {
+        //             this.setState({ EligibleforPTO: option.PTO });    
+        //         }
+        //     })
+        // }   //PTO change
     }
 
     // this function is used to set date to the date feild
@@ -682,6 +701,18 @@ class EmployeeMasterForm extends React.Component<EmployeeMasterFormProps, Employ
                                                     <select className="form-control" name="EligibleforPTO" title="Is Eligible for PTO" id='EligibleforPTO' ref={this.EligibleforPTO} onChange={this.handleChangeEvents} value={this.state.EligibleforPTO} disabled={this.state.isDisabled}>
                                                         <option value='Yes'>Yes</option>
                                                         <option value='No'>No</option>
+                                                    </select>
+                                                </div>
+                                            </div> */}
+                                            {/* PTO change */}
+                                             {/* <div className="col-md-3">
+                                                <div className="light-text">
+                                                    <label>Employee Classification<span className="mandatoryhastrick">*</span></label>
+                                                    <select className="form-control" required={true} name="EmployeeClassification" title="Employee Classification" id='client' ref={this.EmployeeClassification} onChange={this.handleChangeEvents} disabled={this.state.isDisabled}>
+                                                        <option value=''>None</option>
+                                                        {this.state.EmployeeClassificationObject.map((option) => (
+                                                            <option value={option.Title} selected={option.Title == this.state.EmployeeClassification}>{option.Title}</option>
+                                                        ))}
                                                     </select>
                                                 </div>
                                             </div> */}

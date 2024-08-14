@@ -4,8 +4,9 @@ import pdfFonts from 'pdfmake/build/vfs_fonts';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faFileExcel, faFilePdf } from '@fortawesome/free-solid-svg-icons';
 import Loader from '../Shared/Loader';
-import { StatusType } from "../../Constants/Constants";
-const ExportToPDF = ({ AllTimesheetsData, filename,LogoImgUrl,btnTitle='Export to PDF'}) => {
+import { StatusType, ToasterTypes } from "../../Constants/Constants";
+import customToaster from "./Toaster.component";
+const ExportToPDF = ({ AllTimesheetsData, filename,LogoImgUrl,btnTitle='Export to PDF',className=''}) => {
     // var loading=false;
     const [loading,setLoading] = useState(false)
     pdfMake.vfs = pdfFonts.pdfMake.vfs;
@@ -98,32 +99,36 @@ const ExportToPDF = ({ AllTimesheetsData, filename,LogoImgUrl,btnTitle='Export t
             fontSize:12,
             bold: true,
             margin: [0, 5, 0, 5],
+            padding:[10,0,0,0]
         },
         Timesheet_header: {
-            fontSize:12,
+            fontSize:11,
             bold: true,
             margin: [0, 5, 0, 5],
             alignment: 'center',
         },
         Sat_Sun_header:{
             color: '#f15e5e',
-            fontSize:12,
+            fontSize:11,
             bold: true,
             margin: [0, 5, 0, 5],
             alignment: 'center',
         },
         cell: {
+            fontSize:11,
             bold: false,            
             alignment: 'center',
             margin: [0, 150, 0, 0]
         },
         Sat_Sun_cell:
         {
+        fontSize:11,
         color:'#f15e5e',
         alignment: 'center',
         },
         billableTotal_cell:
         {
+           fontSize:11,
            fillColor:'#f5d8d8 ',
            bold: true,  
            alignment: 'center',
@@ -131,12 +136,13 @@ const ExportToPDF = ({ AllTimesheetsData, filename,LogoImgUrl,btnTitle='Export t
         },
         grandTotal_cell:
         {
+           fontSize:11,
            bold: true,  
            alignment: 'center',
            margin: [0, 150, 0, 0]
         },
         Desc_PrjCode_header: {
-            fontSize:12,
+            fontSize:11,
             bold: true,
             margin: [0, 20, 0, 0],
             alignment: 'center',
@@ -167,110 +173,117 @@ const ExportToPDF = ({ AllTimesheetsData, filename,LogoImgUrl,btnTitle='Export t
             },
         };
         var tables=[];
-        for(let index in FilteredTimehseets)
+        if(FilteredTimehseets.length>0)
         {
-            let employeeTable= getEmployeeData(FilteredTimehseets[index])
-            let timesheetTable=getTimesheetData(FilteredTimehseets[index]);
-            //let historyTable=(FilteredTimehseets[index].CommentsHistory.length>0)?getActionHistoryData(FilteredTimehseets[index]):['','','',''];
-            tables.push(
-                { 
-                    image:logoBase64, 
-                    width: 170, 
-                    height:40,
-                    alignment: 'left' 
-                },
-                //foe shapes
-                // {canvas:[styles.Rectangle_Shape],
-                // },
-                { text: '\n' }, // Add space between tables 
-                //Table form section header
-                {
-                    table: {
-                        headerRows: 1,
-                        widths: ['100%'],
-                        body: [[{text:'Employee Timehseet Details',style: styles.Section_Header}]]
+            for(let index in FilteredTimehseets)
+            {
+                let employeeTable= getEmployeeData(FilteredTimehseets[index])
+                let timesheetTable=getTimesheetData(FilteredTimehseets[index]);
+                //let historyTable=(FilteredTimehseets[index].CommentsHistory.length>0)?getActionHistoryData(FilteredTimehseets[index]):['','','',''];
+                tables.push(
+                    { 
+                        image:logoBase64, 
+                        width: 170, 
+                        height:40,
+                        alignment: 'left' 
                     },
-                    layout:{
-                        fillColor: function (rowIndex, node, columnIndex) {
-                            return (rowIndex === 0) ? '#063b55' : null;  // Alternating row colors
+                    //foe shapes
+                    // {canvas:[styles.Rectangle_Shape],
+                    // },
+                    { text: '\n' }, // Add space between tables 
+                    //Table form section header
+                    {
+                        table: {
+                            headerRows: 1,
+                            widths: ['100%'],
+                            body: [[{text:'Employee Timehseet Details',style: styles.Section_Header}]]
+                        },
+                        layout:{
+                            fillColor: function (rowIndex, node, columnIndex) {
+                                return (rowIndex === 0) ? '#063b55' : null;  // Alternating row colors
+                            },
                         },
                     },
-                },
-                { text: '\n' }, // Add space between tables 
-                {
-                    table: {
-                        headerRows: 1,
-                        //widths: ['35%', '35%', '30%'],
-                        widths: ['15%', '1%','34%','15%', '1%','34%'],
-                        body: employeeTable
+                    { text: '\n' }, // Add space between tables 
+                    {
+                        table: {
+                            headerRows: 1,
+                            //widths: ['35%', '35%', '30%'],
+                            widths: ['12%', '1%','37%','12%', '1%','37%'],
+                            body: employeeTable
+                        },
+                        //layout: 'lightHorizontalLines',
+                        layout: 'noBorders',
+                        style: 'tableBorder',
                     },
-                    //layout: 'lightHorizontalLines',
-                    layout: 'noBorders',
-                    style: 'tableBorder',
-                },
-                { text: '\n' }, // Add space between tables
-                {
-                    table: {
-                        headerRows: 1,
-                        widths: ['15%', '20%', '11%', '7%', '7%', '7%', '7%', '7%', '7%', '7%', '5%'],
-                        body: timesheetTable,
+                    { text: '\n' }, // Add space between tables
+                    {
+                        table: {
+                            headerRows: 1,
+                            widths: ['15%', '20%', '11%', '7%', '7%', '7%', '7%', '7%', '7%', '7%', '5%'],
+                            body: timesheetTable,
+                        },
+                        layout:{
+                            fillColor: function (rowIndex, node, columnIndex) {
+                                return (rowIndex === 0) ? '#CCCCCC' : null;  // Alternating row colors
+                            },
+                            hLineWidth: function (i, node) {
+                                return 1; // horizontal line width
+                            },
+                            vLineWidth: function (i, node) {
+                                return 1; // vertical line width
+                            },
+                            hLineColor: function (i, node) {
+                                return '#AAAAAA'; // horizontal line color
+                            },
+                            vLineColor: function (i, node) {
+                                return '#AAAAAA'; // vertical line color
+                            }
+                        },
+                       style: 'tableBorder',
                     },
-                    layout:{
-                        fillColor: function (rowIndex, node, columnIndex) {
-                            return (rowIndex === 0) ? '#CCCCCC' : null;  // Alternating row colors
-                        },
-                        hLineWidth: function (i, node) {
-                            return 1; // horizontal line width
-                        },
-                        vLineWidth: function (i, node) {
-                            return 1; // vertical line width
-                        },
-                        hLineColor: function (i, node) {
-                            return '#AAAAAA'; // horizontal line color
-                        },
-                        vLineColor: function (i, node) {
-                            return '#AAAAAA'; // vertical line color
-                        }
-                    },
-                   style: 'tableBorder',
-                },
-                // { text: '\n' }, // Add space between tables
-                // {
-                //     table: {
-                //         headerRows: 1,
-                //         widths: ['20%', '10%', '20%', '50%'],
-                //         body: historyTable,
-                //     },
-                //     layout: {
-                //         fillColor: function (rowIndex, node, columnIndex) {
-                //             return (rowIndex === 0) ? '#CCCCCC' : null;  // Alternating row colors
-                //         },
-                //         hLineWidth: function (i, node) {
-                //             return 1; // horizontal line width
-                //         },
-                //         vLineWidth: function (i, node) {
-                //             return 1; // vertical line width
-                //         },
-                //         hLineColor: function (i, node) {
-                //             return '#AAAAAA'; // horizontal line color
-                //         },
-                //         vLineColor: function (i, node) {
-                //             return '#AAAAAA'; // vertical line color
-                //         }
-                //     },
-                //     style: 'tableBorder',
-                // },
-                (Number(index)==FilteredTimehseets.length-1)?{ text: '\n' }:
-                { text: '\n',pageBreak: 'after' }, // Add space between tables and page breaks of each timesheet except last  timesheet
-            );
+                    // { text: '\n' }, // Add space between tables
+                    // {
+                    //     table: {
+                    //         headerRows: 1,
+                    //         widths: ['20%', '10%', '20%', '50%'],
+                    //         body: historyTable,
+                    //     },
+                    //     layout: {
+                    //         fillColor: function (rowIndex, node, columnIndex) {
+                    //             return (rowIndex === 0) ? '#CCCCCC' : null;  // Alternating row colors
+                    //         },
+                    //         hLineWidth: function (i, node) {
+                    //             return 1; // horizontal line width
+                    //         },
+                    //         vLineWidth: function (i, node) {
+                    //             return 1; // vertical line width
+                    //         },
+                    //         hLineColor: function (i, node) {
+                    //             return '#AAAAAA'; // horizontal line color
+                    //         },
+                    //         vLineColor: function (i, node) {
+                    //             return '#AAAAAA'; // vertical line color
+                    //         }
+                    //     },
+                    //     style: 'tableBorder',
+                    // },
+                    (Number(index)==FilteredTimehseets.length-1)?{ text: '\n' }:
+                    { text: '\n',pageBreak: 'after' }, // Add space between tables and page breaks of each timesheet except last  timesheet
+                );
+            }
+            documentDefinition.content=tables;
+            // Generate PDF and download
+            pdfMake.createPdf(documentDefinition).download(`${filename}.pdf`,closeLoader);
         }
-        documentDefinition.content=tables;
-        // Generate PDF and download
-        pdfMake.createPdf(documentDefinition).download(`${filename}.pdf`,closeLoader);
+        else{
+            customToaster('toster-error', ToasterTypes.Error, 'No approved timesheets found!', 4000);
+            closeLoader();
+        }
         
     };
     const closeLoader=()=>{
-        setLoading(false)
+        setLoading(false);
     }
     const getEmployeeData=(TimesheetData) =>{
         var EmpData=[];
@@ -279,7 +292,7 @@ const ExportToPDF = ({ AllTimesheetsData, filename,LogoImgUrl,btnTitle='Export t
         EmpData.push([{text:'Name',style:styles.Employee_header},':',TimesheetData.EmployeName,{text:'Submitted Date',style:styles.Employee_header},':',TimesheetData.SubmittedDate]);
         EmpData.push([{text:'Client',style:styles.Employee_header},':',TimesheetData.Client,{text:'Approved By',style:styles.Employee_header},':',TimesheetData.ApprovedBy]);
         EmpData.push([{text:'Week Start Date',style:styles.Employee_header},':',TimesheetData.StartDate,{text:'Approved Date',style:styles.Employee_header},':',TimesheetData.ApprovedDate]);
-        EmpData.push([{text:'Week End Date',style:styles.Employee_header},':',TimesheetData.EndDate,{text:'Status',style:styles.Employee_header},':',TimesheetData.Status]);
+        EmpData.push([{text:'Week End Date',style:styles.Employee_header},':',TimesheetData.EndDate,{text:'Status',style:styles.Employee_header},':',(TimesheetData.Status==StatusType.Submit?'Waiting for Manager Approval':TimesheetData.Status=='Approved by Reporting Manager'?'Waiting for Reviewer Approval':TimesheetData.Status==StatusType.Approved?TimesheetData.Status:'')]);
         return EmpData;
     }
     const getTimesheetData=(TimesheetData) =>{
@@ -291,7 +304,7 @@ const ExportToPDF = ({ AllTimesheetsData, filename,LogoImgUrl,btnTitle='Export t
         var WeekStartDate=new Date(TimesheetData.StartDate);
         for(let i=0;i<=6;i++)
         {
-            let Obj={text:weeks[WeekStartDate.getDay()]+'       '+(WeekStartDate.getDate().toString().length==1?'0'+WeekStartDate.getDate():WeekStartDate.getDate())+'  '+Months[WeekStartDate.getMonth()], style: ([0,6].includes(WeekStartDate.getDay()))?styles.Sat_Sun_header:styles.Timesheet_header};
+            let Obj={text:weeks[WeekStartDate.getDay()]+'         '+(WeekStartDate.getDate().toString().length==1?'0'+WeekStartDate.getDate():WeekStartDate.getDate())+'  '+Months[WeekStartDate.getMonth()], style: ([0,6].includes(WeekStartDate.getDay()))?styles.Sat_Sun_header:styles.Timesheet_header};
             tableHeadRow.push(Obj);
             WeekStartDate=new Date(WeekStartDate.setDate(WeekStartDate.getDate() + 1));
         }
@@ -372,8 +385,8 @@ const ExportToPDF = ({ AllTimesheetsData, filename,LogoImgUrl,btnTitle='Export t
     return (
         <>
         {loading && <Loader />}
-        <a type="button" title={btnTitle} id="btnDownloadPDFFile" className="a-export-pdf txt-center" onClick={(e) => generatePDF()}>
-            Export to PDF<FontAwesomeIcon icon={faFilePdf} className=''></FontAwesomeIcon>
+        <a type="button" title={btnTitle} id={className=='a-export-pdf-button'?"btnDownloadPDFFile":''} className={ className+" txt-center"} onClick={(e) => generatePDF()}>
+            {className=='a-export-pdf-button'?'Export to PDF':''}<FontAwesomeIcon icon={faFilePdf} className=''></FontAwesomeIcon>
         </a>
         </>
     );

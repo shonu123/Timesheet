@@ -3079,7 +3079,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                                     </div>
                                     <div className="col-md-12 SynergyAddress">
                                         <label className='headerClient'>{this.state.trFormdata.ClientName}</label><span id='weekstartAndweekEnd'>{this.getWeekstartAndWeekEnd(this.state.trFormdata)}</span>
-                        { [StatusType.Submit.toString(),StatusType.Approved,StatusType.ManagerApprove].includes(this.state.trFormdata.Status)&&<ExportToPDF AllTimesheetsData={this.state.PDFData} LogoImgUrl={this.siteURL + '/PublishingImages/SynergyLogo.png'} filename={this.state.PDFFileName} btnTitle='Export to PDF'></ExportToPDF>}
+                        { [StatusType.Submit.toString(),StatusType.Approved,StatusType.ManagerApprove].includes(this.state.trFormdata.Status)&&<ExportToPDF AllTimesheetsData={this.state.PDFData} LogoImgUrl={this.siteURL + '/PublishingImages/SynergyLogo.png'} filename={this.state.PDFFileName} btnTitle='Export to PDF' className='a-export-pdf-icon'></ExportToPDF>}
                                     </div>
                                     {/* <div className="row pt-2 px-4 weeklysection1"> */}
                                     <div className="row justify-content-center my-3">

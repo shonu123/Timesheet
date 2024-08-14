@@ -1078,6 +1078,7 @@ a:active {
 }
 .RejectButtons:hover{
   background: rgb(193, 42, 41);
+  color: #fff;
 }
 .min-52{
   min-height: 52vh;
@@ -3253,7 +3254,7 @@ cursor: pointer;
   color: #016f38 !important;
 }
  
-.a-export-pdf {
+.a-export-pdf-button {
   border: 1px solid #e28282;
 border-radius: 22px;
 padding: 5px 8px;
@@ -3274,7 +3275,7 @@ margin-left: 5px;
   min-width: 85px;
 }
 
-.a-export-pdf .fa-file-pdf {
+.a-export-pdf-button .fa-file-pdf {
   padding: 0 0 0 7px;
   height: 20px;
   color: #ad0b00 !important;
@@ -3358,10 +3359,17 @@ a#btnDownloadPDFFile:hover {
  border-color: #fff;
 }
 
-a#btnDownloadPDFFile:hover.a-export-pdf .fa-file-pdf {
+a#btnDownloadPDFFile:hover.a-export-pdf-button .fa-file-pdf {
   color: #fff !important;
 }
-
+.a-export-pdf-icon{
+    margin-left: auto;
+    color: #ad0b00;
+    font-size: 26px;
+}
+.a-export-pdf-icon.btn-add:hover{
+  color: #ad0b00 !important;
+}
 #theadWeeklyTimesheetReport{
   position: sticky;
    top: 0;
