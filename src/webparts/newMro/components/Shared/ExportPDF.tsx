@@ -6,6 +6,8 @@ import { faFileExcel, faFilePdf } from '@fortawesome/free-solid-svg-icons';
 import Loader from '../Shared/Loader';
 import { StatusType, ToasterTypes } from "../../Constants/Constants";
 import customToaster from "./Toaster.component";
+import '../../CSS/WeeklyTimesheet.css'
+
 const ExportToPDF = ({ AllTimesheetsData, filename,LogoImgUrl,btnTitle='Export to PDF',className=''}) => {
     // var loading=false;
     const [loading,setLoading] = useState(false)
@@ -28,18 +30,34 @@ const ExportToPDF = ({ AllTimesheetsData, filename,LogoImgUrl,btnTitle='Export t
     //To filter necessary fields
     const getStatus=(value)=>{
         let Status=value
-        if(value =="approved by Manager")
-        {
-            Status = "Approved by Reporting Manager"
+
+        if(value == StatusType.Submit.toString()){
+            Status = 'Waiting for Manager Approval'
         }
-        else if(value == "rejected by Manager"){
-                Status = "Rejected by Reporting Manager"
-            }
-        else if(value =="rejected by Synergy")
-            {
-                Status = "Rejected by Synergy"
-            }
+        else if(value == StatusType.ManagerApprove.toString()){
+            Status = 'Waiting for Reviewer Approval'
+        }
+        else if(value == StatusType.Approved.toString()){
+            Status = 'Approved'
+        }
+        else if(value == StatusType.ManagerReject.toString()){
+            Status = "Rejected by Reporting Manager"
+        }
+        else if(value == StatusType.ReviewerReject.toString()){
+           Status = "Rejected by Reviewer"
+        }
         return Status
+    }
+    const actionDetails = (status)=>{
+        let actionObj = {
+            ActionBy: "Approved By",
+            ActionDate: "Approved Date"
+        }
+        if(status == 'Rejected by Reporting Manager' || status == 'Rejected by Reviewer'){
+            actionObj.ActionBy = "Rejected By"
+            actionObj.ActionDate = "Rejected Date"
+        }
+        return actionObj
     }
     var FilteredTimehseets=[];
     var weeks= ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
@@ -51,7 +69,7 @@ const ExportToPDF = ({ AllTimesheetsData, filename,LogoImgUrl,btnTitle='Export t
         var SubmittedDate = new Date(timesheet.DateSubmitted.split('-')[1] + '/' + timesheet.DateSubmitted.split('-')[2].split('T')[0] + '/' + timesheet.DateSubmitted.split('-')[0]);
         var CommentsHistory=JSON.parse(timesheet.CommentsHistory);
         var ApprovedDate=new Date(CommentsHistory[CommentsHistory.length-1].Date.split('-')[1] + '/' + CommentsHistory[CommentsHistory.length-1].Date.split('-')[2].split('T')[0] + '/' + CommentsHistory[CommentsHistory.length-1].Date.split('-')[0]);
-        var ApprovedBy=CommentsHistory[CommentsHistory.length-1].User;
+        var ActionBy=CommentsHistory[CommentsHistory.length-1].User;
         FilteredTimehseets.push( 
             {
             EmployeName: timesheet.Name,
@@ -59,7 +77,7 @@ const ExportToPDF = ({ AllTimesheetsData, filename,LogoImgUrl,btnTitle='Export t
             StartDate: `${WeekStartDate.getDate().toString().length==1?'0'+WeekStartDate.getDate():WeekStartDate.getDate()}-${Months[WeekStartDate.getMonth()]}-${WeekStartDate.getFullYear()}`,
             EndDate:`${WeekEndDate.getDate().toString().length==1?'0'+WeekEndDate.getDate():WeekEndDate.getDate()}-${Months[WeekEndDate.getMonth()]}-${WeekEndDate.getFullYear()}`,
             SubmittedDate:`${SubmittedDate.getDate().toString().length==1?'0'+SubmittedDate.getDate():SubmittedDate.getDate()}-${Months[SubmittedDate.getMonth()]}-${SubmittedDate.getFullYear()}`,
-            ApprovedBy:[StatusType.Submit].includes(timesheet.Status)?'NA':ApprovedBy,
+            ActionBy:[StatusType.Submit].includes(timesheet.Status)?'NA':ActionBy,
             ApprovedDate:[StatusType.Submit].includes(timesheet.Status)?'NA':`${ApprovedDate.getDate().toString().length==1?'0'+ApprovedDate.getDate():ApprovedDate.getDate()}-${Months[ApprovedDate.getMonth()]}-${ApprovedDate.getFullYear()}`,
             Status: getStatus(timesheet.Status),
             //properties required for PDF download
@@ -290,9 +308,9 @@ const ExportToPDF = ({ AllTimesheetsData, filename,LogoImgUrl,btnTitle='Export t
         //EmpData.push([{text:'Name',style:styles.Employee_header},{text:'Client',style:styles.Employee_header},{text:'Weekly Start Date',style:styles.Employee_header}]);
         //EmpData.push([TimesheetData.EmployeName,TimesheetData.Client,TimesheetData. Date]);
         EmpData.push([{text:'Name',style:styles.Employee_header},':',TimesheetData.EmployeName,{text:'Submitted Date',style:styles.Employee_header},':',TimesheetData.SubmittedDate]);
-        EmpData.push([{text:'Client',style:styles.Employee_header},':',TimesheetData.Client,{text:'Approved By',style:styles.Employee_header},':',TimesheetData.ApprovedBy]);
-        EmpData.push([{text:'Week Start Date',style:styles.Employee_header},':',TimesheetData.StartDate,{text:'Approved Date',style:styles.Employee_header},':',TimesheetData.ApprovedDate]);
-        EmpData.push([{text:'Week End Date',style:styles.Employee_header},':',TimesheetData.EndDate,{text:'Status',style:styles.Employee_header},':',(TimesheetData.Status==StatusType.Submit?'Waiting for Manager Approval':TimesheetData.Status=='Approved by Reporting Manager'?'Waiting for Reviewer Approval':TimesheetData.Status==StatusType.Approved?TimesheetData.Status:'')]);
+        EmpData.push([{text:'Client',style:styles.Employee_header},':',TimesheetData.Client,{text:actionDetails(TimesheetData.Status).ActionBy,style:styles.Employee_header},':',TimesheetData.ActionBy]);
+        EmpData.push([{text:'Week Start Date',style:styles.Employee_header},':',TimesheetData.StartDate,{text:actionDetails(TimesheetData.Status).ActionDate,style:styles.Employee_header},':',TimesheetData.ApprovedDate]);
+        EmpData.push([{text:'Week End Date',style:styles.Employee_header},':',TimesheetData.EndDate,{text:'Status',style:styles.Employee_header},':',(TimesheetData.Status)]);
         return EmpData;
     }
     const getTimesheetData=(TimesheetData) =>{
@@ -384,7 +402,7 @@ const ExportToPDF = ({ AllTimesheetsData, filename,LogoImgUrl,btnTitle='Export t
     }
     return (
         <>
-        {loading && <Loader />}
+        {loading && <Loader/>}
         <a type="button" title={btnTitle} id={className=='a-export-pdf-button'?"btnDownloadPDFFile":''} className={ className+" txt-center"} onClick={(e) => generatePDF()}>
             {className=='a-export-pdf-button'?'Export to PDF':''}<FontAwesomeIcon icon={faFilePdf} className=''></FontAwesomeIcon>
         </a>

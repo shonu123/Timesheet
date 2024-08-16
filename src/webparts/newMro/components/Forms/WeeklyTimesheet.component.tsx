@@ -126,7 +126,6 @@ export interface WeeklyTimesheetState {
     ActionButtonId: any;
     RowType: string;
     rowCount: string;
-
     isAdmin: boolean,
     onBehalf: boolean;
     currentUserId: number;
@@ -134,6 +133,7 @@ export interface WeeklyTimesheetState {
     weeks: any;
     Months: any,
     showToaster: boolean;
+    showPDFButton:boolean;
 }
 
 class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetState> {
@@ -251,7 +251,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
             showConfirmDeletePopup: false,
             RowType: "",
             rowCount: "",
-
+            showPDFButton:false,
             onBehalf: false,
             currentUserId: this.props.spContext.userId,
             EmployeesObj: [],
@@ -609,7 +609,12 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
         for (const grp of groups) {
             userGroups.push(grp.Title)
         }
-        this.setState({ UserGoups: userGroups })
+        let showPDF = false
+        if (userGroups.includes('Timesheet Administrators') || userGroups.includes('Dashboard Admins')) {
+            if(![StatusType.Save.toString(),StatusType.Revoke.toString()].includes(this.state.trFormdata.Status))
+            showPDF = true
+        }
+        this.setState({ UserGoups: userGroups,showPDFButton:showPDF })
 
         this.showApproveAndRejectButton(trFormdata);
         this.userAccessableRecord(trFormdata);
@@ -3079,7 +3084,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                                     </div>
                                     <div className="col-md-12 SynergyAddress">
                                         <label className='headerClient'>{this.state.trFormdata.ClientName}</label><span id='weekstartAndweekEnd'>{this.getWeekstartAndWeekEnd(this.state.trFormdata)}</span>
-                        { [StatusType.Submit.toString(),StatusType.Approved,StatusType.ManagerApprove].includes(this.state.trFormdata.Status)&&<ExportToPDF AllTimesheetsData={this.state.PDFData} LogoImgUrl={this.siteURL + '/PublishingImages/SynergyLogo.png'} filename={this.state.PDFFileName} btnTitle='Export to PDF' className='a-export-pdf-icon'></ExportToPDF>}
+                        { this.state.showPDFButton&&<ExportToPDF AllTimesheetsData={this.state.PDFData} LogoImgUrl={this.siteURL + '/PublishingImages/SynergyLogo.png'} filename={this.state.PDFFileName} btnTitle='Export to PDF' className='a-export-pdf-icon'></ExportToPDF>}
                                     </div>
                                     {/* <div className="row pt-2 px-4 weeklysection1"> */}
                                     <div className="row justify-content-center my-3">

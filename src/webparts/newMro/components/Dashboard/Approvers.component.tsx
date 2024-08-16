@@ -66,6 +66,8 @@ class ApproversApprovals extends React.Component<ApproversProps, ApproversState>
         DelegateToUsers: [],
         TimesheetID:"",
         redirect:false,
+        isRedirect:false,
+        clearRows:true,
         //  AssignedToId:'',
         //  DelegateToId:'',
     };
@@ -74,6 +76,11 @@ class ApproversApprovals extends React.Component<ApproversProps, ApproversState>
         this.ReportingManagerApproval();
     }
 
+    public componentDidUpdate = () => {
+        if (this.state.isRedirect) {
+            this.ReportingManagerApproval();
+        }
+    }
     private  handleRowClicked = (row) => {
         let ID = row.Id
         this.setState({TimesheetID:ID,redirect:true})
@@ -102,7 +109,8 @@ class ApproversApprovals extends React.Component<ApproversProps, ApproversState>
     // this function is used to get 2 month records of weeklytime data of the employees who's manager is current logged in user from weeklytimesheet list
 
     private ReportingManagerApproval = async () => {
-        this.setState({ loading: true });
+        // this.setState({ loading: true,isRedirect:false });
+        this.setState({clearRows:false,SelectedRows: [],ReportingManager: [],isRedirect:false,loading: true });
         const userId = this.props.spContext.userId;
         let dateFilter = new Date()
         dateFilter.setDate(new Date().getDate() - 60);
@@ -218,7 +226,7 @@ class ApproversApprovals extends React.Component<ApproversProps, ApproversState>
                 // console.log(Data);
                 
                  //this.getClientDeligates(Data)
-                this.setState({ ReportingManager: Data,loading: false });
+                this.setState({clearRows:false, ReportingManager: Data,loading: false});
 
             }
             catch (error) {
@@ -250,6 +258,11 @@ this.setState({ ReportingManager: Data, DelegateToUsers: obj, loading: false });
     }
     private getSelectedRows = (rows) => {
         // setSelectedRows(rows.selectedRows);
+        if(rows.selectedRows.length>0){
+            // this.setState({clearRows:false})
+            this.setState({clearRows:false, SelectedRows: rows.selectedRows });
+        }
+        else
         this.setState({ SelectedRows: rows.selectedRows });
     };
     private ShowPopUp = () => {
@@ -379,9 +392,10 @@ this.setState({ ReportingManager: Data, DelegateToUsers: obj, loading: false });
             //     console.log('Error occurred while sending emails:', error);
             // }
             // console.log('Bulk forwards successful!');
-            customToaster('toster-success', ToasterTypes.Success, 'Timesheets forwarded Sucessfully.', 2000)
-            this.setState({ SelectedValue: '', comments: '', showHideModal: false,SelectedRows:[], loading: false });
-            this.ReportingManagerApproval();
+            // customToaster('toster-success', ToasterTypes.Success, 'Timesheets forwarded Sucessfully.', 2000)
+            customToaster('toster-success', ToasterTypes.Success, 'Timesheet(s) Approved Sucessfully.', 2000)
+            this.setState({ SelectedValue: '', comments: '', showHideModal: false,SelectedRows:[], loading: false,clearRows:true,isRedirect:true });
+            // this.ReportingManagerApproval();
         } catch (error) {
             customToaster('toster-error', ToasterTypes.Error, 'Sorry! something went wrong', 4000)
             this.setState({ loading: false })
@@ -468,8 +482,8 @@ this.setState({ ReportingManager: Data, DelegateToUsers: obj, loading: false });
             // Execute the batch
             await batch.execute();
             customToaster('toster-success', ToasterTypes.Success, NotModifiedTimesheets.length+' Timesheet(s) Approved Sucessfully.'+(selectedRows.length-NotModifiedTimesheets.length!=0?' Attention: '+(selectedRows.length-NotModifiedTimesheets.length)+' Timesheet(s) has been modified Please Review the changes.':''), 2000);
-            this.setState({ comments: '',showApproveRejectPopup: false,SelectedRows:[], loading: false });
-            this.ReportingManagerApproval();
+            this.setState({ comments: '',showApproveRejectPopup: false,SelectedRows:[], loading: false,clearRows:true,isRedirect:true });
+            // this.ReportingManagerApproval();
         } catch (error) {
             customToaster('toster-error', ToasterTypes.Error, 'Sorry! something went wrong', 4000)
             this.setState({ loading: false })
@@ -525,8 +539,8 @@ this.setState({ ReportingManager: Data, DelegateToUsers: obj, loading: false });
             await batch.execute();
 
             customToaster('toster-success', ToasterTypes.Success, NotModifiedTimesheets.length+' Timesheet(s) Rejected Sucessfully.'+(selectedRows.length-NotModifiedTimesheets.length!=0?' Attention: '+(selectedRows.length-NotModifiedTimesheets.length)+' Timesheet(s) has been modified Please Review the changes.':''), 2000);
-            this.setState({ comments: '',showApproveRejectPopup: false,SelectedRows:[], loading: false });
-            this.ReportingManagerApproval();
+            this.setState({ comments: '',showApproveRejectPopup: false,SelectedRows:[], loading: false,clearRows:true,isRedirect:true });
+            // this.ReportingManagerApproval();
         }
         catch (error) {
             customToaster('toster-error', ToasterTypes.Error, 'Sorry! something went wrong', 4000)
@@ -690,7 +704,7 @@ this.setState({ ReportingManager: Data, DelegateToUsers: obj, loading: false });
                 <div>
                     <div className='table-head-1st-td'>
                         <TableGenerator columns={columns} data={this.state.ReportingManager} fileName={''} showExportExcel={false}
-                            showAddButton={false} customBtnClass='' btnDivID='' navigateOnBtnClick='' btnSpanID='' btnCaption='' btnTitle='Forward Approvals' searchBoxLeft={true} selectableRows={this.state.ReportingManager.length>0?true:false} clearSelectedRows={true} handleSelectedRows={this.getSelectedRows} customButton={false} showMultiApproveOrReject={this.state.SelectedRows.length > 0 ? true : false} onClickApproveOrReject={this.showConfirmApproveRejectPopup}  customButtonClick={this.ShowPopUp} onRowClick={this.handleRowClicked}></TableGenerator>
+                            showAddButton={false} customBtnClass='' btnDivID='' navigateOnBtnClick='' btnSpanID='' btnCaption='' btnTitle='Forward Approvals' searchBoxLeft={true} selectableRows={this.state.ReportingManager.length>0?true:false} clearSelectedRows={this.state.clearRows} handleSelectedRows={this.getSelectedRows} customButton={false} showMultiApproveOrReject={this.state.SelectedRows.length > 0 ? true : false} onClickApproveOrReject={this.showConfirmApproveRejectPopup}  customButtonClick={this.ShowPopUp} onRowClick={this.handleRowClicked}></TableGenerator>
                     </div>
                     {/*selectableRows={this.state.ReportingManager.length>0?true:false} replace this to show delegations */}
                 </div>

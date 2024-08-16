@@ -148,7 +148,7 @@ const TableGenerator = ({ columns, data, fileName,showExportExcel,showExportPDF=
           defaultSortAsc={prvDirection}
           selectableRows={selectableRows}
           onSelectedRowsChange={handleSelectedRows}
-          // clearSelectedRows={clearSelectedRows}
+          clearSelectedRows={clearSelectedRows}
           onRowClicked={onRowClick}
         />
       </div>
