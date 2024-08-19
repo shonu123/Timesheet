@@ -191,7 +191,7 @@ class Dashboard extends React.Component<DashboardProps, DashboardState> {
         else if(isReviewer){
             this.onHandleClick('Reviewers')
         }
-        else{
+        else if(showTab && isEmployee){
             this.onHandleClick('MyRequests')
         }
         this.setState({isEmployeeConfigured: EmployeeConfigured,isReviewer:isReviewer,loading:false});
