@@ -3363,11 +3363,16 @@ a#btnDownloadPDFFile:hover.a-export-pdf-button .fa-file-pdf {
   color: #fff !important;
 }
 .a-export-pdf-icon{
-    margin-left: auto;
-    color: #ad0b00;
-    font-size: 26px;
+  background-image: linear-gradient(#ffffff, #effdff); 
+  text-align: center;
+  margin-right: 3px;
+  border-radius: 0;
+  color: #ad0b00;
+  font-size: 26px !important;
+  transition: all .4s ease 0s;
+  -webkit-transition: all .4s ease 0s;
 }
-.a-export-pdf-icon.btn-add:hover{
+.a-export-pdf-icon:hover{
   color: #ad0b00 !important;
 }
 #theadWeeklyTimesheetReport{
