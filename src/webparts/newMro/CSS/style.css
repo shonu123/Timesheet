@@ -3371,6 +3371,7 @@ a#btnDownloadPDFFile:hover.a-export-pdf-button .fa-file-pdf {
   font-size: 26px !important;
   transition: all .4s ease 0s;
   -webkit-transition: all .4s ease 0s;
+  margin-left: auto;
 }
 .a-export-pdf-icon:hover{
   color: #ad0b00 !important;
