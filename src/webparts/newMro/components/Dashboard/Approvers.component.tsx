@@ -436,6 +436,7 @@ this.setState({ ReportingManager: Data, DelegateToUsers: obj, loading: false });
             // Batch declaration
             const batch = sp.web.createBatch();
             let NotModifiedTimesheets=[];
+            var  ItemsJustBeforeActionPerform= await this.GetAllItemsStatusBeforeActionPerform();
             for (const row of selectedRows) {
                 // Queue update operation for each item in the batch
                 let comments = row.commentsObj;
@@ -468,7 +469,6 @@ this.setState({ ReportingManager: Data, DelegateToUsers: obj, loading: false });
                 //      sp.web.lists.getByTitle('WeeklyTimeSheet').items.getById(row.Id).inBatch(batch).update(formData);
                 //      NotModifiedTimesheets.push(row);
                 // }
-               var  ItemsJustBeforeActionPerform= await this.GetAllItemsStatusBeforeActionPerform();
                for(let T in ItemsJustBeforeActionPerform)
                {
                 if(row.Id==ItemsJustBeforeActionPerform[T].Id &&row.StatusInList==ItemsJustBeforeActionPerform[T].Status)
@@ -481,7 +481,7 @@ this.setState({ ReportingManager: Data, DelegateToUsers: obj, loading: false });
             }
             // Execute the batch
             await batch.execute();
-            customToaster('toster-success', ToasterTypes.Success, NotModifiedTimesheets.length+' Timesheet(s) Approved Sucessfully.'+(selectedRows.length-NotModifiedTimesheets.length!=0?' Attention: '+(selectedRows.length-NotModifiedTimesheets.length)+' Timesheet(s) has been modified Please Review the changes.':''), 2000);
+            customToaster('toster-success', ToasterTypes.Success, NotModifiedTimesheets.length+' Timesheet(s) Approved Successfully.'+(selectedRows.length-NotModifiedTimesheets.length!=0?' Attention: '+(selectedRows.length-NotModifiedTimesheets.length)+' Timesheet(s) has been modified. Please review the changes.':''), 2000);
             this.setState({ comments: '',showApproveRejectPopup: false,SelectedRows:[], loading: false,clearRows:true,isRedirect:true });
             // this.ReportingManagerApproval();
         } catch (error) {
@@ -502,6 +502,7 @@ this.setState({ ReportingManager: Data, DelegateToUsers: obj, loading: false });
             // Batch declaration
             const batch = sp.web.createBatch();
             let NotModifiedTimesheets=[];
+            var  ItemsJustBeforeActionPerform= await this.GetAllItemsStatusBeforeActionPerform();
             for (const row of selectedRows) {
                 // Queue update operation for each item in the batch
                 let comments = row.commentsObj
@@ -524,7 +525,6 @@ this.setState({ ReportingManager: Data, DelegateToUsers: obj, loading: false });
                 //         sp.web.lists.getByTitle('WeeklyTimeSheet').items.getById(row.Id).inBatch(batch).update(formData);
                 //         NotModifiedTimesheets.push(row);
                 //     }
-                    var  ItemsJustBeforeActionPerform= await this.GetAllItemsStatusBeforeActionPerform();
                     for(let T in ItemsJustBeforeActionPerform)
                     {
                      if(row.Id==ItemsJustBeforeActionPerform[T].Id &&row.StatusInList==ItemsJustBeforeActionPerform[T].Status)
@@ -538,7 +538,7 @@ this.setState({ ReportingManager: Data, DelegateToUsers: obj, loading: false });
             // Execute the batch
             await batch.execute();
 
-            customToaster('toster-success', ToasterTypes.Success, NotModifiedTimesheets.length+' Timesheet(s) Rejected Sucessfully.'+(selectedRows.length-NotModifiedTimesheets.length!=0?' Attention: '+(selectedRows.length-NotModifiedTimesheets.length)+' Timesheet(s) has been modified Please Review the changes.':''), 2000);
+            customToaster('toster-success', ToasterTypes.Success, NotModifiedTimesheets.length+' Timesheet(s) Rejected Successfully.'+(selectedRows.length-NotModifiedTimesheets.length!=0?' Attention: '+(selectedRows.length-NotModifiedTimesheets.length)+' Timesheet(s) has been modified. Please review the changes.':''), 2000);
             this.setState({ comments: '',showApproveRejectPopup: false,SelectedRows:[], loading: false,clearRows:true,isRedirect:true });
             // this.ReportingManagerApproval();
         }

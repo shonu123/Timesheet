@@ -394,7 +394,7 @@ class WeeklyTimesheetReport extends React.Component<WeeklyTimesheetReportProps, 
         return (
             <div className='border-box-shadow light-box p-2'>
                 <div className='t-div txt-center dataTables_wrapper-overflow'>
-                    <div id='pdfMessage'>Note: PDF button generates only manager/reviewer approved individual timesheets.</div>
+                    <div id='pdfMessage'>Note: The PDF button generates only individual timesheets that have been approved by the manager or reviewer.</div>
                      <a type="button" id="btnDownloadFile" title='Export all timesheets to excel' className="a-export-excel txt-center" onClick={(e) => this.downloadExcel(`${this.state.startDate.getMonth() + 1}/${this.state.startDate.getDate()}/${this.state.startDate.getFullYear()}`)}> Export to Excel
                     <FontAwesomeIcon icon={faFileExcel} className=''></FontAwesomeIcon>
                     </a>

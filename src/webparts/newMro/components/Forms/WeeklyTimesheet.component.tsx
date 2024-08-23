@@ -356,8 +356,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
             }
         }
         if (ClientNames.length < 1 && !this.state.isAdmin) {
-            this.setState({ modalTitle: 'Invalid Employee configuration', modalText: 'Employee not configured in Approval Matrix,Please contact Administrator', isSuccess: false, showHideModal: true })
-            this.setState({ loading: false, isSubmitted: true });
+            this.setState({ modalTitle: 'Invalid Employee configuration', modalText: 'Employee not configured in Approval Matrix,Please contact Administrator', isSuccess: false, showHideModal: true,loading: false, isSubmitted: true });
             return false;
         }
         ClientsFromClientMaster = clientMaster;
@@ -609,10 +608,10 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
         for (const grp of groups) {
             userGroups.push(grp.Title)
         }
-        let showPDF = false
+        let showPDF = false;
         if (userGroups.includes('Timesheet Administrators') || userGroups.includes('Dashboard Admins')) {
             if(![StatusType.Save.toString(),StatusType.Revoke.toString()].includes(this.state.trFormdata.Status))
-            showPDF = true
+            showPDF = true;
         }
         this.setState({ UserGoups: userGroups,showPDFButton:showPDF })
 
@@ -1919,12 +1918,19 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
             if (trFormdata.CommentsHistoryData == null)
                 trFormdata.CommentsHistoryData = [];
 
-            trFormdata.ReportingManagersEmail = RMEmail;
+            trFormdata.ReportingManagersEmail = RMEmail;                                                                                
             // trFormdata.DelegateToEmails = DelToEmail;
             trFormdata.ReviewersEmail = ReviewEmail;
             trFormdata.NotifiersEmail = NotifyEmail;
             let formatedFilename = 'Weekly Timesheet Report - ' + trFormdata.ClientName + ' (' + ((trFormdata.WeekStartDate.getMonth().toString().length == 1 ? '0' + (trFormdata.WeekStartDate.getMonth() + 1) : trFormdata.WeekStartDate.getMonth() + 1) + '-' + (trFormdata.WeekStartDate.getDate().toString().length == 1 ? '0' + trFormdata.WeekStartDate.getDate() : trFormdata.WeekStartDate.getDate()) + '-' + trFormdata.WeekStartDate.getFullYear()) + ')';
-            this.setState({ trFormdata: trFormdata, currentWeeklyRowsCount: trFormdata.WeeklyItemsData.length, currentOTRowsCount: trFormdata.OTItemsData.length, ItemID: ExistRecordData[0].ID, EmployeeEmail: EmpEmail, errorMessage: '', loading: false, showBillable: false, showNonBillable: false,PDFData:ExistRecordData,PDFFileName:formatedFilename });
+
+            let showPDF = false;
+            if (this.state.isAdmin) {
+                if(![StatusType.Save.toString(),StatusType.Revoke.toString()].includes(this.state.trFormdata.Status))
+                showPDF = true;
+            }
+            
+            this.setState({ trFormdata: trFormdata, currentWeeklyRowsCount: trFormdata.WeeklyItemsData.length, currentOTRowsCount: trFormdata.OTItemsData.length, ItemID: ExistRecordData[0].ID, EmployeeEmail: EmpEmail, errorMessage: '', loading: false, showBillable: false, showNonBillable: false,PDFData:ExistRecordData,PDFFileName:formatedFilename,showPDFButton:showPDF });
             if ([StatusType.Submit, StatusType.Approved, StatusType.ManagerApprove].includes(ExistRecordData[0].Status)) {
                 this.setState({ isSubmitted: true });
             }
@@ -1949,7 +1955,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                         this.setState({ showBillable: true })
                 }
             }
-            //For getting Dateofjoining,DescriptionMandatory,ProjectCOde Mandatory,WeekStartday of selected client
+            //For getting Dateofjoining,DescriptionMandatory,ProjectCode Mandatory,WeekStartday of selected client
             for (var item of this.state.Clients_DateOfJoinings) {
                 if (item.ClientName.toLowerCase() == trFormdata.ClientName.toLowerCase()) {
                     trFormdata.DateOfJoining = new Date(item.DOJ);

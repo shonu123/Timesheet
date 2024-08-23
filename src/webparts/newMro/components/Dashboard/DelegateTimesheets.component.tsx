@@ -134,7 +134,7 @@ class TimesheetDelegation extends Component<TimesheetDelegationProps, TimesheetD
             this.setState({ AuthorizerId: parseInt(value), loading: true })
             if (value != 'None') {
                 let EMail = event.target.selectedOptions[0].getAttribute('data-EMail');
-                let ClientName, Delegateobj = [], mangers
+                let ClientName, Delegateobj = [], mangers;
                 if (EMail.toLowerCase().includes('synergy')) {
                     let obj = this.state.ClientDeligatesObj.find(item => {
                         return item.Client.toLowerCase().includes('synergy')
@@ -146,6 +146,8 @@ class TimesheetDelegation extends Component<TimesheetDelegationProps, TimesheetD
                     mangers = this.state.EmployeeMasterObj.filter(obj => {
                         return obj.ReportingManager.some(m => {
                             return m.ID == parseInt(value);
+                        }) || obj.Reviewers.some(r => {
+                            return r.ID == parseInt(value);
                         });
                     });
                     ClientName = mangers[0].ClientName

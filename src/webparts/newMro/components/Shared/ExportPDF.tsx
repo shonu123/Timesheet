@@ -214,7 +214,7 @@ const ExportToPDF = ({ AllTimesheetsData, filename,LogoImgUrl,btnTitle='Export t
                         table: {
                             headerRows: 1,
                             widths: ['100%'],
-                            body: [[{text:'Employee Timehseet Details',style: styles.Section_Header}]]
+                            body: [[{text:'Employee Timesheet Details',style: styles.Section_Header}]]
                         },
                         layout:{
                             fillColor: function (rowIndex, node, columnIndex) {
@@ -310,7 +310,7 @@ const ExportToPDF = ({ AllTimesheetsData, filename,LogoImgUrl,btnTitle='Export t
         EmpData.push([{text:'Name',style:styles.Employee_header},':',TimesheetData.EmployeName,{text:'Submitted Date',style:styles.Employee_header},':',TimesheetData.SubmittedDate]);
         EmpData.push([{text:'Client',style:styles.Employee_header},':',TimesheetData.Client,{text:actionDetails(TimesheetData.Status).ActionBy,style:styles.Employee_header},':',TimesheetData.ActionBy]);
         EmpData.push([{text:'Week Start Date',style:styles.Employee_header},':',TimesheetData.StartDate,{text:actionDetails(TimesheetData.Status).ActionDate,style:styles.Employee_header},':',TimesheetData.ApprovedDate]);
-        EmpData.push([{text:'Week End Date',style:styles.Employee_header},':',TimesheetData.EndDate,{text:'Status',style:styles.Employee_header},':',(TimesheetData.Status)]);
+        EmpData.push([{text:'Weekend Date',style:styles.Employee_header},':',TimesheetData.EndDate,{text:'Status',style:styles.Employee_header},':',(TimesheetData.Status)]);
         return EmpData;
     }
     const getTimesheetData=(TimesheetData) =>{
