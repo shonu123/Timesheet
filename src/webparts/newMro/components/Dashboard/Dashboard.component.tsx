@@ -181,6 +181,8 @@ class Dashboard extends React.Component<DashboardProps, DashboardState> {
             isAdminloggedin=true;
             EmployeeConfigured = true
         }
+        this.setState({isEmployeeConfigured: EmployeeConfigured,isReviewer:isReviewer,loading:false});
+        [null,undefined,''].includes(localStorage.getItem('PreviouslySelectedTab'))?'':this.onHandleClick(localStorage.getItem('PreviouslySelectedTab'));
         //conditins updated to stop unwanted calls
         if(isAdminloggedin){
             this.onHandleClick('AllRequests')
@@ -194,8 +196,7 @@ class Dashboard extends React.Component<DashboardProps, DashboardState> {
         else if(showTab && isEmployee){
             this.onHandleClick('MyRequests')
         }
-        this.setState({isEmployeeConfigured: EmployeeConfigured,isReviewer:isReviewer,loading:false});
-        [null,undefined,''].includes(localStorage.getItem('PreviouslySelectedTab'))?'':this.onHandleClick(localStorage.getItem('PreviouslySelectedTab'));
+
     }
 
     private onMenuItemClick(event) {
