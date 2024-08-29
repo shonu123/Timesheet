@@ -6,7 +6,6 @@ import { faFileExcel, faFilePdf } from '@fortawesome/free-solid-svg-icons';
 import Loader from '../Shared/Loader';
 import { StatusType, ToasterTypes } from "../../Constants/Constants";
 import customToaster from "./Toaster.component";
-import '../../CSS/WeeklyTimesheet.css'
 
 const ExportToPDF = ({ AllTimesheetsData, filename,LogoImgUrl,btnTitle='Export to PDF',className=''}) => {
     // var loading=false;
@@ -68,7 +67,7 @@ const ExportToPDF = ({ AllTimesheetsData, filename,LogoImgUrl,btnTitle='Export t
         var WeekEndDate=new Date(WeekEnd.setDate(WeekEnd.getDate() + 6));
         var SubmittedDate = new Date(timesheet.DateSubmitted.split('-')[1] + '/' + timesheet.DateSubmitted.split('-')[2].split('T')[0] + '/' + timesheet.DateSubmitted.split('-')[0]);
         var CommentsHistory=JSON.parse(timesheet.CommentsHistory);
-        var ApprovedDate=new Date(CommentsHistory[CommentsHistory.length-1].Date.split('-')[1] + '/' + CommentsHistory[CommentsHistory.length-1].Date.split('-')[2].split('T')[0] + '/' + CommentsHistory[CommentsHistory.length-1].Date.split('-')[0]);
+        var ApprovedDate=new Date(CommentsHistory[CommentsHistory.length-1].Date);
         var ActionBy=CommentsHistory[CommentsHistory.length-1].User;
         FilteredTimehseets.push( 
             {
@@ -402,7 +401,7 @@ const ExportToPDF = ({ AllTimesheetsData, filename,LogoImgUrl,btnTitle='Export t
     }
     return (
         <>
-        {loading && <Loader/>}
+        {loading && <Loader />}
         <a type="button" title={btnTitle} id={className=='a-export-pdf-button'?"btnDownloadPDFFile":''} className={ className+" txt-center"} onClick={(e) => generatePDF()}>
             {className=='a-export-pdf-button'?'Export to PDF':''}<FontAwesomeIcon icon={faFilePdf} className=''></FontAwesomeIcon>
         </a>

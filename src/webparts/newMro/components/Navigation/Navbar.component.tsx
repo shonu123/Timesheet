@@ -17,6 +17,7 @@ class NavBar extends React.Component<NavBarProps, NavBarState> {
     public state = { currentUserLinks: [],expandNav:false };
     private currentUserLinksArr = [];
     public componentDidMount() {
+        delete localStorage.PreviouslySelectedTab;
         for (let permission of sitePermissions) {
             let accessTo = permission.accessTo;
             if (accessTo == 'everyone' || this.props.currentUserGroups.includes(accessTo)) {
@@ -80,8 +81,11 @@ class NavBar extends React.Component<NavBarProps, NavBarState> {
         document.getElementById('divNavMasterItems').classList.remove('show')
         document.getElementById('Masters').classList.remove('heighlightMasters')
         }
+        if(this.props.currentUserGroups.includes('Timesheet Administrators') || this.props.currentUserGroups.includes('Dashboard Admins'))
+        {
         document.getElementById('divNavReportItems').classList.remove('show')
         document.getElementById('Reports').classList.remove('heighlightMasters')
+        }
     }
     public render() {
         return (
@@ -91,7 +95,7 @@ class NavBar extends React.Component<NavBarProps, NavBarState> {
                         <img src='/sites/billing.Timesheet/SiteAssets/SynergyLogo-SM.jpg' className='synergyLogo'/>
                     </div> */}
                     {/* <div className="main-title">Timesheet</div> */}
-                    <div className="main-title"><NavLink className="redirect" to="/Dashboard"><span className=""><span className="">Timesheet</span></span></NavLink></div>
+                    <div className="main-title"><NavLink className="redirect" to="/Dashboard"><span className=""><span className="" onClick={(event) => this.onNavItemClick2(event)}>Timesheet</span></span></NavLink></div>
                     <div className='container-fluid'>
 
 

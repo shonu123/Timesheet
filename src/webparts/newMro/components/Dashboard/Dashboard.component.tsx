@@ -180,10 +180,14 @@ class Dashboard extends React.Component<DashboardProps, DashboardState> {
             //this.onHandleClick('AllRequests')
             isAdminloggedin=true;
             EmployeeConfigured = true
+        }        
+    //conditins updated to stop unwanted calls
+    this.setState({isEmployeeConfigured: EmployeeConfigured,isReviewer:isReviewer,loading:false});
+        if(![null,undefined,''].includes(localStorage.getItem('PreviouslySelectedTab')))
+        {
+            this.onHandleClick(localStorage.getItem('PreviouslySelectedTab'))
+            return false;
         }
-        this.setState({isEmployeeConfigured: EmployeeConfigured,isReviewer:isReviewer,loading:false});
-        [null,undefined,''].includes(localStorage.getItem('PreviouslySelectedTab'))?'':this.onHandleClick(localStorage.getItem('PreviouslySelectedTab'));
-        //conditins updated to stop unwanted calls
         if(isAdminloggedin){
             this.onHandleClick('AllRequests')
         }
@@ -196,9 +200,8 @@ class Dashboard extends React.Component<DashboardProps, DashboardState> {
         else if(showTab && isEmployee){
             this.onHandleClick('MyRequests')
         }
-
+        // [null,undefined,''].includes(localStorage.getItem('PreviouslySelectedTab'))?'':this.onHandleClick(localStorage.getItem('PreviouslySelectedTab'));
     }
-
     private onMenuItemClick(event) {
         let item = document.getElementById('sideMenuNav');
         item.classList.toggle('menu-hide');

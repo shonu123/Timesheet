@@ -224,10 +224,8 @@ class ApproversApprovals extends React.Component<ApproversProps, ApproversState>
                     }
                 }
                 // console.log(Data);
-                
                  //this.getClientDeligates(Data)
                 this.setState({clearRows:false, ReportingManager: Data,loading: false});
-
             }
             catch (error) {
                 console.log("Sorry something went wrong!", error)
@@ -408,12 +406,12 @@ this.setState({ ReportingManager: Data, DelegateToUsers: obj, loading: false });
         let name = e.target.name;
         if(name == 'Approve')
         {
-            this.setState({message : 'Are you sure you want to approve selected timesheets?',title : 'Approve', Action : 'Approve',showApproveRejectPopup : true,isSuccess:true,ModalHeader:'modal-header-Approve'});
+            this.setState({message : 'Are you sure you want to approve timesheet(s)?',title : 'Approve', Action : 'Approve',showApproveRejectPopup : true,isSuccess:true,ModalHeader:'modal-header-Approve'});
         }
         else
          if(name == 'Reject')
         {
-            this.setState({message : 'Are you sure you want to reject selected timesheets?',title : 'Reject', Action :StatusType.Reject,showApproveRejectPopup : true,isSuccess:false,ModalHeader:'modal-header-reject'});
+            this.setState({message : 'Are you sure you want to reject timesheet(s)?',title : 'Reject', Action :StatusType.Reject,showApproveRejectPopup : true,isSuccess:false,ModalHeader:'modal-header-reject'});
         }
         else{
             this.setState({showApproveRejectPopup : false})
@@ -430,7 +428,7 @@ this.setState({ ReportingManager: Data, DelegateToUsers: obj, loading: false });
     }
     private handleMultiApprove = async () => {
         document.getElementById('txtComments').classList.remove('mandatory-FormContent-focus');
-        this.setState({ loading: true })
+        this.setState({ loading: true,showApproveRejectPopup: false })
         let selectedRows = this.state.SelectedRows;
         try {
             // Batch declaration
@@ -496,7 +494,7 @@ this.setState({ ReportingManager: Data, DelegateToUsers: obj, loading: false });
         document.getElementById('txtComments').classList.remove('mandatory-FormContent-focus');
         let isValid = this.checkIsValid(Comments, 'txtComments', 'Comments cannot be blank.');
         if (isValid) {
-            this.setState({ loading: true })
+            this.setState({ loading: true,showApproveRejectPopup: false })
         let selectedRows = this.state.SelectedRows;
         try {
             // Batch declaration
