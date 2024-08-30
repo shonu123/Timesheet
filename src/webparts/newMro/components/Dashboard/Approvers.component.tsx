@@ -442,7 +442,7 @@ this.setState({ ReportingManager: Data, DelegateToUsers: obj, loading: false });
                     Action: StatusType.Approved,
                     Role: 'Manager',
                     User: this.props.spContext.userDisplayName,
-                    Comments: this.state.comments,
+                    Comments: this.state.comments.trim(),
                     Date: new Date().toISOString()
                 })
                 //For handling  Reportimg Manager and Reviewer same case.
@@ -490,7 +490,7 @@ this.setState({ ReportingManager: Data, DelegateToUsers: obj, loading: false });
 
     }
     private handleMultiReject = async () => {
-        let Comments = this.state.comments;
+        let Comments = this.state.comments.trim();
         document.getElementById('txtComments').classList.remove('mandatory-FormContent-focus');
         let isValid = this.checkIsValid(Comments, 'txtComments', 'Comments cannot be blank.');
         if (isValid) {
@@ -508,7 +508,7 @@ this.setState({ ReportingManager: Data, DelegateToUsers: obj, loading: false });
                     Action: StatusType.Reject,
                     Role: 'Manager',
                     User: this.props.spContext.userDisplayName,
-                    Comments: this.state.comments,
+                    Comments: this.state.comments.trim(),
                     Date: new Date().toISOString()
                 })
                 let formData = {

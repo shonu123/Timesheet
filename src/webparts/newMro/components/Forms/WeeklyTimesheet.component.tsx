@@ -1292,6 +1292,13 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
             formdata = this.GetRequiredEmails(formdata.ClientName, formdata);
             formdata = this.ClearInvalidDots(formdata);
             this.setState({ trFormdata: formdata })
+            // to trim description & project code
+            formdata.WeeklyItemsData.forEach(item=>{item.ProjectCode=item.ProjectCode.trim();item.Description=item.Description.trim()});  
+            formdata.OTItemsData.forEach(item=>{item.ProjectCode=item.ProjectCode.trim();item.Description=item.Description.trim()});  
+            formdata.SynergyOfficeHrs.forEach(item=>{item.ProjectCode=item.ProjectCode.trim();item.Description=item.Description.trim()});  
+            formdata.ClientHolidayHrs.forEach(item=>{item.ProjectCode=item.ProjectCode.trim();item.Description=item.Description.trim()});  
+            formdata.PTOHrs.forEach(item=>{item.ProjectCode=item.ProjectCode.trim();item.Description=item.Description.trim()});  
+            formdata.Comments=formdata.Comments.trim();
             var postObject = {
                 Name: formdata.Name,
                 ClientName: formdata.ClientName,
@@ -1471,7 +1478,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
         var postObject = {};
         switch (formdata.Status) {
             case StatusType.Submit:
-                formdata.CommentsHistoryData.push({ "Action": StatusType.Approved, "Role": "Manager", "User": this.props.spContext.userDisplayName, "Comments": this.state.trFormdata.Comments, "Date": new Date().toISOString() })
+                formdata.CommentsHistoryData.push({ "Action": StatusType.Approved, "Role": "Manager", "User": this.props.spContext.userDisplayName, "Comments": this.state.trFormdata.Comments.trim(), "Date": new Date().toISOString() })
                 //postObject['Status']=StatusType.Approved;
                 //postObject['PendingWith']="NA";
                 let IsReportingManagerReviewerSame = false;
@@ -1515,7 +1522,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                 }
             //case StatusType.InProgress:
             case StatusType.ManagerApprove:
-                formdata.CommentsHistoryData.push({ "Action": StatusType.Approved, "Role": "Reviewer", "User": this.props.spContext.userDisplayName, "Comments": this.state.trFormdata.Comments, "Date": new Date().toISOString() })
+                formdata.CommentsHistoryData.push({ "Action": StatusType.Approved, "Role": "Reviewer", "User": this.props.spContext.userDisplayName, "Comments": this.state.trFormdata.Comments.trim(), "Date": new Date().toISOString() })
                 postObject['Status'] = StatusType.Approved;
                 postObject['PendingWith'] = "NA";
                 postObject['AssignedToId'] = { "results": [] };
@@ -1533,7 +1540,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
         var postObject = {};
         let user = "Initiator";
         user = this.state.EmployeeEmail != this.props.spContext.userEmail ? "Administator" : user;
-        formdata.CommentsHistoryData.push({ "Action": StatusType.Revoke, "Role": user, "User": this.props.spContext.userDisplayName, "Comments": this.state.trFormdata.Comments, "Date": new Date().toISOString() })
+        formdata.CommentsHistoryData.push({ "Action": StatusType.Revoke, "Role": user, "User": this.props.spContext.userDisplayName, "Comments": this.state.trFormdata.Comments.trim(), "Date": new Date().toISOString() })
         postObject['Status'] = StatusType.Revoke;
         postObject['PendingWith'] = "Initiator";
         postObject['AssignedToId'] = { "results": [this.state.currentUserId] };
@@ -1553,12 +1560,12 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
         formdata = this.GetRequiredEmails(formdata.ClientName, formdata);
         var postObject = {};
         if (formdata.Status == StatusType.Submit) {
-            formdata.CommentsHistoryData.push({ "Action": StatusType.Reject, "Role": "Manager", "User": this.props.spContext.userDisplayName, "Comments": this.state.trFormdata.Comments, "Date": new Date().toISOString() })
+            formdata.CommentsHistoryData.push({ "Action": StatusType.Reject, "Role": "Manager", "User": this.props.spContext.userDisplayName, "Comments": this.state.trFormdata.Comments.trim(), "Date": new Date().toISOString() })
             postObject['Status'] = StatusType.ManagerReject;
         }
         // else if(formdata.Status==StatusType.Approved){
         else if (formdata.Status == StatusType.ManagerApprove) {
-            formdata.CommentsHistoryData.push({ "Action": StatusType.Reject, "Role": "Reviewer", "User": this.props.spContext.userDisplayName, "Comments": this.state.trFormdata.Comments, "Date": new Date().toISOString() })
+            formdata.CommentsHistoryData.push({ "Action": StatusType.Reject, "Role": "Reviewer", "User": this.props.spContext.userDisplayName, "Comments": this.state.trFormdata.Comments.trim(), "Date": new Date().toISOString() })
             postObject['Status'] = StatusType.ReviewerReject;
             postObject['Revised'] = true;
         }
@@ -1591,7 +1598,8 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
             sp.web.lists.getByTitle(this.listName).items.getById(this.state.ItemID).update(formdata).then((res) => {
                 if (StatusType.Save == formdata.Status) {
                     customToaster('toster-success', ToasterTypes.Success, 'Weekly timesheet saved successfully', 2000)
-                    this.getItemData(this.state.ItemID, this.state.Delegations);
+                    //this.getItemData(this.state.ItemID, this.state.Delegations);
+                    this.setState({loading:false});
                 }
                 else if (StatusType.Revoke == formdata.Status) {
                     if (formObject.IsDelegated) {
@@ -1734,7 +1742,8 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                     if (StatusType.Save == formdata.Status) {
                         this.setState({ ItemID: ItemID })
                         customToaster('toster-success', ToasterTypes.Success, 'Weekly timesheet saved successfully', 2000)
-                        this.getItemData(ItemID, this.state.Delegations);
+                        // this.getItemData(ItemID, this.state.Delegations);
+                        this.setState({ItemID: ItemID,loading:false});
                     }
                     else if (StatusType.Submit == formdata.Status) {
                         sub = "Weekly Time Sheet has been " + formdata.Status + ".";
@@ -2593,7 +2602,6 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                         }
                     }
                 }
-
             }
             else if (!formdata.ClientName.toLowerCase().includes("synergy")) {
                 // if all days not time off in a week and if not time off day is also not holiday
@@ -2794,6 +2802,21 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                             document.getElementById("0_ProjectCode_PTOHrs").classList.add('mandatory-FormContent-focus');
                             return isValid;
                         }
+                    }
+                }
+            }
+            for (let key in formdata.Total[0])//validation if Entire Week day is empty
+            {
+                val = formdata.Total[0][key];
+                let DayTime = 0;
+                if (!["Total","Sun","Sat"].includes(key)) {
+                    DayTime = parseFloat(val);
+                    if (DayTime == 0) {
+                        isValid.message = "Total hours in a day cannot be 0.";
+                        isValid.status = false;
+                        document.getElementById("Total" + key).focus();
+                        document.getElementById("Total" + key).classList.add('mandatory-FormContent-focus');
+                        return isValid;
                     }
                 }
             }

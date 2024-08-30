@@ -71,7 +71,7 @@ const TableGenerator = ({ columns, data, fileName,showExportExcel,showExportPDF=
   //let lsMyrequests = localStorage.getItem('PrvData');
  // const tableData = { columns, data };
   const [totalData, setData] = useState([]);
-  const [search, setSearchText] = useState('');
+  let [search, setSearchText] = useState('');
  //search= lsMyrequests != null? JSON.parse(localStorage.getItem('PrvData')).SearchKey:null
  prvPageNumber = prvPageNumber!= undefined && prvPageNumber!= null?prvPageNumber:1;
  prvSort = (prvSort!= undefined && prvSort!= null)?prvSort:"";
@@ -83,6 +83,10 @@ const TableGenerator = ({ columns, data, fileName,showExportExcel,showExportPDF=
     ExportExcelCustomisedColumns=(ExportExcelCustomisedColumns== undefined && ExportExcelCustomisedColumns!= null)? ExportExcelCustomisedColumns : columns;
 
     let totaldata = data;
+    if(totaldata.length==0)
+    {
+      search='';
+    }
     if (search) {
       var allKeys = Object.keys(data[0]);
       totaldata = totaldata.filter(l => allKeys.some(field => {

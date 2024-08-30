@@ -55,8 +55,9 @@ const ModalApprovePopUp = ({ message, modalHeader, title, isVisible, isSuccess,i
             </div>
           </div>
           <div className="modal-footer">
-            {isSuccess && <button type="button" onClick={onConfirm} className={`btn SubmitButtons txt-white modalclosesuccess `} data-dismiss="modal" title='Approve'>Approve</button>}
-            {!isSuccess && <button type="button" onClick={onConfirm} className={`btn RejectButtons txt-white modalclosesuccess `} data-dismiss="modal" title='Reject'>Reject</button>}
+            {/* {isSuccess && <button type="button" onClick={onConfirm} className={`btn SubmitButtons txt-white modalclosesuccess `} data-dismiss="modal" title='Approve'>Approve</button>}
+            {!isSuccess && <button type="button" onClick={onConfirm} className={`btn RejectButtons txt-white modalclosesuccess `} data-dismiss="modal" title='Reject'>Reject</button>} */}
+            {<button type="button" onClick={onConfirm} className={`btn RejectButtons txt-white modalclosesuccess `} data-dismiss="modal" title='Ok'>Ok</button>}
             <button type="button" onClick={onCancel} className={`btn CancelButtons txt-white modalclosesuccess`} data-dismiss="modal" title='Cancel'>Cancel</button>
           </div>
         </div>
