@@ -312,6 +312,8 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
         highlightCurrentNav("weeklytimesheet");
         this.setState({ loading: true });
         this.loadWeeklyTimeSheetData(this.state.currentUserId);
+        if(this.props.match.params.id != undefined)
+        this.props.match.params.id = this.props.match.params.id.split('&')[0];
     }
     //functions related to  initial loading
     private async loadWeeklyTimeSheetData(currentUserId) {
@@ -1199,11 +1201,13 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
             }
             if (isValid.status) {
                 let CurrWeekStartDate = this.getCurrentWeekStartDate(formdata.WeekStartDay);
-
-                if (formdata.WeekStartDate.getMonth() + 1 + "/" + formdata.WeekStartDate.getDate() + "/" + formdata.WeekStartDate.getFullYear() == CurrWeekStartDate.getMonth() + 1 + "/" + CurrWeekStartDate.getDate() + "/" + CurrWeekStartDate.getFullYear())
-                    this.setState({ showConfirmDeletePopup: true, ConfirmPopupMessage: 'Are you sure you want to submit for current week?', ActionButtonId: event.target.id });
+                let submitConfirmMsg="Are you sure you want to submit";
+                if(formdata.WeekStartDate.getMonth() + 1 + "/" + formdata.WeekStartDate.getDate() + "/" + formdata.WeekStartDate.getFullYear() == CurrWeekStartDate.getMonth() + 1 + "/" + CurrWeekStartDate.getDate() + "/" + CurrWeekStartDate.getFullYear())
+                    submitConfirmMsg+=' for current week'+(parseFloat(formdata.Total[0].Total)==0?" with '0' hours":'')+'?'
                 else
-                    this.setState({ showConfirmDeletePopup: true, ConfirmPopupMessage: 'Are you sure you want to submit?', ActionButtonId: event.target.id });
+                    submitConfirmMsg+=(parseFloat(formdata.Total[0].Total)==0?" with '0' hours":'')+'?'
+
+        this.setState({ showConfirmDeletePopup: true, ConfirmPopupMessage: submitConfirmMsg, ActionButtonId: event.target.id });
             }
             else {
                 customToaster('toster-error', ToasterTypes.Error, isValid.message, 4000)
@@ -2134,7 +2138,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                     "IsDay7SynergyHoliday": this.IsHoliday(WeekStartDate, "synergy"),
                 })
             }
-            this.setState({ trFormdata: trFormdata, currentWeeklyRowsCount: trFormdata.WeeklyItemsData.length, currentOTRowsCount: trFormdata.OTItemsData.length, ItemID: 0, EmployeeEmail: this.state.EmployeeEmail, isSubmitted: false, errorMessage: '', showBillable: false, loading: false });
+            this.setState({ trFormdata: trFormdata, currentWeeklyRowsCount: trFormdata.WeeklyItemsData.length, currentOTRowsCount: trFormdata.OTItemsData.length, ItemID: 0, EmployeeEmail: this.state.EmployeeEmail, isSubmitted: false, errorMessage: '', showBillable: false, loading: false,showPDFButton:false });
         }
         //code for automated delegation for reporting manager
         //same code goes here if email flow depends on is delegated,DelegteTo fields
@@ -2805,21 +2809,22 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                     }
                 }
             }
-            for (let key in formdata.Total[0])//validation if Entire Week day is empty
-            {
-                val = formdata.Total[0][key];
-                let DayTime = 0;
-                if (!["Total","Sun","Sat"].includes(key)) {
-                    DayTime = parseFloat(val);
-                    if (DayTime == 0) {
-                        isValid.message = "Total hours in a day cannot be 0.";
-                        isValid.status = false;
-                        document.getElementById("Total" + key).focus();
-                        document.getElementById("Total" + key).classList.add('mandatory-FormContent-focus');
-                        return isValid;
-                    }
-                }
-            }
+            // for (let key in formdata.Total[0])  //validation if Entire Week day is empty
+            // {
+            //     val = formdata.Total[0][key];
+            //     let DayTime = 0;
+               
+            //     if (!["Total", "Type", "Sat", "Sun"].includes(key) && !this.WeekHeadings[0]['IsDay'+(weeks.indexOf(key)+1)+'Holiday'].isHoliday ) {
+            //         DayTime = parseFloat(val);
+            //         if (DayTime == 0) {
+            //             isValid.message = "Total hours in a day cannot be 0.";
+            //             isValid.status = false;
+            //             document.getElementById("Total" + key).focus();
+            //             document.getElementById("Total" + key).classList.add('mandatory-FormContent-focus');
+            //             return isValid;
+            //         }
+            //     }
+            // }
             val = formdata.Total[0].Total;
             Time = parseFloat(val);
             if (Time == 0 && formdata.Comments.trim() == "") {
@@ -3097,7 +3102,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                     {
                         this.state.ConfirmPopupMessage == "" ? "" :
                             this.state.ConfirmPopupMessage == "Are you sure you want to delete this row?" ? <ModalPopUpConfirm message={this.state.ConfirmPopupMessage} title={''} isVisible={this.state.showConfirmDeletePopup} isSuccess={false} onConfirm={this.RemoveCurrentRow} onCancel={this.CloseConfirmationPopup}></ModalPopUpConfirm> :
-                                ["Are you sure you want to submit?", "Are you sure you want to submit for current week?"].includes(this.state.ConfirmPopupMessage) ? <ModalPopUpConfirm message={this.state.ConfirmPopupMessage} title={''} isVisible={this.state.showConfirmDeletePopup} isSuccess={false} onConfirm={this.handleSubmitorSave} onCancel={this.CloseConfirmationPopup}></ModalPopUpConfirm> :
+                                ["Are you sure you want to submit?", "Are you sure you want to submit for current week?","Are you sure you want to submit with '0' hours?","Are you sure you want to submit for current week with '0' hours?"].includes(this.state.ConfirmPopupMessage) ? <ModalPopUpConfirm message={this.state.ConfirmPopupMessage} title={''} isVisible={this.state.showConfirmDeletePopup} isSuccess={false} onConfirm={this.handleSubmitorSave} onCancel={this.CloseConfirmationPopup}></ModalPopUpConfirm> :
                                     this.state.ConfirmPopupMessage == "Are you sure you want to approve?" ? <ModalPopUpConfirm message={this.state.ConfirmPopupMessage} title={''} isVisible={this.state.showConfirmDeletePopup} isSuccess={false} onConfirm={this.handleApprove} onCancel={this.CloseConfirmationPopup}></ModalPopUpConfirm> :
                                         this.state.ConfirmPopupMessage == "Are you sure you want to reject?" ? <ModalPopUpConfirm message={this.state.ConfirmPopupMessage} title={''} isVisible={this.state.showConfirmDeletePopup} isSuccess={false} onConfirm={this.handleReject} onCancel={this.CloseConfirmationPopup}></ModalPopUpConfirm> :
                                             this.state.ConfirmPopupMessage == "Are you sure you want to revoke?" ? <ModalPopUpConfirm message={this.state.ConfirmPopupMessage} title={''} isVisible={this.state.showConfirmDeletePopup} isSuccess={false} onConfirm={this.handleRevoke} onCancel={this.CloseConfirmationPopup}></ModalPopUpConfirm> : ""
