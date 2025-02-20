@@ -24,7 +24,10 @@ interface DatePickerProps {
   isDisabled: boolean;
   ref: any;
   Day: string;
-  isDateRange?: boolean
+  isDateRange?: boolean;
+  isCustomeDateRange?:boolean;
+  minDate?:Date;
+  maxDate?:Date;
 }
 
 //   const [selectedDate,setDate] = React.useState(new Date())
@@ -56,13 +59,31 @@ const getStartDate = (date) => {
   }
 }
 
-const CustomDatePicker = ({ handleChange, selectedDate, className,id='', labelName, isDisabled, ref, Day, isDateRange = true }: DatePickerProps) => {
+const CustomDatePicker = ({ handleChange, selectedDate, className,id='', labelName, isDisabled, ref, Day, isDateRange = true,isCustomeDateRange = false,minDate,maxDate }: DatePickerProps) => {
 
   return (
       <>
       <label className='z-in-9'>{labelName}<span className="mandatoryhastrick">*</span></label><div className="date-picker-container">
       {/*<FontAwesomeIcon icon={faCalendarAlt} className="calendar-icon-custom" />*/}
-      {isDateRange ?
+      {isCustomeDateRange && <DatePicker
+          selected={selectedDate}
+          onChange={handleChange}
+          minDate={minDate}
+          maxDate= {maxDate}
+          // filterDate={date => filterDays(date, Day)}
+          className={className + " " + (selectedDate == null ? "mandatory-FormContent-focus" : "")}
+          disabled={isDisabled}
+          ref={ref}
+          required={true}
+          name={labelName}
+          titleText={labelName}
+          id={className}
+          placeholderText={"MM/DD/YYYY"}
+          showIcon
+          toggleCalendarOnIconClick
+          />
+      }
+      {isDateRange && !isCustomeDateRange ?
         <DatePicker
           selected={selectedDate}
           onChange={handleChange}
@@ -79,7 +100,7 @@ const CustomDatePicker = ({ handleChange, selectedDate, className,id='', labelNa
           placeholderText={"MM/DD/YYYY"}
           showIcon
           toggleCalendarOnIconClick
-        /> :
+        /> :!isCustomeDateRange &&
         <DatePicker
           selected={selectedDate}
           onChange={handleChange}

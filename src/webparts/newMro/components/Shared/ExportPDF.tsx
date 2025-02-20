@@ -28,24 +28,29 @@ const ExportToPDF = ({ AllTimesheetsData, filename,LogoImgUrl,btnTitle='Export t
     };
     //To filter necessary fields
     const getStatus=(value)=>{
-        let Status=value
+        let Status=value;
 
         if(value == StatusType.Submit.toString()){
-            Status = 'Waiting for Manager Approval'
+            styles.Status_cell= { padding:[5,7],fillColor:'#c2dce7',border:[true, true, true, true],lineWidth: 2,lineColor: '#8ac6df'};
+            Status = 'Waiting for Manager Approval';
         }
         else if(value == StatusType.ManagerApprove.toString()){
-            Status = 'Waiting for Reviewer Approval'
+            styles.Status_cell= { padding:[5,7],fillColor:'#d9e7c8',border:[true, true, true, true],lineWidth: 2,lineColor: '#a1cb70'};
+            Status = 'Waiting for Reviewer Approval';
         }
         else if(value == StatusType.Approved.toString()){
-            Status = 'Approved'
+            styles.Status_cell= { padding:[5,7],fillColor:'#91d392',border:[true, true, true, true],lineWidth: 2,lineColor: '#6ad36c'};
+            Status = 'Approved';
         }
         else if(value == StatusType.ManagerReject.toString()){
-            Status = "Rejected by Reporting Manager"
+            styles.Status_cell= { padding:[5,7],fillColor:'#f7d3d3',border:[true, true, true, true],lineWidth: 2,lineColor: '#f19891'};
+            Status = "Rejected by Reporting Manager";
         }
         else if(value == StatusType.ReviewerReject.toString()){
-           Status = "Rejected by Reviewer"
+            styles.Status_cell= { padding:[5,7],fillColor:'#f7d3d3',border:[true, true, true, true],lineWidth: 2,lineColor: '#f19891'};
+           Status = "Rejected by Reviewer";
         }
-        return Status
+        return Status;
     }
     const actionDetails = (status)=>{
         let actionObj = {
@@ -78,13 +83,15 @@ const ExportToPDF = ({ AllTimesheetsData, filename,LogoImgUrl,btnTitle='Export t
             SubmittedDate:`${SubmittedDate.getDate().toString().length==1?'0'+SubmittedDate.getDate():SubmittedDate.getDate()}-${Months[SubmittedDate.getMonth()]}-${SubmittedDate.getFullYear()}`,
             ActionBy:[StatusType.Submit].includes(timesheet.Status)?'NA':ActionBy,
             ApprovedDate:[StatusType.Submit].includes(timesheet.Status)?'NA':`${ApprovedDate.getDate().toString().length==1?'0'+ApprovedDate.getDate():ApprovedDate.getDate()}-${Months[ApprovedDate.getMonth()]}-${ApprovedDate.getFullYear()}`,
-            Status: getStatus(timesheet.Status),
+            Status:timesheet.Status,
             //properties required for PDF download
             WeeklyHrs: JSON.parse(timesheet.WeeklyHrs),
             OverTimeHrs: JSON.parse(timesheet.OverTimeHrs),
             SynergyOfficeHrs: JSON.parse(timesheet.SynergyOfficeHrs),
             ClientHolidayHrs: JSON.parse(timesheet.ClientHolidayHrs),
             TimeOffHrs: JSON.parse(timesheet.PTOHrs),
+            EligibleforPTO:timesheet.EligibleforPTO,
+            //PaidTimeOffHrs: JSON.parse(timesheet.PTONewHrs),
             BillableSubtotalHrs: JSON.parse(timesheet.BillableSubtotalHrs),
             TotalHrs: JSON.parse(timesheet.TotalHrs),
             CommentsHistory: JSON.parse(timesheet.CommentsHistory),
@@ -118,6 +125,13 @@ const ExportToPDF = ({ AllTimesheetsData, filename,LogoImgUrl,btnTitle='Export t
             margin: [0, 5, 0, 5],
             padding:[10,0,0,0]
         },
+        Status_cell: {
+            padding:[5,7],
+            fillColor:'#c2dce7',
+            border:[true, true, true, true],
+            lineWidth: 2,
+            lineColor: '#8ac6df'
+        },
         Timesheet_header: {
             fontSize:11,
             bold: true,
@@ -146,7 +160,23 @@ const ExportToPDF = ({ AllTimesheetsData, filename,LogoImgUrl,btnTitle='Export t
         billableTotal_cell:
         {
            fontSize:11,
-           fillColor:'#f5d8d8 ',
+           fillColor:'#f5d8d8',
+           bold: true,  
+           alignment: 'center',
+           margin: [0, 150, 0, 0]
+        },
+        PTOBalance_cell:
+        {
+           fontSize:11,
+           fillColor:'#b6dbb7',
+           bold: true,  
+           alignment: 'center',
+           margin: [0, 150, 0, 0]
+        }, 
+        PTOAfterDeduction_cell:
+        {
+           fontSize:11,
+           fillColor:'#f9b4c5',
            bold: true,  
            alignment: 'center',
            margin: [0, 150, 0, 0]
@@ -197,6 +227,9 @@ const ExportToPDF = ({ AllTimesheetsData, filename,LogoImgUrl,btnTitle='Export t
                 let employeeTable= getEmployeeData(FilteredTimehseets[index])
                 let timesheetTable=getTimesheetData(FilteredTimehseets[index]);
                 //let historyTable=(FilteredTimehseets[index].CommentsHistory.length>0)?getActionHistoryData(FilteredTimehseets[index]):['','','',''];
+                let TimesheetTabelWidths=['15%', '20%', '11%', '7%', '7%', '7%', '7%', '7%', '7%', '7%', '5%'];
+                if(FilteredTimehseets[index].EligibleforPTO)
+                TimesheetTabelWidths=['10%', '15%', '6%', '7%', '7%', '7%', '7%', '7%', '7%', '7%','7%', '8%','5%'];
                 tables.push(
                     { 
                         image:logoBase64, 
@@ -237,7 +270,7 @@ const ExportToPDF = ({ AllTimesheetsData, filename,LogoImgUrl,btnTitle='Export t
                     {
                         table: {
                             headerRows: 1,
-                            widths: ['15%', '20%', '11%', '7%', '7%', '7%', '7%', '7%', '7%', '7%', '5%'],
+                            widths: TimesheetTabelWidths,
                             body: timesheetTable,
                         },
                         layout:{
@@ -309,7 +342,14 @@ const ExportToPDF = ({ AllTimesheetsData, filename,LogoImgUrl,btnTitle='Export t
         EmpData.push([{text:'Name',style:styles.Employee_header},':',TimesheetData.EmployeName,{text:'Submitted Date',style:styles.Employee_header},':',TimesheetData.SubmittedDate]);
         EmpData.push([{text:'Client',style:styles.Employee_header},':',TimesheetData.Client,{text:actionDetails(TimesheetData.Status).ActionBy,style:styles.Employee_header},':',TimesheetData.ActionBy]);
         EmpData.push([{text:'Week Start Date',style:styles.Employee_header},':',TimesheetData.StartDate,{text:actionDetails(TimesheetData.Status).ActionDate,style:styles.Employee_header},':',TimesheetData.ApprovedDate]);
-        EmpData.push([{text:'Weekend Date',style:styles.Employee_header},':',TimesheetData.EndDate,{text:'Status',style:styles.Employee_header},':',(TimesheetData.Status)]);
+        EmpData.push([{text:'Weekend Date',style:styles.Employee_header},':',TimesheetData.EndDate,{text:'Status',style:styles.Employee_header},':',{ 
+            table: {
+            widths: ['auto'],  // Only one column for the text
+            body: [
+                [{ text: getStatus(TimesheetData.Status), style:styles.Status_cell}]
+            ]
+        },
+        layout: 'noBorders'}]);
         return EmpData;
     }
     const getTimesheetData=(TimesheetData) =>{
@@ -324,6 +364,11 @@ const ExportToPDF = ({ AllTimesheetsData, filename,LogoImgUrl,btnTitle='Export t
             let Obj={text:weeks[WeekStartDate.getDay()]+'         '+(WeekStartDate.getDate().toString().length==1?'0'+WeekStartDate.getDate():WeekStartDate.getDate())+'  '+Months[WeekStartDate.getMonth()], style: ([0,6].includes(WeekStartDate.getDay()))?styles.Sat_Sun_header:styles.Timesheet_header};
             tableHeadRow.push(Obj);
             WeekStartDate=new Date(WeekStartDate.setDate(WeekStartDate.getDate() + 1));
+        }
+        if(TimesheetData.EligibleforPTO)
+        {
+        tableHeadRow.push({text: 'PTO Balance', style: styles.Timesheet_header});
+        tableHeadRow.push({text: 'PTO After Deduction', style: styles.Timesheet_header});
         }
         tableHeadRow.push({text: 'Total', style: styles.Timesheet_header});
         TimesheetRows.push(tableHeadRow);
@@ -355,6 +400,11 @@ const ExportToPDF = ({ AllTimesheetsData, filename,LogoImgUrl,btnTitle='Export t
         // for Time Off Hours
         tableBodyRow=getTimesheetBodyRow(TimesheetData,TimesheetData.TimeOffHrs[0],'Time Off',0);
         TimesheetRows.push(tableBodyRow);
+        // if(TimesheetData.EligibleforPTO)
+        // {
+        //     tableBodyRow=getTimesheetBodyRow(TimesheetData,TimesheetData.PaidTimeOffHrs[0],'Paid Time Off',0);
+        //     TimesheetRows.push(tableBodyRow);
+        // }
         if(!TimesheetData.Client.toLowerCase().includes('synergy'))
         {
             //for Billable subtotal Hours
@@ -372,11 +422,16 @@ const ExportToPDF = ({ AllTimesheetsData, filename,LogoImgUrl,btnTitle='Export t
        var tableBodyRow=[];
        var WeekStartDate=new Date(TimesheetData.StartDate);
        Number(RowIndex)==0?tableBodyRow.push(Rotype):tableBodyRow.push('');
-       ['Office Hours','Billable Hours','Overtime','Holiday','Time Off'].includes(Rotype)?tableBodyRow.push(RowObj.Description):tableBodyRow.push('');
-       ['Office Hours','Billable Hours','Overtime','Holiday','Time Off'].includes(Rotype)?tableBodyRow.push(RowObj.ProjectCode):tableBodyRow.push('');
+       ['Office Hours','Billable Hours','Overtime','Holiday','Time Off','Paid Time Off'].includes(Rotype)?tableBodyRow.push(RowObj.Description):tableBodyRow.push('');
+       ['Office Hours','Billable Hours','Overtime','Holiday','Time Off','Paid Time Off'].includes(Rotype)?tableBodyRow.push(RowObj.ProjectCode):tableBodyRow.push('');
         for (let i = 0; i <= 6; i++) {
             tableBodyRow.push({text:RowObj[weeks[WeekStartDate.getDay()]],style:([0,6].includes(WeekStartDate.getDay()))?styles.Sat_Sun_cell:styles.cell});
             WeekStartDate = new Date(WeekStartDate.setDate(WeekStartDate.getDate() + 1));
+        }
+        if(TimesheetData.EligibleforPTO)
+        {
+            !['Time Off'].includes(Rotype)?tableBodyRow.push('')&&tableBodyRow.push(''):tableBodyRow.push({text:RowObj['PTOBalance'],style:styles.PTOBalance_cell}) && tableBodyRow.push({text:RowObj['PTOAfterDeduction'],style:styles.PTOAfterDeduction_cell});
+
         }
         tableBodyRow.push({text:RowObj.Total,style:(Rotype=='Billable Total')?styles.billableTotal_cell:(Rotype=='Grand Total')?styles.grandTotal_cell :styles.cell});
         return tableBodyRow;

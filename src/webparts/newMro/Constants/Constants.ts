@@ -33,6 +33,7 @@ export enum ControlType {
     people='PeoplePicker',
     date='DatePicker',
     compareDates='CompareDates',
+    reactSelect='reactSelect'
   }
   
   

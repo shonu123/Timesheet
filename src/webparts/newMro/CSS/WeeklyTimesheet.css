@@ -37,38 +37,40 @@
     .span-fa-plus{
         display: inline-block;
         margin: auto;
-        width: 24px;
-        height: 24px;
+        width: 27px;
+        height: 27px;
         text-align: center;
         border-radius: 50%;
         background: #0D2F4B;
         color: white;
         font-size: 14px;
-        padding-top: 2px;
+        padding: 1px;
         margin-left: 5px;
     }
     .span-fa-plus:hover{
         cursor: pointer;
         opacity: .7;
         scale: .9;
+        background: #0D2F4B;
     }
     .span-fa-close{
         display: inline-block;
         margin: auto;
-        width: 24px;
-        height: 24px;
+        width: 27px;
+        height: 27px;
         text-align: center;
         border-radius: 50%;
         background: #bf0033;
         color: white;
         font-size: 14px;
-        padding-top: 2px;
+        padding: 1px;
         /* transform: rotate(45deg); */
     }
     .span-fa-close:hover{
         cursor: pointer;
         opacity: .7;
         scale: .9;
+        background: #bf0033;
     }
 
     .text-start{
@@ -258,6 +260,12 @@
     #BillableTotal{
      background-color: #f5d8d8 !important;   
     }
+    #PTObalance{
+     background-color: #b6dbb7 !important;   
+    }
+    #PTOAfterDeduction{
+     background-color: #f9b4c5 !important;   
+    }
     .headerClient{
         font-size: 22px;
         color: #0d2f4b;
@@ -278,6 +286,10 @@
         padding: 0px;
         white-space: pre;
         padding-right: 11px;
+    }
+
+    .Popup-notification{
+        font-size: 18px !important;
     }
     /*.ClientHoliday .TimeInput-input
     {

@@ -35,7 +35,7 @@ const ModalApprovePopUp = ({ message, modalHeader, title, isVisible, isSuccess,i
 
               <div className="light-text height-auto">
                 <label className="floatingTextarea2 top-12">Comments{!isSuccess && <span className='mandatoryhastrick'>*</span>} </label>
-                <textarea className="position-static form-control requiredinput" onChange={comments} value={commentsValue} placeholder="" maxLength={500} id="txtComments" name="comments" disabled={false} title='Comments'></textarea>
+                <textarea className="position-static form-control requiredinput" onChange={comments} value={commentsValue} placeholder=""  id="txtComments" name="comments" disabled={false} title='Comments'></textarea>
               </div>
               {!isManager&&
               <div className="light-text" id=''>

@@ -117,6 +117,7 @@ class MyRequests extends React.Component<MyRequestsProps, MyRequestsState> {
                         </React.Fragment>
                     );
                 },
+                width: '100px'
             },
             {
                 name: "Week Start Date",
@@ -146,7 +147,7 @@ class MyRequests extends React.Component<MyRequestsProps, MyRequestsState> {
         return (
             <React.Fragment>
             <div>
-                <div className='table-head-1st-td'>
+                <div className=''>
                     <TableGenerator columns={columns} data={this.state.Requests} fileName={'My Timesheets'} showExportExcel={false} showAddButton={true} customBtnClass='px-1 text-right' navigateOnBtnClick={`/WeeklyTimesheet`} btnDivID='divAddNewWeeklyTimeSheet' btnSpanID='newWeeklyTimeSheet' btnCaption=' New' btnTitle='New Weekly Timesheet' searchBoxLeft={false} onRowClick={this.handleRowClicked}></TableGenerator>
                 </div>
             </div>

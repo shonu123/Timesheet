@@ -4,12 +4,27 @@ import { ControlType } from '../Constants/Constants';
 function validate(data){
     let status = true;
     let message ="";
-    let propertieTypes={Number:ControlType.number,String:ControlType.string,MobileNumber:ControlType.mobileNumber,Email:ControlType.email,People:ControlType.people,Date:ControlType.date,compareDates:ControlType.compareDates};
+    let propertieTypes={Number:ControlType.number,String:ControlType.string,MobileNumber:ControlType.mobileNumber,Email:ControlType.email,People:ControlType.people,Date:ControlType.date,compareDates:ControlType.compareDates,reactSelect:ControlType.reactSelect};
     for (let key in data) {
         let value = data[key].val;
         let type =data[key].Type;
         let isrequired =data[key].required;
-        if([undefined,null,'',-1].includes(value) && propertieTypes.People!=type && propertieTypes.Date!=type && isrequired)
+        if([undefined,null,'',-1].includes(value) && propertieTypes.reactSelect==type && isrequired)
+        {
+            // let prpel =data[key].divId;
+            // message =data[key].Name+" cannot be blank.";
+            // prpel.current.classList.add('searchMandatory');
+            // //prpel.current.props.classNames={control:'mandatory-FormContent-focus'} searchMandatory;
+            // prpel.current.focus();
+            // status = false;
+            message =data[key].Name+" cannot be blank.";
+            let ddlSearchId =data[key].Focusid;
+            document.getElementById(ddlSearchId).getElementsByTagName('input')[0].focus();
+            document.getElementById(ddlSearchId).classList.add('searchMandatory');
+            status = false;
+            break;
+        }
+       else if([undefined,null,'',-1].includes(value) && propertieTypes.People!=type && propertieTypes.Date!=type && isrequired)
         {
             let prpel =data[key].Focusid;
             message =data[key].Name+" cannot be blank.";

@@ -87,7 +87,8 @@ class AllRequests extends React.Component<AllRequestsProps,AllRequestsState> {
                         HolidayHrs:parseFloat(parseFloat(JSON.parse(d.ClientHolidayHrs)[0].Total).toFixed(2)),
                         PTOHrs:parseFloat(parseFloat(JSON.parse(d.PTOHrs)[0].Total).toFixed(2)),
                         TotalHours: parseFloat(parseFloat(d.GrandTotal).toFixed(2)),
-                        RM : Rm
+                        RM : Rm,
+                        //PTONewHrs:d.EligibleforPTO?parseFloat(parseFloat(JSON.parse(d.PTONewHrs)[0].Total).toFixed(2)):'NA',
                     })
                     ExcelData.push({
                         Id : d.Id,
@@ -104,7 +105,8 @@ class AllRequests extends React.Component<AllRequestsProps,AllRequestsState> {
                         HolidayHrs:JSON.parse(d.ClientHolidayHrs)[0].Total,
                         PTOHrs:JSON.parse(d.PTOHrs)[0].Total,
                         TotalHours: d.GrandTotal,
-                        RM : ExcelRm
+                        RM : ExcelRm,
+                        //PTONewHrs:d.EligibleforPTO?JSON.parse(d.PTONewHrs)[0].Total:'NA',
                     })
                 }
                 // console.log(Data);
@@ -191,7 +193,7 @@ class AllRequests extends React.Component<AllRequestsProps,AllRequestsState> {
             {
                 name: "Hours",
                 selector: (row, i) => row.BillableHours,
-                width: '110px',
+                width: '100px',
                 sortable: true,
             },
             {
@@ -200,6 +202,12 @@ class AllRequests extends React.Component<AllRequestsProps,AllRequestsState> {
                 width: '100px',
                 sortable: true,
             },
+            // {
+            //     name: "Paid Time Off",
+            //     selector: (row, i) =>row.PTONewHrs,
+            //     width: '120px',
+            //     sortable: true,
+            // },
             {
                 name: "Total Billable",
                 selector: (row, i) => row.TotalBillableHrs,
@@ -209,7 +217,7 @@ class AllRequests extends React.Component<AllRequestsProps,AllRequestsState> {
             {
                 name: "Holiday",
                 selector: (row, i) =>row.HolidayHrs,
-                width: '130px',
+                width: '100px',
                 sortable: true,
             },
             {
@@ -293,6 +301,11 @@ class AllRequests extends React.Component<AllRequestsProps,AllRequestsState> {
                 selector: "PTOHrs",
                 sortable: true,
             },
+            // {
+            //     name: "Paid Time Off Hours",
+            //     selector: "PTONewHrs",
+            //     sortable: true,
+            // },
             {
                 name: "Grand Total Hours",
                 selector: "TotalHours",
@@ -313,8 +326,8 @@ class AllRequests extends React.Component<AllRequestsProps,AllRequestsState> {
                         <span className='' id='WeeklyTimeSheet'><FontAwesomeIcon icon={faPlus}></FontAwesomeIcon> New</span>
                         </button></NavLink>
                 </div></div>
-                <div className='c-v-table table-head-1st-td'>
-                    <TableGenerator columns={columns} data={this.state.AllRequests} fileName={'All Timesheets'} showExportExcel={true} ExportExcelCustomisedColumns={Exportcolumns} ExportExcelCustomisedData={this.state.ExportExcelData} wrapColumns={["RM","Client"]} onRowClick={this.handleRowClicked}></TableGenerator>
+                <div className='c-v-table'>
+                    <TableGenerator columns={columns} data={this.state.AllRequests} fileName={'All Timesheets'} showExportExcel={this.state.AllRequests.length?true:false} searchBoxLeft={true} ExportExcelCustomisedColumns={Exportcolumns} ExportExcelCustomisedData={this.state.ExportExcelData} wrapColumns={["RM","Client"]} LargeWidthColumns={["EmployeName","Client","RM"]} onRowClick={this.handleRowClicked}></TableGenerator>
                 </div>
             </div>
             {this.state.loading && <Loader />}

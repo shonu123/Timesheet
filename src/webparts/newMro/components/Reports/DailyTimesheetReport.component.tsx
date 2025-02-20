@@ -16,6 +16,7 @@ import "@pnp/sp/site-users/web";
 import "@pnp/sp/site-groups";
 import { highlightCurrentNav } from '../../Utilities/HighlightCurrentComponent';
 import DatePicker from "../Shared/DatePickerField";
+import SearchableDropdown from '../Shared/SearchableDropdown';
 import { Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import customToaster from '../Shared/Toaster.component';
@@ -57,7 +58,7 @@ class DailyTimesheetReport extends React.Component<DailyTimesheetReportProps, Da
 
     public state = {
         EmployeeId: null,
-        ClientName: 'All',
+        ClientName: "All Clients",
         ClientsObject: [],
         EmployeesObj: [],
         AllEmployees: [],
@@ -76,18 +77,17 @@ class DailyTimesheetReport extends React.Component<DailyTimesheetReportProps, Da
         ReportData:[],
         ExportExcelData:[],
     }
-
     public componentDidMount() {
         highlightCurrentNav("DailyTimesheetReport");
+        document.getElementById("Client").getElementsByTagName('input')[0].focus();
         this.setState({ loading: true });
         this.getOnLoadData()
     }
-
     private async getOnLoadData() {
         let selectQuery = "Employee/ID,Employee/Title"
         let [groups, Clients, Employees] = await Promise.all([
             sp.web.currentUser.groups(),
-            sp.web.lists.getByTitle('Client').items.filter("IsActive eq 1").select('*').orderBy('Title').get(),
+            sp.web.lists.getByTitle('Client').items.select('*').orderBy('Title').get(),
             sp.web.lists.getByTitle('EmployeeMaster').items.expand('Employee').select(selectQuery).orderBy('Employee/Title', true).getAll()
         ]);
         let userGroups = []
@@ -112,22 +112,38 @@ class DailyTimesheetReport extends React.Component<DailyTimesheetReportProps, Da
         }
         EmpObj.sort((a, b) => a.Title.localeCompare(b.Title));
         if (Clients.length > 0)
+        {
+            Clients.unshift({Title:"All Clients"});
+            EmpObj.unshift({ID:"0",Title:"All Employees"});
             this.setState({ AllEmployees: EmpObj, EmployeesObj: EmpObj, ClientsObject: Clients, loading: false, isHavingClients: true, showToaster: true })
+        }
         else
             this.setState({ AllEmployees: EmpObj, EmployeesObj: EmpObj, ClientsObject: Clients, loading: false, isHavingClients: false, showToaster: true })
     }
-
-    private handleClientChange = (event) => {
+    private handleClientChange = (event,actionMeta?) => {
         this.setState({ loading: true });
-        let { name } = event.target;
-        let value = event.target.value;
-        this.setState({ [name]: value });
-        this.setState({ ReportData: [] });
-        this.getClientEmployees(value)
+        // let { name } = event.target;
+        // let value = event.target.value;
+        // this.setState({ [name]: value });
+        // this.setState({ ReportData: [] });
+        let  name,inputvalue,value;
+        //Below is condition for handle common change function for both react select dropdown  and normal controls
+        if(![null, undefined].includes(event) && event.target != undefined)
+        {
+            name = event.target.name;
+            inputvalue = event.target.value;
+            value = event.target.type == 'checkbox' ? event.target.checked : inputvalue;
+        }
+        else if(actionMeta!= undefined)
+        {
+            name = actionMeta.name;
+            value =actionMeta.action =='clear'?'': event.value; 
+        }
+       this.setState({ [name] : value,ReportData: [] });
+       this.getClientEmployees(value);
     }
-
     private async getClientEmployees(value) {
-        if (value != "All") {
+        if (value != "All Clients") {
             let selectQuery = "Employee/ID,Employee/Title"
             let filterQuery = "ClientName eq '" + value + "'"
             let clientEmployees = await sp.web.lists.getByTitle('EmployeeMaster').items.filter(filterQuery).expand('Employee').select(selectQuery).orderBy('Employee/Title', true).getAll()
@@ -141,9 +157,12 @@ class DailyTimesheetReport extends React.Component<DailyTimesheetReportProps, Da
             }
             EmpObj.sort((a, b) => a.Title.localeCompare(b.Title));
             if (EmpObj.length > 0)
-                this.setState({ EmployeesObj: EmpObj, loading: false, isHavingEmployees: true, InitiatorId: '0' })
+            {
+                EmpObj.unshift({ID:"0",Title:"All Employees"});
+                this.setState({ EmployeesObj: EmpObj, loading: false, isHavingEmployees: true, InitiatorId: '0' });
+            }
             else {
-                this.setState({ EmployeesObj: EmpObj, loading: false, isHavingEmployees: false, InitiatorId: '-1' })
+                this.setState({ EmployeesObj: EmpObj, loading: false, isHavingEmployees: false, InitiatorId: '-1' });
                 customToaster('toster-error', ToasterTypes.Error, 'There are no employees associated with this client', 4000);
             }
         }
@@ -151,13 +170,21 @@ class DailyTimesheetReport extends React.Component<DailyTimesheetReportProps, Da
             this.setState({ EmployeesObj: this.state.AllEmployees, loading: false, isHavingEmployees: true, InitiatorId: '0' })
         }
     }
-    private handleChangeEvents = (event) => {
-        // console.log(this.state);
-        let value = event.target.type == 'checkbox' ? event.target.checked : event.target.value.trim();
-        // console.log(value);
-        let { name } = event.target;
-        this.setState({ [name]: value });
-        this.setState({ ReportData: [] });
+    private handleChangeEvents = (event,actionMeta?) => {
+        let  name,inputvalue,value;
+        //Below is condition for handle common change function for both react select dropdown  and normal controls
+        if(![null, undefined].includes(event) && event.target != undefined)
+        {
+            name = event.target.name;
+            inputvalue = event.target.value;
+            value = event.target.type == 'checkbox' ? event.target.checked : inputvalue;
+        }
+        else if(actionMeta!= undefined)
+        {
+            name = actionMeta.name;
+            value =actionMeta.action =='clear'?name =='InitiatorId'?-1:'': event.value; 
+        }
+        this.setState({ [name]: value,ReportData: [] });
     }
     private handleStartDate = (dateprops) => {
         // console.log(dateprops)
@@ -231,15 +258,15 @@ class DailyTimesheetReport extends React.Component<DailyTimesheetReportProps, Da
         return isvalid;
     }
     private handleCancel = async (e)=>{
-        this.setState({Homeredirect : true});
+        this.setState({Homeredirect : true,showToaster:false});
         document.getElementById('divNavReportItems').classList.remove('show');
         document.getElementById('Reports').classList.remove('heighlightMasters');
     }
     private handleSubmit = () => {
         this.setState({loading:true})
         let data = {
-            Client: { val: this.state.ClientName, required: true, Name: 'Client', Type: ControlType.string, Focusid: this.client },
-            Employee: { val: parseInt(this.state.InitiatorId), required: true, Name: 'Employee', Type: ControlType.number, Focusid: this.EmployeeDropdown },
+            Client: { val: this.state.ClientName, required: true, Name: 'Client', Type: ControlType.reactSelect, Focusid: 'Client' },
+            Employee: { val: parseInt(this.state.InitiatorId), required: true, Name: 'Employee', Type: ControlType.reactSelect, Focusid: 'Employee' },
         }
         let isValid = this.checkIsvalid(data, this.state.startDate, this.state.endDate)
         if (!isValid.status) {
@@ -284,7 +311,7 @@ class DailyTimesheetReport extends React.Component<DailyTimesheetReportProps, Da
         let next = `${nextDate.getMonth() + 1}/${nextDate.getDate()}/${nextDate.getFullYear()}`
 
         let filterQuery = ''
-        if (client == "All") {
+        if (client =="All Clients") {
             if (Employee == 0) {
                 filterQuery = "WeekStartDate gt '" + prev + "' and WeekStartDate lt '" + next + "'"
             }
@@ -403,7 +430,6 @@ finalArray.sort((a, b) => {
             this.setState({loading:false})
         }
     }
-
     private getStatusFromExcelData(client, initiator, date) {
         let ExcelData = this.state.ResultExcelData
         const item = ExcelData.find(entry => entry.Client === client && entry.Initiator === initiator && entry.Date === date);
@@ -425,7 +451,6 @@ finalArray.sort((a, b) => {
             return ""
         }
     }
-
     private constructMergedCellsData(headermessage,length,fontsize){
         let heading = [{ v: headermessage, t: "s", s: { alignment: { vertical: "center",horizontal:"center" },font: { bold: true,sz: fontsize },fill: { fgColor: { rgb: 'ffffff' } },border: {
             top: { style: 'thin', color: { rgb: "000000" } },
@@ -449,7 +474,6 @@ finalArray.sort((a, b) => {
         } } })
         return heading
     }
-
     private generateExcel(dataTable, headerDates,startDate,endDate) {
         const wb = XLSX.utils.book_new();
         const workSheetRows = []
@@ -645,7 +669,15 @@ this.setState({ColumnsHeaders:hColumns,ReportData:SampleData,ExportExcelData:req
         // XLSX.writeFile(wb, `${filename}(${startDate} to ${endDate}).xlsx`);
 
     }
-
+    private getcurrWeekSunDay=()=>{
+        let date=new Date();
+        if(new Date(date).getDay() === 0){
+          return new Date(date)
+        }
+        else{
+          return addDays(new Date(),7-(new Date().getDay()));
+        }
+    }
     // private generateExcel(dataTable){
     //         const wb = XLSX.utils.book_new();
     //         const workSheetRows = []
@@ -712,8 +744,6 @@ this.setState({ColumnsHeaders:hColumns,ReportData:SampleData,ExportExcelData:req
     //     XLSX.writeFile(wb, `${filename}.xlsx`);
 
     // }
-
-
     public render() {
         if (!this.state.isPageAccessable) {
             // let url = `https://synergycomcom.sharepoint.com/sites/Billing.Timesheet/SitePages/AccessDenied.aspx?`
@@ -738,18 +768,23 @@ this.setState({ColumnsHeaders:hColumns,ReportData:SampleData,ExportExcelData:req
                             <div className="media-m-2 media-p-1">
                 <div className="my-2">
                                     <div className="row pt-2 px-2">
-                                        <div className="col-md-3">
+                                        {/* <div className="col-md-3">
                                             <div className="light-text">
                                                 <label>Client<span className="mandatoryhastrick">*</span></label>
                                                 <select className="form-control" required={true} name="ClientName" title="Client" id='client' ref={this.client} onChange={this.handleClientChange}>
-                                                    {this.state.isHavingClients ? <option value='All'>All Clients</option> : <option value='None'>None</option>}
+                                                    {this.state.isHavingClients ? <option value="All Clients">All Clients</option> : <option value='None'>None</option>}
                                                     {this.state.ClientsObject.map((option) => (
                                                         <option value={option.Title} selected={option.Title == this.state.ClientName}>{option.Title}</option>
                                                     ))}
                                                 </select>
                                             </div>
-                                        </div>
+                                        </div> */}
                                         <div className="col-md-3">
+                                            <div className="custom-dropdown">
+                                                <SearchableDropdown label="Client" Title="Client" name="ClientName" id="Client" placeholderText="Select Client" className="" selectedValue={this.state.ClientName} optionLabel={'Title'} optionValue={'Title'} OptionsList={this.state.ClientsObject} onChange={(selectedOption, actionMeta) => { this.handleClientChange(selectedOption, actionMeta) }} isRequired={true} refElement={this.client} noOptionsMessage="No Client"></SearchableDropdown>
+                                            </div>
+                                        </div>
+                                        {/* <div className="col-md-3">
                                             <div className="light-text ">
                                                 <label>Employee<span className="mandatoryhastrick">*</span></label>
                                                 <select className="form-control" required={true} name="InitiatorId" title="Employee" onChange={this.handleChangeEvents} ref={this.EmployeeDropdown}>
@@ -759,6 +794,12 @@ this.setState({ColumnsHeaders:hColumns,ReportData:SampleData,ExportExcelData:req
                                                     ))}
                                                 </select>
                                             </div>
+                                        </div> */}
+
+                                        <div className="col-md-3">
+                                            <div className="custom-dropdown">
+                                                <SearchableDropdown label="Employee" Title="Employee" name="InitiatorId" id="Employee" placeholderText="Select Employee" className="" selectedValue={this.state.InitiatorId} optionLabel={'Title'} optionValue={'ID'} OptionsList={this.state.EmployeesObj} onChange={(selectedOption, actionMeta) => { this.handleChangeEvents(selectedOption, actionMeta) }} isRequired={true} refElement={this.EmployeeDropdown} noOptionsMessage="No Employee"></SearchableDropdown>
+                                            </div>
                                         </div>
 
                                         <div className="col-md-3">
@@ -766,7 +807,7 @@ this.setState({ColumnsHeaders:hColumns,ReportData:SampleData,ExportExcelData:req
                                                 <label className="z-in-9">Start Date<span className="mandatoryhastrick">*</span></label>
                                                 <div className="custom-datepicker" id="divDateofJoining">
 
-                                                    <DatePicker onDatechange={this.handleStartDate} selectedDate={this.state.startDate} ref={this.startDate} placeholderText='MM/DD/YYYY' id={'txtStartDate'} title={"Start Date"}/>
+                                                    <DatePicker onDatechange={this.handleStartDate} selectedDate={this.state.startDate} ref={this.startDate} endDate={new Date()} placeholderText='MM/DD/YYYY' id={'txtStartDate'} title={"Start Date"}/>
                                                 </div>
                                             </div>
                                         </div>
@@ -776,7 +817,7 @@ this.setState({ColumnsHeaders:hColumns,ReportData:SampleData,ExportExcelData:req
                                                 <label className="z-in-9">End Date<span className="mandatoryhastrick">*</span></label>
                                                 <div className="custom-datepicker" id="divDateofJoining">
 
-                                                    <DatePicker onDatechange={this.handleEndDate} ref={this.endDate} selectedDate={this.state.endDate} id={'txtEndDate'} title={"End Date"}/>
+                                                    <DatePicker onDatechange={this.handleEndDate} ref={this.endDate} endDate={this.getcurrWeekSunDay()} selectedDate={this.state.endDate} id={'txtEndDate'} title={"End Date"}/>
                                                 </div>
                                             </div>
                                         </div>

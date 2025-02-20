@@ -27,38 +27,36 @@ import DatePicker from "../Shared/DatePickerField";
 import { addDays } from 'office-ui-fabric-react';
 import { PeoplePicker, PrincipalType } from "@pnp/spfx-controls-react/lib/PeoplePicker";
 
-interface ClientProps {
+interface EmployeeClassificationProps {
     match: any;
     spContext: any;
     spHttpClient: SPHttpClient;
     context: any;
     history: any;
 }
-interface ClientState {
+interface EmployeeClassificationState {
 
 }
 
-class Clients extends Component<ClientProps, ClientState> {
+class EmployeeClassification extends Component<EmployeeClassificationProps, EmployeeClassificationState> {
     private siteURL: string;
-    private Client;
-    constructor(props: ClientProps) {
+    private EmployeeClassification;
+    constructor(props: EmployeeClassificationProps) {
         super(props);
         sp.setup({
             spfxContext: this.props.context
         });
-        this.Client = React.createRef();
+        this.EmployeeClassification = React.createRef();
         this.siteURL = this.props.spContext.webAbsoluteUrl;
     }
     public state = {
 
         formData: {
             Title: '',
+            PTO: false,
             IsActive: true,
-            // Comments: '',
-            // AuditHistory: [],
-            DelegateToId: { results: [] },
         },
-        ClientsObj: [],
+        EmpClassificationObj: [],
         SaveUpdateText: 'Submit',
         showLabel: false,
         errorMessage: '',
@@ -67,17 +65,16 @@ class Clients extends Component<ClientProps, ClientState> {
         modalText: '',
         modalTitle: '',
         isSuccess: true,
-        addNewClient: false,
+        addNewEmpClassification: false,
         isNewform: true,
         isRedirect: false,
         isPageAccessable:true,
         ExportExcelData: [],
         showToaster: false,
-        DelegateToEMail: [],
     };
 
     public componentDidMount() {
-        highlightCurrentNav("ClientMaster");
+        highlightCurrentNav("EmployeeClassificationMaster");
         this.setState({ loading: true });
         this.loadListData();
     }
@@ -91,12 +88,11 @@ class Clients extends Component<ClientProps, ClientState> {
             this.setState({
                 formData: {
                     Title: '',
+                    PTO: false,
                     IsActive: true,
-                    // Comments: '',
-                    // AuditHistory: [],
-                    DelegateToId: { results: [] },
-                }, DelegateToEMail: [],
-                SaveUpdateText: 'Submit', addNewClient: false
+                },
+                SaveUpdateText: 'Submit',
+                addNewEmpClassification: false
             });
     }
     private handleChange = (event) => {
@@ -128,33 +124,27 @@ class Clients extends Component<ClientProps, ClientState> {
         formData['DelegateToId'] = values
         this.setState({ formData })
     }
+
     private handleSubmit = (event) => {
         event.preventDefault();
         this.setState({ loading: true });
         let data = {
-            Clinet: { val: this.state.formData.Title, required: true, Name: 'Client Name', Type: ControlType.string, Focusid: this.Client },
+            EmployeeClassification: { val: this.state.formData.Title, required: true, Name: 'Employee Classification', Type: ControlType.string, Focusid: this.EmployeeClassification },
         };
-        let pdata = {
-            DelegateTo: { val: this.state.formData.DelegateToId, required: true, Name: 'Delegate To', Type: ControlType.people, Focusid: 'divDelegateTo' },
-        }
         const formdata = { ...this.state.formData };
         const id = this.props.match.params.id ? this.props.match.params.id : 0;
 
         let isValid = Formvalidator.checkValidations(data);
-        // isValid = isValid.status ? Formvalidator.multiplePeoplePickerValidation(pdata) : isValid
         if (isValid.status) {
             this.checkDuplicates(formdata, id);
         }
         else {
-            // this.setState({ showLabel: true, errorMessage: isValid.message });
             this.setState({ loading: false });
             customToaster('toster-error', ToasterTypes.Error, isValid.message, 4000)
         }
     }
     private checkDuplicates = (formData, id) => {
-        let ClientList = 'Client';
-
-        // let dateString = `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`
+        let EmployeeClassificationList = 'EmployeeClassification';
         let filterString = ''
 
         try {
@@ -162,52 +152,36 @@ class Clients extends Component<ClientProps, ClientState> {
                 filterString = `Title eq '${formData.Title}' and IsActive eq '1'`;
             else
                 filterString = filterString = `Title eq '${formData.Title}' and  IsActive eq '1' and Id ne ` + id;
-            sp.web.lists.getByTitle(ClientList).items.filter(filterString).get().
+            sp.web.lists.getByTitle(EmployeeClassificationList).items.filter(filterString).get().
                 then((response: any[]) => {
                     if (response.length > 0) {
                         this.setState({ loading: false });
-                        // this.setState({ showLabel: true, errorMessage: 'Duplicate record is not accepted'});
                         customToaster('toster-error', ToasterTypes.Error, 'Duplicate record is not accepted', 4000)
                     }
                     else {
-                        // let History = formData.AuditHistory
-                        // History.push({
-                        //     User: this.props.spContext.userDisplayName,
-                        //     Comments: this.state.formData.Comments.trim(),
-                        //     Date: new Date().toISOString()
-                        // })
-                        // formData.AuditHistory = JSON.stringify(History)
-                        // formData.Comments = formData.Comments.trim()
-
-                        // this.insertorupdateListitem(formData, HolidaysList);
                         if (id > 0) {                       //update existing record
-                            //console.log(this.props);
-                            sp.web.lists.getByTitle(ClientList).items.getById(id).update(formData).then((res) => {
-                                // this.resetHolidayMasterForm();
-                                // toast.success('updated successfully');
-                                customToaster('toster-success', ToasterTypes.Success, 'Client updated successfully.', 2000)
-                                this.resetHolidayMasterForm();
+                            sp.web.lists.getByTitle(EmployeeClassificationList).items.getById(id).update(formData).then((res) => {
+                                customToaster('toster-success', ToasterTypes.Success, 'Employee Classification updated successfully.', 2000)
+                                this.resetEmpClassificationMasterForm();
                                 this.setState({
                                     modalTitle: 'Success',
-                                    modalText: 'Client updated successfully',
+                                    modalText: 'Employee Classification updated successfully',
                                     showHideModal: false,
                                     isSuccess: true,
                                     loading: false,
                                     isRedirect: false,
-                                    addNewClient: false
+                                    addNewEmpClassification: false
                                 });
                                 //console.log(res);
                             });
                         }
                         else {                             //Add New record
                             try {
-                                // this.setState({ loading: true });
-                                sp.web.lists.getByTitle(ClientList).items.add(formData)
+                                sp.web.lists.getByTitle(EmployeeClassificationList).items.add(formData)
                                     .then((res) => {
-                                        customToaster('toster-success', ToasterTypes.Success, 'Client added successfully', 2000)
-                                        this.resetHolidayMasterForm();
-                                        // toast.success('updated successfully');
-                                        this.setState({ showHideModal: false, addNewClient: false, loading: false, isRedirect: true });
+                                        customToaster('toster-success', ToasterTypes.Success, 'Employee Classification added successfully', 2000)
+                                        this.resetEmpClassificationMasterForm();
+                                        this.setState({ showHideModal: false, addNewEmpClassification: false, loading: false, isRedirect: true });
                                         //  this.setState({
                                         //      modalTitle: 'Success',
                                         //      modalText: 'Client submitted successfully',
@@ -218,9 +192,8 @@ class Clients extends Component<ClientProps, ClientState> {
                                     })
                                     .catch((err) => {
                                         console.log('Failed to add');
-                                        // toast.error('Sorry! something went wrong');
                                         customToaster('toster-error', ToasterTypes.Error, 'Sorry! something went wrong', 4000)
-                                        this.setState({ showHideModal: false, isRedirect: true, loading: false, addNewClient: false });
+                                        this.setState({ showHideModal: false, isRedirect: true, loading: false, addNewEmpClassification: false });
                                         // this.setState({
                                         //     loading: false,
                                         //     modalTitle: 'Error',
@@ -260,42 +233,29 @@ class Clients extends Component<ClientProps, ClientState> {
     private async loadListData() {
         this.setState({ isRedirect: false })
         try{
-            let [ClientsData, groups] = await Promise.all([
-                sp.web.lists.getByTitle('Client').items.select('DelegateTo/Title,*').expand('DelegateTo').orderBy("Title", false).getAll(),          sp.web.currentUser.groups(),
+            let [EmpClassificationData, groups] = await Promise.all([
+                sp.web.lists.getByTitle('EmployeeClassification').items.select('*').orderBy("Title", false).getAll(),
+                sp.web.currentUser.groups(),
             ])
             let userGroups = [];
             for (const grp of groups) {
                 userGroups.push(grp.Title);
             }
-            ClientsData.sort((a, b) => b.Id - a.Id);
+                EmpClassificationData.sort((a, b) => b.Id - a.Id);
                 let ExcelData = []
                 let Data = [];
-                for (const d of ClientsData) {
-                    let delegateToString = ""
-                    let delegateToStringExcel = "";
-                    if (d.DelegateTo != undefined) {
-                        d.DelegateTo.sort((a, b) => a.Title.localeCompare(b.Title));
-                        if (d.DelegateTo.length > 0) {
-                            for (let r of d.DelegateTo) {
-                                delegateToString += "<div>" + r.Title + "</div>"
-                                delegateToStringExcel += r.Title + "\n"
-                            }
-                            // ExcelRm = ExcelRm.substring(0, ExcelRm.lastIndexOf("\n"));
-                        }
-                    }
+                for (const d of EmpClassificationData) {
                     ExcelData.push({
-                        ClientName: d.Title,
+                        EmployeeClassification: d.Title,
+                        PTO: d.PTO ? "Yes" : "No",
                         IsActive: d.IsActive ? "Active" : "In-Active",
-                        // Comments: d.Comments,
-                        DelegateTo: delegateToStringExcel,
                     })
 
                     Data.push({
                         Id: d.Id,
-                        ClientName: d.Title,
-                        IsActive:  d.IsActive ? "Active" : "In-Active",
-                        // Comments: d.Comments,
-                        DelegateTo: delegateToString,
+                        EmployeeClassification: d.Title,
+                        PTO: d.PTO,
+                        IsActive: d.IsActive ? "Active" : "In-Active",
                     })
                 }
                 let pageAccessable = false;
@@ -306,7 +266,7 @@ class Clients extends Component<ClientProps, ClientState> {
                     pageAccessable = false;
                 }
                 this.setState({
-                    ClientsObj: Data,
+                    EmpClassificationObj: Data,
                     SaveUpdateText: 'Submit',
                     showLabel: false,
                     loading: false,
@@ -319,46 +279,30 @@ class Clients extends Component<ClientProps, ClientState> {
                 loading: false,
                 modalTitle: 'Error',
                 modalText: 'Sorry! something went wrong',
-                // showHideModal: true,
                 isSuccess: false
             });
         }
     }
     private async onEditClickHandler(id) {
-        // console.log('edit clicked', id);
-        // DelegateTo/Title
         try {
             let filterQuery = "ID eq '" + id + "'"
-            let selectQuery = "DelegateTo/ID,DelegateTo/EMail,*"
-            // let Year = new Date().getFullYear()+"";
-            var data = await sp.web.lists.getByTitle('Client').items.filter(filterQuery).select(selectQuery).expand('DelegateTo').get()
+            let selectQuery = "*"
+            var data = await sp.web.lists.getByTitle('EmployeeClassification').items.filter(filterQuery).select(selectQuery).get();
             let response = data[0]
-            // var response = await sp.web.lists.getByTitle('Client').items.getById(id).get();
             let DelegateToIds = { results: [] }
             let DelegateToEmails = []
-            if (data[0].DelegateTo != undefined) {
-                if (data[0].DelegateTo.length > 0) {
-                    for (const user of data[0].DelegateTo) {
-                        DelegateToEmails.push(user.EMail)
-                        DelegateToIds.results.push(user.ID)
-                    }
-                }
-            }
-            document.getElementById("txtClientName").scrollIntoView({ behavior: 'smooth', block: 'start' });
-            document.getElementById("txtClientName").focus();
+            document.getElementById("txtEmployeeClassification").scrollIntoView({ behavior: 'smooth', block: 'start' });
+            document.getElementById("txtEmployeeClassification").focus();
             this.setState({
                 formData:
                 {
                     Title: response.Title,
+                    PTO: response.PTO,
                     IsActive: response.IsActive,
-                    // Comments: response.Comments,
-                    // AuditHistory: JSON.parse(response.AuditHistory),
-                    DelegateToId: DelegateToIds
                 },
-                DelegateToEMail: DelegateToEmails,
                 SaveUpdateText: 'Update',
                 showLabel: false,
-                addNewClient: true,
+                addNewEmpClassification: true,
                 loading:false
             });
         }
@@ -366,50 +310,46 @@ class Clients extends Component<ClientProps, ClientState> {
             console.log('failed to fetch data for record :' + id);
         }
     }
-    private resetHolidayMasterForm = () => {
+    private resetEmpClassificationMasterForm = () => {
         this.setState({
             formData: {
                 Title: '',
+                PTO: false,
                 IsActive: true,
-                // Comments: '',
-                // AuditHistory: [],
-                DelegateToId: { results: [] }
-            }, DelegateToEmail: [],
-            SaveUpdateText: 'Submit', addNewClient: false, isRedirect: true
+            },
+            SaveUpdateText: 'Submit', addNewEmpClassification: false, isRedirect: true
         });
     }
+
     private handleRowClicked = (row) => {
         this.setState({loading:true});
-        window.location.hash = `#/ClientMaster/${row.Id}`;
+        window.location.hash = `#/EmployeeClassificationMaster/${row.Id}`;
         this.props.match.params.id = row.Id
         this.onEditClickHandler(row.Id)
     }
+
     private cancelHandler = () => {
-        this.resetHolidayMasterForm();
-    }
-    public handleClose = () => {
-        this.setState({ showHideModal: false });
-        this.resetHolidayMasterForm();
+        this.resetEmpClassificationMasterForm();
     }
 
-    private addNewClientMaster = () => {
-        var formdata = { ...this.state.formData };
-        this.setState({ addNewClient: true, showLabel: false, formData: formdata });
-        document.getElementById('txtClientName').focus();
+    public handleClose = () => {
+        this.setState({ showHideModal: false });
+        this.resetEmpClassificationMasterForm();
     }
-    private onMenuItemClick(event) {
-        let item = document.getElementById('sideMenuNav');
-        item.classList.toggle('menu-hide');
+    private addNewEmpClassificationMaster = () => {
+        var formdata = { ...this.state.formData };
+        this.setState({ addNewEmpClassification: true, showLabel: false, formData: formdata });
+        document.getElementById('txtEmployeeClassification').focus();
     }
     public render() {
         let ExportExcelreportColumns = [
             {
-                name: "Client Name",
-                selector: "ClientName",
+                name: "Employee Classification",
+                selector: "EmployeeClassification",
             },
             {
-                name: "Delegate To",
-                selector: "DelegateTo"
+                name: "PTO",
+                selector: "PTO",
             },
             {
                 name: "Status",
@@ -419,14 +359,13 @@ class Clients extends Component<ClientProps, ClientState> {
         const columns = [
             {
                 name: "Edit",
-                //selector: "Id",
                 selector: (row, i) => row.Id,
                 export: false,
                 cell: record => {
                     return (
                         <React.Fragment>
                             <div style={{ paddingLeft: '10px' }}>
-                                <NavLink title="Edit" className="csrLink ms-draggable" to={`/ClientMaster/${record.Id}`}>
+                                <NavLink title="Edit" className="csrLink ms-draggable" to={`/EmployeeClassificationMaster/${record.Id}`}>
                                     <FontAwesomeIcon icon={faEdit} onClick={() => { this.onEditClickHandler(record.Id); }}></FontAwesomeIcon>
                                 </NavLink>
                             </div>
@@ -435,46 +374,29 @@ class Clients extends Component<ClientProps, ClientState> {
                 },
                 header: 'Action',
                 dataKey: 'Id',
-                width: '100px',
+                width: '100px'
             },
 
             {
-                name: "Client Name",
-                //selector: "Title",
-                selector: (row, i) => row.ClientName,
+                name: "Employee Classification",
+                selector: (row, i) => row.EmployeeClassification,
                 sortable: true,
-                header: 'Client Name',
-                dataKey: 'ClientName'
+                header: 'Employee Classification',
+                dataKey: 'EmployeeClassification'
             },
             {
-                name: "Delegate To",
-                selector: (row, i) => row.DelegateTo,
+                name: "PTO",
+                selector: (row, i) => row.PTO ? "Yes" : "No",
                 sortable: true,
-                width: '250px',
-                cell: row => <div className='divReviewers' dangerouslySetInnerHTML={{ __html: row.DelegateTo }} />
             },
-
             {
                 name: "Status",
-                //selector: "Database",
                 selector: (row, i) => row.IsActive,
                 sortable: true,
-                // header: 'Holiday Date',
-                // dataKey: 'HolidayDate'
             },
-            // {
-            //     name: "Comments",
-            //     //selector: "Database",
-            //     selector: (row, i) => row.Comments,
-            //     sortable: true,
-            //     header: 'Comments',
-            //     dataKey: 'Comments'
-            // },
-
-
         ];
         if (this.state.isRedirect) {
-            return (<Navigate to={'/ClientMaster'} />);
+            return (<Navigate to={'/EmployeeClassificationMaster'} />);
         }
         if (!this.state.isPageAccessable) {
             let url = this.siteURL+"/SitePages/AccessDenied.aspx";
@@ -485,77 +407,56 @@ class Clients extends Component<ClientProps, ClientState> {
                 {this.state.loading && <Loader />}
                 <ModalPopUp title={this.state.modalTitle} modalText={this.state.modalText} isVisible={this.state.showHideModal} onClose={this.handleClose} isSuccess={this.state.isSuccess}></ModalPopUp>
                 <div id="content" className="content p-2 pt-2">
-                    {/* <div id="clickMenu" className="menu-icon-outer" onClick={(event) => this.onMenuItemClick(event)}>
-                            <div className="menu-icon">
-                                <span>
-                                </span>
-                                <span>
-                                </span>
-                                <span>
-                                </span>
-                            </div>
-                        </div> */}
                     <div className='container-fluid'>
                         <div className='FormContent'>
-                            <div className='title'>Clients
-                                {this.state.addNewClient &&
+                            <div className='title'>Employee Classification
+                                {this.state.addNewEmpClassification &&
                                     <div className='mandatory-note'>
                                         <span className='mandatoryhastrick'>*</span> indicates a required field
                                     </div>
                                 }
                             </div>
-
                             <div className="after-title"></div>
-
-
                             <div className="row justify-content-md-left">
                                 <div className="col-12 col-md-12 col-lg-12">
 
-                                    <div className={this.state.addNewClient ? 'mx-2 activediv' : 'mx-2'}>
+                                    <div className={this.state.addNewEmpClassification ? 'mx-2 activediv' : 'mx-2'}>
                                         <div className="text-right pt-2">
-                                            <button type="button" id="btnSubmit" title='Add New Client' className="SubmitButtons btn" onClick={this.addNewClientMaster}>
-                                                <span className='' id='addClient'><FontAwesomeIcon icon={faPlus}></FontAwesomeIcon> Add</span>
+                                            <button type="button" id="btnSubmit" title='Add New Employee Classification' className="SubmitButtons btn" onClick={this.addNewEmpClassificationMaster}>
+                                                <span className='' id='addEmpClassification'><FontAwesomeIcon icon={faPlus}></FontAwesomeIcon> Add</span>
                                             </button>
                                         </div>
                                     </div>
-                                    <div className="c-v-table clientForm">
+                                    <div className="c-v-table EmpClassificationForm">
                                         <div className="light-box border-box-shadow mx-2">
-                                            <div className={this.state.addNewClient ? '' : 'activediv'}>
+                                            <div className={this.state.addNewEmpClassification ? '' : 'activediv'}>
                                                 <div className="my-2">
                                                     <div className="row pt-2 px-2">
                                                         <InputText
                                                             type='text'
-                                                            label={"Client Name"}
+                                                            label={"Employee Classification"}
                                                             name={"Title"}
                                                             value={this.state.formData.Title || ''}
                                                             isRequired={true}
                                                             onChange={this.handleChange}
-                                                            refElement={this.Client}
+                                                            refElement={this.EmployeeClassification}
                                                             maxlength={250}
                                                             onBlur={this.handleonBlur}
-                                                            id={"txtClientName"}
+                                                            id={"txtEmployeeClassification"}
                                                         />
 
-
                                                         <div className="col-md-3">
-                                                            <div className="light-text">
-                                                                <label className='lblPeoplepicker'>Delegate To {/*<span className="mandatoryhastrick">*</span>*/}</label>
-                                                                <div className="custom-peoplepicker" id="divDelegateTo">
-                                                                    <PeoplePicker
-                                                                        context={this.props.context}
-                                                                        titleText="Delegate To"
-                                                                        personSelectionLimit={10}
-                                                                        showtooltip={false}
-                                                                        defaultSelectedUsers={this.state.DelegateToEMail}
-                                                                        onChange={(e) => this._getPeoplePickerItems(e, 'DelegateToId')}
-                                                                        ensureUser={true}
-                                                                        required={true}
-                                                                        principalTypes={[PrincipalType.User]} placeholder=""
-                                                                        resolveDelay={1000} peoplePickerCntrlclassName={"input-peoplePicker-custom"} />
-                                                                </div>
+                                                            <div className="light-text" id='chkPTO'>
+                                                                <InputCheckBox
+                                                                    label={"PTO"}
+                                                                    name={"PTO"}
+                                                                    checked={this.state.formData.PTO}
+                                                                    onChange={this.handleChange}
+                                                                    isforMasters={false}
+                                                                    isdisable={false}
+                                                                />
                                                             </div>
                                                         </div>
-
                                                         <div className="col-md-3">
                                                             <div className="light-text" id='chkIsActive'>
                                                                 <InputCheckBox
@@ -568,14 +469,7 @@ class Clients extends Component<ClientProps, ClientState> {
                                                                 />
                                                             </div>
                                                         </div>
-
                                                     </div>
-                                                    {/* <div className="media-px-12,col-md-9">
-                                                        <div className="light-text height-auto">
-                                                            <label className="floatingTextarea2 top-11">Comments</label>
-                                                            <textarea className="position-static form-control requiredinput mt-3" onChange={this.handleChange} value={this.state.formData.Comments} maxLength={500} id="txtComments" name="Comments" disabled={false} title='Comments'></textarea>
-                                                        </div>
-                                                    </div> */}
                                                 </div>
                                                 <div className="row mx-1" id="">
                                                     <div className="col-sm-12 text-center my-2" id="">
@@ -583,13 +477,12 @@ class Clients extends Component<ClientProps, ClientState> {
                                                         <button type="button" id="btnCancel" className="CancelButtons btn" onClick={this.cancelHandler} title='Cancel'>Cancel</button>
                                                     </div>
                                                 </div>
-
                                             </div>
                                         </div>
                                     </div>
                                     {this.state.showToaster && <Toaster />}
                                     <div className="c-v-table">
-                                        <TableGenerator columns={columns} data={this.state.ClientsObj} fileName={'Clients'} showExportExcel={this.state.ClientsObj.length?true:false} searchBoxLeft={true} ExportExcelCustomisedColumns={ExportExcelreportColumns} ExportExcelCustomisedData={this.state.ExportExcelData} wrapColumns={"DelegateTo"} LargeWidthColumns={["ClientName","DelegateTo"]} onRowClick={this.handleRowClicked}></TableGenerator>
+                                        <TableGenerator columns={columns} data={this.state.EmpClassificationObj} fileName={'EmployeeClassification'} showExportExcel={this.state.EmpClassificationObj.length ? true : false} searchBoxLeft={true} ExportExcelCustomisedColumns={ExportExcelreportColumns} ExportExcelCustomisedData={this.state.ExportExcelData} LargeWidthColumns={["EmployeeClassification"]} onRowClick={this.handleRowClicked}></TableGenerator>
                                     </div>
                                 </div>
                             </div>
@@ -598,8 +491,6 @@ class Clients extends Component<ClientProps, ClientState> {
                 </div>
             </React.Fragment>
         );
-
     }
 }
-
-export default Clients;
+export default EmployeeClassification;

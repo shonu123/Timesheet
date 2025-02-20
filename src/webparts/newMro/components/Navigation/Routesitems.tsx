@@ -21,9 +21,16 @@ import { SPHttpClient, SPHttpClientResponse, SPHttpClientConfiguration } from '@
 import sitePermissions from './Routing.module';
 import EmployeeMasterView from '../Masters/EmployeeMasterView.component';
 import Clients from '../Masters/ClientMaster.component';
+import EmployeeClassification from '../Masters/EmployeeClassificationMaster.component';
+import PTOPolicy from '../Masters/PTOPolicyMaster.component';
+import Employee from '../Masters/EmployeeMaster.component';
+import EmpPTOCredit from '../Masters/EmployeePTOCredit.component';
 import TimesheetReport from '../Reports/TimesheetReport.component';
 import DailyTimesheetReport from '../Reports/DailyTimesheetReport.component';
 import WeeklyTimesheetReport from '../Reports/WeeklyTimesheetReport.component';
+import PTOReport from '../Reports/PTOReport';
+import PTOSummaryReport from '../Reports/PTOSummaryReport';
+import PTODetailedReport from '../Reports/PTODetailedReport';
 // import WeeklyTimesheetReport from '../Reports/WeeklyTimesheetReportPDF.component';
 import PTOForm from '../Forms/PTOForm.component';
 import DelegateManagerApprovals from '../Forms/AutoManagerDelegtion.component'
@@ -82,6 +89,22 @@ class Routesitems extends Component<RoutesProps, RoutesState> {
             let params =useParams();
             return <Clients {...this.context}{...this.props}  {...{...props, match: {params}} } />
           }
+          const WrapperEmployeeClassificationMaster = (props) => {
+            let params =useParams();
+            return <EmployeeClassification {...this.context}{...this.props}  {...{...props, match: {params}} } />
+          }
+          const WrapperPTOPolicyMaster = (props) => {
+            let params =useParams();
+            return <PTOPolicy {...this.context}{...this.props}  {...{...props, match: {params}} } />
+          }
+          const WrapperEmployeeMaster = (props) => {
+            let params =useParams();
+            return <Employee {...this.context}{...this.props}  {...{...props, match: {params}} } />
+          }
+          const WrapperPTOCreditMaster = (props) => {
+            let params =useParams();
+            return <EmpPTOCredit {...this.context}{...this.props}  {...{...props, match: {params}} } />
+          }
           const WrapperDashboard = (props) => {
             let params =useParams();
             return <Dashboard {...this.context}{...this.props}  {...{...props, match: {params}} } />
@@ -101,6 +124,15 @@ class Routesitems extends Component<RoutesProps, RoutesState> {
           const WeeklyTimesheetReports = (props) => {
             let params =useParams();
             return <WeeklyTimesheetReport {...this.context}{...this.props}  {...{...props, match: {params}} } />
+          }
+          const PTOSummaryReports = (props) => {
+            let params =useParams();
+            return <PTOSummaryReport {...this.context}{...this.props}  {...{...props, match: {params}} } />
+            // return <PTOReport {...this.context}{...this.props}  {...{...props, match: {params}} } />
+          }
+          const PTODetailedReports = (props) => {
+            let params =useParams();
+            return <PTODetailedReport {...this.context}{...this.props}  {...{...props, match: {params}} } />
           }
           const WrapperPTOForm = (props) => {
             let params =useParams();
@@ -128,10 +160,16 @@ class Routesitems extends Component<RoutesProps, RoutesState> {
                    <Route path='/EmployeeMasterView/:message?' element ={<WrapperMasterView/>} />
                    <Route path='/HolidayMaster/:id?' element ={<WrapperHolidayMaster/>} />
                    <Route path='/ClientMaster/:id?' element ={<WrapperClientMaster/>} />
+                   <Route path='/EmployeeClassificationMaster/:id?' element ={<WrapperEmployeeClassificationMaster/>} />
+                   <Route path='/PTOPolicyMaster/:id?' element ={<WrapperPTOPolicyMaster/>} />
+                   <Route path='/EmployeeMaster/:id?' element ={<WrapperEmployeeMaster/>} />
+                   <Route path='/EmployeePTOCreditMaster/:id?' element ={<WrapperPTOCreditMaster/>} />
                     <Route path='/purchaserequest/:id?' element={<Wrapper />} />
                     <Route path='/TimesheetReport/' element ={<TimesheetReports/>} />
                     <Route path='/DailyTimesheetReport/' element ={<DailyTimesheetReports/>} />
                     <Route path='/WeeklyTimesheetReport/' element ={<WeeklyTimesheetReports/>} />
+                    <Route path='/PTOSummaryReport/' element ={<PTOSummaryReports/>} />
+                    <Route path='/PTODetailedReport/' element ={<PTODetailedReports/>} />
                     {/* <Route path='/TimesheetReport' element={(matchprops) => <TimesheetReport {...matchprops}{...this.props} />} /> */}
                     {/* <Route path='/requisitionreport' element={(matchprops) => <RequisitionReport {...matchprops}{...this.props} />} /> */}
                     {/* <Route path='/Dashboard/:message?' element={<Dashboard {...this.context} {...this.props} />} /> */}

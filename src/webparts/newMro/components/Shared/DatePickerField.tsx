@@ -7,6 +7,8 @@ import { faCalendarAlt} from '@fortawesome/free-solid-svg-icons';
 const DatePickercontrol = (props,ref) => {
     var [selectedDay,setDate] = useState(null);
     let selectedDate = props.selectedDate!=null?props.selectedDate:null;
+    let EndDate = ![null,undefined,''].includes(props.endDate)?props.endDate:null;
+    let StartDate = ![null,undefined,''].includes(props.startDate)?props.startDate:null;
     let selDate=null,reference = ref,id = props.id,title = props.title,customDate,minDate= props.minDate,maxDate= props.maxDate
     if([null,undefined,""].includes(props.customDate))
       customDate = false
@@ -105,6 +107,8 @@ const DatePickercontrol = (props,ref) => {
          titleText={title}
          showIcon
          toggleCalendarOnIconClick
+         minDate={StartDate}
+         maxDate = {EndDate}
         />
         </div>
 

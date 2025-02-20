@@ -15,6 +15,7 @@ import { Toaster } from 'react-hot-toast';
 import customToaster from '../Shared/Toaster.component';
 import { ToasterTypes } from '../../Constants/Constants';
 import ModalApprovePopUp from '../Shared/ModalApprovePopUp';
+import { addDays } from 'office-ui-fabric-react';
 export interface ApproversProps {
     match: any;
     spContext: any;
@@ -117,11 +118,11 @@ class ApproversApprovals extends React.Component<ApproversProps, ApproversState>
         let date = `${dateFilter.getMonth() + 1}/${dateFilter.getDate()}/${dateFilter.getFullYear()}`
         var filterQuery = "and WeekStartDate ge '" + date + "'"
         // var filterString = "ReportingManager/Id eq '"+userId+"' and PendingWith eq 'Manager' and Status eq '"+StatusType.Submit+"'"
-        var filterString = "(AssignedTo/Id eq '" + userId + "' or ReportingManager/Id eq '"+userId+"') and PendingWith eq 'Manager'";
-        let delegationQuery = "DelegateTo/Id eq '"+userId+"'"
+        var filterString = "(AssignedTo/Id eq '" + userId + "' or ReportingManager/Id eq '"+userId+"') and Status eq '"+StatusType.Submit+"' and PendingWith eq 'Manager'";
+        let delegationQuery = "DelegateTo/Id eq '"+userId+"'";
         try {
         let [responseData,ManagerDelegations] = await Promise.all([
-            sp.web.lists.getByTitle('WeeklyTimeSheet').items.top(2000).filter(filterString+filterQuery).expand("ReportingManager,Reviewers,Initiator").select('ReportingManager/Title,ReportingManager/EMail,Reviewers/EMail,Reviewers/Id,Initiator/EMail,Initiator/Id,*').orderBy('WeekStartDate,DateSubmitted', false).get(),
+            sp.web.lists.getByTitle('WeeklyTimeSheet').items.top(2000).filter(filterString).expand("ReportingManager,Reviewers,Initiator").select('ReportingManager/Title,ReportingManager/EMail,Reviewers/EMail,Reviewers/Id,Initiator/EMail,Initiator/Id,*').orderBy('WeekStartDate,DateSubmitted', false).get(),
             sp.web.lists.getByTitle('Delegations').items.filter(delegationQuery).expand("Authorizer,DelegateTo").select('Authorizer/Title,Authorizer/ID,DelegateTo/ID,*').orderBy('Authorizer/ID', false).get(),
         ])
                 // let getDelegateRecords = this.showDelegatedRecords(ManagerDelegations[0].startDate,ManagerDelegations[0].endDate)
@@ -172,7 +173,8 @@ class ApproversApprovals extends React.Component<ApproversProps, ApproversState>
                         TotalBillable: parseFloat(parseFloat(d.BillableTotalHrs).toFixed(2)),
                         // NonBillableTotalHrs: d.NonBillableTotalHrs,
                         HolidayHrs: parseFloat(parseFloat(JSON.parse(d.ClientHolidayHrs)[0].Total).toFixed(2)),
-                        PTOHrs: parseFloat(parseFloat(JSON.parse(d.PTOHrs)[0].Total).toFixed(2)),
+                        PTOHrs: parseFloat(parseFloat(JSON.parse(d.PTOHrs)[0].Total).toFixed(4)),
+                        PTORow :JSON.parse(d.PTOHrs),
                         GrandTotal: parseFloat(parseFloat(d.GrandTotal).toFixed(2)),
                         Client: d.ClientName,
                         EmployeeEmail: d.Initiator.EMail,
@@ -184,6 +186,8 @@ class ApproversApprovals extends React.Component<ApproversProps, ApproversState>
                         commentsObj: JSON.parse(d.CommentsHistory),
                         SynergyOfficeHrs: d.SynergyOfficeHrs,
                         ClientHolidayHrs: d.ClientHolidayHrs,
+                        EligibleforPTO:d.EligibleforPTO,
+                        //PTONewHrs:d.EligibleforPTO?parseFloat(parseFloat(JSON.parse(d.PTONewHrs)[0].Total).toFixed(2)):'NA',
                     })
                 }
                 if(delRmData.length){
@@ -208,7 +212,8 @@ class ApproversApprovals extends React.Component<ApproversProps, ApproversState>
                             TotalBillable: parseFloat(parseFloat(d.BillableTotalHrs).toFixed(2)),
                             // NonBillableTotalHrs: d.NonBillableTotalHrs,
                             HolidayHrs: parseFloat(parseFloat(JSON.parse(d.ClientHolidayHrs)[0].Total).toFixed(2)),
-                            PTOHrs: parseFloat(parseFloat(JSON.parse(d.PTOHrs)[0].Total).toFixed(2)),
+                            PTOHrs: parseFloat(parseFloat(JSON.parse(d.PTOHrs)[0].Total).toFixed(4)),
+                            PTORow :JSON.parse(d.PTOHrs),
                             GrandTotal: parseFloat(parseFloat(d.GrandTotal).toFixed(2)),
                             Client: d.ClientName,
                             EmployeeEmail: d.Initiator.EMail,
@@ -220,12 +225,14 @@ class ApproversApprovals extends React.Component<ApproversProps, ApproversState>
                             commentsObj: JSON.parse(d.CommentsHistory),
                             SynergyOfficeHrs: d.SynergyOfficeHrs,
                             ClientHolidayHrs: d.ClientHolidayHrs,
+                            EligibleforPTO:d.EligibleforPTO,
+                            // PTONewHrs:d.EligibleforPTO?parseFloat(parseFloat(JSON.parse(d.PTONewHrs)[0].Total).toFixed(2)):'NA',
                         })
                     }
                 }
                 // console.log(Data);
                  //this.getClientDeligates(Data)
-                this.setState({clearRows:false, ReportingManager: Data,loading: false});
+                this.setState({clearRows:false, ReportingManager: Data, loading: false});
             }
             catch (error) {
                 console.log("Sorry something went wrong!", error)
@@ -433,8 +440,18 @@ this.setState({ ReportingManager: Data, DelegateToUsers: obj, loading: false });
         try {
             // Batch declaration
             const batch = sp.web.createBatch();
+            const EmployeePTOBatch = sp.web.createBatch(); // Regarding PTO
+            const PTOTransactionBatch = sp.web.createBatch(); // Regarding PTO
             let NotModifiedTimesheets=[];
             var  ItemsJustBeforeActionPerform= await this.GetAllItemsStatusBeforeActionPerform();
+            let selectQueryPTOTransaction = "Employee/Id,Employee/Title,*";
+            var [EmployeePTOReords,PTOTransactionRecords] = await Promise.all([
+                this.getLatestPTOData(),
+                sp.web.lists.getByTitle('PTOTransactions').items.expand('Employee').select(selectQueryPTOTransaction).orderBy('PostedOn', false).getAll()
+            ])
+
+            // var PTOTransactionRecords = await 
+
             for (const row of selectedRows) {
                 // Queue update operation for each item in the batch
                 let comments = row.commentsObj;
@@ -444,7 +461,7 @@ this.setState({ ReportingManager: Data, DelegateToUsers: obj, loading: false });
                     User: this.props.spContext.userDisplayName,
                     Comments: this.state.comments.trim(),
                     Date: new Date().toISOString()
-                })
+                }) 
                 //For handling  Reportimg Manager and Reviewer same case.
                 let IsReportingManagerReviewerSame = false;
                 let currentActioner = this.props.spContext.userEmail;
@@ -453,8 +470,50 @@ this.setState({ ReportingManager: Data, DelegateToUsers: obj, loading: false });
                         IsReportingManagerReviewerSame = true;
                         break;
                     }
-
                 }
+                //Code to handle PTO Calculations if Manager and Reviewer Same :start
+                let currentEmployeePTO=[];
+                let PTOData={};
+                let PTOTransaction={};
+                let PTOHrs=row.PTORow[0].Total;
+                   if(parseFloat(row.PTORow[0].PTOAfterDeduction)<0)
+                   PTOHrs=parseFloat(row.PTORow[0].Total)+parseFloat(row.PTORow[0].PTOAfterDeduction);// Code for PTO:Calculating PTOHrs considering from Timeoff Hrs
+                if( IsReportingManagerReviewerSame && row.EligibleforPTO && row.PTOHrs!=0 && parseFloat(PTOHrs)>0)
+                {
+                     currentEmployeePTO=EmployeePTOReords.filter(pto=> pto.Employee.Id==row.EmployeeId && pto.Year==new Date(row.Date).getFullYear()); // Regarding PTO
+                     PTOTransaction={
+                        EmployeeId:row.EmployeeId,
+                        TransactionType:StatusType.Approved,
+                        PostedOn:new Date(),
+                        From:this.addBrowserwrtServer(new Date(row.Date)),
+                        To:this.addBrowserwrtServer(addDays(new Date(row.Date),6)),
+                        Hours:parseFloat(PTOHrs).toFixed(4),
+                        Reason:this.state.comments.trim(),
+                        Year:new Date(row.Date).getFullYear().toString()
+                     }
+                     if(currentEmployeePTO.length)
+                      PTOData={
+                        PTOBalance:(parseFloat([null,undefined,''].includes(currentEmployeePTO[0].PTOBalance)?0:currentEmployeePTO[0].PTOBalance)-parseFloat(PTOHrs)).toFixed(4),
+                        PTOApplied:(parseFloat([null,undefined,''].includes(currentEmployeePTO[0].PTOApplied)?0:currentEmployeePTO[0].PTOApplied)-parseFloat(PTOHrs)).toFixed(4),
+                        PTOAvailed:(parseFloat([null,undefined,''].includes(currentEmployeePTO[0].PTOAvailed)?0:currentEmployeePTO[0].PTOAvailed)+parseFloat(PTOHrs)).toFixed(4),
+                        }
+                 // Below is for : after action component is not get reloaded, so to get updated PTO Data
+                 let EmployeePTO=[];
+                 EmployeePTOReords.forEach(obj=>{
+                     if(obj.Employee.Id==row.EmployeeId && obj.Year==new Date(row.Date).getFullYear())
+                     {
+                        obj.PTOBalance=(parseFloat([null,undefined,''].includes(currentEmployeePTO[0].PTOBalance)?0:currentEmployeePTO[0].PTOBalance)-parseFloat(PTOHrs)).toFixed(4);
+                        obj.PTOApplied=(parseFloat([null,undefined,''].includes(currentEmployeePTO[0].PTOApplied)?0:currentEmployeePTO[0].PTOApplied)-parseFloat(PTOHrs)).toFixed(4);
+                        obj.PTOAvailed=(parseFloat([null,undefined,''].includes(currentEmployeePTO[0].PTOAvailed)?0:currentEmployeePTO[0].PTOAvailed)+parseFloat(PTOHrs)).toFixed(4);
+                        EmployeePTO.push(obj);
+                     }
+                     else{
+                        EmployeePTO.push(obj);
+                     }
+                 })
+                 EmployeePTOReords=EmployeePTO;
+                }
+                 //Code to handle PTO Calculations if Manager and Reviewer Same :end
                 let formData = {
                     Status :IsReportingManagerReviewerSame?StatusType.Approved:StatusType.ManagerApprove,
                     PendingWith : IsReportingManagerReviewerSame?"NA":"Reviewer",
@@ -467,18 +526,34 @@ this.setState({ ReportingManager: Data, DelegateToUsers: obj, loading: false });
                 //      sp.web.lists.getByTitle('WeeklyTimeSheet').items.getById(row.Id).inBatch(batch).update(formData);
                 //      NotModifiedTimesheets.push(row);
                 // }
+                            
+
+                let Transaction = {
+                    TransactionType: StatusType.Approved
+                }
                for(let T in ItemsJustBeforeActionPerform)
                {
                 if(row.Id==ItemsJustBeforeActionPerform[T].Id &&row.StatusInList==ItemsJustBeforeActionPerform[T].Status)
                 {
                     sp.web.lists.getByTitle('WeeklyTimeSheet').items.getById(row.Id).inBatch(batch).update(formData);
+                    if(IsReportingManagerReviewerSame && row.EligibleforPTO && row.PTOHrs!=0 && parseFloat(PTOHrs)>0)
+                    {
+                        sp.web.lists.getByTitle('EmployeePTO').items.getById(currentEmployeePTO[0].Id).inBatch(EmployeePTOBatch).update(PTOData);
+                        PTOTransactionRecords
+                                .filter(item => item.IsActive && parseInt(item.TimesheetID) === parseInt(row.Id))
+                                .forEach(pto => {
+                                    sp.web.lists.getByTitle('PTOTransactions').items.getById(pto.ID).inBatch(PTOTransactionBatch).update(Transaction);
+                                });
+
+                        // sp.web.lists.getByTitle('PTOTransactions').items.inBatch(PTOTransactionBatch).add(PTOTransaction);
+                    }
                     NotModifiedTimesheets.push(row);
                     break;
                 }
                }     
             }
             // Execute the batch
-            await batch.execute();
+            await Promise.all([ batch.execute(),EmployeePTOBatch.execute(),PTOTransactionBatch.execute()]);
             customToaster('toster-success', ToasterTypes.Success, NotModifiedTimesheets.length+' Timesheet(s) Approved Successfully.'+(selectedRows.length-NotModifiedTimesheets.length!=0?' Attention: '+(selectedRows.length-NotModifiedTimesheets.length)+' Timesheet(s) has been modified. Please review the changes.':''), 2000);
             this.setState({ comments: '',showApproveRejectPopup: false,SelectedRows:[], loading: false,clearRows:true,isRedirect:true });
             // this.ReportingManagerApproval();
@@ -499,10 +574,59 @@ this.setState({ ReportingManager: Data, DelegateToUsers: obj, loading: false });
         try {
             // Batch declaration
             const batch = sp.web.createBatch();
+            const EmployeePTOBatch = sp.web.createBatch(); // Regarding PTO
+            const PTOTransactionBatch = sp.web.createBatch(); // Regarding PTO
             let NotModifiedTimesheets=[];
             var  ItemsJustBeforeActionPerform= await this.GetAllItemsStatusBeforeActionPerform();
+            // var EmployeePTOReords= await this.getLatestPTOData();
+            let selectQueryPTOTransaction = "Employee/Id,Employee/Title,*";
+            var [EmployeePTOReords,PTOTransactionRecords] = await Promise.all([
+                this.getLatestPTOData(),
+                sp.web.lists.getByTitle('PTOTransactions').items.expand('Employee').select(selectQueryPTOTransaction).orderBy('PostedOn', false).getAll()
+            ])
+
+
             for (const row of selectedRows) {
                 // Queue update operation for each item in the batch
+                let currentEmployeePTO=[];
+                let PTOData={};
+                let PTOTransaction={};
+                let PTOHrs=row.PTORow[0].Total;
+                   if(parseFloat(row.PTORow[0].PTOAfterDeduction)<0)
+                   PTOHrs=parseFloat(row.PTORow[0].Total)+parseFloat(row.PTORow[0].PTOAfterDeduction);// Code for PTO:Calculating PTOHrs considering from Timeoff Hrs
+                if(row.EligibleforPTO && row.PTOHrs!=0 && parseFloat(PTOHrs)>0)
+                {
+                     currentEmployeePTO=EmployeePTOReords.filter(pto=> pto.Employee.Id==row.EmployeeId && pto.Year==new Date(row.Date).getFullYear()); // Regarding PTO
+                     PTOTransaction={
+                        EmployeeId:row.EmployeeId,
+                        TransactionType:StatusType.ManagerReject,
+                        PostedOn:new Date(),
+                        From:this.addBrowserwrtServer(new Date(row.Date)),
+                        To:this.addBrowserwrtServer(addDays(new Date(row.Date),6)),
+                        Hours:parseFloat(PTOHrs).toFixed(4),
+                        Reason:this.state.comments.trim(),
+                        Year:new Date(row.Date).getFullYear().toString()
+                     }
+                     if(currentEmployeePTO.length)
+                      PTOData={
+                        PTOBalanceAfterDeduction:(parseFloat([null,undefined,''].includes(currentEmployeePTO[0].PTOBalanceAfterDeduction)?0:currentEmployeePTO[0].PTOBalanceAfterDeduction)+parseFloat(PTOHrs)).toFixed(4),
+                        PTOApplied:(parseFloat([null,undefined,''].includes(currentEmployeePTO[0].PTOApplied)?0:currentEmployeePTO[0].PTOApplied)-parseFloat(PTOHrs)).toFixed(4)
+                        }
+                 // Below is for : after action component is not get reloaded, so to get updated PTO Data
+                 let EmployeePTO=[];
+                 EmployeePTOReords.forEach(obj=>{
+                     if(obj.Employee.Id==row.EmployeeId && obj.Year==new Date(row.Date).getFullYear())
+                     {
+                        obj.PTOBalanceAfterDeduction=(parseFloat([null,undefined,''].includes(currentEmployeePTO[0].PTOBalanceAfterDeduction)?0:currentEmployeePTO[0].PTOBalanceAfterDeduction)+parseFloat(PTOHrs)).toFixed(4);
+                        obj.PTOApplied=(parseFloat([null,undefined,''].includes(currentEmployeePTO[0].PTOApplied)?0:currentEmployeePTO[0].PTOApplied)-parseFloat(PTOHrs)).toFixed(4);
+                        EmployeePTO.push(obj);
+                     }
+                     else{
+                        EmployeePTO.push(obj);
+                     }
+                 })
+                 EmployeePTOReords=EmployeePTO;
+                }
                 let comments = row.commentsObj
                 comments.push({
                     Action: StatusType.Reject,
@@ -523,19 +647,31 @@ this.setState({ ReportingManager: Data, DelegateToUsers: obj, loading: false });
                 //         sp.web.lists.getByTitle('WeeklyTimeSheet').items.getById(row.Id).inBatch(batch).update(formData);
                 //         NotModifiedTimesheets.push(row);
                 //     }
+                let Transaction = {
+                    TransactionType: StatusType.Reject
+                }
                     for(let T in ItemsJustBeforeActionPerform)
                     {
                      if(row.Id==ItemsJustBeforeActionPerform[T].Id &&row.StatusInList==ItemsJustBeforeActionPerform[T].Status)
                      {
                          sp.web.lists.getByTitle('WeeklyTimeSheet').items.getById(row.Id).inBatch(batch).update(formData);
+                         if(row.EligibleforPTO && row.PTOHrs!=0 && parseFloat(PTOHrs)>0)
+                         {
+                             sp.web.lists.getByTitle('EmployeePTO').items.getById(currentEmployeePTO[0].Id).inBatch(EmployeePTOBatch).update(PTOData);
+                            //  sp.web.lists.getByTitle('PTOTransactions').items.inBatch(PTOTransactionBatch).add(PTOTransaction);
+                            PTOTransactionRecords
+                            .filter(item => item.IsActive && parseInt(item.TimesheetID) === parseInt(row.Id))
+                            .forEach(pto => {
+                                sp.web.lists.getByTitle('PTOTransactions').items.getById(pto.ID).inBatch(PTOTransactionBatch).update(Transaction);
+                            });
+                         }
                          NotModifiedTimesheets.push(row);
                          break;
                      }
                     }
             }
             // Execute the batch
-            await batch.execute();
-
+            await Promise.all([ batch.execute(),EmployeePTOBatch.execute(),PTOTransactionBatch.execute()]);
             customToaster('toster-success', ToasterTypes.Success, NotModifiedTimesheets.length+' Timesheet(s) Rejected Successfully.'+(selectedRows.length-NotModifiedTimesheets.length!=0?' Attention: '+(selectedRows.length-NotModifiedTimesheets.length)+' Timesheet(s) has been modified. Please review the changes.':''), 2000);
             this.setState({ comments: '',showApproveRejectPopup: false,SelectedRows:[], loading: false,clearRows:true,isRedirect:true });
             // this.ReportingManagerApproval();
@@ -548,6 +684,27 @@ this.setState({ ReportingManager: Data, DelegateToUsers: obj, loading: false });
 
         }
     }
+    private async getLatestPTOData() {
+        let EmployeePTO = [];
+        try {
+
+            let filterQuery = "EligibleforPTO eq 1 and IsActive eq 1";
+            await sp.web.lists.getByTitle('EmployeePTO').items.top(5000).filter(filterQuery).select('Employee/Id,Employee/EMail,*').expand("Employee").getAll()
+                .then((response) => {
+                    EmployeePTO = response;
+                }, (error) => {
+                    console.log(error);
+                    customToaster('toster-error', ToasterTypes.Error, 'Sorry! something went wrong', 4000);
+                    this.setState({ loading: false })
+                });
+        }
+        catch (e) {
+            console.log(e);
+            customToaster('toster-error', ToasterTypes.Error, 'Sorry! something went wrong', 4000);
+            this.setState({ loading: false })
+        }
+        return EmployeePTO;
+    }
     private async getItemStatusBeforeActionPerform(TimesheetID,OpenedTimeStatus) {
         let filterQuery = "ID eq '" + TimesheetID + "'";
         let data = await sp.web.lists.getByTitle('WeeklyTimeSheet').items.filter(filterQuery).select('Status').get();
@@ -556,6 +713,14 @@ this.setState({ ReportingManager: Data, DelegateToUsers: obj, loading: false });
         else
             return OpenedTimeStatus;
 
+    }
+    private addBrowserwrtServer(date) {
+        if (date != '') {
+            var utcOffsetMinutes = date.getTimezoneOffset();
+            var newDate = new Date(date.getTime());
+            newDate.setTime(newDate.getTime() + ((this.props.spContext.webTimeZoneData.Bias - utcOffsetMinutes + this.props.spContext.webTimeZoneData.DaylightBias) * 60 * 1000));
+            return newDate;
+        }
     }
     private GetAllItemsStatusBeforeActionPerform = async () => {
         const userId = this.props.spContext.userId;
@@ -650,19 +815,21 @@ this.setState({ ReportingManager: Data, DelegateToUsers: obj, loading: false });
                 sortable: true
             },
             {
-                name: "Pending With",
-                selector: (row, i) => row.PendingWith,
-                width: '180px',
+                name: "Status",
+                selector: (row, i) => row.Status,
+                // width: '250px',
                 sortable: true
             },
             {
-                name: "Status",
-                selector: (row, i) => row.Status,
+                name: "Pending With",
+                selector: (row, i) => row.PendingWith,
+                width: '250px',
                 sortable: true
             },
             {
                 name: "Hours",
                 selector: (row, i) => row.BillableTotalHrs,
+                width: '110px',
                 sortable: true,
             },
             {
@@ -671,22 +838,28 @@ this.setState({ ReportingManager: Data, DelegateToUsers: obj, loading: false });
                 width: '110px',
                 sortable: true,
             },
+            // {
+            //     name: "Paid Time Off",
+            //     selector: (row, i) => row.PTONewHrs,
+            //     width: '130px',
+            //     sortable: true,
+            // },
             {
                 name: "Holiday",
                 selector: (row, i) => row.HolidayHrs,
-                width: '130px',
+                width: '120px',
                 sortable: true,
             },
             {
                 name: "Time Off",
                 selector: (row, i) => row.PTOHrs,
-                width: '110px',
+                width: '120px',
                 sortable: true,
             },
             {
                 name: "Grand Total",
                 selector: (row, i) => row.GrandTotal,
-                // width: '140px',
+                width: '130px',
                 sortable: true
             }
         ];
@@ -700,7 +873,7 @@ this.setState({ ReportingManager: Data, DelegateToUsers: obj, loading: false });
                 {/* Popup for Multi Approve/Reject */}
                 <ModalApprovePopUp message={this.state.message} title={this.state.title} isVisible={this.state.showApproveRejectPopup} isSuccess={this.state.isSuccess} isManager={true} onConfirm={this.handleApproveReject} onCancel={this.closeApproveRejectPopup} comments={this.handleChangeEvents} errorMessage={this.state.errorMessage} commentsValue={this.state.comments} modalHeader={this.state.ModalHeader} IsClientApprovalNeed= {false}></ModalApprovePopUp>
                 <div>
-                    <div className='table-head-1st-td'>
+                    <div className=''>
                         <TableGenerator columns={columns} data={this.state.ReportingManager} fileName={''} showExportExcel={false}
                             showAddButton={false} customBtnClass='' btnDivID='' navigateOnBtnClick='' btnSpanID='' btnCaption='' btnTitle='Forward Approvals' searchBoxLeft={true} selectableRows={this.state.ReportingManager.length>0?true:false} clearSelectedRows={this.state.clearRows} handleSelectedRows={this.getSelectedRows} customButton={false} showMultiApproveOrReject={this.state.SelectedRows.length > 0 ? true : false} onClickApproveOrReject={this.showConfirmApproveRejectPopup}  customButtonClick={this.ShowPopUp} onRowClick={this.handleRowClicked}></TableGenerator>
                     </div>

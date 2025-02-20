@@ -59,6 +59,7 @@ interface TableGeneratorProps {
   customBtnClass?:string;
   searchBoxLeft?:boolean;
   wrapColumns?:any;
+  LargeWidthColumns?:any;
   selectableRows?:boolean;
   handleSelectedRows?:any;
   customButton?:boolean;
@@ -67,7 +68,7 @@ interface TableGeneratorProps {
   onRowClick?:any;
 }
 
-const TableGenerator = ({ columns, data, fileName,showExportExcel,showExportPDF=false,logoUrlToPDF,showMultiApproveOrReject=false,onClickApproveOrReject, ExportExcelCustomisedColumns,ExportExcelCustomisedData, prvPageNumber,prvSort,prvDirection,onChange,onSortChange,onSortDirection,showAddButton,btnSpanID,btnTitle,navigateOnBtnClick,btnCaption,customBtnClass,btnDivID,searchBoxLeft,wrapColumns,selectableRows,handleSelectedRows,customButton=false,customButtonClick,onRowClick,clearSelectedRows=true}: TableGeneratorProps) => {
+const TableGenerator = ({ columns, data, fileName,showExportExcel,showExportPDF=false,logoUrlToPDF,showMultiApproveOrReject=false,onClickApproveOrReject, ExportExcelCustomisedColumns,ExportExcelCustomisedData, prvPageNumber,prvSort,prvDirection,onChange,onSortChange,onSortDirection,showAddButton,btnSpanID,btnTitle,navigateOnBtnClick,btnCaption,customBtnClass,btnDivID,searchBoxLeft,wrapColumns,LargeWidthColumns,selectableRows,handleSelectedRows,customButton=false,customButtonClick,onRowClick,clearSelectedRows=true}: TableGeneratorProps) => {
   //let lsMyrequests = localStorage.getItem('PrvData');
  // const tableData = { columns, data };
   const [totalData, setData] = useState([]);
@@ -125,7 +126,7 @@ const TableGenerator = ({ columns, data, fileName,showExportExcel,showExportPDF=
        {
        <div className="col-6 text-right pr-4">
          {/* <ExportExcel tableData={ExportExcelCustomisedData ? ExportExcelCustomisedData : data} filename={fileName} columns={ExportExcelCustomisedColumns ? ExportExcelCustomisedColumns : columns}></ExportExcel> */}
-          { showExportExcel && <ExportExcelwithStyles tableData={ExportExcelCustomisedData ? ExportExcelCustomisedData : data} filename={fileName} columns={ExportExcelCustomisedColumns ? ExportExcelCustomisedColumns : columns} wrapColumnsArray={wrapColumns}></ExportExcelwithStyles>}
+          { showExportExcel && <ExportExcelwithStyles tableData={ExportExcelCustomisedData ? ExportExcelCustomisedData : data} filename={fileName} columns={ExportExcelCustomisedColumns ? ExportExcelCustomisedColumns : columns} wrapColumnsArray={wrapColumns} LargeWidthColumnsArray={LargeWidthColumns}></ExportExcelwithStyles>}
           { showExportPDF && <ExportToPDF AllTimesheetsData={data} filename={fileName}  LogoImgUrl={logoUrlToPDF}></ExportToPDF>}
           { showMultiApproveOrReject && <><button type="button" id="btnApprove" name={"Approve"} onClick={onClickApproveOrReject} className="SubmitButtons btn" title="Approve">Approve</button><button type="button" id="btnReject" name={"Reject"} onClick={onClickApproveOrReject} className="RejectButtons btn" title="Reject">Reject</button></>}
             </div> }
@@ -154,6 +155,7 @@ const TableGenerator = ({ columns, data, fileName,showExportExcel,showExportPDF=
           onSelectedRowsChange={handleSelectedRows}
           clearSelectedRows={clearSelectedRows}
           onRowClicked={onRowClick}
+          selectableRowsVisibleOnly={true}
         />
       </div>
     </div>

@@ -2,19 +2,22 @@ import * as React from 'react';
 import { NavLink } from 'react-router-dom';
 // const sitePermissions: any = require('./Routing.module');
 import sitePermissions from './Routing.module';
+import { sp } from '@pnp/sp';
 export interface NavBarProps {
     currentUserGroups: any;
+    spContext: any;
 }
 
 
 export interface NavBarState {
     currentUserLinks: Array<string>;
     expandNav:boolean;
+    currUserPTOEligible:boolean;
 }
 
 
 class NavBar extends React.Component<NavBarProps, NavBarState> {
-    public state = { currentUserLinks: [],expandNav:false };
+    public state = { currentUserLinks: [],expandNav:false,currUserPTOEligible:false };
     private currentUserLinksArr = [];
     public componentDidMount() {
         delete localStorage.PreviouslySelectedTab;
@@ -38,6 +41,7 @@ class NavBar extends React.Component<NavBarProps, NavBarState> {
                     document.getElementById('O365_MainLink_Help_container').style.display = 'none';
             }, 2000)
         }
+        this.getOnLoad();
         this.setState({ currentUserLinks: this.currentUserLinksArr });
     }
     public onNavItemClick(event) {
@@ -81,11 +85,22 @@ class NavBar extends React.Component<NavBarProps, NavBarState> {
         document.getElementById('divNavMasterItems').classList.remove('show')
         document.getElementById('Masters').classList.remove('heighlightMasters')
         }
-        if(this.props.currentUserGroups.includes('Timesheet Administrators') || this.props.currentUserGroups.includes('Dashboard Admins'))
+        if(this.props.currentUserGroups.includes('Timesheet Administrators') || this.props.currentUserGroups.includes('Dashboard Admins') || this.state.currUserPTOEligible)
         {
         document.getElementById('divNavReportItems').classList.remove('show')
         document.getElementById('Reports').classList.remove('heighlightMasters')
         }
+    }
+    public getOnLoad = async ()=>
+    {
+        let filterQuery = "Employee/ID eq '"+this.props.spContext.userId+"' and EligibleforPTO eq 1 and IsActive eq 1";
+            await sp.web.lists.getByTitle("Employees").items.filter(filterQuery).select('Employee/ID,*').expand("Employee").getAll().then((EmployeeMasterData)=>
+            {
+             if(EmployeeMasterData.length>0)
+             this.setState({currUserPTOEligible:true});
+            },(error) => {
+                console.log('Error while getting curr user info :'+ error);
+            });
     }
     public render() {
         return (
@@ -123,10 +138,38 @@ class NavBar extends React.Component<NavBarProps, NavBarState> {
                             {
                                 (this.props.currentUserGroups.includes('Timesheet Administrators')) ?
                                     // <li className="" >
+                                        <NavLink className="dropdown-item" id="EmployeeClassificationMaster" onClick={(event) => this.onNavItemClick(event)} to="/EmployeeClassificationMaster"><span className="">Employee Classification</span></NavLink>
+                                    // </li>
+                                     : ''
+                            }
+                            {
+                                (this.props.currentUserGroups.includes('Timesheet Administrators')) ?
+                                    // <li className="" >
+                                        <NavLink className="dropdown-item" id="EmployeeMaster" onClick={(event) => this.onNavItemClick(event)} to="/EmployeeMaster"><span className="">Employees</span></NavLink>
+                                    // </li>
+                                     : ''
+                            }
+                            {
+                                (this.props.currentUserGroups.includes('Timesheet Administrators')) ?
+                                    // <li className="" >
                                         <NavLink className="dropdown-item" id="HolidayMaster" onClick={(event) => this.onNavItemClick(event)} to="/HolidayMaster"><span className="">Holidays</span></NavLink>
                                     // </li>
                                      : ''
                             }
+                             {
+                                (this.props.currentUserGroups.includes('Timesheet Administrators')) ?
+                                    // <li className="" >
+                                        <NavLink className="dropdown-item" id="PTOPolicyMaster" onClick={(event) => this.onNavItemClick(event)} to="/PTOPolicyMaster"><span className="">PTO Policy</span></NavLink>
+                                    // </li>
+                                     : ''
+                            }
+                             {/* {
+                                (this.props.currentUserGroups.includes('Timesheet Administrators')) ?
+                                    // <li className="" >
+                                        <NavLink className="dropdown-item" id="EmployeePTOCreditMaster" onClick={(event) => this.onNavItemClick(event)} to="/EmployeePTOCreditMaster"><span className="">Employee PTO Credit</span></NavLink>
+                                    // </li>
+                                     : ''
+                            } */}
                             {/* {
                                 (this.props.currentUserGroups.includes('Timesheet Administrators') || this.props.currentUserGroups.includes('Dashboard Admins')) ?
                                     // <li className="" >
@@ -181,17 +224,29 @@ class NavBar extends React.Component<NavBarProps, NavBarState> {
                                     </li> : ''
                             } */}
                             {
-                                (this.props.currentUserGroups.includes('Timesheet Administrators') || this.props.currentUserGroups.includes('Dashboard Admins')) ?
+                                (this.state.currUserPTOEligible || this.props.currentUserGroups.includes('Timesheet Administrators') || this.props.currentUserGroups.includes('Dashboard Admins')) ?
                                 <li  className={`nav-item dropdown`} id="Reports">
                              <a className="nav-link dropdown-toggle" href="#" role="button" data-toggle="dropdown" aria-expanded="false">Reports</a>
                              <div className={`dropdown-menu ${this.state.expandNav?'show':''}`} id="divNavReportItems">
-                                <NavLink className="dropdown-item" to="/DailyTimesheetReport" id="DailyTimesheetReport" onClick={(event) => this.onNavItemClick(event)}><span className=""><span className="">Daily Reports</span></span></NavLink>
-                                <NavLink className="dropdown-item" to="/WeeklyTimesheetReport" id="WeeklyTimesheetReport" onClick={(event) => this.onNavItemClick(event)}><span className=""><span className="">Weekly Reports</span></span></NavLink>
+                                            {(this.props.currentUserGroups.includes('Timesheet Administrators') || this.props.currentUserGroups.includes('Dashboard Admins')) ?
+                                                <NavLink className="dropdown-item" to="/DailyTimesheetReport" id="DailyTimesheetReport" onClick={(event) => this.onNavItemClick(event)}><span className=""><span className="">Daily Reports</span></span></NavLink>
+                                                : ''
+                                            }
+                                            {
+                                                (this.props.currentUserGroups.includes('Timesheet Administrators') || this.props.currentUserGroups.includes('Dashboard Admins')) ? <NavLink className="dropdown-item" to="/PTODetailedReport" id="PTODetailedReport" onClick={(event) => this.onNavItemClick(event)}><span className=""><span className="">PTO Detailed Reports</span></span></NavLink> : ''
+                                            }
+                                            {
+                                                (this.state.currUserPTOEligible || this.props.currentUserGroups.includes('Timesheet Administrators') || this.props.currentUserGroups.includes('Dashboard Admins')) ? <NavLink className="dropdown-item" to="/PTOSummaryReport" id="PTOSummaryReport" onClick={(event) => this.onNavItemClick(event)}><span className=""><span className="">PTO Summary Reports</span></span></NavLink> : ''
+                                            }
+                                            {(this.props.currentUserGroups.includes('Timesheet Administrators') || this.props.currentUserGroups.includes('Dashboard Admins')) ?
+                                                <NavLink className="dropdown-item" to="/WeeklyTimesheetReport" id="WeeklyTimesheetReport" onClick={(event) => this.onNavItemClick(event)}><span className=""><span className="">Weekly Reports</span></span></NavLink>
+                                                : ''
+                                            }
                             </div>
                                 </li>
                                     // <li className="nav-click2" id="DailyTimesheetReport" onClick={(event) => this.onNavItemClick2(event)}>
                                     //     <NavLink className="" to="/DailyTimesheetReport"><span className=""><span className="">Reports</span></span></NavLink>
-                                    // </li> : ''
+                                    // </li> : ''z
                                     :''
                             }
 

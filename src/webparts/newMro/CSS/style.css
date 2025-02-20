@@ -777,9 +777,9 @@ input.c-input-readonly {
 }
 .light-text .form-control {
   /* position: absolute; */
-  top: 10px;
+  /* top: 10px; commented for searchable dropdown css on Jan 22 2025 */
+  /* z-index: 0; commented for searchable dropdown css on Jan 22 2025 */
   width: 100%;
-  z-index: 0;
   border: 1px solid #a19f9d !important;
   /* padding: .575rem .75rem; */
 }
@@ -856,7 +856,7 @@ input.c-input-readonly {
 .mandatory-FormContent-focus .sp-peoplepicker-topLevel:focus{
   border-color: transparent!important;
 
-  box-shadow: 0 0 0 0.2rem rgba(223,43,42,.75)!important;
+  box-shadow: 0 0 0 0.2rem rgba(223, 43, 42, 0.75)!important;
   -webkit-box-shadow: 0 0 0 0.2rem rgba(223,43,42,.75)!important; 
   outline: none!important;
 }
@@ -2471,8 +2471,11 @@ li {
   background-color: rgb(0 0 0 / 32%)!important;
 }
 .table-head-1st-td .eBWcrR .bRirNn:nth-child(1){
-  min-width: 72px;
-  max-width: 72px;
+  min-width: 150px;
+  max-width: 150px;
+}
+.table-head-1st-td .sc-jrcTuL .lkrJOt:nth-child(1){
+  min-width: 150px !important;
 }
 .class-grand-total{
   position: absolute;
@@ -2603,6 +2606,8 @@ li {
 }
 .modal{
   background: #0000008a;
+  padding: 30px;
+  overflow: auto !important;
 }
 .modal-header-Approve {
   padding: 0.5rem 1rem;
@@ -2661,7 +2666,7 @@ overflow:inherit !important;
 .lblPeoplepicker,.lblClient{
 z-index: 1 !important;
 }
-.holiadyForm,.clientForm{
+.holiadyForm,.clientForm,.EmpClassificationForm,.EmployeeFrom,.PolicyFrom{
 position: relative;
 top: 3px;
 }
@@ -3272,7 +3277,7 @@ margin-left: 5px;
 }
 
 .w-n-b {
-  min-width: 85px;
+  min-width: 50px;
 }
 
 .a-export-pdf-button .fa-file-pdf {
@@ -3287,7 +3292,7 @@ margin-left: 5px;
   padding: 7px 6px !important;
   /* border: 1px solid #282828;	 */
   border: 0;
-   box-shadow: inset 1px 1px 0px #3763847a !important;
+  box-shadow: inset 1px 1px 0px #3763847a !important;
 }
 
 .tblWeeklyTimesheetReport td{
@@ -3379,4 +3384,37 @@ a#btnDownloadPDFFile:hover.a-export-pdf-button .fa-file-pdf {
 #theadWeeklyTimesheetReport{
   position: sticky;
    top: 0;
+}
+.divActionHistory
+{
+  max-height: 185px;
+  overflow-y: auto;
+}
+.ActionHistoryHead
+{
+  border-bottom: "4px solid #444444";
+  position:sticky;
+  top:0;
+}
+/* Searchable dropdown CSS */
+.custom-dropdown{
+  position: relative;
+  margin-top: 10px;
+}
+.custom-dropdown label{
+  position: absolute;
+  top: -9px;
+  left: 5px;
+  padding: 0 5px;
+  background-color: #fff;
+  z-index: 1;
+  font-size: 12px;
+  font-weight: bold;
+}
+.searchMandatory .css-t3ipsp-control {
+  box-shadow: 0 0 0 0.2rem rgba(223,43,42,.75) !important;
+  border-color: transparent !important;
+}
+.css-1nmdiq5-menu{
+  z-index: 10 !important;
 }

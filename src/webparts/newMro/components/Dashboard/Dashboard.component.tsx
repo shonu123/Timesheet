@@ -48,6 +48,7 @@ export interface DashboardState {
     isEmployeeConfigured:boolean;
     showMyTeamComp:boolean;
     showReviewerDelegationsViewComp:boolean;
+    justDelegateToPerson: boolean;
 }
 
 class Dashboard extends React.Component<DashboardProps, DashboardState> {
@@ -79,6 +80,7 @@ class Dashboard extends React.Component<DashboardProps, DashboardState> {
             showMyTeamComp:false,
             showMyTeamTab:false,
             showReviewerDelegationsViewComp:false,
+            justDelegateToPerson: false
         };
     }
     public componentDidMount() {
@@ -124,13 +126,15 @@ class Dashboard extends React.Component<DashboardProps, DashboardState> {
     private getUserGroups = async () => {
         // let groups = await sp.web.currentUser.groups();
         let userID = this.props.spContext.userId,isAdminloggedin=false;
-        let filterQuery = "(ReportingManager/ID eq '"+userID+"' or Employee/ID eq '"+userID+"' or Reviewers/ID eq '"+userID+"') and IsActive eq '1'"
-        let [groups,EmployeeMaster] = await Promise.all([
+        let filterQuery = "(ReportingManager/ID eq '"+userID+"' or Employee/ID eq '"+userID+"' or Reviewers/ID eq '"+userID+"') and IsActive eq '1'";
+        let delegationQuery = "DelegateTo/Id eq '"+userID+"'";
+        let [groups,EmployeeMaster,Delegations] = await Promise.all([
             sp.web.currentUser.groups(),
-            sp.web.lists.getByTitle("EmployeeMaster").items.filter(filterQuery).select('Employee/ID,ReportingManager/ID,Reviewers/ID,*').expand("Employee,ReportingManager,Reviewers").get()
+            sp.web.lists.getByTitle("EmployeeMaster").items.filter(filterQuery).select('Employee/ID,ReportingManager/ID,Reviewers/ID,*').expand("Employee,ReportingManager,Reviewers").get(),
+            sp.web.lists.getByTitle('Delegations').items.filter(delegationQuery).expand("Authorizer,DelegateTo").select('Authorizer/Title,Authorizer/ID,DelegateTo/ID,*').orderBy('Authorizer/ID', false).get(),
           ]);
         // console.log(EmployeeMaster)
-        let isEmployee = false,isManager = false,isReviewer = false;
+        let isEmployee = false,isManager = false,isReviewer = false,isManagerDelegated=false,isReviewerDelegated=false,justDelegateToPerson = false
  
         EmployeeMaster.forEach(obj => {
             if (obj.Employee.ID === userID) {
@@ -145,7 +149,24 @@ class Dashboard extends React.Component<DashboardProps, DashboardState> {
                 isReviewer = true;
             }
         });
-        let EmployeeConfigured = isEmployee || isManager ||isReviewer
+         //Below code for: if Manager/Reviewer delegated but delegated person not exists as Reporting Manager/Reviewer ,but still My Approvals/My Reviews tab should be visisble
+         if(Delegations.length)
+         {
+            if(!isManager && !isReviewer){
+                justDelegateToPerson = true
+            }
+             let managerOrReviewerResponce = await this.checkManagerOrReviewer(Delegations);
+             isManagerDelegated = managerOrReviewerResponce.isManager;
+             isReviewerDelegated = managerOrReviewerResponce.isReviewer;
+            //  if(!isManager && isManagerDelegated){
+            //     isManager = true;
+            //  }
+            //  if(!isReviewer && isReviewerDelegated){
+            //     isReviewer = true;
+            //  }
+         }
+
+        let EmployeeConfigured = isEmployee || isManager || isReviewer || isManagerDelegated || isReviewerDelegated;
         // console.log("Is Employee Configured: "+EmployeeConfigured)
         // console.log("current user deatils")
         // console.log(this.props.context.pageContext)
@@ -162,16 +183,16 @@ class Dashboard extends React.Component<DashboardProps, DashboardState> {
             this.setState({ showRequestTab: true});
             //this.onHandleClick('MyRequests')
         }
-        if(isManager){
+        if(isManager || isManagerDelegated){
             this.setState({ showMyApprovalsTab: true});
             //this.onHandleClick('Approvers')
         }
-        if(isManager&&isReviewer){
+        if((isManager&&isReviewer) || (isManagerDelegated&&isReviewerDelegated)){
             this.setState({ showMyReviewersTab: true,showMyApprovalsTab: true});
             // this.setState({ showMyApprovalsTab: true});
             //this.onHandleClick('Approvers')
         }
-        else if(isReviewer){
+        else if(isReviewer || isReviewerDelegated){
             this.setState({ showMyReviewersTab: true});
             //this.onHandleClick('Reviewers')
         }
@@ -179,10 +200,10 @@ class Dashboard extends React.Component<DashboardProps, DashboardState> {
             this.setState({ showAllRequestsTab: true});
             //this.onHandleClick('AllRequests')
             isAdminloggedin=true;
-            EmployeeConfigured = true
+            EmployeeConfigured = true;
         }        
     //conditins updated to stop unwanted calls
-    this.setState({isEmployeeConfigured: EmployeeConfigured,isReviewer:isReviewer,loading:false});
+    this.setState({isEmployeeConfigured: EmployeeConfigured,isReviewer:isReviewer,justDelegateToPerson:justDelegateToPerson,loading:false});
         if(![null,undefined,''].includes(localStorage.getItem('PreviouslySelectedTab')))
         {
             this.onHandleClick(localStorage.getItem('PreviouslySelectedTab'))
@@ -201,6 +222,46 @@ class Dashboard extends React.Component<DashboardProps, DashboardState> {
             this.onHandleClick('MyRequests')
         }
         // [null,undefined,''].includes(localStorage.getItem('PreviouslySelectedTab'))?'':this.onHandleClick(localStorage.getItem('PreviouslySelectedTab'));
+    }
+     //To check DelegateTo person is Manager or Reviewer to show My Approvals / My Reviews Tabs
+    private async checkManagerOrReviewer(DelObj) {
+        let filterQuery = "IsActive eq '1'";
+        let isManager = false, isReviewer = false;
+        await sp.web.lists.getByTitle("EmployeeMaster").items.top(5000).filter(filterQuery).select('Employee/ID,ReportingManager/ID,Reviewers/ID,*').expand("Employee,ReportingManager,Reviewers").getAll().then((EmpMasterResp) => {
+            DelObj.forEach(Delg => {
+                let today = new Date().setHours(0, 0, 0, 0), start = new Date(Delg.From).setHours(0, 0, 0, 0), end = new Date(Delg.To).setHours(0, 0, 0, 0);
+                let DelgAuthorizerID = Delg.Authorizer.ID;
+                if (today >= start && today <= end) {
+                    for (let Matrix of EmpMasterResp) {
+                        if (Matrix.ReportingManager && Matrix.ReportingManager.some(manager => manager.ID === DelgAuthorizerID)) {
+                            isManager = true;
+                            break;
+                        }
+                        if (Matrix.Reviewers && Matrix.Reviewers.some(Reviewer => Reviewer.ID === DelgAuthorizerID)) {
+                            isReviewer = true;
+                            break;
+                        }
+                    }
+                    // for (let Matrix of EmpMasterResp) {
+                    //     // if (Matrix.ReportingManager && Matrix.ReportingManager.some(manager => manager.ID === DelgAuthorizerID)) {
+                    //     //     isManager = true;
+                    //     //     break;
+                    //     // }
+                    //     if (Matrix.Reviewers && Matrix.Reviewers.some(Reviewer => Reviewer.ID === DelgAuthorizerID)) {
+                    //         isReviewer = true;
+                    //         break;
+                    //     }
+                    // }
+                }
+            });
+
+        })
+            .catch((err) => {
+                console.log('Failed to fetch ApprovalMatrix');
+                customToaster('toster-error', ToasterTypes.Error, 'Sorry! something went wrong', 4000);
+                this.setState({ loading: false });
+            });
+        return { isManager: isManager, isReviewer: isReviewer };
     }
     private onMenuItemClick(event) {
         let item = document.getElementById('sideMenuNav');
@@ -344,7 +405,7 @@ class Dashboard extends React.Component<DashboardProps, DashboardState> {
                                     {/* {(this.state.showAllRequestsTab || this.state.showMyReviewersTab) &&<li className="nav-item" role="presentation" onClick={() => this.onHandleClick('ReviewerDelegationsView')} >
                                         <a className="nav-link" id="ReviewerDelegationsView-tab" data-toggle="tab" href="#/DelegateReviews" role="tab" aria-controls="ReviewerDelegationsView" aria-selected="false">Delegate Reviews</a>
                                     </li>} */}
-                                    {this.state.showMyApprovalsTab &&   <li className="nav-item" role="presentation" onClick={() =>{ this.onHandleClick('MyTeam');localStorage.setItem('PreviouslySelectedTab','MyTeam');}} >
+                                    {this.state.showMyApprovalsTab && !this.state.justDelegateToPerson &&   <li className="nav-item" role="presentation" onClick={() =>{ this.onHandleClick('MyTeam');localStorage.setItem('PreviouslySelectedTab','MyTeam');}} >
                                         <a className="nav-link" id="MyTeam-tab" data-toggle="tab" href="#/MyTeam" role="tab" aria-controls="MyTeam" aria-selected="true">My Team</a>
                                     </li>}
                                 </ul>

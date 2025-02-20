@@ -15,6 +15,7 @@ import ModalPopUp from '../Shared/ModalPopUp';
 import { Toaster } from 'react-hot-toast';
 import customToaster from '../Shared/Toaster.component';
 import { ToasterTypes } from '../../Constants/Constants';
+import { addDays } from 'office-ui-fabric-react';
 export interface ReviewerApprovalsProps {
     match: any;
     spContext: any;
@@ -83,13 +84,11 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
         var filterQuery = " and WeekStartDate ge '"+date+"'"
 
         // var filterString = "Reviewers/Id eq '"+userId+"' and PendingWith eq 'Reviewer' and Status eq '"+StatusType.ManagerApprove+"'"
-        var filterString = "(AssignedTo/Id eq '"+userId+"' or Reviewers/Id eq '"+userId+"') and PendingWith eq 'Reviewer'";
-
-
+        var filterString = "(AssignedTo/Id eq '"+userId+"' or Reviewers/Id eq '"+userId+"') and Status eq '"+StatusType.ManagerApprove+"' and PendingWith eq 'Reviewer'";
         let delegationQuery = "DelegateTo/Id eq '"+userId+"'"
         try {
         let [responseData,ManagerDelegations] = await Promise.all([
-            sp.web.lists.getByTitle('WeeklyTimeSheet').items.top(5000).filter(filterString+filterQuery).expand("Reviewers").select('Reviewers/Title','*').orderBy('WeekStartDate,Modified', false).get(),
+            sp.web.lists.getByTitle('WeeklyTimeSheet').items.top(5000).filter(filterString).expand("Reviewers,Initiator").select('Reviewers/Title,Initiator/Id,Initiator/EMail,*').orderBy('WeekStartDate,Modified', false).get(),
             sp.web.lists.getByTitle('Delegations').items.filter(delegationQuery).expand("Authorizer,DelegateTo").select('Authorizer/Title,Authorizer/ID,DelegateTo/ID,*').orderBy('Authorizer/ID', false).get(),
         ])
                 // let getDelegateRecords = this.showDelegatedRecords(ManagerDelegations[0].startDate,ManagerDelegations[0].endDate)
@@ -116,7 +115,7 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
                 getDelTSQry+= ") and PendingWith eq 'Reviewer'";
                 let delRmData = []
                 if(managers.length)
-                    delRmData = await sp.web.lists.getByTitle('WeeklyTimeSheet').items.top(2000).filter(getDelTSQry).expand("ReportingManager,Initiator").select('ReportingManager/Title,ReportingManager/EMail,Initiator/EMail,*').orderBy('WeekStartDate,DateSubmitted', false).get()
+                    delRmData = await sp.web.lists.getByTitle('WeeklyTimeSheet').items.top(2000).filter(getDelTSQry).expand("ReportingManager,Initiator").select('ReportingManager/Title,ReportingManager/EMail,Initiator/Id,Initiator/EMail,*').orderBy('WeekStartDate,DateSubmitted', false).get()
 
                 let Data = [];
                 for (const d of responseData) {
@@ -129,7 +128,6 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
                         Id : d.Id,
                         Date : `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`,
                         EmployeName: d.Name,
-                        Company : d.ClientName,
                         PendingWith: d.PendingWith,
                         Status : this.getStatus(d.Status),
                         BillableHrs: isBillable?parseFloat(parseFloat(d.WeeklyTotalHrs).toFixed(2)):parseFloat(parseFloat(JSON.parse(d.SynergyOfficeHrs)[0].Total).toFixed(2)),
@@ -137,8 +135,18 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
                         TotalBillableHours: parseFloat(parseFloat(d.BillableTotalHrs).toFixed(2)),
                         // NonBillableTotalHrs: d.NonBillableTotalHrs,
                         HolidayHrs:parseFloat(parseFloat(JSON.parse(d.ClientHolidayHrs)[0].Total).toFixed(2)),
-                        PTOHrs:parseFloat(parseFloat(JSON.parse(d.PTOHrs)[0].Total).toFixed(2)),
-                        GrandTotal: parseFloat(parseFloat(d.GrandTotal).toFixed(2))
+                        PTOHrs:parseFloat(parseFloat(JSON.parse(d.PTOHrs)[0].Total).toFixed(4)),
+                        PTORow:JSON.parse(d.PTOHrs),
+                        GrandTotal: parseFloat(parseFloat(d.GrandTotal).toFixed(2)),
+                        Client: d.ClientName,
+                        EmployeeEmail: d.Initiator.EMail,
+                        EmployeeId:d.Initiator.Id,
+                        //ReportingManagerEmails: d.ReportingManager.map(e => e.EMail),
+                        commentsObj: JSON.parse(d.CommentsHistory),
+                        //SynergyOfficeHrs: d.SynergyOfficeHrs,
+                        //ClientHolidayHrs: d.ClientHolidayHrs,
+                        EligibleforPTO:d.EligibleforPTO,
+                        //PTONewHrs:d.EligibleforPTO?parseFloat(parseFloat(JSON.parse(d.PTONewHrs)[0].Total).toFixed(2)):'NA',
                     })
                 }
                 // this.setState({ExportExcelData:Data})
@@ -167,14 +175,18 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
                             TotalBillable: parseFloat(parseFloat(d.BillableTotalHrs).toFixed(2)),
                             // NonBillableTotalHrs: d.NonBillableTotalHrs,
                             HolidayHrs: parseFloat(parseFloat(JSON.parse(d.ClientHolidayHrs)[0].Total).toFixed(2)),
-                            PTOHrs: parseFloat(parseFloat(JSON.parse(d.PTOHrs)[0].Total).toFixed(2)),
+                            PTOHrs: parseFloat(parseFloat(JSON.parse(d.PTOHrs)[0].Total).toFixed(4)),
+                            PTORow:JSON.parse(d.PTOHrs),
                             GrandTotal: parseFloat(parseFloat(d.GrandTotal).toFixed(2)),
                             Client: d.ClientName,
                             EmployeeEmail: d.Initiator.EMail,
-                            ReportingManagerEmails: d.ReportingManager.map(e => e.EMail),
+                            EmployeeId:d.Initiator.Id,
+                            //ReportingManagerEmails: d.ReportingManager.map(e => e.EMail),
                             commentsObj: JSON.parse(d.CommentsHistory),
-                            SynergyOfficeHrs: d.SynergyOfficeHrs,
-                            ClientHolidayHrs: d.ClientHolidayHrs,
+                            //SynergyOfficeHrs: d.SynergyOfficeHrs,
+                            //ClientHolidayHrs: d.ClientHolidayHrs,
+                            EligibleforPTO:d.EligibleforPTO,
+                            //PTONewHrs:d.EligibleforPTO?parseFloat(parseFloat(JSON.parse(d.PTONewHrs)[0].Total).toFixed(2)):'NA',
                         })
                     }
                 }
@@ -234,8 +246,382 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
         emailBody += '</td></tr></table>';
         return emailBody;
     }
+// this function is used to reload the data after Approve/Reject is done
+   private navigateAfterAction =()=>{
+    this.setState({successPopUp : false});
+    this.ReviewerApproval();
+    }
+// This function is used to bind comments to comments input feild
+    private handleComments = async (e) =>{
+       let value = e.target.type == 'checkbox' ? e.target.checked : e.target.value;
+    //    console.log(value);
+       let  {name}  = e.target;
+       if(name =="comments")
+       this.setState({comments : value})
+        else if(name == "IsClientApprovalNeed")
+        this.setState({IsClientApprovalNeed : value})
 
-    // this function is used to update the weekly time sheet when Reviewer Approves/Rejects
+    }
+    //This function is used to close popup
+    private handlefullClose = () => {
+        this.setState({ showHideModal: false, Action :'', errorMessage : '',ItemID : 0,comments:''});
+    }
+
+// This function is used to Display confirm popup based on Approve/Reject
+    private showConfirmApproveRejectPopup = (e) =>{
+        // console.log(e.target.id);
+        // console.log(e.target.dataset);
+        // console.log(e.target.dataset.name)
+        let recordId = parseInt(e.target.id);
+        this.setState({ItemID : recordId})
+        let name = e.target.dataset.name
+        if(name == 'Approve')
+        {
+            this.setState({message : 'Are you sure you want to approve?',title : 'Approve', Action : 'Approve',showHideModal : true,isSuccess:true,ModalHeader:'modal-header-Approve'});
+            //this.setState({showHideModal : true,isSuccess:true,ModalHeader:'modal-header-Approve'})
+            // this.setState({showHideModal : true,isSuccess:true,ModalHeader:'modal-header-reject'})
+        }
+        else if(name == 'Reject')
+        {
+            this.setState({message : 'Are you sure you want to reject?',title : 'Reject', Action :StatusType.Reject,showHideModal : true,isSuccess:false,ModalHeader:'modal-header-reject'});
+            //this.setState({showHideModal : true,isSuccess:false,ModalHeader:'modal-header-reject'})
+        }
+        else{
+            this.setState({showHideModal : false})
+        }
+    }
+    //this function calls handleApprove/handleReject function based on the user action
+    private handleApproveReject = (e) =>{
+        this.setState({loading : true})
+         if(this.state.Action == "Approve")
+        this.handleApprove(e)
+        else
+         this.handleReject(e)
+    }
+// this function is used to get current records data and then update the status of the time sheet to Approved
+    private handleApprove = async (e) => {
+        let recordId = this.state.ItemID;
+        var filterString = "Id eq '" + recordId + "'"
+        this.setState({ loading: true });
+        let selectQueryPTOTransaction = "Employee/Id,Employee/Title,*",filterPTOTransactionQuery = "TimesheetID eq '"+recordId+"' and IsActive eq 1"
+        // let data = await sp.web.lists.getByTitle('WeeklyTimeSheet').items.filter(filterString).select('Initiator/ID,Initiator/Title,*').expand('Initiator').get()
+        let [data ,PTOTransactionRecords] = await Promise.all([
+            sp.web.lists.getByTitle('WeeklyTimeSheet').items.filter(filterString).select('Initiator/ID,Initiator/Title,*').expand('Initiator').get(),
+            sp.web.lists.getByTitle('PTOTransactions').items.expand('Employee').filter(filterPTOTransactionQuery).select(selectQueryPTOTransaction).orderBy('PostedOn', false).getAll()
+        ])
+        let InitialRecord = this.state.Reviewers.filter(record => {
+            if (recordId == record.Id) return record
+        }
+        )
+        if (InitialRecord[0].Status != this.getStatus(data[0].Status)) {
+            customToaster('toster-warning', ToasterTypes.Warning, "Attention: This PTO has been modified. Please review the changes.", 3000);
+            this.setState({ showHideModal: false, isSuccess: true, ModalHeader: '', comments: '', IsClientApprovalNeed: false })
+            this.ReviewerApproval();
+            return false;
+        }
+        let commentsObj = JSON.parse(data[0].CommentsHistory);
+        commentsObj.push({Action: StatusType.Approved,Role: 'Reviewer',User: this.props.spContext.userDisplayName,Comments: this.state.comments,
+        Date: new Date().toISOString()})
+        commentsObj = JSON.stringify(commentsObj);
+        let postObject = {
+            Status : StatusType.Approved,
+            CommentsHistory : commentsObj,
+            PendingWith :'NA',
+            IsClientApprovalNeed : this.state.IsClientApprovalNeed,
+            Revised: true,
+            AssignedToId : { "results": [] },
+        }
+        let PTOData={};
+        let PTOTransaction={};
+        let PTOHrs=InitialRecord[0].PTORow[0].Total;
+        if(parseFloat(InitialRecord[0].PTORow[0].PTOAfterDeduction)<0)
+           PTOHrs=parseFloat(InitialRecord[0].PTORow[0].Total)+parseFloat(InitialRecord[0].PTORow[0].PTOAfterDeduction);// Code for PTO:Calculating PTOHrs considering from Timeoff Hrs
+       let currentEmployeePTO= await sp.web.lists.getByTitle('EmployeePTO').items.filter("Employee/Id eq "+InitialRecord[0].EmployeeId+" and Year eq "+new Date(InitialRecord[0].Date).getFullYear()+" and IsActive eq 1").select('Employee/Id,Employee/EMail,*').expand("Employee").getAll(); // Regarding PTO
+        if(currentEmployeePTO.length && InitialRecord[0].EligibleforPTO && InitialRecord[0].PTOHrs!=0 && parseFloat(PTOHrs)>0)
+        {
+             PTOTransaction={
+                EmployeeId:InitialRecord[0].EmployeeId,
+                TransactionType:StatusType.Approved,
+                PostedOn:new Date(),
+                From:this.addBrowserwrtServer(new Date(InitialRecord[0].Date)),
+                To:this.addBrowserwrtServer(addDays(new Date(InitialRecord[0].Date),6)),
+                Hours:parseFloat(PTOHrs).toFixed(4),
+                Reason:this.state.comments.trim(),
+                Year:new Date(InitialRecord[0].Date).getFullYear().toString()
+             }
+              PTOData={
+                PTOBalance:(parseFloat([null,undefined,''].includes(currentEmployeePTO[0].PTOBalance)?0:currentEmployeePTO[0].PTOBalance)-parseFloat(PTOHrs)).toFixed(4),
+                PTOApplied:(parseFloat([null,undefined,''].includes(currentEmployeePTO[0].PTOApplied)?0:currentEmployeePTO[0].PTOApplied)-parseFloat(PTOHrs)).toFixed(4),
+                PTOAvailed:(parseFloat([null,undefined,''].includes(currentEmployeePTO[0].PTOAvailed)?0:currentEmployeePTO[0].PTOAvailed)+parseFloat(PTOHrs)).toFixed(4),
+                }
+        }
+        this.setState({comments  :''})
+        const PTOTransactionBatch = sp.web.createBatch(); // Regarding PTO Transaction
+        let Transaction = {
+            TransactionType: StatusType.Approved
+        }
+        sp.web.lists.getByTitle('WeeklyTimeSheet').items.getById(data[0].Id).update(postObject).then((res) => {
+                // to update Employee PTO
+                if(currentEmployeePTO.length && InitialRecord[0].EligibleforPTO && InitialRecord[0].PTOHrs!=0 && parseFloat(PTOHrs)>0)
+                {
+                    sp.web.lists.getByTitle('EmployeePTO').items.getById(currentEmployeePTO[0].Id).update(PTOData).then((resPTO) => {
+                        // to add Employee PTO transaction
+                        PTOTransactionRecords
+                        .forEach(pto => {
+                            sp.web.lists.getByTitle('PTOTransactions').items.getById(pto.ID).inBatch(PTOTransactionBatch).update(Transaction);
+                        });
+                        // sp.web.lists.getByTitle('PTOTransactions').items.add(PTOTransaction).then((resPTOTranc) => {
+                        Promise.all([PTOTransactionBatch.execute()]).then((resPTOTranc) => {
+                            this.setState({showHideModal : false,ItemID:0,message:'',title:'',Action:'',loading: false,successPopUp:false,modalTitle:'Record approved successfully'});
+                            customToaster('toster-success',ToasterTypes.Success,'Weekly timesheet '+StatusType.Approved.toLowerCase()+ ' succesfully',2000);
+                        this.ReviewerApproval();
+                        }).catch(err => {
+                           console.log('Error while adding PTO transaction.', err);
+                        });
+                     }).catch(err => {
+                   console.log('Error while update Employee PTO.', err);
+                    });
+                }
+        }).catch(err => {
+           console.log('Failed to fetch data.', err);
+    });
+    }
+    // private handleApprove = async (e) => {
+        
+    //     let recordId = this.state.ItemID;
+    //     var filterString = "Id eq '"+recordId+"'"
+    //     this.setState({ loading: true });
+    //     let data =  await sp.web.lists.getByTitle('WeeklyTimeSheet').items.filter(filterString).select('Initiator/ID,Initiator/Title,*').expand('Initiator').get()
+    //     // console.log(data)
+        
+    //    let InitialRecord =  this.state.Reviewers.filter(record => { 
+    //     if (recordId == record.Id) return record }
+    // )
+        
+    // if(InitialRecord[0].Status != this.getStatus(data[0].Status)){
+    //     customToaster('toster-warning', ToasterTypes.Warning,"Attention: This PTO has been modified. Please review the changes.", 3000);
+    //     this.setState({showHideModal : false,isSuccess:true,ModalHeader:'',comments:'',IsClientApprovalNeed:false})
+    //     this.ReviewerApproval();
+    //     return false
+    // }
+    //     let commentsObj = JSON.parse(data[0].CommentsHistory)
+    //     if(commentsObj == null)
+    //     commentsObj = [];
+    //     commentsObj.push({
+    //         Action : StatusType.Approved,
+    //         Role : 'Reviewer',
+    //         User : this.props.spContext.userDisplayName,
+    //         Comments : this.state.comments,
+    //         Date : new Date().toISOString()
+    //     })
+    //     commentsObj = JSON.stringify(commentsObj);
+    //     // var filterString = "Initiator/ID eq '"+data[0].Initiator.ID+"' and ClientName eq '"+data[0].ClientName+"'"
+    //     var selectString = 'Initiator/EMail,Reviewers/EMail,ReportingManager/EMail,DelegateTo/EMail,*'
+    //     let emailData = await sp.web.lists.getByTitle('WeeklyTimeSheet').items.filter(filterString).select(selectString).expand('Initiator,Reviewers,ReportingManager,DelegateTo').get();
+    //     // console.log(emailData)
+    //     let toEmail = [];
+    //     let ccEmail = [];
+    //     toEmail.push(emailData[0].Initiator.EMail);
+    //     // let approvers = emailData[0].ReportingManager
+    //     let isDeligated = emailData[0].IsDelegated
+    //     let approvers;
+    //     isDeligated?emailData[0].DelegateTo:approvers = emailData[0].ReportingManager
+
+    //     for (const user of approvers) {
+    //         if(!ccEmail.includes(user.EMail))
+    //         ccEmail.push(user.EMail);
+    //     }
+    //     //---------Notofiers------------------
+    //     // let notifires = emailData[0].Notifiers
+    //     // for (const user of notifires) {
+    //     //     if(!toEmail.includes(user.EMail))
+    //     //     toEmail.push(user.EMail);
+    //     // }----------------------------------
+    //     let reviewers = emailData[0].Reviewers
+    //     for (const user of reviewers) {
+    //         if(!toEmail.includes(user.EMail))
+    //         toEmail.push(user.EMail);
+    //     }
+    //     // this.setState({comments : comments })
+    //     let date = new Date(data[0].DateSubmitted.split('-')[1]+'/'+data[0].DateSubmitted.split('-')[2].split('T')[0]+'/'+data[0].DateSubmitted.split('-')[0])
+    //     let tableContent = {'Name':data[0].Name,'Client':data[0].ClientName,'Submitted Date':`${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`,'Billable Hours':data[0].WeeklyTotalHrs,'OT Hours':data[0].OTTotalHrs,'Total Billable Hours':data[0].BillableTotalHrs,'Holiday Hours':JSON.parse(data[0].ClientHolidayHrs)[0].Total,'Time Off Hours':JSON.parse(data[0].PTOHrs)[0].Total,'Total Hours':data[0].GrandTotal}
+    //     // console.log(tableContent)
+    //     this.updateStatus(recordId,StatusType.Approved,commentsObj,toEmail,ccEmail,tableContent)
+    // }
+// this function is used to get current records data and then update the status of the time sheet to Reject
+    private handleReject= async (e) =>{
+
+        let recordId = this.state.ItemID;
+        if(['',undefined,null].includes(this.state.comments.trim())){
+            this.setState({loading:false})
+            customToaster('toster-error',ToasterTypes.Error,'Comments cannot be Blank.',4000)
+        }
+        else{
+            var filterString = "Id eq '"+recordId+"'"
+            this.setState({showHideModal:false, successPopUp:false,loading: true });
+            // let data =  await sp.web.lists.getByTitle('WeeklyTimeSheet').items.filter(filterString).select('Initiator/ID,Initiator/Title,*').expand('Initiator').orderBy('WeekStartDate,DateSubmitted', false).get()
+            let selectQueryPTOTransaction = "Employee/Id,Employee/Title,*",filterPTOTransactionQuery = "TimesheetID eq '"+recordId+"' and IsActive eq 1"
+            let [data ,PTOTransactionRecords] = await Promise.all([
+                sp.web.lists.getByTitle('WeeklyTimeSheet').items.filter(filterString).select('Initiator/ID,Initiator/Title,*').expand('Initiator').orderBy('WeekStartDate,DateSubmitted', false).get(),
+                sp.web.lists.getByTitle('PTOTransactions').items.expand('Employee').filter(filterPTOTransactionQuery).select(selectQueryPTOTransaction).orderBy('PostedOn', false).getAll()
+            ])
+            let InitialRecord =  this.state.Reviewers.filter(record => { 
+                if (recordId == record.Id) return record }
+            )       
+            if(InitialRecord[0].Status != this.getStatus(data[0].Status)){
+                customToaster('toster-warning', ToasterTypes.Warning,"Attention: This PTO has been modified. Please review the changes.", 3000);
+                this.setState({showHideModal : false,isSuccess:true,ModalHeader:'',comments:'',IsClientApprovalNeed:false})
+                this.ReviewerApproval();
+                return false
+            } 
+            let commentsObj = JSON.parse(data[0].CommentsHistory);
+            commentsObj.push({Action : StatusType.Reject,Role : 'Reviewer',User : this.props.spContext.userDisplayName,Comments : this.state.comments,Date: new Date().toISOString()})
+            commentsObj = JSON.stringify(commentsObj);
+            let postObject = {
+                Status : StatusType.ReviewerReject,
+                CommentsHistory : commentsObj,
+                PendingWith :'Initiator',
+                IsClientApprovalNeed : this.state.IsClientApprovalNeed,
+                Revised: true,
+                AssignedToId : { "results": [InitialRecord[0].EmployeeId] },
+            }
+            let PTOData={};
+            let PTOTransaction={};
+            let PTOHrs=InitialRecord[0].PTORow[0].Total;
+                if(parseFloat(InitialRecord[0].PTORow[0].PTOAfterDeduction)<0)
+                PTOHrs=parseFloat(InitialRecord[0].PTORow[0].Total)+parseFloat(InitialRecord[0].PTORow[0].PTOAfterDeduction);// Code for PTO:Calculating PTOHrs considering from Timeoff Hrs
+           let currentEmployeePTO= await sp.web.lists.getByTitle('EmployeePTO').items.filter("Employee/Id eq "+InitialRecord[0].EmployeeId+" and Year eq "+new Date(InitialRecord[0].Date).getFullYear()+" and IsActive eq 1").select('Employee/Id,Employee/EMail,*').expand("Employee").getAll();
+            ; // Regarding PTO
+            if(currentEmployeePTO.length && InitialRecord[0].EligibleforPTO && InitialRecord[0].PTOHrs!=0 && parseFloat(PTOHrs)>0)
+            {
+                 PTOTransaction={
+                    EmployeeId:InitialRecord[0].EmployeeId,
+                    TransactionType:StatusType.ReviewerReject,
+                    PostedOn:new Date(),
+                    From:this.addBrowserwrtServer(new Date(InitialRecord[0].Date)),
+                    To:this.addBrowserwrtServer(addDays(new Date(InitialRecord[0].Date),6)),
+                    Hours:parseFloat(PTOHrs).toFixed(4),
+                    Reason:this.state.comments.trim(),
+                    Year:new Date(InitialRecord[0].Date).getFullYear().toString()
+                 }
+                  PTOData={
+                    PTOBalanceAfterDeduction:(parseFloat([null,undefined,''].includes(currentEmployeePTO[0].PTOBalanceAfterDeduction)?0:currentEmployeePTO[0].PTOBalanceAfterDeduction)+parseFloat(PTOHrs)).toFixed(4),
+                    PTOApplied:(parseFloat([null,undefined,''].includes(currentEmployeePTO[0].PTOApplied)?0:currentEmployeePTO[0].PTOApplied)-parseFloat(PTOHrs)).toFixed(4)
+                    }
+            }
+            this.setState({comments  :''})
+            const PTOTransactionBatch = sp.web.createBatch(); // Regarding PTO Transaction
+            let Transaction = {
+                TransactionType: StatusType.Reject
+            }
+    
+            sp.web.lists.getByTitle('WeeklyTimeSheet').items.getById(data[0].Id).update(postObject).then((res) => {
+                    // to update Employee PTO
+                    if(currentEmployeePTO.length && InitialRecord[0].EligibleforPTO && InitialRecord[0].PTOHrs!=0 && parseFloat(PTOHrs)>0){
+                        sp.web.lists.getByTitle('EmployeePTO').items.getById(currentEmployeePTO[0].Id).update(PTOData).then((resPTO) => {
+                            // to add Employee PTO transaction
+                            // sp.web.lists.getByTitle('PTOTransactions').items.add(PTOTransaction).then((resPTOTranc) => {
+                        PTOTransactionRecords
+                        .forEach(pto => {
+                            sp.web.lists.getByTitle('PTOTransactions').items.getById(pto.ID).inBatch(PTOTransactionBatch).update(Transaction);
+                        });
+                        Promise.all([PTOTransactionBatch.execute()]).then((resPTOTranc) => {
+                                this.setState({showHideModal : false,ItemID:0,message:'',title:'',Action:'',loading: false,successPopUp:false,modalTitle:'Record rejected successfully'});
+                             customToaster('toster-success',ToasterTypes.Success,'Weekly timesheet '+StatusType.Reject.toLowerCase()+ ' succesfully',2000);
+                             this.ReviewerApproval();
+                            }).catch(err => {
+                               console.log('Error while adding PTO transaction.', err);
+                            });
+                          }).catch(err => {
+                       console.log('Error while update Employee PTO.', err);
+                         });
+                    }
+            }).catch(err => {
+               console.log('Failed to fetch data.', err);
+        });
+        }
+    }
+    // private handleReject= async (e) =>{
+
+    //     let recordId = this.state.ItemID;
+    //     if(['',undefined,null].includes(this.state.comments.trim())){
+    //         // this.setState({errorMessage : 'Comments cannot be Blank',loading : false})
+    //         this.setState({loading:false})
+    //         customToaster('toster-error',ToasterTypes.Error,'Comments cannot be Blank.',4000)
+    //     }
+    //     else{
+    //         var filterString = "Id eq '"+recordId+"'"
+    //         this.setState({showHideModal:false, successPopUp:false,loading: true });
+    //         let data =  await sp.web.lists.getByTitle('WeeklyTimeSheet').items.filter(filterString).select('Initiator/ID,Initiator/Title,*').expand('Initiator').orderBy('WeekStartDate,DateSubmitted', false).get()
+
+    //         let InitialRecord =  this.state.Reviewers.filter(record => { 
+    //             if (recordId == record.Id) return record }
+    //         )       
+    //         if(InitialRecord[0].Status != this.getStatus(data[0].Status)){
+    //             customToaster('toster-warning', ToasterTypes.Warning,"Attention: This PTO has been modified. Please review the changes.", 3000);
+    //             this.setState({showHideModal : false,isSuccess:true,ModalHeader:'',comments:'',IsClientApprovalNeed:false})
+    //             this.ReviewerApproval();
+    //             return false
+    //         } 
+    //         // console.log(data)
+    //         let commentsObj = JSON.parse(data[0].CommentsHistory)
+    //         commentsObj.push({
+    //             Action : StatusType.Reject,
+    //             Role : 'Reviewer',
+    //             User : this.props.spContext.userDisplayName,
+    //             Comments : this.state.comments,
+    //             Date : new Date().toISOString()
+    //         })
+    //         commentsObj = JSON.stringify(commentsObj);
+    //         // var filterString = "Initiator/ID eq '"+data[0].Initiator.ID+"' and ClientName eq '"+data[0].ClientName+"'"
+    //         var selectString = 'Initiator/EMail,Reviewers/EMail,ReportingManager/EMail,DelegateTo/EMail,*'
+    //         let emailData = await sp.web.lists.getByTitle('WeeklyTimeSheet').items.filter(filterString).select(selectString).expand('Initiator,Reviewers,ReportingManager,DelegateTo').get();
+    //         // console.log(emailData)
+    //         let toEmail = [];
+    //         let ccEmail = [];
+    //         let isDeligated = emailData[0].IsDelegated
+    //         toEmail.push(emailData[0].Initiator.EMail);
+    //         let approvers;
+    //         isDeligated?emailData[0].DelegateTo:approvers = emailData[0].ReportingManager
+    //         if(this.state.IsClientApprovalNeed){
+    //             for (const user of approvers) {
+    //                 if(!ccEmail.includes(user.EMail))
+    //                 ccEmail.push(user.EMail);
+    //             }
+    //         }
+    //         // let notifires = emailData[0].Notifiers
+    //         // for (const user of notifires) {
+    //         //     if(!toEmail.includes(user.EMail))
+    //         //     toEmail.push(user.EMail);
+    //         // }
+    //         let reviewers = emailData[0].Reviewers
+    //         for (const user of reviewers) {
+    //             if(!toEmail.includes(user.EMail))
+    //             toEmail.push(user.EMail);
+    //         }
+    //         // this.setState({comments : comments })
+    //         let tableContent = {}
+    //         let date = new Date(data[0].DateSubmitted.split('-')[1]+'/'+data[0].DateSubmitted.split('-')[2].split('T')[0]+'/'+data[0].DateSubmitted.split('-')[0])
+    //         if(data[0].ClientName.toLowerCase().includes("synergy")){
+    //             tableContent = {'Name':data[0].Name,'Client Name':data[0].ClientName,'Submitted Date':`${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`,'Office Hours':JSON.parse(data[0].SynergyOfficeHrs)[0].Total,'Holiday Hours':JSON.parse(data[0].ClientHolidayHrs)[0].Total,'Time Off Hours':JSON.parse(data[0].PTOHrs)[0].Total,'Grand Total Hours':data[0].GrandTotal,'Comments':this.state.comments}
+    //         }
+    //         else{
+    //             tableContent = {'Name':data[0].Name,'Client Name':data[0].ClientName,'Submitted Date':`${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`,'Billable Hours':data[0].WeeklyTotalHrs,'OT Hours':data[0].OTTotalHrs,'Total Billable Hours':data[0].BillableTotalHrs,'Holiday Hours':JSON.parse(data[0].ClientHolidayHrs)[0].Total,'Time Off Hours':JSON.parse(data[0].PTOHrs)[0].Total,'Grand Total Hours':data[0].GrandTotal,'Comments':this.state.comments}
+    //         }
+    //         // console.log(tableContent)
+
+    //         this.updateStatus(recordId,StatusType.ReviewerReject,commentsObj,toEmail,ccEmail,tableContent)
+    //     }
+    // }
+    private addBrowserwrtServer(date) {
+        if (date != '') {
+            var utcOffsetMinutes = date.getTimezoneOffset();
+            var newDate = new Date(date.getTime());
+            newDate.setTime(newDate.getTime() + ((this.props.spContext.webTimeZoneData.Bias - utcOffsetMinutes + this.props.spContext.webTimeZoneData.DaylightBias) * 60 * 1000));
+            return newDate;
+        }
+    }
+     // this function is used to update the weekly time sheet when Reviewer Approves/Rejects
     private  updateStatus = async (recordId,Status,Comments,To,CC,tableContent) =>{
         let clinetApproval = this.state.IsClientApprovalNeed
         let postObject = {
@@ -279,202 +665,10 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
         console.log('Failed to fetch data.', err);
     });
     }
-// This function is used to bind comments to comments input feild
-    private handleComments = async (e) =>{
-       let value = e.target.type == 'checkbox' ? e.target.checked : e.target.value;
-    //    console.log(value);
-       let  {name}  = e.target;
-       if(name =="comments")
-       this.setState({comments : value})
-        else if(name == "IsClientApprovalNeed")
-        this.setState({IsClientApprovalNeed : value})
-
-    }
-// this function is used to get current records data and then update the status of the time sheet to Approved
-    private handleApprove = async (e) => {
-        
-        let recordId = this.state.ItemID;
-        var filterString = "Id eq '"+recordId+"'"
-        this.setState({ loading: true });
-        let data =  await sp.web.lists.getByTitle('WeeklyTimeSheet').items.filter(filterString).select('Initiator/ID,Initiator/Title,*').expand('Initiator').get()
-        // console.log(data)
-        
-       let Initialstatus =  this.state.Reviewers.filter(record => { 
-        if (recordId == record.Id) return record }
-    )
-        
-    if(Initialstatus[0].Status != this.getStatus(data[0].Status)){
-        customToaster('toster-warning', ToasterTypes.Warning,"Attention: This PTO has been modified. Please review the changes.", 3000);
-        this.setState({showHideModal : false,isSuccess:true,ModalHeader:'',comments:'',IsClientApprovalNeed:false})
-        this.ReviewerApproval();
-        return false
-    }
-        let commentsObj = JSON.parse(data[0].CommentsHistory)
-        if(commentsObj == null)
-        commentsObj = [];
-        commentsObj.push({
-            Action : StatusType.Approved,
-            Role : 'Reviewer',
-            User : this.props.spContext.userDisplayName,
-            Comments : this.state.comments,
-            Date : new Date().toISOString()
-        })
-        commentsObj = JSON.stringify(commentsObj);
-        // var filterString = "Initiator/ID eq '"+data[0].Initiator.ID+"' and ClientName eq '"+data[0].ClientName+"'"
-        var selectString = 'Initiator/EMail,Reviewers/EMail,ReportingManager/EMail,DelegateTo/EMail,*'
-        let emailData = await sp.web.lists.getByTitle('WeeklyTimeSheet').items.filter(filterString).select(selectString).expand('Initiator,Reviewers,ReportingManager,DelegateTo').get();
-        // console.log(emailData)
-        let toEmail = [];
-        let ccEmail = [];
-        toEmail.push(emailData[0].Initiator.EMail);
-        // let approvers = emailData[0].ReportingManager
-        let isDeligated = emailData[0].IsDelegated
-        let approvers;
-        isDeligated?emailData[0].DelegateTo:approvers = emailData[0].ReportingManager
-
-        for (const user of approvers) {
-            if(!ccEmail.includes(user.EMail))
-            ccEmail.push(user.EMail);
-        }
-        //---------Notofiers------------------
-        // let notifires = emailData[0].Notifiers
-        // for (const user of notifires) {
-        //     if(!toEmail.includes(user.EMail))
-        //     toEmail.push(user.EMail);
-        // }----------------------------------
-        let reviewers = emailData[0].Reviewers
-        for (const user of reviewers) {
-            if(!toEmail.includes(user.EMail))
-            toEmail.push(user.EMail);
-        }
-        // this.setState({comments : comments })
-        let date = new Date(data[0].DateSubmitted.split('-')[1]+'/'+data[0].DateSubmitted.split('-')[2].split('T')[0]+'/'+data[0].DateSubmitted.split('-')[0])
-        let tableContent = {'Name':data[0].Name,'Client':data[0].ClientName,'Submitted Date':`${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`,'Billable Hours':data[0].WeeklyTotalHrs,'OT Hours':data[0].OTTotalHrs,'Total Billable Hours':data[0].BillableTotalHrs,'Holiday Hours':JSON.parse(data[0].ClientHolidayHrs)[0].Total,'Time Off Hours':JSON.parse(data[0].PTOHrs)[0].Total,'Total Hours':data[0].GrandTotal}
-        // console.log(tableContent)
-        this.updateStatus(recordId,StatusType.Approved,commentsObj,toEmail,ccEmail,tableContent)
-    }
-
-// this function is used to get current records data and then update the status of the time sheet to Reject
-    private handleReject= async (e) =>{
-
-        let recordId = this.state.ItemID;
-        if(['',undefined,null].includes(this.state.comments.trim())){
-            // this.setState({errorMessage : 'Comments cannot be Blank',loading : false})
-            this.setState({loading:false})
-            customToaster('toster-error',ToasterTypes.Error,'Comments cannot be Blank.',4000)
-        }
-        else{
-            var filterString = "Id eq '"+recordId+"'"
-            this.setState({showHideModal:false, successPopUp:false,loading: true });
-            let data =  await sp.web.lists.getByTitle('WeeklyTimeSheet').items.filter(filterString).select('Initiator/ID,Initiator/Title,*').expand('Initiator').orderBy('WeekStartDate,DateSubmitted', false).get()
-
-            let Initialstatus =  this.state.Reviewers.filter(record => { 
-                if (recordId == record.Id) return record }
-            )       
-            if(Initialstatus[0].Status != this.getStatus(data[0].Status)){
-                customToaster('toster-warning', ToasterTypes.Warning,"Attention: This PTO has been modified. Please review the changes.", 3000);
-                this.setState({showHideModal : false,isSuccess:true,ModalHeader:'',comments:'',IsClientApprovalNeed:false})
-                this.ReviewerApproval();
-                return false
-            } 
-            // console.log(data)
-            let commentsObj = JSON.parse(data[0].CommentsHistory)
-            commentsObj.push({
-                Action : StatusType.Reject,
-                Role : 'Reviewer',
-                User : this.props.spContext.userDisplayName,
-                Comments : this.state.comments,
-                Date : new Date().toISOString()
-            })
-            commentsObj = JSON.stringify(commentsObj);
-            // var filterString = "Initiator/ID eq '"+data[0].Initiator.ID+"' and ClientName eq '"+data[0].ClientName+"'"
-            var selectString = 'Initiator/EMail,Reviewers/EMail,ReportingManager/EMail,DelegateTo/EMail,*'
-            let emailData = await sp.web.lists.getByTitle('WeeklyTimeSheet').items.filter(filterString).select(selectString).expand('Initiator,Reviewers,ReportingManager,DelegateTo').get();
-            // console.log(emailData)
-            let toEmail = [];
-            let ccEmail = [];
-            let isDeligated = emailData[0].IsDelegated
-            toEmail.push(emailData[0].Initiator.EMail);
-            let approvers;
-            isDeligated?emailData[0].DelegateTo:approvers = emailData[0].ReportingManager
-            if(this.state.IsClientApprovalNeed){
-                for (const user of approvers) {
-                    if(!ccEmail.includes(user.EMail))
-                    ccEmail.push(user.EMail);
-                }
-            }
-            // let notifires = emailData[0].Notifiers
-            // for (const user of notifires) {
-            //     if(!toEmail.includes(user.EMail))
-            //     toEmail.push(user.EMail);
-            // }
-            let reviewers = emailData[0].Reviewers
-            for (const user of reviewers) {
-                if(!toEmail.includes(user.EMail))
-                toEmail.push(user.EMail);
-            }
-            // this.setState({comments : comments })
-            let tableContent = {}
-            let date = new Date(data[0].DateSubmitted.split('-')[1]+'/'+data[0].DateSubmitted.split('-')[2].split('T')[0]+'/'+data[0].DateSubmitted.split('-')[0])
-            if(data[0].ClientName.toLowerCase().includes("synergy")){
-                tableContent = {'Name':data[0].Name,'Client Name':data[0].ClientName,'Submitted Date':`${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`,'Office Hours':JSON.parse(data[0].SynergyOfficeHrs)[0].Total,'Holiday Hours':JSON.parse(data[0].ClientHolidayHrs)[0].Total,'Time Off Hours':JSON.parse(data[0].PTOHrs)[0].Total,'Grand Total Hours':data[0].GrandTotal,'Comments':this.state.comments}
-            }
-            else{
-                tableContent = {'Name':data[0].Name,'Client Name':data[0].ClientName,'Submitted Date':`${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`,'Billable Hours':data[0].WeeklyTotalHrs,'OT Hours':data[0].OTTotalHrs,'Total Billable Hours':data[0].BillableTotalHrs,'Holiday Hours':JSON.parse(data[0].ClientHolidayHrs)[0].Total,'Time Off Hours':JSON.parse(data[0].PTOHrs)[0].Total,'Grand Total Hours':data[0].GrandTotal,'Comments':this.state.comments}
-            }
-            // console.log(tableContent)
-
-            this.updateStatus(recordId,StatusType.ReviewerReject,commentsObj,toEmail,ccEmail,tableContent)
-        }
-    }
-    //This function is used to close popup
-    private handlefullClose = () => {
-        this.setState({ showHideModal: false, Action :'', errorMessage : '',ItemID : 0,comments:''});
-    }
-// this function is used to reload the data after Approve/Reject is done
-    private navigateAfterAction =()=>{
-        this.setState({successPopUp : false});
-        this.ReviewerApproval();
-    }
-// This function is used to Display confirm popup based on Approve/Reject
-    private showPopUp = (e) =>{
-        // console.log(e.target.id);
-        // console.log(e.target.dataset);
-        // console.log(e.target.dataset.name)
-        let recordId = parseInt(e.target.id);
-        this.setState({ItemID : recordId})
-        let name = e.target.dataset.name
-        if(name == 'Approve')
-        {
-            this.setState({message : 'Are you sure you want to approve?',title : 'Approve', Action : 'Approve'});
-            this.setState({showHideModal : true,isSuccess:true,ModalHeader:'modal-header-Approve'})
-            // this.setState({showHideModal : true,isSuccess:true,ModalHeader:'modal-header-reject'})
-        }
-        else
-         if(name == 'Reject')
-        {
-            this.setState({message : 'Are you sure you want to reject?',title : 'Reject', Action :StatusType.Reject});
-            this.setState({showHideModal : true,isSuccess:false,ModalHeader:'modal-header-reject'})
-        }
-        else{
-            this.setState({showHideModal : false})
-        }
-    }
-
-    //this function calls handleApprove/handleReject function based on the user action
-    private handleAction = (e) =>{
-        this.setState({loading : true})
-         if(this.state.Action == "Approve")
-        this.handleApprove(e)
-        else
-         this.handleReject(e)
-    }
-
     private  handleRowClicked = (row) => {
         let ID = row.Id
         this.setState({TimesheetID:ID,redirect:true})
-      }
-
+    }
     public render() {
             const columns = [
                 {
@@ -508,7 +702,13 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
                 },
                 {
                     name: "Client",
-                    selector: (row, i) => row.Company,
+                    selector: (row, i) => row.Client,
+                    sortable: true
+                },
+                {
+                    name: "Status",
+                    selector: (row, i) => row.Status,
+                    width: '220px',
                     sortable: true
                 },
                 {
@@ -516,25 +716,25 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
                     selector: (row, i) => row.PendingWith,
                     width: '180px',
                     sortable: true
-
-                },
-                {
-                    name: "Status",
-                    selector: (row, i) => row.Status,
-                    sortable: true
-
                 },
                 {
                     name: "Hours",
                     selector: (row, i) => row.BillableHrs,
+                    width: '100px',
                     sortable: true,
                 },
                 {
                     name: "OT",
                     selector: (row, i) => row.OTTotalHrs,
-                    width: '130px',
+                    width: '100px',
                     sortable: true,
                 },
+                // {
+                //     name: "Paid Time Off",
+                //     selector: (row, i) => row.PTONewHrs,
+                //     width: '120px',
+                //     sortable: true,
+                // },
                 {
                     name: "Total Billable",
                     selector: (row, i) => row.TotalBillableHours,
@@ -544,7 +744,7 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
                 {
                     name: "Holiday",
                     selector: (row, i) => row.HolidayHrs,
-                    width: '130px',
+                    width: '110px',
                     sortable: true,
                 },
                 {
@@ -556,7 +756,7 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
                 {
                     name: "Grand Total",
                     selector: (row, i) => row.GrandTotal,
-                    // width: '140px',
+                    width: '120px',
                     sortable: true
                 },
                 {
@@ -568,7 +768,7 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
                         return (
                             <React.Fragment>
                             <div style={{ paddingLeft: '10px' }} >
-                                    <FontAwesomeIcon className='iconApprove' icon={faCheck} id={record.Id} data-name={'Approve'} color='green' size="lg" onClick={this.showPopUp} title='Approve'></FontAwesomeIcon>
+                                    <FontAwesomeIcon className='iconApprove' icon={faCheck} id={record.Id} data-name={'Approve'} color='green' size="lg" onClick={this.showConfirmApproveRejectPopup} title='Approve'></FontAwesomeIcon>
                             </div>
                         </React.Fragment>
                         );
@@ -583,7 +783,7 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
                         return (
                         <React.Fragment>
                             <div style={{ paddingLeft: '10px' }} data-name='Reject'>
-                                    <FontAwesomeIcon className='iconReject' icon={faXmark} id={record.Id} data-name='Reject' color='red' size="lg" onClick={this.showPopUp} title='Reject'></FontAwesomeIcon>
+                                    <FontAwesomeIcon className='iconReject' icon={faXmark} id={record.Id} data-name='Reject' color='red' size="lg" onClick={this.showConfirmApproveRejectPopup} title='Reject'></FontAwesomeIcon>
                             </div>
                         </React.Fragment>
                         );
@@ -598,13 +798,13 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
             return (
                 <React.Fragment>
                     {/* this popup is show after the approve/reject action completes */}
-                <ModalPopUp title={this.state.modalTitle} modalText={this.state.modalText} isVisible={this.state.successPopUp} onClose={this.navigateAfterAction} isSuccess={this.state.isSuccess}></ModalPopUp>
+                {/* <ModalPopUp title={this.state.modalTitle} modalText={this.state.modalText} isVisible={this.state.successPopUp} onClose={this.navigateAfterAction} isSuccess={this.state.isSuccess}></ModalPopUp> */}
 
                 {/* ModalApprovePopUp is a custom popup shown with Comments and to Approve or Reject the timesheet */}
-                <ModalApprovePopUp message={this.state.message} title={this.state.title} isVisible={this.state.showHideModal} isSuccess={this.state.isSuccess}  isManager={false} onConfirm={this.handleAction} onCancel={this.handlefullClose} comments={this.handleComments} errorMessage={this.state.errorMessage} commentsValue={this.state.comments} modalHeader={this.state.ModalHeader} IsClientApprovalNeed= {this.state.IsClientApprovalNeed}></ModalApprovePopUp>
+                <ModalApprovePopUp message={this.state.message} title={this.state.title} isVisible={this.state.showHideModal} isSuccess={this.state.isSuccess}  isManager={this.state.isSuccess} onConfirm={this.handleApproveReject} onCancel={this.handlefullClose} comments={this.handleComments} errorMessage={this.state.errorMessage} commentsValue={this.state.comments} modalHeader={this.state.ModalHeader} IsClientApprovalNeed= {this.state.IsClientApprovalNeed}></ModalApprovePopUp>
                 
                 <div>
-                    <div className='table-head-1st-td'>
+                    <div className=''>
                         <TableGenerator columns={columns} data={this.state.Reviewers} fileName={'My Reviews'} showExportExcel={false} showAddButton={false} searchBoxLeft={true} ExportExcelCustomisedData={this.state.ExportExcelData} onRowClick={this.handleRowClicked}></TableGenerator>
                     </div>
                 </div>

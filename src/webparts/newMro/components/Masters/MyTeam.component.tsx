@@ -126,7 +126,7 @@ class MyTeam extends React.Component<MyTeamProps, MyTeamState> {
         return (
             <React.Fragment>
                 <div>
-                    <div className='table-head-1st-td'>
+                    <div className=''>
                         <TableGenerator columns={columns} data={this.state.MyTeamMembers} fileName={'My Team'} showExportExcel={false}
                             showAddButton={false} customBtnClass='' btnDivID='' navigateOnBtnClick='' btnSpanID='' btnCaption='' btnTitle='' searchBoxLeft={true} onRowClick={this.handleRowClicked}></TableGenerator>
                     </div>

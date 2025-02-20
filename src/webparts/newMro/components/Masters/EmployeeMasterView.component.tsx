@@ -34,15 +34,18 @@ export interface EmployeeMasterViewState {
     ItemID : Number;
     showToaster:boolean;
     redirect:boolean;
+    isPageAccessable:boolean;
 }
 
 class EmployeeMasterView extends React.Component<EmployeeMasterViewProps, EmployeeMasterViewState> {
+    private siteURL: string;
     constructor(props: EmployeeMasterViewProps) {
         super(props);
+        this.siteURL = this.props.spContext.webAbsoluteUrl;
         sp.setup({
             spfxContext: this.props.context
         });
-        this.state = {Details: [], loading:false,message:'',title:'',showHideModal:false,isSuccess:true,comments:'',Action:'',errorMessage:'',ItemID:0,showToaster:false,redirect:false};
+        this.state = {Details: [], loading:false,message:'',title:'',showHideModal:false,isSuccess:true,comments:'',Action:'',errorMessage:'',ItemID:0,showToaster:false,redirect:false,isPageAccessable: true,};
     }
 
     public componentDidMount() {
@@ -68,49 +71,66 @@ class EmployeeMasterView extends React.Component<EmployeeMasterViewProps, Employ
     private EmployeeMasterData = async () => {
         var selectQuery = "Employee/Title,ReportingManager/Title,Approvers/Title,Reviewers/Title,Notifiers/Title,*";
         var expandQuery = "Employee,ReportingManager,Approvers,Reviewers,Notifiers";
-        sp.web.lists.getByTitle('EmployeeMaster').items.top(2000).expand(expandQuery).select(selectQuery).orderBy('Modified', false).get()
-            .then((response) => {
-                // console.log(response)
-                let Data = [];
-                for (const d of response) {
-                    let ReportingManagerString = '',ReviewersString = '',NotifiersString ='';
-                    if(d.ReportingManager.length>0){
-                        for(let user of d.ReportingManager){
-                            ReportingManagerString+= "<div>"+user.Title+"</div>"
+        try{
+            let groups= await sp.web.currentUser.groups();
+            let userGroups = [];
+            for (const grp of groups) {
+                userGroups.push(grp.Title);
+            }
+            sp.web.lists.getByTitle('EmployeeMaster').items.top(2000).expand(expandQuery).select(selectQuery).orderBy('Modified', false).get()
+                .then((response) => {
+                    // console.log(response)
+                    let Data = [];
+                    for (const d of response) {
+                        let ReportingManagerString = '',ReviewersString = '',NotifiersString ='';
+                        if(d.ReportingManager.length>0){
+                            for(let user of d.ReportingManager){
+                                ReportingManagerString+= "<div>"+user.Title+"</div>"
+                            }
                         }
-                    }
-                    if(d.Reviewers.length>0){
-                        for(let user of d.Reviewers){
-                            ReviewersString+= "<div>"+user.Title+"</div>"
+                        if(d.Reviewers.length>0){
+                            for(let user of d.Reviewers){
+                                ReviewersString+= "<div>"+user.Title+"</div>"
+                            }
                         }
+                        // --------------Notifiers-----------
+                        // if(d.Notifiers.length>0){
+                        //     for(let user of d.Notifiers){
+                        //         NotifiersString+= "<div>"+user.Title+"<div>"
+                        //     }
+                        //     // NotifiersString = NotifiersString.substring(0, NotifiersString.lastIndexOf(","));
+                        // }
+                        // ----------------------------------
+    
+                        let date = new Date(d.DateOfJoining.split('-')[1]+'/'+d.DateOfJoining.split('-')[2].split('T')[0]+'/'+d.DateOfJoining.split('-')[0]);
+                        Data.push({
+                            Id : d.Id,
+                            Employee : d.Employee.Title,
+                            Company : d.ClientName,
+                            ReportingManager: ReportingManagerString,
+                            Reviewers:ReviewersString,
+                            Doj : `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`,
+                            EPTO:d.EligibleforPTO?"Yes":"No",
+                            IsActive: d.IsActive?"Active":"In-Active"
+                        })
                     }
-                    // --------------Notifiers-----------
-                    // if(d.Notifiers.length>0){
-                    //     for(let user of d.Notifiers){
-                    //         NotifiersString+= "<div>"+user.Title+"<div>"
-                    //     }
-                    //     // NotifiersString = NotifiersString.substring(0, NotifiersString.lastIndexOf(","));
-                    // }
-                    // ----------------------------------
-
-                    let date = new Date(d.DateOfJoining.split('-')[1]+'/'+d.DateOfJoining.split('-')[2].split('T')[0]+'/'+d.DateOfJoining.split('-')[0]);
-                    Data.push({
-                        Id : d.Id,
-                        Employee : d.Employee.Title,
-                        Company : d.ClientName,
-                        ReportingManager: ReportingManagerString,
-                        Reviewers:ReviewersString,
-                        Doj : `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`,
-                        EPTO:d.EligibleforPTO?"Yes":"No",
-                        IsActive: d.IsActive
-                    })
-                }
-                // console.log(Data);
-                this.setState({ Details: Data,loading: false});
-                // document.getElementById('txtTableSearch').style.display = 'none';
-            }).catch(err => {
-                console.log('Failed to fetch data.', err);
-            });
+                    let pageAccessable = false;
+                    if (userGroups.includes('Timesheet Administrators')) {
+                        pageAccessable = true;
+                    }
+                    else {
+                        pageAccessable = false;
+                    }
+                    // console.log(Data);
+                    this.setState({ Details: Data,loading: false,isPageAccessable:pageAccessable});
+                    // document.getElementById('txtTableSearch').style.display = 'none';
+                }).catch(err => {
+                    console.log('Failed to fetch data.', err);
+                });
+        }
+        catch (e) {
+            console.log('Failed to fetch data.', e);
+        }
     }
 
     private  handleRowClicked = (row) => {
@@ -190,7 +210,7 @@ class EmployeeMasterView extends React.Component<EmployeeMasterViewProps, Employ
             },
             {
                 name: "Status",
-                selector: (row, i) => row.IsActive?"Active":"In-Active",
+                selector: (row, i) => row.IsActive,
                 sortable: true,
                 width: '100px',
             }
@@ -199,6 +219,10 @@ class EmployeeMasterView extends React.Component<EmployeeMasterViewProps, Employ
         if(this.state.redirect){
             let url = `/EmployeeMasterForm/${this.state.ItemID}`;
         return (<Navigate to={url}/>);
+        }
+        if (!this.state.isPageAccessable) {
+            let url = this.siteURL+"/SitePages/AccessDenied.aspx";
+            window.location.href = url;
         }
         return (
             <React.Fragment>
@@ -216,8 +240,8 @@ class EmployeeMasterView extends React.Component<EmployeeMasterViewProps, Employ
                 </div> */}
             <div className='border-box-shadow light-box table-responsive dataTables_wrapper-overflow p-2'>
             {this.state.loading && <Loader />}
-                <div className='table-head-1st-td'>
-                    <TableGenerator columns={columns} data={this.state.Details} fileName={'My Details'} showExportExcel={false}
+                <div className=''>
+                    <TableGenerator columns={columns} data={this.state.Details} fileName={'Approval Matrix'} showExportExcel={false}
                     showAddButton={true} customBtnClass='px-1 text-right mt-2' btnDivID='divAddNewEmployeeMaster' navigateOnBtnClick={`/EmployeeMasterForm`} btnSpanID='newEmployeeMasterForm' btnCaption=' New' btnTitle='New Approval Matrix' searchBoxLeft={false}  onRowClick={this.handleRowClicked}></TableGenerator>
                 </div>
             </div>
