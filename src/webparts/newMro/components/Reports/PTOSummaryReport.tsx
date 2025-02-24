@@ -425,29 +425,32 @@ class PTOSummaryReport extends React.Component<PTOSummaryReportProps,PTOSummaryR
                 sortable: true
             },
             {
-                name: "PTO Granted",
+                name: "PTO Granted (YTD)",
                 selector: (row, i) => row.PTOGranted,
+                width: '180px',
                 sortable: true,
             },
             {
-                name: "PTO Availed",
+                // name: "PTO Availed",
+                 name: "PTO Taken",
                 selector: (row, i) => row.PTOAvailed,
                 sortable: true,
             },
-            {
-                name: "PTO Balance",
-                selector: (row, i) => row.PTOBalance,
-                sortable: true
-            },
+            // {
+            //     name: "PTO Balance",
+            //     selector: (row, i) => row.PTOBalance,
+            //     sortable: true
+            // },
             {
                 name: "PTO Applied",
                 selector: (row, i) => row.PTOApplied,
                 sortable: true
             },
             {
-                name: "PTO After Deduction",
+                // name: "PTO After Deduction",
+                name: "PTO Balance",
                 selector: (row, i) => row.PTOBalanceAfterDeduction,
-                width: '220px',
+                // width: '220px',
                 sortable: true,
             },
             // {
@@ -485,27 +488,29 @@ class PTOSummaryReport extends React.Component<PTOSummaryReportProps,PTOSummaryR
                 sortable: true
             },
             {
-                name: "PTO Granted",
+                name: "PTO Granted (YTD)",
                 selector: 'PTOGranted',
                 sortable: true,
             },
             {
-                name: "PTO Availed",
+                //name: "PTO Availed",
+                name: "PTO Taken",
                 selector: 'PTOAvailed',
                 sortable: true,
             },
-            {
-                name: "PTO Balance",
-                selector: 'PTOBalance',
-                sortable: true
-            },
+            // {
+            //     name: "PTO Balance",
+            //     selector: 'PTOBalance',
+            //     sortable: true
+            // },
             {
                 name: "PTO Applied",
                 selector: 'PTOApplied',
                 sortable: true
             },
             {
-                name: "PTO After Deduction",
+                // name: "PTO After Deduction",
+                name: "PTO Balance",
                 selector: 'PTOBalanceAfterDeduction',
                 width: '250px',
                 sortable: true,

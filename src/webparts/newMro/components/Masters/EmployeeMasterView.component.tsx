@@ -23,6 +23,7 @@ export interface EmployeeMasterViewProps {
 
 export interface EmployeeMasterViewState {
     Details: Array<Object>;
+    ExcelData:any;
     loading:boolean;
     message : string;
     title : string;
@@ -45,7 +46,7 @@ class EmployeeMasterView extends React.Component<EmployeeMasterViewProps, Employ
         sp.setup({
             spfxContext: this.props.context
         });
-        this.state = {Details: [], loading:false,message:'',title:'',showHideModal:false,isSuccess:true,comments:'',Action:'',errorMessage:'',ItemID:0,showToaster:false,redirect:false,isPageAccessable: true,};
+        this.state = {Details: [],ExcelData:[], loading:false,message:'',title:'',showHideModal:false,isSuccess:true,comments:'',Action:'',errorMessage:'',ItemID:0,showToaster:false,redirect:false,isPageAccessable: true,};
     }
 
     public componentDidMount() {
@@ -77,20 +78,22 @@ class EmployeeMasterView extends React.Component<EmployeeMasterViewProps, Employ
             for (const grp of groups) {
                 userGroups.push(grp.Title);
             }
-            sp.web.lists.getByTitle('EmployeeMaster').items.top(2000).expand(expandQuery).select(selectQuery).orderBy('Modified', false).get()
+            sp.web.lists.getByTitle('EmployeeMaster').items.top(4000).expand(expandQuery).select(selectQuery).orderBy('Modified', false).get()
                 .then((response) => {
                     // console.log(response)
-                    let Data = [];
+                    let Data = [],ExcelData=[];
                     for (const d of response) {
-                        let ReportingManagerString = '',ReviewersString = '',NotifiersString ='';
+                        let ReportingManagerString = '',ReviewersString = '',RMExcelString = '',ReviewerExcelString = '',NotifiersString ='';
                         if(d.ReportingManager.length>0){
                             for(let user of d.ReportingManager){
-                                ReportingManagerString+= "<div>"+user.Title+"</div>"
+                                ReportingManagerString+= "<div>"+user.Title+"</div>";
+                                RMExcelString+= user.Title+"\n";
                             }
                         }
                         if(d.Reviewers.length>0){
                             for(let user of d.Reviewers){
-                                ReviewersString+= "<div>"+user.Title+"</div>"
+                                ReviewersString+= "<div>"+user.Title+"</div>";
+                                ReviewerExcelString+= user.Title+"\n";
                             }
                         }
                         // --------------Notifiers-----------
@@ -113,6 +116,15 @@ class EmployeeMasterView extends React.Component<EmployeeMasterViewProps, Employ
                             EPTO:d.EligibleforPTO?"Yes":"No",
                             IsActive: d.IsActive?"Active":"In-Active"
                         })
+                        ExcelData.push({
+                            Employee : d.Employee.Title,
+                            Company : d.ClientName,
+                            ReportingManager: RMExcelString,
+                            Reviewers:ReviewerExcelString,
+                            Doj : `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`,
+                            EPTO:d.EligibleforPTO?"Yes":"No",
+                            IsActive: d.IsActive?"Active":"In-Active"
+                        })
                     }
                     let pageAccessable = false;
                     if (userGroups.includes('Timesheet Administrators')) {
@@ -122,7 +134,7 @@ class EmployeeMasterView extends React.Component<EmployeeMasterViewProps, Employ
                         pageAccessable = false;
                     }
                     // console.log(Data);
-                    this.setState({ Details: Data,loading: false,isPageAccessable:pageAccessable});
+                    this.setState({ Details: Data,ExcelData:ExcelData,loading: false,isPageAccessable:pageAccessable});
                     // document.getElementById('txtTableSearch').style.display = 'none';
                 }).catch(err => {
                     console.log('Failed to fetch data.', err);
@@ -215,6 +227,36 @@ class EmployeeMasterView extends React.Component<EmployeeMasterViewProps, Employ
                 width: '100px',
             }
         ];
+        const ExcelColumns = [
+            {
+                name: "Employee",
+                selector:"Employee",
+            },
+            {
+                name: "Reporting Manager",
+                selector: "ReportingManager",
+            },
+            {
+                name: "Reviewers",
+                selector:"Reviewers",
+            },
+            {
+                name: "Client",
+                selector: "Company",
+            },
+            {
+                name: "Date of Joining",
+                selector: "Doj",
+            },
+            {
+                name: "Eligible for PTO",
+                selector:"EPTO",
+            },
+            {
+                name: "Status",
+                selector:"IsActive",
+            }
+        ];
         
         if(this.state.redirect){
             let url = `/EmployeeMasterForm/${this.state.ItemID}`;
@@ -241,7 +283,7 @@ class EmployeeMasterView extends React.Component<EmployeeMasterViewProps, Employ
             <div className='border-box-shadow light-box table-responsive dataTables_wrapper-overflow p-2'>
             {this.state.loading && <Loader />}
                 <div className=''>
-                    <TableGenerator columns={columns} data={this.state.Details} fileName={'Approval Matrix'} showExportExcel={false}
+                    <TableGenerator columns={columns} data={this.state.Details} ExportExcelCustomisedColumns={ExcelColumns} ExportExcelCustomisedData={this.state.ExcelData} fileName={'Approval Matrix'} showExportExcel={false}
                     showAddButton={true} customBtnClass='px-1 text-right mt-2' btnDivID='divAddNewEmployeeMaster' navigateOnBtnClick={`/EmployeeMasterForm`} btnSpanID='newEmployeeMasterForm' btnCaption=' New' btnTitle='New Approval Matrix' searchBoxLeft={false}  onRowClick={this.handleRowClicked}></TableGenerator>
                 </div>
             </div>
