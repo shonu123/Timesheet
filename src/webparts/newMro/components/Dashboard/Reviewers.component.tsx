@@ -292,7 +292,6 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
     }
     //this function calls handleApprove/handleReject function based on the user action
     private handleApproveReject = (e) =>{
-        this.setState({loading : true})
          if(this.state.Action == "Approve")
         this.handleApprove(e)
         else
@@ -302,7 +301,7 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
     private handleApprove = async (e) => {
         let recordId = this.state.ItemID;
         var filterString = "Id eq '" + recordId + "'"
-        this.setState({ loading: true });
+        this.setState({showHideModal:false,loading: true });
         let selectQueryPTOTransaction = "Employee/Id,Employee/Title,*",filterPTOTransactionQuery = "TimesheetID eq '"+recordId+"' and IsActive eq 1"
         // let data = await sp.web.lists.getByTitle('WeeklyTimeSheet').items.filter(filterString).select('Initiator/ID,Initiator/Title,*').expand('Initiator').get()
         let [data ,PTOTransactionRecords] = await Promise.all([
