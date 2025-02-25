@@ -184,9 +184,9 @@ class Employee extends Component<EmployeeProps, EmployeeState> {
         formData['DateOfJoining'] = date;
         let ExpInDays=this.getExpInDays(date);
         let ExpInYearMonth=this.getExpYearMonthFormate(ExpInDays,date);
-        formData['EmployeeClassification'] = '';
-            formData['Policy'] = 'None';
-            formData['Hours'] = '';
+        // formData['EmployeeClassification'] = '';
+        // formData['Policy'] = 'None';
+        // formData['Hours'] = '';
         this.setState({ formData: formData,Experience:ExpInYearMonth });
 
     }
