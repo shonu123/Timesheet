@@ -179,15 +179,25 @@ class EmployeeMasterForm extends React.Component<EmployeeMasterFormProps, Employ
     // this function is used to get data from the employee master of Edit record
     private async getData(ID, Holidays, Clients, userGroups,Employees) {
         let filterQuery = "ID eq '" + ID + "'"
-        let selectQuery = "Employee/ID,Employee/EMail,ReportingManager/ID,ReportingManager/EMail,Approvers/ID,Approvers/EMail,Reviewers/ID,Reviewers/EMail,*"
+        let selectQuery = "Employee/Title,Employee/ID,Employee/EMail,ReportingManager/ID,ReportingManager/EMail,Approvers/ID,Approvers/EMail,Reviewers/ID,Reviewers/EMail,*"
         // let Year = new Date().getFullYear()+"";
         let data = await sp.web.lists.getByTitle(this.listName).items.filter(filterQuery).select(selectQuery).expand('Employee,ReportingManager,Approvers,Reviewers').get()
         // let Holidays = await  sp.web.lists.getByTitle('HolidaysList').items.top(2000).filter("Year eq '"+Year+"'").select('*').orderBy('ClientName').get()
 
         // console.log(data)
         let clickedEmployee=Employees.find(empMastrRecord=>empMastrRecord.Employee.Id==data[0].Employee.ID);
-        let DOJInEmpMaster=new Date(clickedEmployee.DateOfJoining.split('-')[1]+'/'+clickedEmployee.DateOfJoining.split('-')[2].split('T')[0]+'/'+clickedEmployee.DateOfJoining.split('-')[0]);
         let date = new Date(data[0].DateOfJoining.split('-')[1]+'/'+data[0].DateOfJoining.split('-')[2].split('T')[0]+'/'+data[0].DateOfJoining.split('-')[0])
+        let DOJInEmpMaster;
+        // Below is condition for : to close endless loader if employee record is not found in Employees Master.| found issue in PROD while releasing PTO implementation
+        if(clickedEmployee!=undefined)
+        {
+            DOJInEmpMaster=new Date(clickedEmployee.DateOfJoining.split('-')[1]+'/'+clickedEmployee.DateOfJoining.split('-')[2].split('T')[0]+'/'+clickedEmployee.DateOfJoining.split('-')[0]);
+        }
+        else
+        {
+            DOJInEmpMaster=new Date(data[0].DateOfJoining.split('-')[1]+'/'+data[0].DateOfJoining.split('-')[2].split('T')[0]+'/'+data[0].DateOfJoining.split('-')[0]);
+            Employees.push({Employee:{Title:data[0].Employee.Title,Id:data[0].Employee.ID}});//to bind Employee name to Employee dropdown.
+        }
         let ReportingManagersEmail = []
         let ReportingManagerIds = { results: [] }
         let ReviewerIds = { results: [] }
@@ -232,7 +242,7 @@ class EmployeeMasterForm extends React.Component<EmployeeMasterFormProps, Employ
         else {
             this.setState({ isPageAccessable: false })
         }
-        let filterdHolidays = this.getHolidays(Holidays, data[0].ClientName)
+        let filterdHolidays = this.getHolidays(Holidays, data[0].ClientName);
         this.setState({ ClientsObject: Clients, ItemID: ID, EmployeeEmail: data[0].Employee.EMail, EmployeeId: data[0].Employee.ID, ClientName: data[0].ClientName, isActive: data[0].IsActive, DateOfJoining: date,startDateOfDOJ:DOJInEmpMaster, SelectedEmployee: data[0].Employee.ID, SelectedClient: data[0].ClientName, HolidayType: data[0].HolidayType, weekStartDay: data[0].WeekStartDay, MandatoryProjectCode: data[0].MandatoryProjectCode ? "Yes" : "No", MandatoryDescription: data[0].MandatoryDescription ? "Yes" : "No", EmployeeClassification:data[0].EmployeeClassification, Policy:[null,undefined,''].includes(data[0].Policy)?'None':data[0].Policy,CommentsHistory:[null,undefined,''].includes(data[0].CommentsHistory)?[]:JSON.parse(data[0].CommentsHistory),EligibleforPTO: data[0].EligibleforPTO, ReportingManagerEmail: ReportingManagersEmail, ReportingManagerId: ReportingManagerIds, ReviewerEmail: ReviewersEMail, ReviewerId: ReviewerIds,HolidaysObject: filterdHolidays, GlobalHolidayList: Holidays, isDisabled: disabled, isPageAccessable: pageAccessable, showToaster: true, loading: false,EmployeesObject:Employees })
     }
     // this function is used to bind users to people pickers
