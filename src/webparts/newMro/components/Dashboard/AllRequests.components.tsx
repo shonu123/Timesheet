@@ -45,28 +45,54 @@ class AllRequests extends React.Component<AllRequestsProps,AllRequestsState> {
     }
 // this function is used to get 1 month records of weeklytime data of all employees from weeklytimesheet list
     private AllRequests = async () => {
-        const userId = this.props.spContext.userId;
-        let dateFilter = new Date()
+        let userID = this.props.spContext.userId;
+        let dateFilter = new Date();
         dateFilter.setDate(new Date().getDate()-60);
-        let date = `${dateFilter.getMonth() + 1}/${dateFilter.getDate()}/${dateFilter.getFullYear()}`
-        var filterString = "WeekStartDate ge '"+date+"'"
-        sp.web.lists.getByTitle('WeeklyTimeSheet').items.top(5000).filter(filterString).expand("ReportingManager").select('ReportingManager/Title','*').orderBy('WeekStartDate', false).get()
-            .then((response) => {
-                // console.log(response)
-                let Data = [];
-                let ExcelData  =[]
-                for (const d of response) {
-                    let Rm = '';
-                    let ExcelRm = ''
-                    d.ReportingManager.sort((a, b) => a.Title.localeCompare(b.Title));
-                    if(d.ReportingManager.length>0)
-                    {
-                        for(let r of d.ReportingManager){
-                            Rm += "<div>"+r.Title+"</div>"
-                            ExcelRm += r.Title+"\n"
-                        }
-                        // ExcelRm = ExcelRm.substring(0, ExcelRm.lastIndexOf("\n"));
+        let date = `${dateFilter.getMonth() + 1}/${dateFilter.getDate()}/${dateFilter.getFullYear()}`;
+        var TimeSheetFilterQuery = "WeekStartDate ge '"+date+"'";
+        let EmpMasterSelQuery = "Employee/ID,Employee/Title,ReportingManager/EMail,Reviewers/EMail,ReportingManager/ID,Reviewers/ID";
+        let TimeSheetSelQuery = "Initiator/ID,Initiator/EMail,Reviewers/EMail,Reviewers/Id,ReportingManager/Id,ReportingManager/EMail,ReportingManager/Title,*";
+
+        try{
+            
+            let [ApprovalMatrix,WeeklyTimesheets,groups] = await Promise.all([
+                sp.web.lists.getByTitle('EmployeeMaster').items.top(5000).select(EmpMasterSelQuery).expand('Employee,ReportingManager,Reviewers').getAll(),
+                sp.web.lists.getByTitle('WeeklyTimeSheet').items.top(5000).filter(TimeSheetFilterQuery).expand("Initiator,ReportingManager,Reviewers").select(TimeSheetSelQuery).orderBy('WeekStartDate', false).getAll(),
+                sp.web.currentUser.groups(),        
+            ])
+            let userGroups = [],isAdmin=false;
+            for (const grp of groups) {
+                userGroups.push(grp.Title);
+            }
+            if (userGroups.includes('Timesheet Administrators') || userGroups.includes('Dashboard Admins'))
+                isAdmin=true;  
+            //for Reviewers on Behalf Submission
+            let IsCurrUserReviewer=false;
+            for(let Emp of ApprovalMatrix)
+            {
+                if (Emp.Reviewers && Emp.Reviewers.some(reviewer => reviewer.ID === userID)) {
+                    IsCurrUserReviewer = true;
+                    break;
+                } 
+            }
+            if(IsCurrUserReviewer && !isAdmin)
+            {
+                //filter only current user timesheets and his reported employees
+                WeeklyTimesheets=WeeklyTimesheets.filter(timesheet=>timesheet.Initiator.ID==userID || timesheet.Reviewers.some(Rev=>Rev.Id==userID));
+            }
+
+            let Data = [],ExcelData  =[];
+            for (const d of WeeklyTimesheets) {
+                let Rm = '';
+                let ExcelRm = ''
+                d.ReportingManager.sort((a, b) => a.Title.localeCompare(b.Title));
+                if(d.ReportingManager.length>0)
+                {
+                    for(let r of d.ReportingManager){
+                        Rm += "<div>"+r.Title+"</div>"
+                        ExcelRm += r.Title+"\n"
                     }
+<<<<<<< Updated upstream
                     let date = new Date(d.WeekStartDate.split('-')[1]+'/'+d.WeekStartDate.split('-')[2].split('T')[0]+'/'+d.WeekStartDate.split('-')[0]);
                     let isBillable = true;
                     if(d.ClientName.toLowerCase().includes('synergy')){
@@ -108,12 +134,119 @@ class AllRequests extends React.Component<AllRequestsProps,AllRequestsState> {
                         RM : ExcelRm,
                         //PTONewHrs:d.EligibleforPTO?JSON.parse(d.PTONewHrs)[0].Total:'NA',
                     })
+=======
+                    // ExcelRm = ExcelRm.substring(0, ExcelRm.lastIndexOf("\n"));
+>>>>>>> Stashed changes
                 }
-                // console.log(Data);
-                this.setState({ AllRequests: Data,ExportExcelData:ExcelData,loading: false });
-            }).catch(err => {
-                console.log('Failed to fetch data.', err);
-            });
+                let date = new Date(d.WeekStartDate.split('-')[1]+'/'+d.WeekStartDate.split('-')[2].split('T')[0]+'/'+d.WeekStartDate.split('-')[0]);
+                let isBillable = true;
+                if(d.ClientName.toLowerCase().includes('synergy')){
+                    isBillable = false
+                }
+                Data.push({
+                    Id : d.Id,
+                    Date : `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`,
+                    EmployeName: d.Name,
+                    // Status : d.Status == StatusType.Submit?'Pending With Reporting Manager':d.Status== StatusType.InProgress?'Pending With Reviewer':d.Status,
+                    Status : this.getStatus(d.Status),
+                    Client: d.ClientName,
+                    PendingWith: d.PendingWith == "Approver" ||d.PendingWith == "Manager" ?"Reporting Manager":d.PendingWith,
+                    BillableHours: isBillable?parseFloat(parseFloat(d.WeeklyTotalHrs).toFixed(2)):parseFloat(parseFloat(JSON.parse(d.SynergyOfficeHrs)[0].Total).toFixed(2)),
+                    OTTotalHrs : parseFloat(parseFloat(d.OTTotalHrs).toFixed(2)),
+                    TotalBillableHrs: parseFloat(parseFloat(d.BillableTotalHrs).toFixed(2)),
+                    // NonBillableTotalHrs: d.NonBillableTotalHrs,
+                    HolidayHrs:parseFloat(parseFloat(JSON.parse(d.ClientHolidayHrs)[0].Total).toFixed(2)),
+                    PTOHrs:parseFloat(parseFloat(JSON.parse(d.PTOHrs)[0].Total).toFixed(2)),
+                    TotalHours: parseFloat(parseFloat(d.GrandTotal).toFixed(2)),
+                    RM : Rm
+                })
+                ExcelData.push({
+                    Id : d.Id,
+                    Date : `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`,
+                    EmployeName: d.Name,
+                    // Status : d.Status == StatusType.Submit?'Pending With Reporting Manager':d.Status== StatusType.InProgress?'Pending With Reviewer':d.Status,
+                    Status : this.getStatus(d.Status),
+                    Client: d.ClientName,
+                    PendingWith: d.PendingWith == "Approver" ||d.PendingWith == "Manager" ?"Reporting Manager":d.PendingWith,
+                    BillableHours: isBillable?d.WeeklyTotalHrs:JSON.parse(d.SynergyOfficeHrs)[0].Total,
+                    OTTotalHrs : d.OTTotalHrs,
+                    TotalBillableHrs: d.BillableTotalHrs,
+                    // NonBillableTotalHrs: d.NonBillableTotalHrs,
+                    HolidayHrs:JSON.parse(d.ClientHolidayHrs)[0].Total,
+                    PTOHrs:JSON.parse(d.PTOHrs)[0].Total,
+                    TotalHours: d.GrandTotal,
+                    RM : ExcelRm
+                })
+            }
+            // console.log(Data);
+            this.setState({ AllRequests: Data,ExportExcelData:ExcelData,loading: false });
+        }
+        catch(err)
+        {
+            console.log('Failed to fetch data.', err); 
+        }
+        // sp.web.lists.getByTitle('WeeklyTimeSheet').items.top(5000).filter(filterString).expand("ReportingManager").select('ReportingManager/Title','*').orderBy('WeekStartDate', false).get()
+        //     .then((response) => {
+        //         // console.log(response)
+        //         let Data = [];
+        //         let ExcelData  =[]
+        //         for (const d of response) {
+        //             let Rm = '';
+        //             let ExcelRm = ''
+        //             d.ReportingManager.sort((a, b) => a.Title.localeCompare(b.Title));
+        //             if(d.ReportingManager.length>0)
+        //             {
+        //                 for(let r of d.ReportingManager){
+        //                     Rm += "<div>"+r.Title+"</div>"
+        //                     ExcelRm += r.Title+"\n"
+        //                 }
+        //                 // ExcelRm = ExcelRm.substring(0, ExcelRm.lastIndexOf("\n"));
+        //             }
+        //             let date = new Date(d.WeekStartDate.split('-')[1]+'/'+d.WeekStartDate.split('-')[2].split('T')[0]+'/'+d.WeekStartDate.split('-')[0]);
+        //             let isBillable = true;
+        //             if(d.ClientName.toLowerCase().includes('synergy')){
+        //                 isBillable = false
+        //             }
+        //             Data.push({
+        //                 Id : d.Id,
+        //                 Date : `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`,
+        //                 EmployeName: d.Name,
+        //                 // Status : d.Status == StatusType.Submit?'Pending With Reporting Manager':d.Status== StatusType.InProgress?'Pending With Reviewer':d.Status,
+        //                 Status : this.getStatus(d.Status),
+        //                 Client: d.ClientName,
+        //                 PendingWith: d.PendingWith == "Approver" ||d.PendingWith == "Manager" ?"Reporting Manager":d.PendingWith,
+        //                 BillableHours: isBillable?parseFloat(parseFloat(d.WeeklyTotalHrs).toFixed(2)):parseFloat(parseFloat(JSON.parse(d.SynergyOfficeHrs)[0].Total).toFixed(2)),
+        //                 OTTotalHrs : parseFloat(parseFloat(d.OTTotalHrs).toFixed(2)),
+        //                 TotalBillableHrs: parseFloat(parseFloat(d.BillableTotalHrs).toFixed(2)),
+        //                 // NonBillableTotalHrs: d.NonBillableTotalHrs,
+        //                 HolidayHrs:parseFloat(parseFloat(JSON.parse(d.ClientHolidayHrs)[0].Total).toFixed(2)),
+        //                 PTOHrs:parseFloat(parseFloat(JSON.parse(d.PTOHrs)[0].Total).toFixed(2)),
+        //                 TotalHours: parseFloat(parseFloat(d.GrandTotal).toFixed(2)),
+        //                 RM : Rm
+        //             })
+        //             ExcelData.push({
+        //                 Id : d.Id,
+        //                 Date : `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`,
+        //                 EmployeName: d.Name,
+        //                 // Status : d.Status == StatusType.Submit?'Pending With Reporting Manager':d.Status== StatusType.InProgress?'Pending With Reviewer':d.Status,
+        //                 Status : this.getStatus(d.Status),
+        //                 Client: d.ClientName,
+        //                 PendingWith: d.PendingWith == "Approver" ||d.PendingWith == "Manager" ?"Reporting Manager":d.PendingWith,
+        //                 BillableHours: isBillable?d.WeeklyTotalHrs:JSON.parse(d.SynergyOfficeHrs)[0].Total,
+        //                 OTTotalHrs : d.OTTotalHrs,
+        //                 TotalBillableHrs: d.BillableTotalHrs,
+        //                 // NonBillableTotalHrs: d.NonBillableTotalHrs,
+        //                 HolidayHrs:JSON.parse(d.ClientHolidayHrs)[0].Total,
+        //                 PTOHrs:JSON.parse(d.PTOHrs)[0].Total,
+        //                 TotalHours: d.GrandTotal,
+        //                 RM : ExcelRm
+        //             })
+        //         }
+        //         // console.log(Data);
+        //         this.setState({ AllRequests: Data,ExportExcelData:ExcelData,loading: false });
+        //     }).catch(err => {
+        //         console.log('Failed to fetch data.', err);
+        //     });
     }
     private getStatus(value){
         let Status=value

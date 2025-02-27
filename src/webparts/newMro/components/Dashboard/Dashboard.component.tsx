@@ -385,7 +385,7 @@ class Dashboard extends React.Component<DashboardProps, DashboardState> {
                             <div className="light-box m-2">
                                 <ul className="nav nav-tabs nav-fill" id="myTab" role="tablist">
 
-                                {this.state.showAllRequestsTab &&<li className="nav-item" role="presentation" onClick={() =>{this.onHandleClick('AllRequests');localStorage.setItem('PreviouslySelectedTab','AllRequests');}} >
+                                {(this.state.showAllRequestsTab ||this.state.showMyReviewersTab) &&<li className="nav-item" role="presentation" onClick={() =>{this.onHandleClick('AllRequests');localStorage.setItem('PreviouslySelectedTab','AllRequests');}} >
                                         <a className="nav-link" id="AllRequests-tab" data-toggle="tab" href="#/AllTimesheets" role="tab" aria-controls="AdminRequests" aria-selected="false">All Timesheets</a>
                                     </li>}
                                     
