@@ -82,6 +82,7 @@ class AllRequests extends React.Component<AllRequestsProps,AllRequestsState> {
             }
 
             let Data = [],ExcelData  =[];
+            WeeklyTimesheets.sort((a,b)=>b.Id-a.Id);
             for (const d of WeeklyTimesheets) {
                 let Rm = '';
                 let ExcelRm = ''
@@ -92,51 +93,7 @@ class AllRequests extends React.Component<AllRequestsProps,AllRequestsState> {
                         Rm += "<div>"+r.Title+"</div>"
                         ExcelRm += r.Title+"\n"
                     }
-<<<<<<< Updated upstream
-                    let date = new Date(d.WeekStartDate.split('-')[1]+'/'+d.WeekStartDate.split('-')[2].split('T')[0]+'/'+d.WeekStartDate.split('-')[0]);
-                    let isBillable = true;
-                    if(d.ClientName.toLowerCase().includes('synergy')){
-                        isBillable = false
-                    }
-                    Data.push({
-                        Id : d.Id,
-                        Date : `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`,
-                        EmployeName: d.Name,
-                        // Status : d.Status == StatusType.Submit?'Pending With Reporting Manager':d.Status== StatusType.InProgress?'Pending With Reviewer':d.Status,
-                        Status : this.getStatus(d.Status),
-                        Client: d.ClientName,
-                        PendingWith: d.PendingWith == "Approver" ||d.PendingWith == "Manager" ?"Reporting Manager":d.PendingWith,
-                        BillableHours: isBillable?parseFloat(parseFloat(d.WeeklyTotalHrs).toFixed(2)):parseFloat(parseFloat(JSON.parse(d.SynergyOfficeHrs)[0].Total).toFixed(2)),
-                        OTTotalHrs : parseFloat(parseFloat(d.OTTotalHrs).toFixed(2)),
-                        TotalBillableHrs: parseFloat(parseFloat(d.BillableTotalHrs).toFixed(2)),
-                        // NonBillableTotalHrs: d.NonBillableTotalHrs,
-                        HolidayHrs:parseFloat(parseFloat(JSON.parse(d.ClientHolidayHrs)[0].Total).toFixed(2)),
-                        PTOHrs:parseFloat(parseFloat(JSON.parse(d.PTOHrs)[0].Total).toFixed(2)),
-                        TotalHours: parseFloat(parseFloat(d.GrandTotal).toFixed(2)),
-                        RM : Rm,
-                        //PTONewHrs:d.EligibleforPTO?parseFloat(parseFloat(JSON.parse(d.PTONewHrs)[0].Total).toFixed(2)):'NA',
-                    })
-                    ExcelData.push({
-                        Id : d.Id,
-                        Date : `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`,
-                        EmployeName: d.Name,
-                        // Status : d.Status == StatusType.Submit?'Pending With Reporting Manager':d.Status== StatusType.InProgress?'Pending With Reviewer':d.Status,
-                        Status : this.getStatus(d.Status),
-                        Client: d.ClientName,
-                        PendingWith: d.PendingWith == "Approver" ||d.PendingWith == "Manager" ?"Reporting Manager":d.PendingWith,
-                        BillableHours: isBillable?d.WeeklyTotalHrs:JSON.parse(d.SynergyOfficeHrs)[0].Total,
-                        OTTotalHrs : d.OTTotalHrs,
-                        TotalBillableHrs: d.BillableTotalHrs,
-                        // NonBillableTotalHrs: d.NonBillableTotalHrs,
-                        HolidayHrs:JSON.parse(d.ClientHolidayHrs)[0].Total,
-                        PTOHrs:JSON.parse(d.PTOHrs)[0].Total,
-                        TotalHours: d.GrandTotal,
-                        RM : ExcelRm,
-                        //PTONewHrs:d.EligibleforPTO?JSON.parse(d.PTONewHrs)[0].Total:'NA',
-                    })
-=======
                     // ExcelRm = ExcelRm.substring(0, ExcelRm.lastIndexOf("\n"));
->>>>>>> Stashed changes
                 }
                 let date = new Date(d.WeekStartDate.split('-')[1]+'/'+d.WeekStartDate.split('-')[2].split('T')[0]+'/'+d.WeekStartDate.split('-')[0]);
                 let isBillable = true;

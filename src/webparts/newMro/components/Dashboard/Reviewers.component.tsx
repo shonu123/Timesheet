@@ -380,7 +380,13 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
                      }).catch(err => {
                    console.log('Error while update Employee PTO.', err);
                     });
-                }
+                  }
+                  else
+                  {
+                    this.setState({showHideModal : false,ItemID:0,message:'',title:'',Action:'',loading: false,successPopUp:false,modalTitle:'Record approved successfully'});
+                    customToaster('toster-success',ToasterTypes.Success,'Weekly timesheet '+StatusType.Approved.toLowerCase()+ ' succesfully',2000);
+                this.ReviewerApproval();
+                  }
         }).catch(err => {
            console.log('Failed to fetch data.', err);
     });
@@ -534,6 +540,11 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
                           }).catch(err => {
                        console.log('Error while update Employee PTO.', err);
                          });
+                    }
+                    else{
+                        this.setState({showHideModal : false,ItemID:0,message:'',title:'',Action:'',loading: false,successPopUp:false,modalTitle:'Record rejected successfully'});
+                             customToaster('toster-success',ToasterTypes.Success,'Weekly timesheet '+StatusType.Reject.toLowerCase()+ ' succesfully',2000);
+                             this.ReviewerApproval();
                     }
             }).catch(err => {
                console.log('Failed to fetch data.', err);
