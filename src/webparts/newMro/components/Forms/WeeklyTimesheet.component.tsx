@@ -362,16 +362,11 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
         var Client = [];
         let userID=this.props.spContext.userId;
         let EmpMasterSelQuery = "Employee/ID,Employee/Title,ReportingManager/EMail,Reviewers/EMail,ReportingManager/ID,Reviewers/ID";
-        let [clientMaster, groups, AllSubmittedTimesheetsOfEmployee, Delegations,AllEmpMasterData] = await Promise.all([
+        let [clientMaster, groups, AllSubmittedTimesheetsOfEmployee, Delegations] = await Promise.all([
             this.oweb.lists.getByTitle('Client').items.filter("IsActive eq 1").select("Title,DelegateTo/Id,DelegateTo/EMail,*").expand("DelegateTo").orderBy("Title", true).getAll(),
             sp.web.currentUser.groups(),
             this.oweb.lists.getByTitle(this.listName).items.filter("InitiatorId eq '" + currentUserId + "' and (Status eq '" + StatusType.Submit + "' or Status eq '" + StatusType.ManagerApprove + "' or Status eq '" + StatusType.Approved + "')").select('Initiator/Id,Initiator/Title,ClientName,WeekStartDate,Status').expand("Initiator").orderBy("WeekStartDate", false).getAll(),
             this.oweb.lists.getByTitle('Delegations').items.select('Authorizer/Id,Authorizer/EMail,DelegateTo/Id,DelegateTo/EMail,From,To').expand("Authorizer,DelegateTo").getAll(),
-<<<<<<< Updated upstream
-=======
-            sp.web.lists.getByTitle("EmployeeMaster").items.top(5000).select(EmpMasterSelQuery).expand("Employee,ReportingManager,Reviewers").getAll()
-            
->>>>>>> Stashed changes
         ]);
         // console.log("current user deatils"
         // console.log(this.props.context.pageContext)
@@ -379,15 +374,6 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
         let userGroups = []
         for (const grp of groups) {
             userGroups.push(grp.Title);
-        }
-        //for Reviewers on Behalf Submission
-        let IsCurrUserReviewer=false;
-        for(let Emp of AllEmpMasterData)
-        {
-            if (Emp.Reviewers && Emp.Reviewers.some(reviewer => reviewer.ID === userID)) {
-                IsCurrUserReviewer = true;
-                break;
-            } 
         }
         let trFormdata = this.state.trFormdata;
         trFormdata['Name'] = this.currentUser;
@@ -414,18 +400,12 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
             }
         }
 
-        if (ClientNames.length < 1 && !this.state.isAdmin && !IsCurrUserReviewer) {
+        if (ClientNames.length < 1 && !this.state.isAdmin) {
             this.setState({ modalTitle: 'Invalid Employee configuration', modalText: 'Employee not configured in Approval Matrix,Please contact Administrator', isSuccess: false, showHideModal: true,loading: false, isSubmitted: true });
             return false;
         }
-<<<<<<< Updated upstream
         this.setState({ EmployeeEmail: [], ClientNames: [], EmployeeMasterData: [], SuperviserNames: [], Reviewers: [], Notifiers: [] });
         this.state.EmployeeEmail.push(ClientNames[0].Employee.EMail);
-=======
-        ClientsFromClientMaster = clientMaster;
-        this.setState({ EmployeeEmail: [], ClientNames: [], Clients_DateOfJoinings: [], SuperviserNames: [], Reviewers: [], Notifiers: [] });
-        ClientNames.length?this.state.EmployeeEmail.push(ClientNames[0].Employee.EMail):'';
->>>>>>> Stashed changes
 
         ClientNames.filter(item => {
             //Client.push({ "ClientName": item.ClientName ,"IsActive":item.IsActive });
@@ -542,11 +522,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
         this.showApproveAndRejectButton(trFormdata);
         // this.userAccessableRecord(trFormdata);
 
-<<<<<<< Updated upstream
         this.setState({ UserGoups: userGroups, AllSubmittedTimesheetsOfEmployee: AllSubmittedTimesheetsOfEmployee, Delegations: Delegations, EmployeePTO:currentEmployeePTO, trFormdata, ClientNames: this.state.ClientNames, ClientMasterData:clientMaster, EmployeeEmail: this.state.EmployeeEmail, currentUserId: ClientNames[0].Employee.Id, showToaster: true });
-=======
-        this.setState({ UserGoups: userGroups, AllSubmittedTimesheetsOfEmployee: AllSubmittedTimesheetsOfEmployee, Delegations: Delegations, trFormdata, ClientNames: this.state.ClientNames, EmployeeEmail: this.state.EmployeeEmail, currentUserId: ClientNames.length?ClientNames[0].Employee.Id:userID, showToaster: true,IsCurrUserReviewer:IsCurrUserReviewer,AllEmpMasterData:AllEmpMasterData });
->>>>>>> Stashed changes
         if (this.state.ClientNames.length == 1 && this.props.match.params.id == undefined) {
             trFormdata.ClientName = this.state.ClientNames[0];
             this.handleClientChange(this.state.ClientNames[0]);
@@ -792,7 +768,6 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
 
     }
     // Functions related to OnBehalf functionality.
-<<<<<<< Updated upstream
     private async getAllEmployees() {
         let selectQuery = "Employee/ID,Employee/Title"
 
@@ -803,31 +778,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
             if (!EmpNames.includes(name.Employee.Title)) {
                 EmpNames.push(name.Employee.Title)
                 EmpObj.push({ ID: name.Employee.ID, Title: name.Employee.Title })
-=======
-    private async getAllEmployees(trFormdata) {
-        // let selectQuery = "Employee/ID,Employee/Title,ReportingManager/EMail,Reviewers/EMail,ReportingManager/ID,Reviewers/ID";
-        // let employees = await sp.web.lists.getByTitle('EmployeeMaster').items.expand('Employee,ReportingManager,Reviewers').select(selectQuery).orderBy('Employee/Title', true).getAll()
-        let employees = this.state.AllEmpMasterData;
-        let EmpIDs = [];
-        let EmpObj = [];
-        let userID=this.props.spContext.userId;
-        if (this.state.isAdmin) { // if cuurent user is admin bind all employees
-            for (const Emp of employees) {
-                if (!EmpIDs.includes(Emp.Employee.ID)) {
-                    EmpIDs.push(Emp.Employee.ID);
-                    EmpObj.push({ ID: Emp.Employee.ID, Title: Emp.Employee.Title });
-                }
->>>>>>> Stashed changes
             }
-        }
-        else if (this.state.IsCurrUserReviewer) {// if current user is Reviewer bind only their Reporties://for Reviewers on Behalf Submission  
-            for (const Emp of employees) {
-                if (!EmpIDs.includes(Emp.Employee.ID) && (Emp.Employee.ID==userID || Emp.Reviewers.some(reviewer=>reviewer.ID==userID))) {
-                    EmpIDs.push(Emp.Employee.ID);
-                    EmpObj.push({ ID: Emp.Employee.ID, Title: Emp.Employee.Title });
-                }
-            }
-
         }
         EmpObj.sort((a, b) => a.Title.localeCompare(b.Title));
         this.setState({ EmployeesObj: EmpObj, loading: false, ClientNames: [] })
@@ -865,7 +816,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                 trFormdata.ClientName = '';
                 trFormdata.WeekStartDate = null;
                 this.setState({ trFormdata, onBehalf: true, isSubmitted: true, ClientNames: [], currentUserId: -1, loading: true });
-                this.getAllEmployees(trFormdata);
+                this.getAllEmployees();
             }
 
         }
@@ -1495,7 +1446,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                  let LessPTOMsg='';
                  if(this.state.trFormdata.EligibleforPTO && parseFloat(this.state.trFormdata.PTOHrs[0].PTOAfterDeduction)<0)
                  {
-                    let LOPHours=parseFloat(this.state.trFormdata.PTOHrs[0].PTOAfterDeduction.split('.')[1])>0?-(parseFloat(this.state.trFormdata.PTOHrs[0].PTOAfterDeduction)):-(parseFloat(this.state.trFormdata.PTOHrs[0].PTOAfterDeduction));
+                    let LOPHours=parseFloat(this.state.trFormdata.PTOHrs[0].PTOAfterDeduction.split('.')[0])<0?-(parseFloat(this.state.trFormdata.PTOHrs[0].PTOAfterDeduction)):'';
                      LessPTOMsg= ` with ${LOPHours} hours of unpaid Time Off`;
                  }
                 if(formdata.WeekStartDate.getMonth() + 1 + "/" + formdata.WeekStartDate.getDate() + "/" + formdata.WeekStartDate.getFullYear() == CurrWeekStartDate.getMonth() + 1 + "/" + CurrWeekStartDate.getDate() + "/" + CurrWeekStartDate.getFullYear())
@@ -4087,7 +4038,12 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                     {
                         this.state.ConfirmPopupMessage == "" ? "" :
                             this.state.ConfirmPopupMessage == "Are you sure you want to delete this row?" ? <ModalPopUpConfirm message={this.state.ConfirmPopupMessage} title={''} isVisible={this.state.showConfirmDeletePopup} isSuccess={false} onConfirm={this.RemoveCurrentRow} onCancel={this.CloseConfirmationPopup}></ModalPopUpConfirm> :
-                                ["Are you sure you want to submit?", "Are you sure you want to submit for current week?","Are you sure you want to submit with '0' hours?","Are you sure you want to submit for current week with '0' hours?","Are you sure you want to submit with "+((parseFloat(this.state.trFormdata.PTOHrs[0].PTOAfterDeduction.split('.')[1])>0)?-(parseFloat(this.state.trFormdata.PTOHrs[0].PTOAfterDeduction)):-(parseFloat(this.state.trFormdata.PTOHrs[0].PTOAfterDeduction)))+" hours of unpaid Time Off?","Are you sure you want to submit for current week with "+((parseFloat(this.state.trFormdata.PTOHrs[0].PTOAfterDeduction.split('.')[1])>0)?-(parseFloat(this.state.trFormdata.PTOHrs[0].PTOAfterDeduction)):-(parseFloat(this.state.trFormdata.PTOHrs[0].PTOAfterDeduction)))+" hours of unpaid Time Off?"].includes(this.state.ConfirmPopupMessage) ? <ModalPopUpConfirm message={this.state.ConfirmPopupMessage} title={''} isVisible={this.state.showConfirmDeletePopup} isSuccess={false} onConfirm={this.handleSubmitorSave} onCancel={this.CloseConfirmationPopup}></ModalPopUpConfirm> :
+                                ["Are you sure you want to submit?",
+                                     "Are you sure you want to submit for current week?",
+                                     "Are you sure you want to submit with '0' hours?",
+                                     "Are you sure you want to submit for current week with '0' hours?",
+                                     "Are you sure you want to submit with "+(this.state.trFormdata.PTOHrs[0].PTOAfterDeduction?((parseFloat(this.state.trFormdata.PTOHrs[0].PTOAfterDeduction.split('.')[0])<0)?-(parseFloat(this.state.trFormdata.PTOHrs[0].PTOAfterDeduction)):''):'')+" hours of unpaid Time Off?",
+                                     "Are you sure you want to submit for current week with "+(this.state.trFormdata.PTOHrs[0].PTOAfterDeduction?((parseFloat(this.state.trFormdata.PTOHrs[0].PTOAfterDeduction.split('.')[0])<0)?-(parseFloat(this.state.trFormdata.PTOHrs[0].PTOAfterDeduction)):''):'')+" hours of unpaid Time Off?"].includes(this.state.ConfirmPopupMessage) ? <ModalPopUpConfirm message={this.state.ConfirmPopupMessage} title={''} isVisible={this.state.showConfirmDeletePopup} isSuccess={false} onConfirm={this.handleSubmitorSave} onCancel={this.CloseConfirmationPopup}></ModalPopUpConfirm> :
                                     this.state.ConfirmPopupMessage == "Are you sure you want to approve?" ? <ModalPopUpConfirm message={this.state.ConfirmPopupMessage} title={''} isVisible={this.state.showConfirmDeletePopup} isSuccess={false} onConfirm={this.handleApprove} onCancel={this.CloseConfirmationPopup}></ModalPopUpConfirm> :
                                         this.state.ConfirmPopupMessage == "Are you sure you want to reject?" ? <ModalPopUpConfirm message={this.state.ConfirmPopupMessage} title={''} isVisible={this.state.showConfirmDeletePopup} isSuccess={false} onConfirm={this.handleReject} onCancel={this.CloseConfirmationPopup}></ModalPopUpConfirm> :
                                             this.state.ConfirmPopupMessage == "Are you sure you want to revoke?" ? <ModalPopUpConfirm message={this.state.ConfirmPopupMessage} title={''} isVisible={this.state.showConfirmDeletePopup} isSuccess={false} onConfirm={this.handleRevoke} onCancel={this.CloseConfirmationPopup}></ModalPopUpConfirm> : ""
