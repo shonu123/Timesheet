@@ -304,8 +304,6 @@ class PTOPolicy extends Component<PTOPolicyProps, PTOPolicyState> {
             let filterQuery = "ID eq '" + id + "'";
             let selectQuery = "Title,YearsOfExperience,HoursPerMonth,*";
             var data = await sp.web.lists.getByTitle('Policy').items.filter(filterQuery).select(selectQuery).get();
-            document.getElementById("Policy").scrollIntoView({ behavior: 'smooth', block: 'start' });
-            document.getElementById("Policy").focus();
             this.setState({
                 formData:
                 {
@@ -321,6 +319,8 @@ class PTOPolicy extends Component<PTOPolicyProps, PTOPolicyState> {
                 addNewPTOPolicy: true,
                 loading:false
             });
+            setTimeout(()=>{document.getElementById("txtYearsOfExperience").scrollIntoView({ behavior: 'smooth', block: 'start' })},300);
+            setTimeout(()=>{document.getElementById("txtYearsOfExperience").focus()},300);
         }
         catch (e) {
             console.log('failed to fetch data for record :' + id);
@@ -377,7 +377,7 @@ class PTOPolicy extends Component<PTOPolicyProps, PTOPolicyState> {
     private addNewPolicyMaster = () => {
         var formdata = { ...this.state.formData };
         this.setState({ addNewPTOPolicy: true, showLabel: false, formData: formdata });
-        document.getElementById("Policy").focus();
+        setTimeout(()=>{document.getElementById('Policy')?document.getElementById('Policy').focus():''},300);
     }
     public render() {
         const columns = [

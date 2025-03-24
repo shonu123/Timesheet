@@ -244,6 +244,7 @@ class EmployeeMasterForm extends React.Component<EmployeeMasterFormProps, Employ
         }
         let filterdHolidays = this.getHolidays(Holidays, data[0].ClientName);
         this.setState({ ClientsObject: Clients, ItemID: ID, EmployeeEmail: data[0].Employee.EMail, EmployeeId: data[0].Employee.ID, ClientName: data[0].ClientName, isActive: data[0].IsActive, DateOfJoining: date,startDateOfDOJ:DOJInEmpMaster, SelectedEmployee: data[0].Employee.ID, SelectedClient: data[0].ClientName, HolidayType: data[0].HolidayType, weekStartDay: data[0].WeekStartDay, MandatoryProjectCode: data[0].MandatoryProjectCode ? "Yes" : "No", MandatoryDescription: data[0].MandatoryDescription ? "Yes" : "No", EmployeeClassification:data[0].EmployeeClassification, Policy:[null,undefined,''].includes(data[0].Policy)?'None':data[0].Policy,CommentsHistory:[null,undefined,''].includes(data[0].CommentsHistory)?[]:JSON.parse(data[0].CommentsHistory),EligibleforPTO: data[0].EligibleforPTO, ReportingManagerEmail: ReportingManagersEmail, ReportingManagerId: ReportingManagerIds, ReviewerEmail: ReviewersEMail, ReviewerId: ReviewerIds,HolidaysObject: filterdHolidays, GlobalHolidayList: Holidays, isDisabled: disabled, isPageAccessable: pageAccessable, showToaster: true, loading: false,EmployeesObject:Employees })
+        document.getElementById('divDateofJoining').getElementsByTagName('input')[0].focus();
     }
     // this function is used to bind users to people pickers
     private _getPeoplePickerItems(items, name) {
@@ -897,7 +898,7 @@ class EmployeeMasterForm extends React.Component<EmployeeMasterFormProps, Employ
                                             <div className="col-md-3">
                                                 <div className="light-text" id='chkIsActive'>
                                                     <InputCheckBox
-                                                        label={"Is Active"}
+                                                        label={"Is Employee Active for this Client?"}
                                                         name={"isActive"}
                                                         checked={this.state.isActive}
                                                         onChange={this.handleChangeEvents}

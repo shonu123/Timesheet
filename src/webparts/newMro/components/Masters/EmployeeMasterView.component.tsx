@@ -23,6 +23,8 @@ export interface EmployeeMasterViewProps {
 
 export interface EmployeeMasterViewState {
     Details: Array<Object>;
+    currentTab:number;
+    showTabs:boolean;
     ExcelData:any;
     loading:boolean;
     message : string;
@@ -46,13 +48,13 @@ class EmployeeMasterView extends React.Component<EmployeeMasterViewProps, Employ
         sp.setup({
             spfxContext: this.props.context
         });
-        this.state = {Details: [],ExcelData:[], loading:false,message:'',title:'',showHideModal:false,isSuccess:true,comments:'',Action:'',errorMessage:'',ItemID:0,showToaster:false,redirect:false,isPageAccessable: true,};
+        this.state = {Details: [],ExcelData:[],currentTab:1,showTabs:true, loading:false,message:'',title:'',showHideModal:false,isSuccess:true,comments:'',Action:'',errorMessage:'',ItemID:0,showToaster:false,redirect:false,isPageAccessable: true,};
     }
 
     public componentDidMount() {
         this.setState({ loading: true});
         highlightCurrentNav("employeemaster");
-        this.EmployeeMasterData();
+        this.EmployeeMasterData(this.state.currentTab);
         if(!["",undefined,null].includes(this.props.match.params.message)){
             this.setState({showToaster:true})
             let message = this.props.match.params.message
@@ -69,16 +71,19 @@ class EmployeeMasterView extends React.Component<EmployeeMasterViewProps, Employ
         }
     }
 // this function is used to get all records of  both active and inactive employees from employee master list
-    private EmployeeMasterData = async () => {
+    private EmployeeMasterData = async (currentTab) => {
+        if(![null,undefined,''].includes(localStorage.getItem('PreviouslySelectedMatrixTab')))
+        currentTab=parseInt(localStorage.getItem('PreviouslySelectedMatrixTab'));
         var selectQuery = "Employee/Title,ReportingManager/Title,Approvers/Title,Reviewers/Title,Notifiers/Title,*";
         var expandQuery = "Employee,ReportingManager,Approvers,Reviewers,Notifiers";
+        var filterQuery = `IsActive eq ${currentTab}`;
         try{
             let groups= await sp.web.currentUser.groups();
             let userGroups = [];
             for (const grp of groups) {
                 userGroups.push(grp.Title);
             }
-            sp.web.lists.getByTitle('EmployeeMaster').items.top(4000).expand(expandQuery).select(selectQuery).orderBy('Modified', false).get()
+            sp.web.lists.getByTitle('EmployeeMaster').items.top(5000).expand(expandQuery).select(selectQuery).filter(filterQuery).orderBy('Modified', false).getAll()
                 .then((response) => {
                     // console.log(response)
                     let Data = [],ExcelData=[];
@@ -126,15 +131,25 @@ class EmployeeMasterView extends React.Component<EmployeeMasterViewProps, Employ
                             IsActive: d.IsActive?"Active":"In-Active"
                         })
                     }
-                    let pageAccessable = false;
-                    if (userGroups.includes('Timesheet Administrators')) {
+                    let pageAccessable = false,showTabs=true;
+                    if (userGroups.includes('Timesheet Administrators') || userGroups.includes('Timesheet HR')) {
                         pageAccessable = true;
+                        if (userGroups.includes('Timesheet HR'))
+                            showTabs = false;
                     }
                     else {
                         pageAccessable = false;
                     }
                     // console.log(Data);
-                    this.setState({ Details: Data,ExcelData:ExcelData,loading: false,isPageAccessable:pageAccessable});
+                    this.setState({ Details: Data,ExcelData:ExcelData,loading: false,isPageAccessable:pageAccessable,showTabs:showTabs,currentTab:currentTab});
+                    let items = document.querySelectorAll('.nav-link');
+                    items.forEach(function (item) {
+                        item.classList.remove('active');
+                    });
+                    if (currentTab == 1)
+                        document.getElementById('Active-tab')?document.getElementById('Active-tab').classList.add('active'):'';
+                    else
+                    document.getElementById('In-Active-tab')?document.getElementById('In-Active-tab').classList.add('active'):'';
                     // document.getElementById('txtTableSearch').style.display = 'none';
                 }).catch(err => {
                     console.log('Failed to fetch data.', err);
@@ -144,12 +159,36 @@ class EmployeeMasterView extends React.Component<EmployeeMasterViewProps, Employ
             console.log('Failed to fetch data.', e);
         }
     }
-
-    private  handleRowClicked = (row) => {
-        let ID = row.Id
-        this.setState({ItemID:ID,redirect:true})
+    private  handleRowClicked = (row,Id?) => {
+        let ID = row.Id?row.Id:Id;
+        this.setState({ItemID:ID,redirect:true});
       }
-
+      private onHandleClick = (url) => {
+        let CurrentClickedTab=url =='Active'?'1':'0';
+        if(CurrentClickedTab!=localStorage.getItem('PreviouslySelectedMatrixTab'))
+        {
+            this.setState({loading:true});
+            let items = document.querySelectorAll('.nav-link');
+            items.forEach(function(item) {
+            item.classList.remove('active');
+            });
+            let currentTab=1;
+            if (url === 'Active')
+                {
+                    document.getElementById('Active-tab')?document.getElementById('Active-tab').classList.add('active'):'';
+                    localStorage.setItem('PreviouslySelectedMatrixTab', '1'); 
+                    currentTab=1;
+                }
+                else if (url === 'In-Active')
+                 { 
+                    document.getElementById('In-Active-tab')?document.getElementById('In-Active-tab').classList.add('active'):'';
+                    localStorage.setItem('PreviouslySelectedMatrixTab', '0'); 
+                    currentTab=0;
+                }
+            this.setState({currentTab:currentTab});
+            this.EmployeeMasterData(currentTab);
+        }
+    }
     public render() {
         const columns = [
             {
@@ -178,7 +217,7 @@ class EmployeeMasterView extends React.Component<EmployeeMasterViewProps, Employ
             {
                 name: "Reporting Manager",
                 selector: (row, i) => row.ReportingManager,
-                cell: row => <div className='divManagers' dangerouslySetInnerHTML={{ __html: row.ReportingManager }} />,
+                cell: row => <div className='divManagers' dangerouslySetInnerHTML={{ __html: row.ReportingManager }} onClick={(event)=>this.handleRowClicked(event,row.Id)}/>,
                 width: '250px',
                 sortable: true
             },
@@ -193,7 +232,7 @@ class EmployeeMasterView extends React.Component<EmployeeMasterViewProps, Employ
                 selector: (row, i) => row.Reviewers,
                 sortable: true,
                 width: '250px',
-                cell: row => <div className='divReviewers' dangerouslySetInnerHTML={{ __html: row.Reviewers }} />
+                cell: row => <div className='divReviewers' dangerouslySetInnerHTML={{ __html: row.Reviewers }} onClick={(event)=>this.handleRowClicked(event,row.Id)}/>
             },
             {
                 name: "Client",
@@ -220,12 +259,12 @@ class EmployeeMasterView extends React.Component<EmployeeMasterViewProps, Employ
                 sortable: true,
                 // width: '150px'
             },
-            {
-                name: "Status",
-                selector: (row, i) => row.IsActive,
-                sortable: true,
-                width: '100px',
-            }
+            // {
+            //     name: "Status",
+            //     selector: (row, i) => row.IsActive,
+            //     sortable: true,
+            //     width: '100px',
+            // }
         ];
         const ExcelColumns = [
             {
@@ -252,10 +291,10 @@ class EmployeeMasterView extends React.Component<EmployeeMasterViewProps, Employ
                 name: "Eligible for PTO",
                 selector:"EPTO",
             },
-            {
-                name: "Status",
-                selector:"IsActive",
-            }
+            // {
+            //     name: "Status",
+            //     selector:"IsActive",
+            // }
         ];
         
         if(this.state.redirect){
@@ -273,18 +312,29 @@ class EmployeeMasterView extends React.Component<EmployeeMasterViewProps, Employ
                             <div className='FormContent'>
                                 <div className="title">Approval Matrix</div>
                                 <div className="after-title"></div>
-            {/* <h1 className='title'>Approval Matrix</h1> */}
-
-                {/* <div style={{ paddingLeft: '10px' }} className="px-1 text-right Billable" id='divAddNewEmployeeMaster'>
-                    <NavLink title="New Approval Matrix"  className="csrLink ms-draggable" to={`/EmployeeMasterForm`}>
-                        <span className='add-button' id='newEmployeeMasterForm'><FontAwesomeIcon icon={faPlus}></FontAwesomeIcon> New</span>
-                    </NavLink>
-                </div> */}
+                            {/* <div className={'pr-5 pb-2 text-right'} id={"divAddNewEmployeeMaster"}>
+                                <NavLink title={'New Approval Matrix'} className="csrLink ms-draggable" to={`/EmployeeMasterForm`}>
+                                    <button type="button" className="SubmitButtons btn"><span className='position-static' id={"newEmployeeMasterForm"}><FontAwesomeIcon icon={faPlus}></FontAwesomeIcon>{' New'}</span></button>
+                                </NavLink>
+                            </div>  */}
             <div className='border-box-shadow light-box table-responsive dataTables_wrapper-overflow p-2'>
+            {this.state.showTabs && <ul className="nav nav-tabs nav-fill" id="myTab" role="tablist">
+                                    <li className="nav-item" role="presentation" onClick={() => { this.onHandleClick('Active') }} >
+                                        <a className="nav-link" id="Active-tab" data-toggle="tab" href="#/EmployeeMasterView" role="tab" aria-selected="false">Active Employees</a>
+                                    </li>
+                                    <li className="nav-item" role="presentation" onClick={() => { this.onHandleClick('In-Active') }} >
+                                        <a className="nav-link" id="In-Active-tab" data-toggle="tab" href="#/EmployeeMasterView" role="tab" aria-selected="false">In-Active Employees</a>
+                                    </li>
+                                </ul>}
+                                {this.state.currentTab==1 && <div className={'pr-2 pt-2 text-right'} id={"divAddNewEmployeeMaster"}>
+                                <NavLink title={'New Approval Matrix'} className="csrLink ms-draggable" to={`/EmployeeMasterForm`}>
+                                    <button type="button" className="SubmitButtons btn"><span className='position-static' id={"newEmployeeMasterForm"}><FontAwesomeIcon icon={faPlus}></FontAwesomeIcon>{' New'}</span></button>
+                                </NavLink>
+                            </div>}
             {this.state.loading && <Loader />}
                 <div className=''>
                     <TableGenerator columns={columns} data={this.state.Details} ExportExcelCustomisedColumns={ExcelColumns} ExportExcelCustomisedData={this.state.ExcelData} fileName={'Approval Matrix'} showExportExcel={false}
-                    showAddButton={true} customBtnClass='px-1 text-right mt-2' btnDivID='divAddNewEmployeeMaster' navigateOnBtnClick={`/EmployeeMasterForm`} btnSpanID='newEmployeeMasterForm' btnCaption=' New' btnTitle='New Approval Matrix' searchBoxLeft={false}  onRowClick={this.handleRowClicked}></TableGenerator>
+                    showAddButton={false} customBtnClass='px-1 text-right mt-2' btnDivID='divAddNewEmployeeMaster' navigateOnBtnClick={`/EmployeeMasterForm`} btnSpanID='newEmployeeMasterForm' btnCaption=' New' btnTitle='New Approval Matrix' searchBoxLeft={true}  onRowClick={this.handleRowClicked}></TableGenerator>
                 </div>
             </div>
             </div>
@@ -295,5 +345,4 @@ class EmployeeMasterView extends React.Component<EmployeeMasterViewProps, Employ
         );
     }
 }
-
 export default EmployeeMasterView

@@ -220,9 +220,9 @@ class AllRequests extends React.Component<AllRequestsProps,AllRequestsState> {
             }
         return Status
     }
-    private  handleRowClicked = (row) => {
-        let ID = row.Id
-        this.setState({TimesheetID:ID,redirect:true})
+    private  handleRowClicked = (row,Id?) => {
+        let ID = row.Id?row.Id:Id;
+        this.setState({TimesheetID:ID,redirect:true});
       }
     public render() {
         const columns = [
@@ -264,7 +264,7 @@ class AllRequests extends React.Component<AllRequestsProps,AllRequestsState> {
             {
                 name: "Reporting Manager",
                 selector: (row, i) => row.RM,
-                cell: row => <div className='divManagers' dangerouslySetInnerHTML={{ __html: row.RM }} />,
+                cell: row => <div className='divManagers' dangerouslySetInnerHTML={{ __html: row.RM }} onClick={(event)=>this.handleRowClicked(event,row.Id)}/>,
                 width: '230px',
                 sortable: true
             },

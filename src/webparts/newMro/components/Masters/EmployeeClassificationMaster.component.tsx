@@ -149,9 +149,11 @@ class EmployeeClassification extends Component<EmployeeClassificationProps, Empl
 
         try {
             if (id == 0)
-                filterString = `Title eq '${formData.Title}' and IsActive eq '1'`;
+                filterString = `Title eq '${formData.Title.replace(/'/g, "''")}' and IsActive eq '1'`;
             else
-                filterString = filterString = `Title eq '${formData.Title}' and  IsActive eq '1' and Id ne ` + id;
+                filterString = `Title eq '${formData.Title.replace(/'/g, "''")}' and  IsActive eq '1' and Id ne ` + id;
+            //filterString=encodeURIComponent(filterString);Not worked
+            //filterString=filterString.replace(/'/g, "%27%27");Not worked
             sp.web.lists.getByTitle(EmployeeClassificationList).items.filter(filterString).get().
                 then((response: any[]) => {
                     if (response.length > 0) {
@@ -291,8 +293,6 @@ class EmployeeClassification extends Component<EmployeeClassificationProps, Empl
             let response = data[0]
             let DelegateToIds = { results: [] }
             let DelegateToEmails = []
-            document.getElementById("txtEmployeeClassification").scrollIntoView({ behavior: 'smooth', block: 'start' });
-            document.getElementById("txtEmployeeClassification").focus();
             this.setState({
                 formData:
                 {
@@ -305,6 +305,8 @@ class EmployeeClassification extends Component<EmployeeClassificationProps, Empl
                 addNewEmpClassification: true,
                 loading:false
             });
+            setTimeout(()=>{document.getElementById("txtEmployeeClassification").scrollIntoView({ behavior: 'smooth', block: 'start' })},300);
+            setTimeout(()=>{document.getElementById("txtEmployeeClassification").focus()},300);
         }
         catch (e) {
             console.log('failed to fetch data for record :' + id);
@@ -339,7 +341,7 @@ class EmployeeClassification extends Component<EmployeeClassificationProps, Empl
     private addNewEmpClassificationMaster = () => {
         var formdata = { ...this.state.formData };
         this.setState({ addNewEmpClassification: true, showLabel: false, formData: formdata });
-        document.getElementById('txtEmployeeClassification').focus();
+        setTimeout(()=>{document.getElementById('txtEmployeeClassification')?document.getElementById('txtEmployeeClassification').focus():''},300);
     }
     public render() {
         let ExportExcelreportColumns = [

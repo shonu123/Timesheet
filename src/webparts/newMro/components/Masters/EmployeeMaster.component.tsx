@@ -65,6 +65,10 @@ class Employee extends Component<EmployeeProps, EmployeeState> {
             CommentsHistory:[],
 
         },
+        currentTab:1,
+        FileName:"Active Employees",
+        showInactiveTab:true,
+
         Comments:'',
         Experience:'',
         EmployeesData: [],
@@ -73,6 +77,7 @@ class Employee extends Component<EmployeeProps, EmployeeState> {
         PolicyObject:[],
         PreviousPTOBalance:0,
         PreviousPTOAfterDeduction:0,
+        PreviousEligibleforPTO:false,
 
         showConfirmPopup:false,
         ConfirmPopupMessage:'',
@@ -95,12 +100,19 @@ class Employee extends Component<EmployeeProps, EmployeeState> {
     public componentDidMount() {
         highlightCurrentNav("EmployeeMaster");
         this.setState({ loading: true });
-        this.loadListData();
+        this.loadListData(this.state.currentTab);
     }
     public componentDidUpdate = () => {
         if (this.state.isRedirect) {
-            this.loadListData();
+            this.loadListData(this.state.currentTab);
         }
+        //for highlight Active tab ,when form open and click on top navigation Employee Matrix
+        if (this.state.currentTab == 1)
+            document.getElementById('Active-tab')?document.getElementById('Active-tab').classList.add('active'):'';
+        else if(this.state.currentTab == 0)
+        document.getElementById('In-Active-tab')?document.getElementById('In-Active-tab').classList.add('active'):'';
+        else if(this.state.currentTab == -1)
+        document.getElementById('PTOEligible-tab')?document.getElementById('PTOEligible-tab').classList.add('active'):'';
     }
     public componentWillReceiveProps(newProps) {
         if (newProps.match.params.id == undefined)
@@ -170,7 +182,7 @@ class Employee extends Component<EmployeeProps, EmployeeState> {
         }
         else if(name=='Hours')
         {
-            value = value.match(/\d{0,3}(\.\d{0,5})?/)[0];
+            value = value.match(/\d{0,3}(\.\d{0,4})?/)[0];
         }
         name == 'Comments'?'':formData[name] = value;
         this.setState({ formData });
@@ -277,14 +289,14 @@ class Employee extends Component<EmployeeProps, EmployeeState> {
                     document.getElementById('Policy').classList.add('mandatory-FormContent-focus');
                     //this.setState({ loading: false });
                 }
-                else if(id>0 && this.state.Comments.trim()=='')
-                {
-                    let errMsg = 'Comments cannot be blank.';
-                    customToaster('toster-error', ToasterTypes.Error, errMsg, 4000);
-                    document.getElementById('txtComments').focus();
-                    document.getElementById('txtComments').classList.add('mandatory-FormContent-focus'); 
-                    //this.setState({ loading: false });      
-                 }
+                // else if(id>0 && this.state.Comments.trim()=='')
+                // {
+                //     let errMsg = 'Comments cannot be blank.';
+                //     customToaster('toster-error', ToasterTypes.Error, errMsg, 4000);
+                //     document.getElementById('txtComments').focus();
+                //     document.getElementById('txtComments').classList.add('mandatory-FormContent-focus'); 
+                //     //this.setState({ loading: false });      
+                //  }
                 else {
                    let isDuplicated=await this.checkDuplicates(formdata, id);
                    if(isDuplicated)
@@ -295,17 +307,29 @@ class Employee extends Component<EmployeeProps, EmployeeState> {
                    else{
                      let PreviousPTOHours=this.state.PreviousPTOAfterDeduction;
                      let UpdatedPTOHours=Number(this.state.formData.Hours);
+                     let PreviousEligibleforPTO=this.state.PreviousEligibleforPTO;
+                     let UpdatedEligibleforPTO=this.state.formData.EligibleforPTO;
                         //   if(![0,''].includes(this.state.formData.Hours))
                         //   {
                         //     this.setState({ showConfirmPopup: true, ConfirmPopupMessage: `'${this.state.formData.Hours}' PTO hours will be credited . Are you sure you want to ${this.state.SaveUpdateText.toLowerCase()}?`});
                         //   }
+                        //   if(PreviousPTOHours!=UpdatedPTOHours || (PreviousEligibleforPTO!=UpdatedEligibleforPTO && id>0))
                           if(PreviousPTOHours!=UpdatedPTOHours)
                           {
-                            let PopupMessage='';
+                            let PopupMessage=''; 
+                            // if((PreviousEligibleforPTO!=UpdatedEligibleforPTO && id>0))
+                            // {
+                            //     PopupMessage=`'Is Employee Eligible for PTO' updated`;
+                            //    if(PreviousPTOHours!=UpdatedPTOHours)
+                            //    PopupMessage+=` and `;
+                            // }
+
                             if(UpdatedPTOHours-PreviousPTOHours>0)
-                            PopupMessage=`'${parseFloat((UpdatedPTOHours-PreviousPTOHours).toFixed(4))}' PTO hours will be credited . Are you sure you want to ${this.state.SaveUpdateText.toLowerCase()}?`;
+                            PopupMessage+=`'${parseFloat((UpdatedPTOHours-PreviousPTOHours).toFixed(4))}' PTO hours will be credited . Are you sure you want to ${this.state.SaveUpdateText.toLowerCase()}?`;
+                            else if(UpdatedPTOHours-PreviousPTOHours<0)
+                            PopupMessage+=`'${parseFloat((PreviousPTOHours-UpdatedPTOHours).toFixed(4))}' PTO hours will be deducted . Are you sure you want to ${this.state.SaveUpdateText.toLowerCase()}?`;
                             else
-                            PopupMessage=`'${parseFloat((PreviousPTOHours-UpdatedPTOHours).toFixed(4))}' PTO hours will be deducted . Are you sure you want to ${this.state.SaveUpdateText.toLowerCase()}?`;
+                            PopupMessage+=`. Are you sure you want to ${this.state.SaveUpdateText.toLowerCase()}?`;
 
                             this.setState({ showConfirmPopup: true, ConfirmPopupMessage: PopupMessage });
                           }
@@ -678,11 +702,16 @@ class Employee extends Component<EmployeeProps, EmployeeState> {
             loading: false, modalTitle: 'Error', modalText: 'Sorry! something went wrong', showHideModal: true, isSuccess: false, errorMessage: ''
         });
     }
-    private async loadListData() {
+    private async loadListData(currentTab) {
+        if(![null,undefined,''].includes(localStorage.getItem('PreviouslySelectedEmployeeTab')))
+        currentTab=parseInt(localStorage.getItem('PreviouslySelectedEmployeeTab'));
+        let filterQuery = `IsActive eq ${currentTab}`;
+        if(currentTab==-1)
+            filterQuery = `IsActive eq 1 and EligibleforPTO eq 1`; 
         this.setState({ isRedirect: false })
         try {
             let [Employees, EmployeeClassification,Policy, groups] = await Promise.all([
-                sp.web.lists.getByTitle('Employees').items.expand('Employee').select('Employee/Title,Employee/Id,*').orderBy("Employee/Title", false).getAll(),
+                sp.web.lists.getByTitle('Employees').items.top(5000).expand('Employee').select('Employee/Title,Employee/Id,*').filter(filterQuery).orderBy("Employee/Title", false).getAll(),
                 sp.web.lists.getByTitle('EmployeeClassification').items.filter("IsActive eq 1").select('*').orderBy('Title').getAll(),
                 sp.web.lists.getByTitle('AllPolicies').items.filter("IsActive eq 1").select('*').orderBy('Title').getAll(),
                 sp.web.currentUser.groups(),
@@ -703,8 +732,8 @@ class Employee extends Component<EmployeeProps, EmployeeState> {
                         EmployeeId:d.Employee.Id,
                         Employee: d.Employee.Title,
                         DateOfJoining: `${DOJ.getMonth() + 1}/${DOJ.getDate()}/${DOJ.getFullYear()}`,
-                        EmployeeClassification: d.EmployeeClassification,
-                        Policy: d.Policy == 'None' ? 'NA' : d.Policy,
+                        EmployeeClassification: [null,undefined,''].includes(d.EmployeeClassification)?'':d.EmployeeClassification,
+                        Policy: [null,undefined,''].includes(d.Policy)?'':"none"==d.Policy.toLowerCase()?'NA' : d.Policy,
                         EligibleforPTO: d.EligibleforPTO ? "Yes" : "No",
                         IsActive: d.IsActive ? "Active" : "In-Active"
                     })
@@ -714,20 +743,23 @@ class Employee extends Component<EmployeeProps, EmployeeState> {
                         EmployeeId:d.Employee.Id,
                         Employee: d.Employee.Title,
                         DateOfJoining: `${DOJ.getMonth() + 1}/${DOJ.getDate()}/${DOJ.getFullYear()}`,
-                        EmployeeClassification: d.EmployeeClassification,
-                        Policy: d.Policy,
+                        EmployeeClassification: [null,undefined,''].includes(d.EmployeeClassification)?'':d.EmployeeClassification,
+                        Policy: [null,undefined,''].includes(d.Policy)?'':"none"==d.Policy.toLowerCase()?'NA' : d.Policy,
                         EligibleforPTO: d.EligibleforPTO ? "Yes" : "No",
                         IsActive: d.IsActive ? "Active" : "In-Active"
                     })
                 }
             }
-            let pageAccessable = false;
-            if (userGroups.includes('Timesheet Administrators')) {
+            let pageAccessable = false,showInactiveTab=true;
+            if (userGroups.includes('Timesheet Administrators') || userGroups.includes('Timesheet HR')) {
                 pageAccessable = true;
+                if (userGroups.includes('Timesheet HR'))
+                    showInactiveTab = false;
             }
             else {
                 pageAccessable = false;
             }
+            let FileName=currentTab==1?'Active Employees':currentTab==-1?'PTO Eligible Employees':currentTab==0?'In-Active Employees':'';
             this.setState({
                 EmployeesData: Data,
                 EmployeeClassificationObject: EmployeeClassification,
@@ -735,9 +767,18 @@ class Employee extends Component<EmployeeProps, EmployeeState> {
                 SaveUpdateText: 'Submit',
                 showLabel: false,
                 loading: false,
-                ExportExcelData: ExcelData, showToaster: true,isPageAccessable:pageAccessable
+                ExportExcelData: ExcelData, showToaster: true,isPageAccessable:pageAccessable,showInactiveTab:showInactiveTab
+            ,currentTab:currentTab,FileName:FileName});
+            let items = document.querySelectorAll('.nav-link');
+            items.forEach(function (item) {
+                item.classList.remove('active');
             });
-
+            if (currentTab == 1)
+                document.getElementById('Active-tab')?document.getElementById('Active-tab').classList.add('active'):'';
+            else if(currentTab == 0)
+            document.getElementById('In-Active-tab')?document.getElementById('In-Active-tab').classList.add('active'):'';
+            else if(currentTab == -1)
+            document.getElementById('PTOEligible-tab')?document.getElementById('PTOEligible-tab').classList.add('active'):'';
         }
         catch (e) {
             this.onError();
@@ -754,8 +795,6 @@ class Employee extends Component<EmployeeProps, EmployeeState> {
                 sp.web.lists.getByTitle('EmployeePTO').items.filter(PTOfilterQuery).select('Employee/ID,Employee/Title,*').expand('Employee').get(),
             ]) 
             // var data = await sp.web.lists.getByTitle('Employees').items.filter(filterQuery).expand('Employee').select(selectQuery).get();
-            document.getElementById("divEmployee").scrollIntoView({ behavior: 'smooth', block: 'start' });
-            document.getElementById("divEmployee").focus();
             let DOJ = new Date(EmpData[0].DateOfJoining.split('-')[1] + '/' + EmpData[0].DateOfJoining.split('-')[2].split('T')[0] + '/' + EmpData[0].DateOfJoining.split('-')[0])
             let ExpInDays=this.getExpInDays(new Date(DOJ));
             let ExpInYearMonth=this.getExpYearMonthFormate(ExpInDays,new Date(DOJ));
@@ -766,14 +805,15 @@ class Employee extends Component<EmployeeProps, EmployeeState> {
                     DateOfJoining: DOJ,
                     EmployeeClassification: EmpData[0].EmployeeClassification,
                     Policy: EmpData[0].Policy,
-                    Hours: EmpPTOData.length?[null,undefined,''].includes(EmpPTOData[0].PTOBalanceAfterDeduction)?0:parseFloat(EmpPTOData[0].PTOBalanceAfterDeduction) :0,
+                    Hours: EmpPTOData.length?[null,undefined,''].includes(EmpPTOData[0].PTOBalanceAfterDeduction)?0:parseFloat(parseFloat(EmpPTOData[0].PTOBalanceAfterDeduction).toFixed(4)) :0,
                     EligibleforPTO: EmpData[0].EligibleforPTO,
                     IsActive: EmpData[0].IsActive,
                     CommentsHistory:[null,undefined,''].includes(EmpData[0].CommentsHistory)?[]:JSON.parse(EmpData[0].CommentsHistory),
                 },
                 Comments:'',
                 PreviousPTOBalance:EmpPTOData.length? [null,undefined,''].includes(EmpPTOData[0].PTOBalance)?0:EmpPTOData[0].PTOBalance:0,
-                PreviousPTOAfterDeduction:EmpPTOData.length?[null,undefined,''].includes(EmpPTOData[0].PTOBalanceAfterDeduction)?0:EmpPTOData[0].PTOBalanceAfterDeduction:0,
+                PreviousPTOAfterDeduction:EmpPTOData.length?[null,undefined,''].includes(EmpPTOData[0].PTOBalanceAfterDeduction)?0:parseFloat(parseFloat(EmpPTOData[0].PTOBalanceAfterDeduction).toFixed(4)):0,
+                PreviousEligibleforPTO:EmpData[0].EligibleforPTO,
                 Experience:ExpInYearMonth,
                 EmployeeEmail: EmpData[0].Employee.EMail,
                 SaveUpdateText: 'Update',
@@ -781,6 +821,8 @@ class Employee extends Component<EmployeeProps, EmployeeState> {
                 addNewEmployee: true,
                 loading:false
             });
+            setTimeout(()=>{document.getElementById("divDateofJoining").scrollIntoView({ behavior: 'smooth', block: 'start' })},300);
+            setTimeout(()=>{document.getElementById("divDateofJoining").getElementsByTagName('input')[0].focus()},300);
         }
         catch (e) {
             console.log('failed to fetch data for record :' + id);
@@ -798,7 +840,7 @@ class Employee extends Component<EmployeeProps, EmployeeState> {
                 IsActive: true,
                 CommentsHistory:[],
             },
-            Comments:'',Experience:'', SaveUpdateText: 'Submit', addNewEmployee: false, EmployeeEmail: '', isRedirect: true,showToaster:false
+            Comments:'',Experience:'', SaveUpdateText: 'Submit', addNewEmployee: false, EmployeeEmail: '', isRedirect: true,showToaster:false,PreviousPTOAfterDeduction:0,PreviousEligibleforPTO:false
         });
     }
     private handleRowClicked = (row) => {
@@ -832,10 +874,42 @@ class Employee extends Component<EmployeeProps, EmployeeState> {
     private addNewEmployeeMaster = () => {
         var formdata = { ...this.state.formData };
         this.setState({ addNewEmployee: true, showLabel: false, formData: formdata });
-        document.getElementById("divEmployee").getElementsByTagName('input')[0].focus();
+        setTimeout(()=>{document.getElementById('divEmployee')?document.getElementById('divEmployee').getElementsByTagName('input')[0].focus():''},300);
     }
     private CloseConfirmationPopup = () => {
         this.setState({ showConfirmPopup: false, ConfirmPopupMessage: "",});
+    }
+    private onHandleClick = (url) => {
+        let CurrentClickedTab=url =='Active'?'1':url =='In-Active'?'0':'-1';
+        if(CurrentClickedTab!=localStorage.getItem('PreviouslySelectedEmployeeTab'))
+        {
+            this.setState({loading:true});
+            let items = document.querySelectorAll('.nav-link');
+            items.forEach(function(item) {
+            item.classList.remove('active');
+            });
+            let currentTab=1;
+            if (url === 'Active')
+                {
+                    document.getElementById('Active-tab')?document.getElementById('Active-tab').classList.add('active'):'';
+                    localStorage.setItem('PreviouslySelectedEmployeeTab', '1'); 
+                    currentTab=1;
+                }
+                else if (url === 'In-Active')
+                 { 
+                    document.getElementById('In-Active-tab')?document.getElementById('In-Active-tab').classList.add('active'):'';
+                    localStorage.setItem('PreviouslySelectedEmployeeTab', '0'); 
+                    currentTab=0;
+                }
+                else if (url === 'PTOEligible')
+                 { 
+                    document.getElementById('PTOEligible-tab')?document.getElementById('PTOEligible-tab').classList.add('active'):'';
+                    localStorage.setItem('PreviouslySelectedEmployeeTab', '-1'); 
+                    currentTab=-1;
+                }
+            this.setState({currentTab:currentTab});
+            this.loadListData(currentTab);
+        }
     }
     public render() {
         const columns = [
@@ -876,16 +950,16 @@ class Employee extends Component<EmployeeProps, EmployeeState> {
                 selector: (row, i) => row.Policy == 'None' ? 'NA' : row.Policy,
                 sortable: true,
             },
-            {
-                name: "Eligible for PTO",
-                selector: (row, i) => row.EligibleforPTO,
-                sortable: true,
-            },
-            {
-                name: "Status",
-                selector: (row, i) => row.IsActive,
-                sortable: true,
-            },
+            // {
+            //     name: "Eligible for PTO",
+            //     selector: (row, i) => row.EligibleforPTO,
+            //     sortable: true,
+            // },
+            // {
+            //     name: "Status",
+            //     selector: (row, i) => row.IsActive,
+            //     sortable: true,
+            // },
         ];
         const ExcelColumns = [
             {
@@ -908,17 +982,30 @@ class Employee extends Component<EmployeeProps, EmployeeState> {
                 selector: 'Policy',
                 sortable: true,
             },
-            {
+            // {
+            //     name: "Eligible for PTO",
+            //     selector: 'EligibleforPTO',
+            //     sortable: true,
+            // },
+            // {
+            //     name: "Status",
+            //     selector: 'IsActive',
+            //     sortable: true,
+            // },
+        ];
+        if([1,0].includes(this.state.currentTab))
+        {
+            columns.push({
+                name: "Eligible for PTO",
+                selector: (row, i) => row.EligibleforPTO,
+                sortable: true,
+            }) 
+            ExcelColumns.push({
                 name: "Eligible for PTO",
                 selector: 'EligibleforPTO',
                 sortable: true,
-            },
-            {
-                name: "Status",
-                selector: 'IsActive',
-                sortable: true,
-            },
-        ];
+            })
+        }
         if (this.state.isRedirect) {
             return (<Navigate to={'/EmployeeMaster'} />);
         }
@@ -934,7 +1021,8 @@ class Employee extends Component<EmployeeProps, EmployeeState> {
                 <div id="content" className="content p-2 pt-2">
                     <div className='container-fluid'>
                         <div className='FormContent'>
-                            <div className='title'>{this.state.addNewEmployee?'Employee':'Employees'}
+                            {/* <div className='title'>{this.state.addNewEmployee?'Employee':'Employees'} */}
+                            <div className='title'>{'Employee Matrix'}
                                 {this.state.addNewEmployee &&
                                     <div className='mandatory-note'>
                                         <span className='mandatoryhastrick'>*</span> indicates a required field
@@ -945,13 +1033,13 @@ class Employee extends Component<EmployeeProps, EmployeeState> {
                             <div className="row justify-content-md-left">
                                 <div className="col-12 col-md-12 col-lg-12">
 
-                                    <div className={this.state.addNewEmployee ? 'mx-2 activediv' : 'mx-2'}>
+                                    {/* <div className={this.state.addNewEmployee ? 'mx-2 activediv' : 'mx-2'}>
                                         <div className="text-right pt-2">
                                             <button type="button" id="btnSubmit" title='Add New Employee' className="SubmitButtons btn" onClick={this.addNewEmployeeMaster}>
                                                 <span className='' id='addEmpClassification'><FontAwesomeIcon icon={faPlus}></FontAwesomeIcon> Add</span>
                                             </button>
                                         </div>
-                                    </div>
+                                    </div> */}
                                     <div className="c-v-table EmployeeFrom">
                                         <div className="light-box border-box-shadow mx-2">
                                             <div className={this.state.addNewEmployee ? '' : 'activediv'}>
@@ -1010,45 +1098,44 @@ class Employee extends Component<EmployeeProps, EmployeeState> {
                                                                <SearchableDropdown label="Employee Classification" Title="Employee Classification"  name="EmployeeClassification" id="EmployeeClassification" placeholderText="Select Classification" className="" selectedValue={this.state.formData.EmployeeClassification} optionLabel={'Title'} optionValue={'Title'} OptionsList={this.state.EmployeeClassificationObject} onChange={(selectedOption,actionMeta)=>{this.handleChange(selectedOption,actionMeta)}} isRequired={true} refElement={this.EmployeeClassification} noOptionsMessage="No Employee Classification"></SearchableDropdown>
                                                             </div>
                                                         </div>
-
-                                                        {this.state.formData.EligibleforPTO &&
+                                                        <div className="col-md-3">
+                                                                <div className="light-text" id='chkIsActive'>
+                                                                    <InputCheckBox
+                                                                        label={"Is Employee Eligible for PTO?"}
+                                                                        name={"EligibleforPTO"}
+                                                                        checked={this.state.formData.EligibleforPTO}
+                                                                        onChange={this.handleChange}
+                                                                        isforMasters={false}
+                                                                        isdisable={this.props.match.params.id ? false : true}
+                                                                    />
+                                                                </div>
+                                                            </div>
+                                                        
                                                             <div className="col-md-3">
                                                                 <div className="light-text">
-                                                                    <label>Policy<span className="mandatoryhastrick">*</span></label>
-                                                                    <select className="form-control" name="Policy" title="Policy" id='Policy' onChange={this.handleChange} value={this.state.formData.Policy}>
+                                                                    <label>Policy{this.state.formData.EligibleforPTO &&<span className="mandatoryhastrick">*</span>}</label>
+                                                                    <select className="form-control" name="Policy" title="Policy" id='Policy' onChange={this.handleChange} value={this.state.formData.Policy} disabled={!this.state.formData.EligibleforPTO}>
                                                                     <option value=''>None</option>
                                                                     {this.state.PolicyObject.map((option) => (
                                                                         <option value={option.Title} selected={option.Title == this.state.formData.Policy}>{option.Title}</option>
                                                                     ))}
                                                                     </select>
                                                                 </div>
-                                                            </div>}
-                                                        {this.state.formData.EligibleforPTO &&
+                                                            </div>
+                                                        
                                                             <div className="col-md-3">
                                                          <div className='light-text'>
                                                                 <label>PTO Hours</label>
                                                                 <input className="form-control" type={"text"} title={"Hours"} placeholder="e.g., 15.15" value={this.state.formData.Hours || ''}
-                                                                    required={true} onChange={this.handleChange} onBlur={this.handleonBlur} name={"Hours"}  autoComplete="off"  maxLength={10} id={"txtHours"}
+                                                                    required={true} onChange={this.handleChange} onBlur={this.handleonBlur} name={"Hours"}  autoComplete="off" disabled={!this.state.formData.EligibleforPTO}  maxLength={10} id={"txtHours"}
                                                                 />
                                                             </div>
-                                                           </div>}
-                                                        {this.state.formData.EligibleforPTO &&
-                                                            <div className="col-md-3">
-                                                                <div className="light-text" id='chkIsActive'>
-                                                                    <InputCheckBox
-                                                                        label={"Is Eligible for PTO"}
-                                                                        name={"EligibleforPTO"}
-                                                                        checked={this.state.formData.EligibleforPTO}
-                                                                        onChange={this.handleChange}
-                                                                        isforMasters={false}
-                                                                        isdisable={true}
-                                                                    />
-                                                                </div>
-                                                            </div>}
+                                                           </div>
+                                                           
                                                         <div className="col-md-3">
                                                             <div className="light-text" id='chkIsActive'>
                                                                 <InputCheckBox
-                                                                    label={"Is Active"}
+                                                                    label={"Is Employee Active?"}
                                                                     name={"IsActive"}
                                                                     checked={this.state.formData.IsActive}
                                                                     onChange={this.handleChange}
@@ -1059,7 +1146,8 @@ class Employee extends Component<EmployeeProps, EmployeeState> {
                                                         </div>
                                                     </div>
                                                     <div className="light-text height-auto m-2 mt-3">
-                                                        <label className="floatingTextarea2 top-11">Comments{this.props.match.params.id > 0 && <span className="mandatoryhastrick">*</span>}</label>
+                                                        {/* <label className="floatingTextarea2 top-11">Comments{this.props.match.params.id > 0 && <span className="mandatoryhastrick">*</span>}</label> */}
+                                                        <label className="floatingTextarea2 top-11">Comments</label>
                                                         <textarea className="position-static form-control requiredinput" onChange={this.handleChange} value={this.state.Comments} id="txtComments" ref={this.Comments} name="Comments"></textarea>
                                                     </div>
                                                 </div>
@@ -1094,8 +1182,30 @@ class Employee extends Component<EmployeeProps, EmployeeState> {
                                         </div>
                                     </div>
                                     {this.state.showToaster && <Toaster />}
-                                    {!this.state.addNewEmployee &&<div className="c-v-table">
-                                        <TableGenerator columns={columns} data={this.state.EmployeesData} fileName={'Employees'} showExportExcel={this.state.EmployeesData.length ? true : false} searchBoxLeft={true} ExportExcelCustomisedColumns={ExcelColumns} ExportExcelCustomisedData={this.state.ExportExcelData} LargeWidthColumns={["Employee","EmployeeClassification"]} onRowClick={this.handleRowClicked}></TableGenerator>
+                                    {!this.state.addNewEmployee &&
+                                    <div>
+                                             <div className="px-4 py-2"><ul className="nav nav-tabs nav-fill" id="myTab" role="tablist">
+                                                <li className="nav-item" role="presentation" onClick={() => { this.onHandleClick('Active') }} >
+                                                    <a className="nav-link" id="Active-tab" data-toggle="tab" href="#/EmployeeMasterView" role="tab" aria-selected="false">Active Employees</a>
+                                                </li>
+                                                <li className="nav-item" role="presentation" onClick={() => { this.onHandleClick('PTOEligible') }} >
+                                                    <a className="nav-link" id="PTOEligible-tab" data-toggle="tab" href="#/EmployeeMasterView" role="tab" aria-selected="false">PTO Eligible Employees</a>
+                                                </li>
+                                                 {this.state.showInactiveTab && <li className="nav-item" role="presentation" onClick={() => { this.onHandleClick('In-Active') }} >
+                                                    <a className="nav-link" id="In-Active-tab" data-toggle="tab" href="#/EmployeeMasterView" role="tab" aria-selected="false">In-Active Employees</a>
+                                                </li>}
+                                            </ul></div>
+                                           {[1,-1].includes(this.state.currentTab) && 
+                                           <div className={this.state.addNewEmployee ? 'mx-2 activediv' : 'mx-2'}>
+                                                <div className="text-right pr-3 pt-2">
+                                                    <button type="button" id="btnSubmit" title='Add New Employee' className="SubmitButtons btn" onClick={this.addNewEmployeeMaster}>
+                                                        <span className='' id='addEmpClassification'><FontAwesomeIcon icon={faPlus}></FontAwesomeIcon> Add</span>
+                                                    </button>
+                                                </div>
+                                    </div>}
+                                        <div className="c-v-table">
+                                        <TableGenerator columns={columns} data={this.state.EmployeesData} fileName={this.state.FileName} showExportExcel={this.state.EmployeesData.length ? true : false} searchBoxLeft={true} ExportExcelCustomisedColumns={ExcelColumns} ExportExcelCustomisedData={this.state.ExportExcelData} ExcelHeader={this.state.FileName} LargeWidthColumns={["Employee","EmployeeClassification"]} onRowClick={this.handleRowClicked}></TableGenerator>
+                                    </div>
                                     </div>}
                                 </div>
                             </div>

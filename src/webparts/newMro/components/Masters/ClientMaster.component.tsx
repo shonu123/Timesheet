@@ -159,9 +159,11 @@ class Clients extends Component<ClientProps, ClientState> {
 
         try {
             if (id == 0)
-                filterString = `Title eq '${formData.Title}' and IsActive eq '1'`;
+                filterString = `Title eq '${formData.Title.replace(/'/g, "''")}' and IsActive eq 1`;
             else
-                filterString = filterString = `Title eq '${formData.Title}' and  IsActive eq '1' and Id ne ` + id;
+                filterString = `Title eq '${formData.Title.replace(/'/g, "''")}' and  IsActive eq 1 and Id ne ` + id;
+                //filterString=encodeURIComponent(filterString);Not worked
+                //filterString=filterString.replace(/'/g, '%27%27');Not worked
             sp.web.lists.getByTitle(ClientList).items.filter(filterString).get().
                 then((response: any[]) => {
                     if (response.length > 0) {
@@ -257,6 +259,11 @@ class Clients extends Component<ClientProps, ClientState> {
             loading: false, modalTitle: 'Error', modalText: 'Sorry! something went wrong', showHideModal: true, isSuccess: false, errorMessage: ''
         });
     }
+    private fixedEncodeURIComponent(n) {
+        return encodeURIComponent(n).replace(/[']/g, function(n) {
+            return "%" + n.charCodeAt(0).toString(16) + "%" + n.charCodeAt(0).toString(16);
+        })
+    }
     private async loadListData() {
         this.setState({ isRedirect: false })
         try{
@@ -344,8 +351,6 @@ class Clients extends Component<ClientProps, ClientState> {
                     }
                 }
             }
-            document.getElementById("txtClientName").scrollIntoView({ behavior: 'smooth', block: 'start' });
-            document.getElementById("txtClientName").focus();
             this.setState({
                 formData:
                 {
@@ -361,6 +366,8 @@ class Clients extends Component<ClientProps, ClientState> {
                 addNewClient: true,
                 loading:false
             });
+            setTimeout(()=>{document.getElementById("txtClientName").scrollIntoView({ behavior: 'smooth', block: 'start' })},300);
+            setTimeout(()=>{document.getElementById("txtClientName").focus()},300);
         }
         catch (e) {
             console.log('failed to fetch data for record :' + id);
@@ -378,11 +385,12 @@ class Clients extends Component<ClientProps, ClientState> {
             SaveUpdateText: 'Submit', addNewClient: false, isRedirect: true
         });
     }
-    private handleRowClicked = (row) => {
+    private handleRowClicked = (row,Id?) => {
+        let ID=row.Id?row.Id:Id;
         this.setState({loading:true});
-        window.location.hash = `#/ClientMaster/${row.Id}`;
-        this.props.match.params.id = row.Id
-        this.onEditClickHandler(row.Id)
+        window.location.hash = `#/ClientMaster/${ID}`;
+        this.props.match.params.id =ID;
+        this.onEditClickHandler(ID);
     }
     private cancelHandler = () => {
         this.resetHolidayMasterForm();
@@ -395,7 +403,7 @@ class Clients extends Component<ClientProps, ClientState> {
     private addNewClientMaster = () => {
         var formdata = { ...this.state.formData };
         this.setState({ addNewClient: true, showLabel: false, formData: formdata });
-        document.getElementById('txtClientName').focus();
+        setTimeout(()=>{document.getElementById('txtClientName')?document.getElementById('txtClientName').focus():''},300);
     }
     private onMenuItemClick(event) {
         let item = document.getElementById('sideMenuNav');
@@ -451,7 +459,7 @@ class Clients extends Component<ClientProps, ClientState> {
                 selector: (row, i) => row.DelegateTo,
                 sortable: true,
                 width: '250px',
-                cell: row => <div className='divReviewers' dangerouslySetInnerHTML={{ __html: row.DelegateTo }} />
+                cell: row => <div className='divReviewers' dangerouslySetInnerHTML={{ __html: row.DelegateTo }} onClick={(event)=>this.handleRowClicked(event,row.Id)}/>
             },
 
             {
