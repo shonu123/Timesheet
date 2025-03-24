@@ -21,6 +21,8 @@ class NavBar extends React.Component<NavBarProps, NavBarState> {
     private currentUserLinksArr = [];
     public componentDidMount() {
         delete localStorage.PreviouslySelectedTab;
+        delete localStorage.PreviouslySelectedMatrixTab;
+        delete localStorage.PreviouslySelectedEmployeeTab;
         for (let permission of sitePermissions) {
             let accessTo = permission.accessTo;
             if (accessTo == 'everyone' || this.props.currentUserGroups.includes(accessTo)) {
@@ -145,7 +147,7 @@ class NavBar extends React.Component<NavBarProps, NavBarState> {
                             {
                                 (this.props.currentUserGroups.includes('Timesheet Administrators')) ?
                                     // <li className="" >
-                                        <NavLink className="dropdown-item" id="EmployeeMaster" onClick={(event) => this.onNavItemClick(event)} to="/EmployeeMaster"><span className="">Employees</span></NavLink>
+                                        <NavLink className="dropdown-item" id="EmployeeMaster" onClick={(event) => this.onNavItemClick(event)} to="/EmployeeMaster"><span className="">Employee Matrix</span></NavLink>
                                     // </li>
                                      : ''
                             }

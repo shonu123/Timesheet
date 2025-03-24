@@ -438,6 +438,12 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                         // ClientItem.DelegateTo.map(i=>(this.state.DelegateTo.push({"ClientName":ClientItem.ClientName,"DelegateToId":i.Id,"DelegateToEmail":i.EMail})));
                     }
                 });
+                if ( this.state.ClientNames < 1 && !this.state.isAdmin) {
+                    this.setState({ modalTitle: 'Invalid Employee configuration', modalText: 'Employee not configured in Approval Matrix,Please contact Administrator', isSuccess: false, showHideModal: true,loading: false, isSubmitted: true });
+                    return false;
+                }
+                if(!this.state.ClientNames.includes(trFormdata.ClientName))
+                trFormdata.ClientName='';
         }
         this.state.ClientNames.sort();
         //For getting Dateofjoining,DescriptionMandatory,ProjectCOde Mandatory,WeekStartday of selected client
@@ -451,6 +457,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                 trFormdata.HolidayType = item.HolidayType;
                 // trFormdata.PTOBalance = [null,undefined].includes(item.PTOBalance)?'0.00':parseFloat(item.PTOBalance).toFixed(2);
                 // trFormdata.CurrentAvailablePTO = [null,undefined].includes(item.CurrentAvailablePTO)?'0.00':parseFloat(item.CurrentAvailablePTO).toFixed(2);
+                if([null,undefined,0,''].includes(this.state.ItemID) || ![StatusType.Submit,toString(),StatusType.ManagerApprove,StatusType.Approved].includes(trFormdata.Status)) //if Item exists and status is Submit/ManagerApprove/Approve,then hide PTO columns based on WeeklyTimesheet Data otherwise based on Employee Master Data
                 trFormdata.EligibleforPTO=item.EligibleforPTO;
                 //trFormdata.EmployeeID=item.EmployeeID;
                 // if(![StatusType.ManagerApprove,StatusType.Approved,StatusType.Submit.toString()].includes(trFormdata.Status))
@@ -519,10 +526,11 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
             "IsDay7Holiday": this.IsHoliday(WeekStartDate, trFormdata.HolidayType),
             "IsDay7SynergyHoliday": this.IsHoliday(WeekStartDate, "synergy"),
         })
-        this.showApproveAndRejectButton(trFormdata);
+        //this.showApproveAndRejectButton(trFormdata);
         // this.userAccessableRecord(trFormdata);
 
         this.setState({ UserGoups: userGroups, AllSubmittedTimesheetsOfEmployee: AllSubmittedTimesheetsOfEmployee, Delegations: Delegations, EmployeePTO:currentEmployeePTO, trFormdata, ClientNames: this.state.ClientNames, ClientMasterData:clientMaster, EmployeeEmail: this.state.EmployeeEmail, currentUserId: ClientNames[0].Employee.Id, showToaster: true });
+        this.showApproveAndRejectButton(trFormdata);
         if (this.state.ClientNames.length == 1 && this.props.match.params.id == undefined) {
             trFormdata.ClientName = this.state.ClientNames[0];
             this.handleClientChange(this.state.ClientNames[0]);
@@ -589,6 +597,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
         trFormdata.SynergyHolidayHrs = JSON.parse(data[0].SynergyHolidayHrs);
         trFormdata.ClientHolidayHrs = JSON.parse(data[0].ClientHolidayHrs);
         trFormdata.PTOHrs = JSON.parse(data[0].PTOHrs);
+        trFormdata.EligibleforPTO=[null,undefined].includes(data[0].EligibleforPTO)?false:data[0].EligibleforPTO;
         //trFormdata.PTONewHrs = [null,undefined,''].includes(data[0].PTONewHrs)?trFormdata.PTONewHrs:JSON.parse(data[0].PTONewHrs);
         trFormdata.WeeklyItemsTotalTime = data[0].WeeklyTotalHrs;
         trFormdata.OTItemsTotalTime = data[0].OTTotalHrs;
@@ -719,6 +728,11 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
         }
         else if ([StatusType.ManagerReject, StatusType.ReviewerReject, StatusType.Save, StatusType.Revoke].includes(data[0].Status)) {
             this.setState({ isSubmitted: false });
+            if(trFormdata.EligibleforPTO)//Below is to get Latest PTO after Revoke
+            {
+                trFormdata.PTOHrs[0].PTOBalance=[null,undefined].includes(trFormdata.PTOBalanceAfterDeduction)?'0.00':parseFloat(parseFloat(trFormdata.PTOBalanceAfterDeduction).toFixed(4)).toString();
+                trFormdata.PTOHrs[0].PTOAfterDeduction = [null,undefined].includes(trFormdata.PTOBalanceAfterDeduction)?'0.00':parseFloat((parseFloat(trFormdata.PTOBalanceAfterDeduction)-parseFloat(trFormdata.PTOHrs[0].Total)).toFixed(4)).toString();
+            }
         }
         if ([StatusType.ReviewerReject, StatusType.Save].includes(data[0].Status)) {
             //Condition for Reviewer reject / Manager reject scenarios changed to save
@@ -1922,7 +1936,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                       });
                     }
                     //Code for PTO Addition after Revoke end
-                    this.setState({ loading: false})
+                    this.setState({ loading: false,trFormdata:formObject});
                     customToaster('toster-success', ToasterTypes.Success, 'Weekly timesheet ' + StatusType.Revoke.toLowerCase() + ' successfully', 2000)
                     this.getItemData(this.state.ItemID, this.state.Delegations);
                 }
@@ -2579,6 +2593,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
             trFormdata.SynergyHolidayHrs = JSON.parse(ExistRecordData[0].SynergyHolidayHrs);
             trFormdata.ClientHolidayHrs = JSON.parse(ExistRecordData[0].ClientHolidayHrs);
             trFormdata.PTOHrs = JSON.parse(ExistRecordData[0].PTOHrs);
+            trFormdata.EligibleforPTO=[null,undefined].includes(ExistRecordData[0].EligibleforPTO)?false:ExistRecordData[0].EligibleforPTO;
             //trFormdata.PTONewHrs =[null,undefined,''].includes(ExistRecordData[0].PTONewHrs)?trFormdata.PTONewHrs: JSON.parse(ExistRecordData[0].PTONewHrs);
             trFormdata.WeeklyItemsTotalTime = ExistRecordData[0].WeeklyTotalHrs;
             trFormdata.OTItemsTotalTime = ExistRecordData[0].OTTotalHrs;
@@ -2745,6 +2760,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                     trFormdata.HolidayType = item.HolidayType;
                     //trFormdata.PTOBalance = [null,undefined].includes(item.PTOBalance)?'0.00':parseFloat(item.PTOBalance).toFixed(2);
                     //trFormdata.CurrentAvailablePTO = [null,undefined].includes(item.CurrentAvailablePTO)?'0.00':parseFloat(item.CurrentAvailablePTO).toFixed(2);
+                    if([null,undefined,0,''].includes(this.state.ItemID) || ![StatusType.Submit,StatusType.ManagerApprove,StatusType.Approved].includes(trFormdata.Status)) //if Item exists and status is Submit/ManagerApprove/Approve,then hide PTO columns based on WeeklyTimesheet Data otherwise based on Employee Master Data
                     trFormdata.EligibleforPTO = item.EligibleforPTO;
                     //trFormdata.EmployeeID = item.EmployeeID;
                     // if(![StatusType.ManagerApprove,StatusType.Approved,StatusType.Submit.toString()].includes(trFormdata.Status))
@@ -3123,12 +3139,15 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
     //this function is used to hide and show Approve/Reject/Submit/Save/Revoke buttons based on logged in user and current record respective users
     private showApproveAndRejectButton(trFormdata) {
         //let value = trFormdata.Status != StatusType.Save ? true : false;
+        this.setState({showPTO:false});
         let value = ![StatusType.Save, StatusType.Revoke, StatusType.ManagerReject, StatusType.ReviewerReject].includes(trFormdata.Status) ? true : false;
         let userGroups = this.state.UserGoups;
         let userEmail = this.props.spContext.userEmail;
         let isAdmin = false;
+        document.getElementById('divWeekStartDate').getElementsByTagName('input')[0].focus();
         if (userGroups.includes('Timesheet Administrators') || userGroups.includes('Dashboard Admins')) {
             isAdmin = true;
+            document.getElementById('Applying')?document.getElementById('Applying').focus():'';
         }
         //for show/hide of SubmitSave Revoke buttons
         if (userEmail == this.state.EmployeeEmail || isAdmin) {
@@ -4129,7 +4148,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                                             <div className="col-md-2">
                                                 <div className="light-text">
                                                     <label>Applying for<span className="mandatoryhastrick">*</span></label>
-                                                    <select className="form-control" name="Applying" title="Applying for" onChange={this.handleApplyingfor}>
+                                                    <select className="form-control" name="Applying" id="Applying" title="Applying for" onChange={this.handleApplyingfor}>
                                                         <option value='Self'>Self</option>
                                                         <option value='onBehalf'>On Behalf</option>
                                                     </select>

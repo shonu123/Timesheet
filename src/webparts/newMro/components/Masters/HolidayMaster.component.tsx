@@ -207,9 +207,11 @@ class HolidaysList extends Component<HolidaysListProps, HolidaysListState> {
 
         try {
             if (id == 0)
-                filterString = `ClientName eq '${formData.ClientName}' and ${filterQuery} and IsActive eq'1'`;
+                filterString = `ClientName eq '${formData.ClientName.replace(/'/g, "''")}' and ${filterQuery} and IsActive eq'1'`;
             else
-                filterString = `ClientName eq '${formData.ClientName}' and ${filterQuery} and IsActive eq'1' and Id ne ` + id;
+                filterString = `ClientName eq '${formData.ClientName.replace(/'/g, "''")}' and ${filterQuery} and IsActive eq'1' and Id ne ` + id;
+                //filterString=encodeURIComponent(filterString);Not worked
+                //filterString=filterString.replace(/'/g, "%27%27");Not worked
             sp.web.lists.getByTitle(HolidaysList).items.filter(filterString).get().
                 then((response: any[]) => {
                     if (response.length > 0) {
@@ -333,7 +335,7 @@ class HolidaysList extends Component<HolidaysListProps, HolidaysListState> {
                 }
                 this.setState({
                     CurrYearHolidaysData: HolidaysData.map(o => ({
-                        Id: o.Id, ClientName: o.ClientName, HolidayName: o.HolidayName,
+                        Id: o.Id, ClientName: [null,undefined].includes(o.ClientName)?'':o.ClientName, HolidayName:[null,undefined].includes(o.HolidayName)?'':o.HolidayName,
                          HolidayDate: o.HolidayDate.split('-')[1]+'/'+o.HolidayDate.split('-')[2].split('T')[0]+'/'+o.HolidayDate.split('-')[0],
                          IsActive:o.IsActive?"Active":"In-Active"
                     })),
@@ -362,8 +364,6 @@ class HolidaysList extends Component<HolidaysListProps, HolidaysListState> {
 
         try {
             var response = await sp.web.lists.getByTitle('HolidaysList').items.getById(id).get();
-            document.getElementById("txtHolidayName").scrollIntoView({behavior: 'smooth', block: 'start'});
-            document.getElementById("txtHolidayName").focus();
             this.setState({
                 formData:
                  {
@@ -378,6 +378,8 @@ class HolidaysList extends Component<HolidaysListProps, HolidaysListState> {
                 addNewClient: true,
                 loading: false
             });
+            setTimeout(()=>{document.getElementById("txtHolidayName").scrollIntoView({ behavior: 'smooth', block: 'start' })},300);
+            setTimeout(()=>{document.getElementById("txtHolidayName").focus()},300);
             // .then((response) => {
             //     })
             //     .catch(e => {
@@ -413,7 +415,7 @@ class HolidaysList extends Component<HolidaysListProps, HolidaysListState> {
         var formdata = { ...this.state.formData };
         // formdata.Company = this.Company;
         this.setState({ addNewClient: true, showLabel: false, formData: formdata });
-        document.getElementById("Client").getElementsByTagName('input')[0].focus();
+        setTimeout(()=>{document.getElementById('Client')?document.getElementById('Client').getElementsByTagName('input')[0].focus():''},300);
     }
     public fetchImportedExcelData = (data) => {
         // console.log(data);

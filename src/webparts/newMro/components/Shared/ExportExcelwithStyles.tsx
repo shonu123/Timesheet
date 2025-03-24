@@ -3,7 +3,7 @@ import * as XLSX from 'xlsx-js-style';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faFileExcel } from '@fortawesome/free-solid-svg-icons';
 
-const ExportExcelwithStyles = ({ tableData,columns, filename,wrapColumnsArray,LargeWidthColumnsArray=[] }) => {
+const ExportExcelwithStyles = ({ tableData,columns,ExcelHeader, filename,wrapColumnsArray,LargeWidthColumnsArray=[] }) => {
 
 const exportToexcel = (dataTable) => {
     const columnOrder =[]
@@ -14,14 +14,43 @@ const exportToexcel = (dataTable) => {
         wrapColumnsArray = []
     }
     const wb = XLSX.utils.book_new();
-    const workSheetRows = []
-    let headerRow = []
+    const workSheetRows = [];
+    let Merges=[];
+    let headerRow = [];
 
+    //for first row as Header
+    ExcelHeader=[null,undefined,''].includes(ExcelHeader)?'':ExcelHeader;
+    if(ExcelHeader.trim()!='')
+    {
+         Merges.push({ s: { r: 0, c: 0 }, e: { r: 0, c: columns.length-1 } });//1st row header merging
+        for (let i in columns) {
+            let obj = {}
+            if(parseInt(i)==0){
+                obj= { v: ExcelHeader, t: "s", s: {alignment: { wrapText: true,vertical: "center", horizontal: "center"},font: { bold: true,color: { rgb: 'FFFFFF' },sz: 15},outerWidth:250,fill: { fgColor: { rgb: '0D2F4B' } }, border: {
+                    top: { style: 'thin', color: { rgb: "D9D9D9" } },
+                    left: { style: 'thin', color: { rgb: "D9D9D9" } },
+                    bottom: { style: 'thin', color: { rgb: "D9D9D9" } },
+                    right: { style: 'thin', color: { rgb: "D9D9D9" } },
+                }} };
+            }
+            else{
+                obj = {v:'',t:"s",s:{font: { bold: true,color: { rgb: 'FFFFFF' },sz: 15},outerWidth:250,fill: { fgColor: { rgb: '0D2F4B' } },border: {
+                    top: { style: 'thin', color: { rgb: "D9D9D9" } },
+                    left: { style: 'thin', color: { rgb: "D9D9D9" } },
+                    bottom: { style: 'thin', color: { rgb: "D9D9D9" } },
+                    right: { style: 'thin', color: { rgb: "D9D9D9" } },
+                }}} 
+            }
+            headerRow.push(obj);
+        }
+        workSheetRows.push(headerRow);
+    }
     // STEP 2: Create data rows and styles
+    headerRow = [];
     for (const h of columns) {
         let obj = {}
         if(wrapColumnsArray.includes(h.selector)){
-            obj= { v: h.name, t: "s", s: {alignment: { wrapText: true },font: { bold: true,color: { rgb: 'FFFFFF' },sz: 13},outerWidth:250,fill: { fgColor: { rgb: '0D2F4B' } }, border: {
+            obj= { v: h.name, t: "s", s: {alignment: { wrapText: true },font: { bold: true,color: { rgb: 'FFFFFF' },sz: 13},outerWidth:250,fill: { fgColor: { rgb: ExcelHeader.trim()!=''?'366092':'0D2F4B' } }, border: {
                 top: { style: 'thin', color: { rgb: "D9D9D9" } },
                 left: { style: 'thin', color: { rgb: "D9D9D9" } },
                 bottom: { style: 'thin', color: { rgb: "D9D9D9" } },
@@ -29,7 +58,7 @@ const exportToexcel = (dataTable) => {
             }} };
         }
         else{
-            obj = {v:h.name,t:"s",s:{font: { bold: true,color: { rgb: 'FFFFFF' },sz: 13},outerWidth:250,fill: { fgColor: { rgb: '0D2F4B' } },border: {
+            obj = {v:h.name,t:"s",s:{font: { bold: true,color: { rgb: 'FFFFFF' },sz: 13},outerWidth:250,fill: { fgColor: { rgb: ExcelHeader.trim()!=''?'366092':'0D2F4B' } },border: {
                 top: { style: 'thin', color: { rgb: "D9D9D9" } },
                 left: { style: 'thin', color: { rgb: "D9D9D9" } },
                 bottom: { style: 'thin', color: { rgb: "D9D9D9" } },
@@ -98,7 +127,7 @@ dataTable.forEach(Row=>{
         Heights.push({ hpt: 25 }) //for rest of rows
 })
 finalWorkshetData['!rows'] =Heights;
-
+finalWorkshetData["!merges"] = Merges;
 // Enable below code to add filters
 // finalWorkshetData['!autofilter'] = { ref: 'A1:C1' };
 XLSX.utils.book_append_sheet(wb, finalWorkshetData, `${filename}`);

@@ -32,27 +32,39 @@ const DatePickercontrol = (props,ref) => {
       selectedDay="";
     }
 
-    if(props.isDisabled){
-      setTimeout(() => {
-        var DatePickers = document.getElementsByClassName("DatePicker");
-        for (var i = 0; i < DatePickers.length; i++) { 
-            (DatePickers[i] as HTMLInputElement).disabled  = true;
-        }
-      }, 1000);
-    }else{
-      setTimeout(() => {
-        var DatePickers = document.getElementsByClassName("DatePicker");
-        for (var i = 0; i < DatePickers.length; i++) { 
-            (DatePickers[i] as HTMLInputElement).disabled  = false;
-        }
-      }, 1000);
-    }
+    // if(props.isDisabled){
+    //   setTimeout(() => {
+    //     var DatePickers = document.getElementsByClassName("DatePicker");
+    //     for (var i = 0; i < DatePickers.length; i++) { 
+    //         (DatePickers[i] as HTMLInputElement).disabled  = true;
+    //     }
+    //   }, 1000);
+    // }else{
+    //   setTimeout(() => {
+    //     var DatePickers = document.getElementsByClassName("DatePicker");
+    //     for (var i = 0; i < DatePickers.length; i++) { 
+    //         (DatePickers[i] as HTMLInputElement).disabled  = false;
+    //     }
+    //   }, 1000);
+    // }
     //var selDate =selectedDate!= null?(selectedDate.getMonth()+1) +"/"+selectedDate.getDate() +"/"+ selectedDate.getFullYear():null;
    // const formatInputValue = () => {
      // if(selectedDate!=null)
        // var selectedate = (selectedDate.getMonth()+1) +"/"+selectedDate.getDate() +"/"+ selectedDate.getFullYear();
        // return selectedate;
    // };
+//    const customDayClassName = (date) => {
+//     return "custom-day";
+// };
+// const customDayRender = (day, date) => {
+//   const isDisabled = (minDate && date < minDate) || (maxDate && date > maxDate);
+//   const className = `react-datepicker__day${isDisabled ? ' react-datepicker__day--disabled' : ''}`;
+//   return (
+//       <div className={className} tabIndex={0} aria-label={`Choose ${date.toDateString()}`} role="option" aria-disabled={isDisabled} aria-selected={false}>
+//           {day}
+//       </div>
+//   );
+// };
 
     function handlechangeevent(seldate){
      // let selDate =e._d;
@@ -87,9 +99,11 @@ const DatePickercontrol = (props,ref) => {
          id={id}
          titleText={title}
          showIcon
-         minDate = {minDate}
+         minDate = {[null,undefined,''].includes(minDate)?undefined:minDate}
         //  maxDate = {maxDate}
          toggleCalendarOnIconClick
+        //  dayClassName={customDayClassName}
+        //  renderDayContents={customDayRender}
         />
         </div>:
     <div className="date-picker-container">
@@ -107,8 +121,10 @@ const DatePickercontrol = (props,ref) => {
          titleText={title}
          showIcon
          toggleCalendarOnIconClick
-         minDate={StartDate}
-         maxDate = {EndDate}
+         minDate={[null,undefined,''].includes(StartDate)?undefined:StartDate}
+         maxDate = {[null,undefined,''].includes(EndDate)?undefined:EndDate}
+        //  dayClassName={customDayClassName}
+        //  renderDayContents={customDayRender}
         />
         </div>
 
@@ -117,4 +133,4 @@ const DatePickercontrol = (props,ref) => {
   };
 
   // export default React.forwardRef(DatePickercontrol);
-  export default DatePickercontrol
+  export default DatePickercontrol;
