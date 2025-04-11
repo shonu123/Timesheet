@@ -1106,7 +1106,8 @@ class Employee extends Component<EmployeeProps, EmployeeState> {
                                                                         checked={this.state.formData.EligibleforPTO}
                                                                         onChange={this.handleChange}
                                                                         isforMasters={false}
-                                                                        isdisable={this.props.match.params.id ? false : true}
+                                                                        //isdisable={this.props.match.params.id ? false : true}
+                                                                        isdisable={false}
                                                                     />
                                                                 </div>
                                                             </div>
