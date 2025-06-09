@@ -10,7 +10,7 @@ import { faClose, faPlus } from '@fortawesome/free-solid-svg-icons';
 
 interface TimeOffTypeOption {
   Title: string;
-  isPTOEligible: boolean;
+  IsEligibleforPTO: boolean;
 }
 
 interface PTOFormModalProps {
@@ -27,7 +27,7 @@ interface PTOFormModalProps {
 
 interface RowData {
   type: string | null;
-  isPTOEligible?: boolean;
+  IsEligibleforPTO?: boolean;
   hours: string[];
   total: number;
 }
@@ -50,7 +50,7 @@ const PTOFormModal = ({
 
   const createEmptyRow = (): RowData => ({
     type: null,
-    isPTOEligible: undefined,
+    IsEligibleforPTO: undefined,
     hours: Array(days.length).fill(''),
     total: 0,
   });
@@ -66,7 +66,7 @@ const PTOFormModal = ({
       );
       return {
         type: item.TimeOffType,
-        isPTOEligible: foundType?.isPTOEligible,
+        IsEligibleforPTO: foundType?.IsEligibleforPTO,
         hours: days.map((day) =>
           item[day] !== undefined ? String(item[day]) : ''
         ),
@@ -77,14 +77,14 @@ const PTOFormModal = ({
 
   const [rows, setRows] = useState<RowData[]>([createEmptyRow()]);
   const [columnTotals, setColumnTotals] = useState<number[]>([]);
-  const [grandTotal, setGrandTotal] = useState<number>(0);
   const [errorMessage, setErrorMessage] = useState<string>('');
-
-
+  
+  
   const [filteredDays, setFilteredDays] = useState<string[]>([]);
   const [filteredDates, setFilteredDates] = useState<string[]>([]);
   const [disabledDays, setDisabledDays] = useState<boolean[]>([]);
   const [isHolidayDay, setIsHolidayDay] = useState<boolean[]>([]);
+  const [grandTotal, setGrandTotal] = useState<number>(0);
 
   useEffect(() => {
     if (isVisible && weekDetails && weekDetails.length > 0) {
@@ -147,11 +147,20 @@ const PTOFormModal = ({
       if (ptoFormData.length && filteredDays.length && timeOffTypes.length) {
         const mappedRows = mapPtoFormDataToRows(ptoFormData, filteredDays, timeOffTypes);
         setRows(mappedRows);
+        const totalSum = mappedRows.reduce((acc, row) => acc + row.total, 0);
+        const dayTotals = filteredDays.map((_, dayIndex) =>
+          mappedRows.reduce((sum, row) => {
+            const num = parseFloat(row.hours[dayIndex]);
+            return sum + (isNaN(num) ? 0 : num);
+          }, 0)
+        );
+        setColumnTotals(dayTotals);
+        setGrandTotal(totalSum);
       } else {
         setRows([createEmptyRow()]);
+        setColumnTotals(Array(filteredDays.length).fill(0));
+        setGrandTotal(0);
       }
-      setColumnTotals(Array(filteredDays.length).fill(0));
-      setGrandTotal(0);
       // setErrorMessage('');
     }
   }, [isVisible, ptoFormData, timeOffTypes, filteredDays]);
@@ -168,7 +177,9 @@ const PTOFormModal = ({
   const handleTypeChange = (rowIndex: number, selectedOption: any) => {
     const updatedRows = [...rows];
     updatedRows[rowIndex].type = selectedOption?.value ?? null;
-    updatedRows[rowIndex].isPTOEligible = selectedOption?.isPTOEligible ?? undefined;
+    const filteredTimeOff = timeOffTypes.filter(item=>item.Title == selectedOption.value)
+    updatedRows[rowIndex].IsEligibleforPTO = filteredTimeOff ?filteredTimeOff[0].IsEligibleforPTO: false
+    // updatedRows[rowIndex].IsEligibleforPTO = selectedOption?.IsEligibleforPTO ?? undefined;
     setRows(updatedRows);
   };
 
@@ -219,8 +230,14 @@ const PTOFormModal = ({
     if (grandTotalElement) {
       grandTotalElement.classList.remove('mandatory-FormContent-focus');
     }
-
-    if (grandTotal > ptoBalance) {
+    const ptoRows = rows.filter((r) => r.IsEligibleforPTO);
+    const PTOSubTotal = getSubTotal(ptoRows, 'Paid Time Off');
+    console.log(PTOSubTotal.Total)
+     const PTOTotal = Object.keys(PTOSubTotal).reduce((acc, key) => {
+      const val = parseFloat((PTOSubTotal as any)[key]);
+      return acc + (isNaN(val) ? 0 : val);
+    }, 0);
+    if (PTOTotal > ptoBalance) {
         customToaster('toster-error', ToasterTypes.Error, 'Grand total exceeds PTO balance.', 4000)
 
       // setErrorMessage('Grand total exceeds PTO balance.');
@@ -289,6 +306,16 @@ const PTOFormModal = ({
     return true;
   };
 
+    const getSubTotal = (rows: RowData[], label: string) => {
+      const subtotal: any = { Type: label };
+      filteredDays.forEach((_, index) => {
+        subtotal[filteredDays[index]] = rows.reduce((sum, row) => {
+          const h = parseFloat(row.hours[index]);
+          return sum + (isNaN(h) ? 0 : h);
+        }, 0);
+      });
+      return subtotal;
+    };
   const handleSubmit = () => {
     if (!validateForm()) return;
 
@@ -305,19 +332,8 @@ const PTOFormModal = ({
       return rowObj;
     });
 
-    const ptoRows = rows.filter((r) => r.isPTOEligible);
-    const toRows = rows.filter((r) => !r.isPTOEligible);
-
-    const getSubTotal = (rows: RowData[], label: string) => {
-      const subtotal: any = { Type: label };
-      filteredDays.forEach((_, index) => {
-        subtotal[filteredDays[index]] = rows.reduce((sum, row) => {
-          const h = parseFloat(row.hours[index]);
-          return sum + (isNaN(h) ? 0 : h);
-        }, 0);
-      });
-      return subtotal;
-    };
+    const ptoRows = rows.filter((r) => r.IsEligibleforPTO);
+    const toRows = rows.filter((r) => !r.IsEligibleforPTO);
 
     const PTOSubTotal = getSubTotal(ptoRows, 'Paid Time Off');
     const TOSubTotal = getSubTotal(toRows, 'Time Off');
@@ -360,7 +376,7 @@ const PTOFormModal = ({
   const selectOptions = timeOffTypes.map((t) => ({
     label: t.Title,
     value: t.Title,
-    isPTOEligible: t.isPTOEligible,
+    IsEligibleforPTO: t.IsEligibleforPTO,
   }));
 
   return isVisible ? (
