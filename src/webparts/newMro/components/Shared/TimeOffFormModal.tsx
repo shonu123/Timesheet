@@ -26,7 +26,7 @@ interface PTOFormModalProps {
 }
 
 interface RowData {
-  type: string | null;
+  TimeOffType: string | null;
   IsEligibleforPTO?: boolean;
   hours: string[];
   total: number;
@@ -46,10 +46,11 @@ const PTOFormModal = ({
   const inputRefs = useRef<(HTMLInputElement | null)[][]>([]);
   const selectRefs = useRef<(HTMLDivElement | null)[]>([]);
   const [showToaster, setshowToaster] = useState(false)
+  const [ptoFormDataRows, setPTOFormDataRows] = useState(ptoFormData)
   const [loading, setLoading] = useState(false)
 
   const createEmptyRow = (): RowData => ({
-    type: null,
+    TimeOffType: null,
     IsEligibleforPTO: undefined,
     hours: Array(days.length).fill(''),
     total: 0,
@@ -63,9 +64,11 @@ const PTOFormModal = ({
     return data.map((item) => {
       const foundType = timeOffTypes.find(
         (t) => t.Title.toLowerCase() === item.TimeOffType.toLowerCase()
+        // item.TimeOffType.toLowerCase()
       );
       return {
-        type: item.TimeOffType,
+        TimeOffType: item.TimeOffType,
+        // item.TimeOffType,
         IsEligibleforPTO: foundType?.IsEligibleforPTO,
         hours: days.map((day) =>
           item[day] !== undefined ? String(item[day]) : ''
@@ -76,7 +79,7 @@ const PTOFormModal = ({
   };
 
   const [rows, setRows] = useState<RowData[]>([createEmptyRow()]);
-  const [columnTotals, setColumnTotals] = useState<number[]>([]);
+  const [columnTotals, setColumnTotals] = useState<string[]>([]);
   const [errorMessage, setErrorMessage] = useState<string>('');
 
 
@@ -84,7 +87,7 @@ const PTOFormModal = ({
   const [filteredDates, setFilteredDates] = useState<string[]>([]);
   const [disabledDays, setDisabledDays] = useState<boolean[]>([]);
   const [isHolidayDay, setIsHolidayDay] = useState<boolean[]>([]);
-  const [grandTotal, setGrandTotal] = useState<number>(0);
+  const [grandTotal, setGrandTotal] = useState<string>('0.00');
 
   useEffect(() => {
     if (isVisible && weekDetails && weekDetails.length > 0) {
@@ -142,55 +145,111 @@ const PTOFormModal = ({
     }
   }, [isVisible, weekDetails, days, dates]);
 
+  // useEffect(() => {
+  //   if (isVisible) {
+  //     if (ptoFormDataRows.length && filteredDays.length && timeOffTypes.length) {
+  //       const mappedRows = mapPtoFormDataToRows(ptoFormDataRows, filteredDays, timeOffTypes);
+  //       setRows(mappedRows);
+  //       const totalSum = mappedRows.reduce((acc, row) => acc + row.total, 0);
+  //       const dayTotals = filteredDays.map((_, dayIndex) =>
+  //         mappedRows.reduce((sum, row) => {
+  //           const num = parseFloat(row.hours[dayIndex]);
+  //           return sum + (isNaN(num) ? 0 : num);
+  //         }, 0)
+  //       );
+  //       setColumnTotals(dayTotals);
+  //       setGrandTotal(totalSum);
+  //     } else {
+  //       setRows([createEmptyRow()]);
+  //       setColumnTotals(Array(filteredDays.length).fill(0));
+  //       setGrandTotal('0.00');
+  //     }
+  //     // setErrorMessage('');
+  //   }
+  // }, [isVisible, ptoFormDataRows, timeOffTypes, filteredDays]);
+
   useEffect(() => {
     if (isVisible) {
-      if (ptoFormData.length && filteredDays.length && timeOffTypes.length) {
-        const mappedRows = mapPtoFormDataToRows(ptoFormData, filteredDays, timeOffTypes);
+      if (ptoFormDataRows.length && filteredDays.length && timeOffTypes.length) {
+        const mappedRows = mapPtoFormDataToRows(ptoFormDataRows, filteredDays, timeOffTypes);
         setRows(mappedRows);
+
         const totalSum = mappedRows.reduce((acc, row) => acc + row.total, 0);
+        const totalSumDisplay = totalSum === 0 ? '0.00' : totalSum.toString();
+
         const dayTotals = filteredDays.map((_, dayIndex) =>
           mappedRows.reduce((sum, row) => {
             const num = parseFloat(row.hours[dayIndex]);
             return sum + (isNaN(num) ? 0 : num);
           }, 0)
-        );
+        ).map(total => total === 0 ? '0.00' : total.toString());
+
         setColumnTotals(dayTotals);
-        setGrandTotal(totalSum);
+        setGrandTotal(totalSumDisplay);
       } else {
         setRows([createEmptyRow()]);
-        setColumnTotals(Array(filteredDays.length).fill(0));
-        setGrandTotal(0);
+        setColumnTotals(Array(filteredDays.length).fill('0.00'));
+        setGrandTotal('0.00');
       }
-      // setErrorMessage('');
     }
-  }, [isVisible, ptoFormData, timeOffTypes, filteredDays]);
+  }, [isVisible,  timeOffTypes, filteredDays]);
+
 
   const handleHourChange = (rowIndex: number, dayIndex: number, value: string) => {
-    if (value === '' || /^[0-2]*\.?[0-4]*$/.test(value)) {
-      if (value === '.') return;
+    if (value === '' || /^\d*\.?\d{0,4}$/.test(value)) {  // value.match(/\d{0,5}(\.\d{0,4})?/)[0]  /\d{0,5}(\.\d{0,4})?/.test(value)
+      // if (value === '.') return;
+      if (parseFloat(value) > 8.00)
+        return false;
       const updatedRows = [...rows];
       updatedRows[rowIndex].hours[dayIndex] = value;
       calculateTotals(updatedRows);
     }
+    else {
+      setRows([...rows]);
+    }
   };
+
 
   const handleTypeChange = (rowIndex: number, selectedOption: any) => {
     const updatedRows = [...rows];
-    updatedRows[rowIndex].type = selectedOption?.value ?? null;
+    updatedRows[rowIndex].TimeOffType = selectedOption?.value ?? null;
     const filteredTimeOff = timeOffTypes.filter(item => item.Title == selectedOption.value)
     updatedRows[rowIndex].IsEligibleforPTO = filteredTimeOff ? filteredTimeOff[0].IsEligibleforPTO : false
     // updatedRows[rowIndex].IsEligibleforPTO = selectedOption?.IsEligibleforPTO ?? undefined;
     setRows(updatedRows);
   };
 
+  // const calculateTotals = (updatedRows: RowData[]) => {
+  //   updatedRows.forEach((row) => {
+  //     row.total = Number(
+  //       row.hours.reduce((acc, h) => {
+  //         const num = parseFloat(h);
+  //         return acc + (isNaN(num) ? 0 : num);
+  //       }, 0)
+  //     );
+  //   });
+
+  //   const dayTotals = filteredDays.map((_, dayIndex) =>
+  //     updatedRows.reduce((sum, row) => {
+  //       const num = parseFloat(row.hours[dayIndex]);
+  //       return sum + (isNaN(num) ? 0 : num);
+  //     }, 0)
+  //   );
+
+  //   const totalSum = updatedRows.reduce((acc, row) => acc + row.total, 0);
+
+  //   setRows([...updatedRows]);
+  //   setColumnTotals(dayTotals);
+  //   setGrandTotal(totalSum);
+  // };
+
   const calculateTotals = (updatedRows: RowData[]) => {
     updatedRows.forEach((row) => {
-      row.total = Number(
-        row.hours.reduce((acc, h) => {
-          const num = parseFloat(h);
-          return acc + (isNaN(num) ? 0 : num);
-        }, 0)
-      );
+      const rowTotal = row.hours.reduce((acc, h) => {
+        const num = parseFloat(h);
+        return acc + (isNaN(num) ? 0 : num);
+      }, 0);
+      row.total = parseFloat(rowTotal.toFixed(4)); // keep row.total as number, optional
     });
 
     const dayTotals = filteredDays.map((_, dayIndex) =>
@@ -198,22 +257,42 @@ const PTOFormModal = ({
         const num = parseFloat(row.hours[dayIndex]);
         return sum + (isNaN(num) ? 0 : num);
       }, 0)
-    );
+    ).map(total => total === 0 ? '0.00' : total.toString());
 
     const totalSum = updatedRows.reduce((acc, row) => acc + row.total, 0);
+    const grandTotalDisplay = totalSum === 0 ? '0.00' : totalSum.toString();
 
     setRows([...updatedRows]);
     setColumnTotals(dayTotals);
-    setGrandTotal(totalSum);
+    setGrandTotal(grandTotalDisplay);
   };
 
+
   const addRow = () => {
+    for (let i = 0; i < rows.length; i++) {
+      const row = rows[i];
+      if (row.total === 0) {
+        const firstNonDisabledInput = inputRefs.current[i]?.find(
+          (input, index) => !disabledDays[index]
+        );
+        if (firstNonDisabledInput) {
+          firstNonDisabledInput.classList.add('mandatory-FormContent-focus');
+          firstNonDisabledInput.focus();
+        }
+        customToaster('toster-error', ToasterTypes.Error, `Total hours for row ${i + 1} cannot be zero.`, 4000)
+        return false;
+      }
+    }
     const newRows = [...rows, createEmptyRow()];
+    // setPTOFormDataRows(newRows)
     calculateTotals(newRows);
   };
 
   const deleteRow = (index: number) => {
     const newRows = rows.filter((_, i) => i !== index);
+    // console.log("ptoFormData :" , ptoFormData)
+    // ptoFormData = newRows
+    setPTOFormDataRows(newRows)
     calculateTotals(newRows);
   };
 
@@ -249,21 +328,34 @@ const PTOFormModal = ({
       return false;
     }
 
-    for (let i = 0; i < columnTotals.length; i++) {
-      if (columnTotals[i] > 8) {
-        customToaster('toster-error', ToasterTypes.Error, `Total hours for ${filteredDays[i]} (${filteredDates[i]}) exceed 8 hours.`, 4000)
+    // for (let i = 0; i < columnTotals.length; i++) {
+    //   if (columnTotals[i] > 8) {
+    //     customToaster('toster-error', ToasterTypes.Error, `Total hours for ${filteredDays[i]} (${filteredDates[i]}) exceed 8 hours.`, 4000)
 
-        // setErrorMessage(
-        //   `Total hours for ${filteredDays[i]} (${filteredDates[i]}) exceed 8 hours.`
-        // );
+    //     // setErrorMessage(
+    //     //   `Total hours for ${filteredDays[i]} (${filteredDates[i]}) exceed 8 hours.`
+    //     // );
+    //     return false;
+    //   }
+    // }
+    for (let i = 0; i < columnTotals.length; i++) {
+      const total = parseFloat(columnTotals[i]);
+      if (total > 8) {
+        customToaster(
+          'toster-error',
+          ToasterTypes.Error,
+          `Total hours for ${filteredDays[i]} (${filteredDates[i]}) exceed 8 hours.`,
+          4000
+        );
         return false;
       }
     }
 
+
     for (let i = 0; i < rows.length; i++) {
       const row = rows[i];
 
-      if (!row.type) {
+      if (!row.TimeOffType) {
         customToaster('toster-error', ToasterTypes.Error, `Time off type is required for row ${i + 1}.`, 4000)
 
         let ddlSearchId = "TimeOffType_" + i;
@@ -321,7 +413,7 @@ const PTOFormModal = ({
 
     const TimeOffData = rows.map((row) => {
       const rowObj: any = {
-        TimeOffType: row.type,
+        TimeOffType: row.TimeOffType,
         Total: row.total,
         IsEligibleforPTO: row.IsEligibleforPTO
       };
@@ -356,7 +448,8 @@ const PTOFormModal = ({
       GrandTotal: {
         Total: grandTotal,
         ...filteredDays.reduce((acc, d, i) => {
-          acc[d] = columnTotals[i] > 0 ? columnTotals[i] : '';
+          // acc[d] = columnTotals[i] > 0 ? columnTotals[i] : '';
+          acc[d] = parseFloat(columnTotals[i]) > 0 ? columnTotals[i] : '';
           return acc;
         }, {} as Record<string, number | string>),
       },
@@ -422,7 +515,7 @@ const PTOFormModal = ({
                   {rows.map((row, rowIndex) => (
                     <tr key={rowIndex}>
                       <td style={{ width: 220 }}>
-                        <SearchableDropdown label="Time Off Type" Title="Time Off Type" isLabelRequired={false} name="TimeOffType" id={`TimeOffType_${rowIndex}`} placeholderText="Select Time Off Type" className="" selectedValue={row.type} optionLabel="label" optionValue="value" OptionsList={selectOptions} onChange={(selectedOption, actionMeta) => handleTypeChange(rowIndex, selectedOption)} isRequired={false} refElement={selectRefs.current[rowIndex]} disabled={false} noOptionsMessage="No options available" />
+                        <SearchableDropdown label="Time Off Type" Title="Time Off Type" isLabelRequired={false} name="TimeOffType" id={`TimeOffType_${rowIndex}`} placeholderText="Select Time Off Type" className="" selectedValue={row.TimeOffType} optionLabel="label" optionValue="value" OptionsList={selectOptions} onChange={(selectedOption, actionMeta) => handleTypeChange(rowIndex, selectedOption)} isRequired={false} refElement={selectRefs.current[rowIndex]} disabled={false} noOptionsMessage="No options available" />
                       </td>
                       {filteredDays.map((_, dayIndex) => (
                         <td key={dayIndex}>
@@ -475,20 +568,21 @@ const PTOFormModal = ({
                   </tr>
                 </tbody>
               </table>
+              <div className="">
+                <div className="col-md-12 text-center my-2 mt-5">
+                  <button type="button" onClick={handleSubmit} className="SubmitButtons btn" title="Submit">
+                    Submit
+                  </button>
+                  <button type="button" onClick={onClose} className="CancelButtons btn" title="Cancel">
+                    Cancel
+                  </button>
+                </div>
+              </div>
             </div>
             <span className="text-danger">{errorMessage}</span>
           </div>
 
-          <div className="row">
-          <div className="col-md-12 text-center my-2">
-            <button type="button" onClick={handleSubmit} className="SubmitButtons btn" title="Submit">
-              Submit
-            </button>
-            <button type="button" onClick={onClose} className="CancelButtons btn" title="Cancel">
-              Cancel
-            </button>
-          </div>
-          </div>
+
 
           {showToaster && <Toaster />}
           {loading && <Loader />}
