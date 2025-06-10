@@ -45,8 +45,8 @@ const PTOFormModal = ({
 }: PTOFormModalProps) => {
   const inputRefs = useRef<(HTMLInputElement | null)[][]>([]);
   const selectRefs = useRef<(HTMLDivElement | null)[]>([]);
-  const [showToaster,setshowToaster] = useState(false)
-  const [loading,setLoading] = useState(false)
+  const [showToaster, setshowToaster] = useState(false)
+  const [loading, setLoading] = useState(false)
 
   const createEmptyRow = (): RowData => ({
     type: null,
@@ -78,8 +78,8 @@ const PTOFormModal = ({
   const [rows, setRows] = useState<RowData[]>([createEmptyRow()]);
   const [columnTotals, setColumnTotals] = useState<number[]>([]);
   const [errorMessage, setErrorMessage] = useState<string>('');
-  
-  
+
+
   const [filteredDays, setFilteredDays] = useState<string[]>([]);
   const [filteredDates, setFilteredDates] = useState<string[]>([]);
   const [disabledDays, setDisabledDays] = useState<boolean[]>([]);
@@ -166,7 +166,7 @@ const PTOFormModal = ({
   }, [isVisible, ptoFormData, timeOffTypes, filteredDays]);
 
   const handleHourChange = (rowIndex: number, dayIndex: number, value: string) => {
-    if (value === '' || /^[0-9]*\.?[0-9]*$/.test(value)) {
+    if (value === '' || /^[0-2]*\.?[0-4]*$/.test(value)) {
       if (value === '.') return;
       const updatedRows = [...rows];
       updatedRows[rowIndex].hours[dayIndex] = value;
@@ -177,8 +177,8 @@ const PTOFormModal = ({
   const handleTypeChange = (rowIndex: number, selectedOption: any) => {
     const updatedRows = [...rows];
     updatedRows[rowIndex].type = selectedOption?.value ?? null;
-    const filteredTimeOff = timeOffTypes.filter(item=>item.Title == selectedOption.value)
-    updatedRows[rowIndex].IsEligibleforPTO = filteredTimeOff ?filteredTimeOff[0].IsEligibleforPTO: false
+    const filteredTimeOff = timeOffTypes.filter(item => item.Title == selectedOption.value)
+    updatedRows[rowIndex].IsEligibleforPTO = filteredTimeOff ? filteredTimeOff[0].IsEligibleforPTO : false
     // updatedRows[rowIndex].IsEligibleforPTO = selectedOption?.IsEligibleforPTO ?? undefined;
     setRows(updatedRows);
   };
@@ -233,12 +233,12 @@ const PTOFormModal = ({
     const ptoRows = rows.filter((r) => r.IsEligibleforPTO);
     const PTOSubTotal = getSubTotal(ptoRows, 'Paid Time Off');
     console.log(PTOSubTotal.Total)
-     const PTOTotal = Object.keys(PTOSubTotal).reduce((acc, key) => {
+    const PTOTotal = Object.keys(PTOSubTotal).reduce((acc, key) => {
       const val = parseFloat((PTOSubTotal as any)[key]);
       return acc + (isNaN(val) ? 0 : val);
     }, 0);
     if (PTOTotal > ptoBalance) {
-        customToaster('toster-error', ToasterTypes.Error, 'Grand total exceeds PTO balance.', 4000)
+      customToaster('toster-error', ToasterTypes.Error, 'Grand total exceeds PTO balance.', 4000)
 
       // setErrorMessage('Grand total exceeds PTO balance.');
       // Focus on the Grand Total input
@@ -251,7 +251,7 @@ const PTOFormModal = ({
 
     for (let i = 0; i < columnTotals.length; i++) {
       if (columnTotals[i] > 8) {
-          customToaster('toster-error', ToasterTypes.Error, `Total hours for ${filteredDays[i]} (${filteredDates[i]}) exceed 8 hours.`, 4000)
+        customToaster('toster-error', ToasterTypes.Error, `Total hours for ${filteredDays[i]} (${filteredDates[i]}) exceed 8 hours.`, 4000)
 
         // setErrorMessage(
         //   `Total hours for ${filteredDays[i]} (${filteredDates[i]}) exceed 8 hours.`
@@ -264,11 +264,11 @@ const PTOFormModal = ({
       const row = rows[i];
 
       if (!row.type) {
-         customToaster('toster-error', ToasterTypes.Error, `Time off type is required for row ${i + 1}.`, 4000)
+        customToaster('toster-error', ToasterTypes.Error, `Time off type is required for row ${i + 1}.`, 4000)
 
-          let ddlSearchId = "TimeOffType_"+i;
-           document.getElementById(ddlSearchId).getElementsByTagName('input')[0].focus();
-            document.getElementById(ddlSearchId).classList.add('searchMandatory');
+        let ddlSearchId = "TimeOffType_" + i;
+        document.getElementById(ddlSearchId).getElementsByTagName('input')[0].focus();
+        document.getElementById(ddlSearchId).classList.add('searchMandatory');
 
         return false;
       }
@@ -281,7 +281,7 @@ const PTOFormModal = ({
           firstNonDisabledInput.classList.add('mandatory-FormContent-focus');
           firstNonDisabledInput.focus();
         }
-          customToaster('toster-error', ToasterTypes.Error,`Total hours for row ${i + 1} cannot be zero.`, 4000)
+        customToaster('toster-error', ToasterTypes.Error, `Total hours for row ${i + 1} cannot be zero.`, 4000)
         return false;
       }
     }
@@ -291,7 +291,7 @@ const PTOFormModal = ({
     );
 
     if (!hasAtLeastOneEntry) {
-        customToaster('toster-error', ToasterTypes.Error,'At least one day must have hours.', 4000)
+      customToaster('toster-error', ToasterTypes.Error, 'At least one day must have hours.', 4000)
 
       // setErrorMessage('At least one day must have hours.');
       const input = inputRefs.current[0]?.[0];
@@ -306,16 +306,16 @@ const PTOFormModal = ({
     return true;
   };
 
-    const getSubTotal = (rows: RowData[], label: string) => {
-      const subtotal: any = { Type: label };
-      filteredDays.forEach((_, index) => {
-        subtotal[filteredDays[index]] = rows.reduce((sum, row) => {
-          const h = parseFloat(row.hours[index]);
-          return sum + (isNaN(h) ? 0 : h);
-        }, 0);
-      });
-      return subtotal;
-    };
+  const getSubTotal = (rows: RowData[], label: string) => {
+    const subtotal: any = { Type: label };
+    filteredDays.forEach((_, index) => {
+      subtotal[filteredDays[index]] = rows.reduce((sum, row) => {
+        const h = parseFloat(row.hours[index]);
+        return sum + (isNaN(h) ? 0 : h);
+      }, 0);
+    });
+    return subtotal;
+  };
   const handleSubmit = () => {
     if (!validateForm()) return;
 
@@ -323,6 +323,7 @@ const PTOFormModal = ({
       const rowObj: any = {
         TimeOffType: row.type,
         Total: row.total,
+        IsEligibleforPTO: row.IsEligibleforPTO
       };
       filteredDays.forEach((day, index) => {
         const val = parseFloat(row.hours[index]);
@@ -383,7 +384,7 @@ const PTOFormModal = ({
     <div
       className="modal"
       tabIndex={-1}
-      style={{ display: 'block', backgroundColor: '#ffffff' }}
+      style={{ display: 'block' }}
       aria-modal="true"
       role="dialog"
     >
@@ -396,7 +397,7 @@ const PTOFormModal = ({
           style={{ backgroundColor: '#ffffff' }}
         >
           <div
-            className="modal-header bg-primary text-white rounded-t-lg"
+            className="modal-header rounded-t-lg"
             style={{ fontWeight: 700, fontSize: '1.5rem' }}
           >
             <h5 className="modal-title">PTO Request Form</h5>
@@ -414,14 +415,14 @@ const PTOFormModal = ({
                       </th>
                     ))}
                     <th>Total</th>
-                    <th>Action</th>
+                    <th><div className='px-3 th-AddDel-Icon'></div></th>
                   </tr>
                 </thead>
                 <tbody>
                   {rows.map((row, rowIndex) => (
                     <tr key={rowIndex}>
                       <td style={{ width: 220 }}>
-                        <SearchableDropdown label="" Title="Time Off Type" name="TimeOffType" id={`TimeOffType_${rowIndex}`}  placeholderText="Select Time Off Type" className="" selectedValue={row.type} optionLabel="label" optionValue="value" OptionsList={selectOptions} onChange={(selectedOption, actionMeta) => handleTypeChange(rowIndex, selectedOption)} isRequired={false} refElement={selectRefs.current[rowIndex]}  disabled={false} noOptionsMessage="No options available" />
+                        <SearchableDropdown label="Time Off Type" Title="Time Off Type" isLabelRequired={false} name="TimeOffType" id={`TimeOffType_${rowIndex}`} placeholderText="Select Time Off Type" className="" selectedValue={row.type} optionLabel="label" optionValue="value" OptionsList={selectOptions} onChange={(selectedOption, actionMeta) => handleTypeChange(rowIndex, selectedOption)} isRequired={false} refElement={selectRefs.current[rowIndex]} disabled={false} noOptionsMessage="No options available" />
                       </td>
                       {filteredDays.map((_, dayIndex) => (
                         <td key={dayIndex}>
@@ -442,17 +443,17 @@ const PTOFormModal = ({
                       <td>{row.total}</td>
                       <td>
                         {rows.length === 1 ? (
-                          <button type="button" className='span-fa-plus' onClick={addRow} id='addnewRow'><span  title='Add new row' ><FontAwesomeIcon icon={faPlus}></FontAwesomeIcon></span></button>
+                          <button type="button" className='span-fa-plus' onClick={addRow} id='addnewRow'><span title='Add new time off row' ><FontAwesomeIcon icon={faPlus}></FontAwesomeIcon></span></button>
 
                         ) : rowIndex === rows.length - 1 ? (
                           <>
 
                             <button type="button" className='span-fa-close' onClick={() => deleteRow(rowIndex)}><span title='Delete row' ><FontAwesomeIcon icon={faClose}></FontAwesomeIcon></span></button>
-                            <button type="button" className='span-fa-plus' onClick={addRow} id='addnewRow'><span  title='Add new row' ><FontAwesomeIcon icon={faPlus}></FontAwesomeIcon></span></button>
-                            
+                            <button type="button" className='span-fa-plus' onClick={addRow} id='addnewRow'><span title='Add new time off row' ><FontAwesomeIcon icon={faPlus}></FontAwesomeIcon></span></button>
+
                           </>
                         ) : (
-                              <button type="button" className='span-fa-close' onClick={() => deleteRow(rowIndex)}><span title='Delete row' ><FontAwesomeIcon icon={faClose}></FontAwesomeIcon></span></button>
+                          <button type="button" className='span-fa-close' onClick={() => deleteRow(rowIndex)}><span title='Delete row' ><FontAwesomeIcon icon={faClose}></FontAwesomeIcon></span></button>
 
                         )}
                       </td>
@@ -478,15 +479,17 @@ const PTOFormModal = ({
             <span className="text-danger">{errorMessage}</span>
           </div>
 
-            <div className="col-md-12 text-center my-2">
-              <button type="button" onClick={handleSubmit} className="SubmitButtons btn">
-                Submit
-              </button>
-              <button type="button" onClick={onClose} className="CancelButtons btn">
-                Cancel
-              </button>
-            </div>
-          
+          <div className="row">
+          <div className="col-md-12 text-center my-2">
+            <button type="button" onClick={handleSubmit} className="SubmitButtons btn" title="Submit">
+              Submit
+            </button>
+            <button type="button" onClick={onClose} className="CancelButtons btn" title="Cancel">
+              Cancel
+            </button>
+          </div>
+          </div>
+
           {showToaster && <Toaster />}
           {loading && <Loader />}
         </div>
