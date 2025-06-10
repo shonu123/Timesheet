@@ -27,7 +27,7 @@ interface PTOFormModalProps {
 
 interface RowData {
   TimeOffType: string | null;
-  IsEligibleforPTO?: boolean;
+  IsPTOEligible?: boolean;
   hours: string[];
   total: number;
 }
@@ -51,7 +51,7 @@ const PTOFormModal = ({
 
   const createEmptyRow = (): RowData => ({
     TimeOffType: null,
-    IsEligibleforPTO: undefined,
+    IsPTOEligible: undefined,
     hours: Array(days.length).fill(''),
     total: 0,
   });
@@ -69,7 +69,7 @@ const PTOFormModal = ({
       return {
         TimeOffType: item.TimeOffType,
         // item.TimeOffType,
-        IsEligibleforPTO: foundType?.IsEligibleforPTO,
+        IsPTOEligible: foundType?.IsEligibleforPTO,
         hours: days.map((day) =>
           item[day] !== undefined ? String(item[day]) : ''
         ),
@@ -214,8 +214,8 @@ const PTOFormModal = ({
     const updatedRows = [...rows];
     updatedRows[rowIndex].TimeOffType = selectedOption?.value ?? null;
     const filteredTimeOff = timeOffTypes.filter(item => item.Title == selectedOption.value)
-    updatedRows[rowIndex].IsEligibleforPTO = filteredTimeOff ? filteredTimeOff[0].IsEligibleforPTO : false
-    // updatedRows[rowIndex].IsEligibleforPTO = selectedOption?.IsEligibleforPTO ?? undefined;
+    updatedRows[rowIndex].IsPTOEligible = filteredTimeOff ? filteredTimeOff[0].IsEligibleforPTO : false
+    // updatedRows[rowIndex].IsPTOEligible = selectedOption?.IsPTOEligible ?? undefined;
     setRows(updatedRows);
   };
 
@@ -309,7 +309,7 @@ const PTOFormModal = ({
     if (grandTotalElement) {
       grandTotalElement.classList.remove('mandatory-FormContent-focus');
     }
-    const ptoRows = rows.filter((r) => r.IsEligibleforPTO);
+    const ptoRows = rows.filter((r) => r.IsPTOEligible);
     const PTOSubTotal = getSubTotal(ptoRows, 'Paid Time Off');
     console.log(PTOSubTotal.Total)
     const PTOTotal = Object.keys(PTOSubTotal).reduce((acc, key) => {
@@ -317,7 +317,7 @@ const PTOFormModal = ({
       return acc + (isNaN(val) ? 0 : val);
     }, 0);
     if (PTOTotal > ptoBalance) {
-      customToaster('toster-error', ToasterTypes.Error, 'Grand total exceeds PTO balance.', 4000)
+      customToaster('toster-error', ToasterTypes.Error, "'PTO Hours' cannot be greater than 'PTO Balance'", 4000)
 
       // setErrorMessage('Grand total exceeds PTO balance.');
       // Focus on the Grand Total input
@@ -415,7 +415,7 @@ const PTOFormModal = ({
       const rowObj: any = {
         TimeOffType: row.TimeOffType,
         Total: row.total,
-        IsEligibleforPTO: row.IsEligibleforPTO
+        IsPTOEligible: row.IsPTOEligible
       };
       filteredDays.forEach((day, index) => {
         const val = parseFloat(row.hours[index]);
@@ -425,8 +425,8 @@ const PTOFormModal = ({
       return rowObj;
     });
 
-    const ptoRows = rows.filter((r) => r.IsEligibleforPTO);
-    const toRows = rows.filter((r) => !r.IsEligibleforPTO);
+    const ptoRows = rows.filter((r) => r.IsPTOEligible);
+    const toRows = rows.filter((r) => !r.IsPTOEligible);
 
     const PTOSubTotal = getSubTotal(ptoRows, 'Paid Time Off');
     const TOSubTotal = getSubTotal(toRows, 'Time Off');
@@ -445,14 +445,15 @@ const PTOFormModal = ({
 
     const finalOutput = {
       TimeOffData,
-      GrandTotal: {
+      Total: [{
+        Type:"Total",
         Total: grandTotal,
         ...filteredDays.reduce((acc, d, i) => {
           // acc[d] = columnTotals[i] > 0 ? columnTotals[i] : '';
           acc[d] = parseFloat(columnTotals[i]) > 0 ? columnTotals[i] : '';
           return acc;
         }, {} as Record<string, number | string>),
-      },
+      }],
       PTOSubTotal,
       TOSubTotal,
       PTOTotal,
@@ -470,7 +471,7 @@ const PTOFormModal = ({
   const selectOptions = timeOffTypes.map((t) => ({
     label: t.Title,
     value: t.Title,
-    IsEligibleforPTO: t.IsEligibleforPTO,
+    IsPTOEligible: t.IsEligibleforPTO,
   }));
 
   return isVisible ? (
