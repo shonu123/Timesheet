@@ -3,92 +3,79 @@ import { NavLink, Navigate } from 'react-router-dom';
 import TableGenerator from '../Shared/TableGenerator';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEdit } from '@fortawesome/free-solid-svg-icons';
-import { SPHttpClient } from '@microsoft/sp-http';
+import { SPHttpClient} from '@microsoft/sp-http';
 import { sp } from '@pnp/sp';
 import "@pnp/sp/webs";
 import "@pnp/sp/lists";
 import "@pnp/sp/items";
 import Loader from '../Shared/Loader';
-import { StatusType } from '../../Constants/Constants';
-import ModalForwardApprovals from '../Shared/ModalForwardApprovals.component';
-import { Toaster } from 'react-hot-toast';
-import customToaster from '../Shared/Toaster.component';
-import { ToasterTypes } from '../../Constants/Constants';
 import DateUtilities from '../../Utilities/DateUtilities';
+import { StatusType } from '../../Constants/Constants';
 
-export interface HRApprovalProps {
+export interface MyTimeOffsProps {
     match: any;
     spContext: any;
     spHttpClient: SPHttpClient;
     context: any;
     history: any;
 }
-
-export interface HRApprovalState {
-    // SynergyManager: Array<Object>;
-    // loading:boolean;
-    // message : string;
-    // title : string;
-    // showHideModal : boolean;
-    // isSuccess : boolean;
-    // comments :  string;
-    // Action : string;
-    // errorMessage: string;
-    // ItemID : Number;
-    // SelectedRows:any;
-    // SelectedValue:String;
-    // DelegateToId:String;
-    // // IsDelegated:boolean;
-    // AssignedToId:String;
+export interface MyTimeOffsState {
+    Requests: Array<Object>;
+    loading:boolean;
+    message : string;
+    title : string;
+    showHideModal : boolean;
+    isSuccess : boolean;
+    comments :  string;
+    Action : string;
+    errorMessage: string;
+    ItemID : Number;
+    TimeOffID:string;
+    redirect: boolean;
 }
 
-class HRApproval extends React.Component<HRApprovalProps, HRApprovalState> {
-    constructor(props: HRApprovalProps) {
+class MyTimeOffs extends React.Component<MyTimeOffsProps,MyTimeOffsState> {
+    constructor(props: MyTimeOffsProps) {
         super(props);
         sp.setup({
             spfxContext: this.props.context
         });
-        // this.state = {SynergyManager: [], loading:false,message:'',title:'',showHideModal:false,isSuccess:true,comments:'',Action:'',errorMessage:'',ItemID:0,SelectedRows:[],SelectedValue:'',AssignedToId:'',DelegateToId:''};
+        this.state = {Requests: [], loading:false,message:'',title:'',showHideModal:false,isSuccess:true,comments:'',Action:'',errorMessage:'',ItemID:0,TimeOffID:'',redirect: false};
     }
-    public state = {
-        HRApprovals: [],
-        loading: false, message: '',
-        title: '',
-        showHideModal: false,
-        isSuccess: true,
-        comments: '',
-        Action: '',
-        errorMessage: '',
-        ItemID: 0,
-        SelectedRows: [],
-        SelectedValue: '',
-        DelegateToUsers: [],
-        TimeOffID:'',
-        redirect: false,
-        //  AssignedToId:'',
-        //  DelegateToId:'',
-    };
 
     public componentDidMount() {
-        this.getHRApprovals();
+        this.MyTimeOffs();
     }
-    private getHRApprovals = async () => {
+// this function is used to get 1 month records of weeklytime data of the current logged in user from weeklytimesheet list
+    private MyTimeOffs = async () => {
         this.setState({ loading: true });
         const userId = this.props.spContext.userId;
-        var filterString = "PendingWith eq 'HR'";
-        sp.web.lists.getByTitle('TimeOffEmployees').items.top(5000).filter(filterString).expand("SynergyManager,Employee").select('SynergyManager/Title,SynergyManager/EMail,Employee/Title,Employee/EMail,*').orderBy('Modified', false).getAll()
+        //let dateFilter = new Date()
+        //dateFilter.setDate(new Date().getDate()-60);
+        //let date = DateUtilities.getDateMMDDYYYY(dateFilter);
+        let YearStart = `01/01/${new Date().getFullYear()}`;
+        let YearEnd = `12/31/${new Date().getFullYear()}`;
+       // var filterString = "From ge '"+YearStart+"' and From le '"+YearEnd+"'";
+        let filterQuery=`Employee/Id eq '${userId}' and ( (From ge '${YearStart}' and From le '${YearEnd}') or Status eq '${StatusType.ManagerReject}' or Status eq '${StatusType.HRReject}' )`;
+
+        sp.web.lists.getByTitle('TimeOffEmployees').items.top(5000).filter(filterQuery).expand("Employee").select('Employee/Title','*').orderBy('Modified', false).getAll()
             .then((response) => {
+                // console.log(response)
                 let Data = [];
                 for (const d of response) {
                     let fromDate = new Date(DateUtilities.GetDateMMDDYYYYAsInList(d.From));
                     let toDate = new Date(DateUtilities.GetDateMMDDYYYYAsInList(d.To));
-                    
-                    //let timeOffTypeStr = "<div>"+JSON.parse(d.TimeOffType).join("</div><div>")+"</div>"
+                    // let TimeOffTypeHtmlString='';
+                    // let TimeOffTypes=[null,undefined,''].includes(d.TimeOffType)?[]:JSON.parse(d.TimeOffType);
+                    // for(let type of TimeOffTypes){
+                    //     TimeOffTypeHtmlString+= "<div>"+type+"</div>";
+                    // }
                     Data.push({
                         Id : d.Id,
-                        EmployeName: d.Employee.Title,
-                        // TimeOffType: timeOffTypeStr,
-                        // TimeOffType: d.TimeOffType,
+                        Client: d.Client,
+                        EmployeeType: d.EmployeeType,
+                        // TimeOffTypeHtmlString:TimeOffTypeHtmlString,
+                        // TimeOffType:d.TimeOffType,
                         FromDate : DateUtilities.getDateMMDDYYYY(fromDate),
                         FromDateForGrid : `<span class='d-none'>${DateUtilities.getDateYYYYMMDDForSorting(fromDate)}</span>${DateUtilities.getDateMMDDYYYY(fromDate)}`,
                         ToDate : DateUtilities.getDateMMDDYYYY(toDate),
@@ -96,13 +83,15 @@ class HRApproval extends React.Component<HRApprovalProps, HRApprovalState> {
                         PTOAvailableBalance:[null,undefined,''].includes(d.PTOAvailableBalance)?0:parseFloat(d.PTOAvailableBalance),
                         PTOTotal: [null,undefined,''].includes(d.PTOTotal)?0:parseFloat(d.PTOTotal),
                         TOTotal: [null,undefined,''].includes(d.TOTotal)?0:parseFloat(d.TOTotal),
-                        TotalHrs:parseFloat(d.TotalHours),
+                        TotalHrs: parseFloat(d.TotalHours),
                         // PendingWith: d.PendingWith == "Approver" ||d.PendingWith == "Manager" ?"Reporting Manager":d.PendingWith,
                         PendingWith: d.PendingWith == "Approver" ||d.PendingWith == "Manager" ?"Synergy Manager":d.PendingWith,
                         Status : this.getStatus(d.Status),
                     })
                 }
-                this.setState({HRApprovals:Data,loading:false})
+                // console.log(Data);
+                this.setState({ Requests: Data,loading: false });
+                // document.getElementById('txtTableSearch').style.display = 'none';
             }).catch(err => {
                 console.log('Failed to fetch data.', err);
             });
@@ -127,10 +116,10 @@ class HRApproval extends React.Component<HRApprovalProps, HRApprovalState> {
 
     private  handleRowClicked = (row,Id?) => {
         let ID = row.Id?row.Id:Id;
-        this.setState({TimeOffID:ID,redirect:true})
+        this.setState({TimeOffID:ID,redirect:true});
       }
 
- public render() {
+    public render() {
         const columns = [
             {
                 name: "Edit",
@@ -140,7 +129,7 @@ class HRApproval extends React.Component<HRApprovalProps, HRApprovalState> {
                     return (
                         <React.Fragment>
                             <div style={{ paddingLeft: '10px' }}>
-                                <NavLink title="Edit" className="csrLink ms-draggable" to={`/TimeOffRequestForm/${record.Id}`}>
+                                <NavLink title="Edit"  className="csrLink ms-draggable" to={`/TimeOffRequestForm/${record.Id}`}>
                                     <FontAwesomeIcon icon={faEdit}></FontAwesomeIcon>
                                 </NavLink>
                             </div>
@@ -149,17 +138,10 @@ class HRApproval extends React.Component<HRApprovalProps, HRApprovalState> {
                 },
                 width: '100px'
             },
-            {
-                name: "Employee Name",
-                selector: (row, i) => row.EmployeName,
-                width: '250px',
-                sortable: true
-            },
             // {
             //     name: "Time Off Type",
-            //     selector: (row, i) => row.TimeOffType,
-            //     cell: row => <div className='divManagers' dangerouslySetInnerHTML={{ __html: row.TimeOffType }} onClick={(event)=>this.handleRowClicked(row)}/>,
-            //     // width: '200px',
+            //     selector: (row, i) => row.TimeOffTypeHtmlString,
+            //     cell: row => <div className='divTimeOffTypes' dangerouslySetInnerHTML={{ __html: row.TimeOffTypeHtmlString }} onClick={(event)=>this.handleRowClicked(event,row.Id)}/>,
             //     sortable: true
             // },
             // {
@@ -169,23 +151,23 @@ class HRApproval extends React.Component<HRApprovalProps, HRApprovalState> {
             // },
             {
                 name: "From",
-                selector: (row, i) => row.FromDate ,
+                selector: (row, i) => row.FromDateForGrid ,
                 cell: row => <div className='' dangerouslySetInnerHTML={{ __html: row.FromDateForGrid }} onClick={(event)=>this.handleRowClicked(event,row.Id)}/>,
-                width: '120px',
-                sortable: true
+                sortable: true,
+                width: '120px'
             },
             {
                 name: "To",
                 selector: (row, i) => row.ToDateForGrid,
                 cell: row => <div className='' dangerouslySetInnerHTML={{ __html: row.ToDateForGrid }} onClick={(event)=>this.handleRowClicked(event,row.Id)}/>,
-                width: '120px',
-                sortable: true
+                sortable: true,
+                width: '120px'
             },
             {
                 name: "PTO Balance",
                 selector: (row, i) => row.PTOAvailableBalance,
                 sortable: true,
-                width: '210px'
+                width: '220px'
             },
             {
                 name: "Paid Time Off",
@@ -205,36 +187,34 @@ class HRApproval extends React.Component<HRApprovalProps, HRApprovalState> {
                 width: '100px',
                 sortable: true
             },
-            // {
-            //     name: "Pending With",
-            //     selector: (row, i) => row.PendingWith,
-            //     width: '180px',
-            //     sortable: true
-            // },
+            {
+                name: "Pending With",
+                selector: (row, i) => row.PendingWith,
+                sortable: true,
+                width: '180px'
+            },
             {
                 name: "Status",
                 selector: (row, i) => row.Status,
-                // width: '220px',
                 sortable: true,
-            },
+                // width: '220px'
+            }
         ];
-        const searchKeys=['EmployeName','FromDate','ToDate','PTOAvailableBalance','PTOTotal','TOTotal','TotalHrs','Status'];
+        const searchKeys=[,'FromDate','ToDate','PTOAvailableBalance','PTOTotal','TOTotal','TotalHrs','PendingWith','Status'];
         if(this.state.redirect){
             let url = `/TimeOffRequestForm/${this.state.TimeOffID}`;
         return (<Navigate to={url}/>);
         }
         return (
             <React.Fragment>
-                <div>
-                    <div className=''>
-                        <TableGenerator columns={columns} searchKeys={searchKeys} data={this.state.HRApprovals} fileName={''} showExportExcel={false}
-                            showAddButton={false} searchBoxLeft={true} onRowClick={this.handleRowClicked} ></TableGenerator>
-                    </div>
+            <div>
+                <div className=''>
+                    <TableGenerator columns={columns} searchKeys={searchKeys} data={this.state.Requests} fileName={'My TimeOffs'} showExportExcel={false} showAddButton={true} customBtnClass='px-1 text-right' navigateOnBtnClick={`/TimeOffRequestForm`} btnDivID='divAddNewTimeOff' btnSpanID='newTimeOff' btnCaption=' New' btnTitle='New Time Off' searchBoxLeft={false} onRowClick={this.handleRowClicked}></TableGenerator>
                 </div>
-                <Toaster />
-                {this.state.loading && <Loader />}
-            </React.Fragment>
+            </div>
+            {this.state.loading && <Loader />}
+            </React.Fragment> 
         );
     }
 }
-export default HRApproval
+export default MyTimeOffs;

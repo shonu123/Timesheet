@@ -16,6 +16,8 @@ import customToaster from '../Shared/Toaster.component';
 import { ToasterTypes } from '../../Constants/Constants';
 import ModalApprovePopUp from '../Shared/ModalApprovePopUp';
 import { addDays } from 'office-ui-fabric-react';
+import DateUtilities from '../../Utilities/DateUtilities';
+
 export interface ApproversProps {
     match: any;
     spContext: any;
@@ -82,8 +84,8 @@ class ApproversApprovals extends React.Component<ApproversProps, ApproversState>
             this.ReportingManagerApproval();
         }
     }
-    private  handleRowClicked = (row) => {
-        let ID = row.Id
+    private  handleRowClicked = (row,Id?) => {
+        let ID = row.Id?row.Id:Id;
         this.setState({TimesheetID:ID,redirect:true})
       }
 
@@ -115,7 +117,7 @@ class ApproversApprovals extends React.Component<ApproversProps, ApproversState>
         const userId = this.props.spContext.userId;
         let dateFilter = new Date()
         dateFilter.setDate(new Date().getDate() - 60);
-        let date = `${dateFilter.getMonth() + 1}/${dateFilter.getDate()}/${dateFilter.getFullYear()}`
+        let date =  DateUtilities.getDateMMDDYYYY(dateFilter);
         var filterQuery = "and WeekStartDate ge '" + date + "'"
         // var filterString = "ReportingManager/Id eq '"+userId+"' and PendingWith eq 'Manager' and Status eq '"+StatusType.Submit+"'"
         var filterString = "(AssignedTo/Id eq '" + userId + "' or ReportingManager/Id eq '"+userId+"') and Status eq '"+StatusType.Submit+"' and PendingWith eq 'Manager'";
@@ -153,7 +155,7 @@ class ApproversApprovals extends React.Component<ApproversProps, ApproversState>
 
                 let Data = [];
                 for (const d of responseData) {
-                    let date = new Date(d.WeekStartDate.split('-')[1]+'/'+d.WeekStartDate.split('-')[2].split('T')[0]+'/'+d.WeekStartDate.split('-')[0])
+                    let date = new Date(DateUtilities.GetDateMMDDYYYYAsInList(d.WeekStartDate))
                     let isBillable = true;
                     if (d.ClientName.toLowerCase().includes('synergy')) {
                         isBillable = false
@@ -164,7 +166,8 @@ class ApproversApprovals extends React.Component<ApproversProps, ApproversState>
                     // }
                     Data.push({
                         Id: d.Id,
-                        Date: `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`,
+                        Date : DateUtilities.getDateMMDDYYYY(date),
+                        DateForGrid : `<span class='d-none'>${DateUtilities.getDateYYYYMMDDForSorting(date)}</span>${DateUtilities.getDateMMDDYYYY(date)}`,
                         EmployeName: d.Name,
                         PendingWith: d.PendingWith == "Approver" || d.PendingWith == "Manager" ? "Reporting Manager" : d.PendingWith,
                         Status: d.Status == StatusType.ReviewerReject ? 'Rejected by Synergy' : d.Status == StatusType.ManagerReject ? 'Rejected by Reporting Manager' : d.Status,
@@ -192,7 +195,7 @@ class ApproversApprovals extends React.Component<ApproversProps, ApproversState>
                 }
                 if(delRmData.length){
                     for (const d of delRmData) {
-                        let date = new Date(d.WeekStartDate.split('-')[1]+'/'+d.WeekStartDate.split('-')[2].split('T')[0]+'/'+d.WeekStartDate.split('-')[0])
+                        let date = new Date(DateUtilities.GetDateMMDDYYYYAsInList(d.WeekStartDate))
                         let isBillable = true;
                         if (d.ClientName.toLowerCase().includes('synergy')) {
                             isBillable = false
@@ -203,7 +206,8 @@ class ApproversApprovals extends React.Component<ApproversProps, ApproversState>
                         // }
                         Data.push({
                             Id: d.Id,
-                            Date: `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`,
+                            Date : DateUtilities.getDateMMDDYYYY(date),
+                            DateForGrid : `<span class='d-none'>${DateUtilities.getDateYYYYMMDDForSorting(date)}</span>${DateUtilities.getDateMMDDYYYY(date)}`,
                             EmployeName: d.Name,
                             PendingWith: d.PendingWith == "Approver" || d.PendingWith == "Manager" ? "Reporting Manager" : d.PendingWith,
                             Status: d.Status == StatusType.ReviewerReject ? 'Rejected by Synergy' : d.Status == StatusType.ManagerReject ? 'Rejected by Reporting Manager' : d.Status,
@@ -536,17 +540,18 @@ this.setState({ ReportingManager: Data, DelegateToUsers: obj, loading: false });
                 if(row.Id==ItemsJustBeforeActionPerform[T].Id &&row.StatusInList==ItemsJustBeforeActionPerform[T].Status)
                 {
                     sp.web.lists.getByTitle('WeeklyTimeSheet').items.getById(row.Id).inBatch(batch).update(formData);
-                    if(IsReportingManagerReviewerSame && row.EligibleforPTO && row.PTOHrs!=0 && parseFloat(PTOHrs)>0)
-                    {
-                        sp.web.lists.getByTitle('EmployeePTO').items.getById(currentEmployeePTO[0].Id).inBatch(EmployeePTOBatch).update(PTOData);
-                        PTOTransactionRecords
-                                .filter(item => item.IsActive && parseInt(item.TimesheetID) === parseInt(row.Id))
-                                .forEach(pto => {
-                                    sp.web.lists.getByTitle('PTOTransactions').items.getById(pto.ID).inBatch(PTOTransactionBatch).update(Transaction);
-                                });
+                    //COMMENTED TO STOP PTO CONSIDERATION FROM TIMESHEET FORM
+                    //if(IsReportingManagerReviewerSame && row.EligibleforPTO && row.PTOHrs!=0 && parseFloat(PTOHrs)>0)
+                    //{
+                        // sp.web.lists.getByTitle('EmployeePTO').items.getById(currentEmployeePTO[0].Id).inBatch(EmployeePTOBatch).update(PTOData);
+                        // PTOTransactionRecords
+                        //         .filter(item => item.IsActive && parseInt(item.TimesheetID) === parseInt(row.Id))
+                        //         .forEach(pto => {
+                        //             sp.web.lists.getByTitle('PTOTransactions').items.getById(pto.ID).inBatch(PTOTransactionBatch).update(Transaction);
+                        //         });
 
                         // sp.web.lists.getByTitle('PTOTransactions').items.inBatch(PTOTransactionBatch).add(PTOTransaction);
-                    }
+                    //}
                     NotModifiedTimesheets.push(row);
                     break;
                 }
@@ -655,16 +660,17 @@ this.setState({ ReportingManager: Data, DelegateToUsers: obj, loading: false });
                      if(row.Id==ItemsJustBeforeActionPerform[T].Id &&row.StatusInList==ItemsJustBeforeActionPerform[T].Status)
                      {
                          sp.web.lists.getByTitle('WeeklyTimeSheet').items.getById(row.Id).inBatch(batch).update(formData);
-                         if(row.EligibleforPTO && row.PTOHrs!=0 && parseFloat(PTOHrs)>0)
-                         {
-                             sp.web.lists.getByTitle('EmployeePTO').items.getById(currentEmployeePTO[0].Id).inBatch(EmployeePTOBatch).update(PTOData);
-                            //  sp.web.lists.getByTitle('PTOTransactions').items.inBatch(PTOTransactionBatch).add(PTOTransaction);
-                            PTOTransactionRecords
-                            .filter(item => item.IsActive && parseInt(item.TimesheetID) === parseInt(row.Id))
-                            .forEach(pto => {
-                                sp.web.lists.getByTitle('PTOTransactions').items.getById(pto.ID).inBatch(PTOTransactionBatch).update(Transaction);
-                            });
-                         }
+                         //COMMENTED TO STOP PTO CONSIDERATION FROM TIMESHEET FORM
+                        //  if(row.EligibleforPTO && row.PTOHrs!=0 && parseFloat(PTOHrs)>0)
+                        //  {
+                        //      sp.web.lists.getByTitle('EmployeePTO').items.getById(currentEmployeePTO[0].Id).inBatch(EmployeePTOBatch).update(PTOData);
+                        //     //  sp.web.lists.getByTitle('PTOTransactions').items.inBatch(PTOTransactionBatch).add(PTOTransaction);
+                        //     PTOTransactionRecords
+                        //     .filter(item => item.IsActive && parseInt(item.TimesheetID) === parseInt(row.Id))
+                        //     .forEach(pto => {
+                        //         sp.web.lists.getByTitle('PTOTransactions').items.getById(pto.ID).inBatch(PTOTransactionBatch).update(Transaction);
+                        //     });
+                        //  }
                          NotModifiedTimesheets.push(row);
                          break;
                      }
@@ -726,7 +732,7 @@ this.setState({ ReportingManager: Data, DelegateToUsers: obj, loading: false });
         const userId = this.props.spContext.userId;
         let dateFilter = new Date()
         dateFilter.setDate(new Date().getDate() - 60);
-        let date = `${dateFilter.getMonth() + 1}/${dateFilter.getDate()}/${dateFilter.getFullYear()}`
+        let date = DateUtilities.getDateMMDDYYYY(dateFilter);
         var filterQuery = "and WeekStartDate ge '" + date + "'"
         // var filterString = "ReportingManager/Id eq '"+userId+"' and PendingWith eq 'Manager' and Status eq '"+StatusType.Submit+"'"
         var filterString = "(AssignedTo/Id eq '" + userId + "' or ReportingManager/Id eq '"+userId+"') and PendingWith eq 'Manager'";
@@ -804,7 +810,8 @@ this.setState({ ReportingManager: Data, DelegateToUsers: obj, loading: false });
             },
             {
                 name: "Date",
-                selector: (row, i) => row.Date,
+                selector: (row, i) => row.DateForGrid,
+                cell: row => <div className='' dangerouslySetInnerHTML={{ __html: row.DateForGrid }} onClick={(event)=>this.handleRowClicked(event,row.Id)}/>,
                 width: '100px',
                 sortable: true
             },
@@ -863,6 +870,7 @@ this.setState({ ReportingManager: Data, DelegateToUsers: obj, loading: false });
                 sortable: true
             }
         ];
+        const searchKeys=['Date','EmployeName','Status','PendingWith','BillableTotalHrs','OTTotalHrs','TotalBillableHrs','HolidayHrs','PTOHrs','GrandTotal'];
         if(this.state.redirect){
             let url = `/WeeklyTimesheet/${this.state.TimesheetID}`;
         return (<Navigate to={url}/>);
@@ -874,7 +882,7 @@ this.setState({ ReportingManager: Data, DelegateToUsers: obj, loading: false });
                 <ModalApprovePopUp message={this.state.message} title={this.state.title} isVisible={this.state.showApproveRejectPopup} isSuccess={this.state.isSuccess} isManager={true} onConfirm={this.handleApproveReject} onCancel={this.closeApproveRejectPopup} comments={this.handleChangeEvents} errorMessage={this.state.errorMessage} commentsValue={this.state.comments} modalHeader={this.state.ModalHeader} IsClientApprovalNeed= {false}></ModalApprovePopUp>
                 <div>
                     <div className=''>
-                        <TableGenerator columns={columns} data={this.state.ReportingManager} fileName={''} showExportExcel={false}
+                        <TableGenerator columns={columns} searchKeys={searchKeys} data={this.state.ReportingManager} fileName={''} showExportExcel={false}
                             showAddButton={false} customBtnClass='' btnDivID='' navigateOnBtnClick='' btnSpanID='' btnCaption='' btnTitle='Forward Approvals' searchBoxLeft={true} selectableRows={this.state.ReportingManager.length>0?true:false} clearSelectedRows={this.state.clearRows} handleSelectedRows={this.getSelectedRows} customButton={false} showMultiApproveOrReject={this.state.SelectedRows.length > 0 ? true : false} onClickApproveOrReject={this.showConfirmApproveRejectPopup}  customButtonClick={this.ShowPopUp} onRowClick={this.handleRowClicked}></TableGenerator>
                     </div>
                     {/*selectableRows={this.state.ReportingManager.length>0?true:false} replace this to show delegations */}

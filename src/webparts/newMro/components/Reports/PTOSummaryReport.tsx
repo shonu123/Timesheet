@@ -30,6 +30,8 @@ import { StatusType } from '../../Constants/Constants';
 import TableGenerator from '../Shared/TableGenerator';
 import PTOTransactionHistoryPopup from './PTOTransactionHistoryPopup';
 import Loading from '../Shared/Loader';
+import DateUtilities from '../../Utilities/DateUtilities';
+
 export interface PTOSummaryReportProps {
     match: any;
     spContext: any;
@@ -79,6 +81,7 @@ class PTOSummaryReport extends React.Component<PTOSummaryReportProps,PTOSummaryR
         showPTOTransactionPopup: false,
         fileName: '',
         isAdmin: false,
+        isTimeOffEmployee:false,
         fromDate: null,
         toDate: null,
         minDate: new Date('01/01'+new Date().getFullYear()),
@@ -95,9 +98,9 @@ class PTOSummaryReport extends React.Component<PTOSummaryReportProps,PTOSummaryR
             sp.web.currentUser.groups(),
             sp.web.lists.getByTitle('Employees').items.top(5000).expand('Employee').select(selectQuery).orderBy('Employee/Title', true).getAll(),
         ]);
-        let userGroups = []
+        let userGroups = [];
         for (const grp of groups) {
-            userGroups.push(grp.Title)
+            userGroups.push(grp.Title);
         }
         let isAdmin = false;
             if (userGroups.includes('Timesheet Administrators') || userGroups.includes('Dashboard Admins')) {
@@ -105,7 +108,7 @@ class PTOSummaryReport extends React.Component<PTOSummaryReportProps,PTOSummaryR
                 document.getElementById("Employee").getElementsByTagName('input')[0].focus();
                 isAdmin = true;
             }
-            else if(userGroups.includes('Synergycom Timesheet Members')) // for provide access to employee who is Active and eligible for PTO
+            else if(userGroups.includes('Synergycom Timesheet Members') || userGroups.includes('Time Off Members')) // for provide access to employee who is Active and eligible for PTO
             {
                 let filteredPTOEligibleEmp=Employees.find(Emp=>Emp.Employee.ID ==this.props.spContext.userId && Emp.EligibleforPTO == true && Emp.IsActive == true );
                 if(filteredPTOEligibleEmp!=undefined)
@@ -130,6 +133,7 @@ class PTOSummaryReport extends React.Component<PTOSummaryReportProps,PTOSummaryR
         else {
             EmpObj.push({ ID: this.props.spContext.userId, Title: this.props.spContext.userDisplayName });
             this.setState({ EmployeeId: this.props.spContext.userId });
+            this.handleRowClicked(undefined,this.props.spContext.userId,this.props.spContext.userDisplayName);
         }
         //Year dropdown from 2024(Released Year of PTO) to currYear 
         let currYear=new Date().getFullYear();
@@ -166,15 +170,17 @@ class PTOSummaryReport extends React.Component<PTOSummaryReportProps,PTOSummaryR
         ]);
         let Data = [];
         let ExcelData = [];
+        EmployeesPTO.sort((a,b)=>a.Employee.Title.localeCompare(b.Employee.Title));
         EmployeesPTO.forEach(d => {
-            let joiningDate = new Date(d.DateOfJoining.split('-')[1] + '/' + d.DateOfJoining.split('-')[2].split('T')[0] + '/' + d.DateOfJoining.split('-')[0])
+            let joiningDate = new Date(DateUtilities.GetDateMMDDYYYYAsInList(d.DateOfJoining));
                     Data.push({
                         Id: d.Employee.Id,
                         Employee: d.Employee.Title,
                         EmployeeClassification: d.EmployeeClassification,
                         Policy: d.Policy == 'None' ? 'NA' : d.Policy,
                         EligibleforPTO: d.EligibleforPTO ? 'Yes' : 'No',
-                        DateOfJoining: `${joiningDate.getMonth() + 1}/${joiningDate.getDate()}/${joiningDate.getFullYear()}`,
+                        DateOfJoining : DateUtilities.getDateMMDDYYYY(joiningDate),
+                        DateOfJoiningForGrid : `<span class='d-none'>${DateUtilities.getDateYYYYMMDDForSorting(joiningDate)}</span>${DateUtilities.getDateMMDDYYYY(joiningDate)}`,
                         PTOApplied: [null, undefined, ''].includes(d.PTOApplied) ? 0.00 : parseFloat(parseFloat(d.PTOApplied).toFixed(4)),
                         PTOBalance: [null, undefined, ''].includes(d.PTOBalance) ? 0.00 : parseFloat(parseFloat(d.PTOBalance).toFixed(4)),
                         PTOBalanceAfterDeduction: [null, undefined, ''].includes(d.PTOBalanceAfterDeduction) ? 0.00 : parseFloat(parseFloat(d.PTOBalanceAfterDeduction).toFixed(4)),
@@ -189,7 +195,7 @@ class PTOSummaryReport extends React.Component<PTOSummaryReportProps,PTOSummaryR
                         EmployeeClassification: d.EmployeeClassification,
                         Policy: d.Policy == 'None' ? 'NA' : d.Policy,
                         EligibleforPTO: d.EligibleforPTO ? 'Yes' : 'No',
-                        DateOfJoining: `${joiningDate.getMonth() + 1}/${joiningDate.getDate()}/${joiningDate.getFullYear()}`,
+                        DateOfJoining : DateUtilities.getDateMMDDYYYY(joiningDate),
                         PTOApplied: [null, undefined, ''].includes(d.PTOApplied) ? '0.00' : parseFloat(d.PTOApplied).toFixed(4),
                         PTOBalance: [null, undefined, ''].includes(d.PTOBalance) ? '0.00' : parseFloat(d.PTOBalance).toFixed(4),
                         PTOBalanceAfterDeduction: [null, undefined, ''].includes(d.PTOBalanceAfterDeduction) ? '0.00' : parseFloat(d.PTOBalanceAfterDeduction).toFixed(4),
@@ -225,6 +231,8 @@ class PTOSummaryReport extends React.Component<PTOSummaryReportProps,PTOSummaryR
         }
         else if (name == 'Year') {
             latestData = await this.getLatestPTOData(this.state.isAdmin,this.state.EmployeeId,value,this.state.Status);
+            if(!this.state.isAdmin)
+            this.handleRowClicked(undefined,this.props.spContext.userId,this.props.spContext.userDisplayName);
         }
         else if(name == 'Status')
         {
@@ -246,28 +254,42 @@ class PTOSummaryReport extends React.Component<PTOSummaryReportProps,PTOSummaryR
         }
         this.setState({ toDate: date});
     }
-    private handleRowClicked = (row) => {
+    private  handleRowClicked = async (row,Id?,EmpName?,isAdmin?) => {
         let EmployeeId;
         let EmployeeTitle;
         let Year;
-        if (row.Id)   //for handle history icon click
+        if (row)   //for handle history icon click and DOJ click
         {
-            EmployeeId = row.Id;
-            EmployeeTitle = row.Employee;
-            Year=row.Year;
+            if(row.Id)
+            {
+                EmployeeId = row.Id?row.Id:Id;
+                EmployeeTitle = row.Employee?row.Employee:EmpName;
+                Year=row.Year;
+            }
+            else{
+                EmployeeId = row.currentTarget.id?row.currentTarget.id:Id;
+                EmployeeTitle = row.currentTarget.getAttribute('name')?row.currentTarget.getAttribute('name'):EmpName;
+                Year=this.state.Year;
+            }
         }
         else {
-            EmployeeId = row.currentTarget.id;
-            EmployeeTitle = row.currentTarget.getAttribute('name');
-            Year=this.state.Year
+            EmployeeId = Id;
+            EmployeeTitle = EmpName;
+            Year=this.state.Year;
 
         }
 
         var Data = [];
         var ExcelData = [];
         this.setState({ loading: true });
-        let selectQuery = "Employee/Id,Employee/Title,*"
-        let filterQuery= "Employee/Id eq " + EmployeeId+" and Year eq "+Year+" and IsActive eq 1"
+        let selectQuery = "Employee/Id,Employee/Title,*";
+        let filterQuery= "Employee/Id eq " + EmployeeId+" and Year eq "+Year+" and IsActive eq 1";
+        try{
+        let [EmpGroups,PTOTansactions] =await Promise.all([
+            sp.web.getUserById(EmployeeId).groups(),
+            sp.web.lists.getByTitle('PTOTransactions').items.expand('Employee').filter(filterQuery).select(selectQuery).orderBy('PostedOn', false).getAll()
+        ])
+        let isTimeOffEmployee = EmpGroups.some(Grp=>Grp.Title=='Time Off Members');
         // if(!["",null,undefined].includes(this.state.fromDate) && ["",null,undefined].includes(this.state.toDate)){
         //     let date = this.state.fromDate
         //     let previous = addDays(new Date(date), -1)
@@ -308,27 +330,30 @@ class PTOSummaryReport extends React.Component<PTOSummaryReportProps,PTOSummaryR
 
         //     filterQuery += " and PostedOn gt '" + prev + "' and PostedOn lt '" + next + "'"
         // }
-        sp.web.lists.getByTitle('PTOTransactions').items.expand('Employee').filter(filterQuery).select(selectQuery).orderBy('PostedOn', false).getAll().then((PTOTansactions) => {
+        //sp.web.lists.getByTitle('PTOTransactions').items.expand('Employee').filter(filterQuery).select(selectQuery).orderBy('PostedOn', false).getAll().then((PTOTansactions) => {
              //Sorted to get latest modified records first
              PTOTansactions.sort((a, b) => {
-                const dateA = new Date(a.PostedOn).getTime();
-                const dateB = new Date(b.PostedOn).getTime();
+                const dateA = new Date(a.Modified).getTime();
+                const dateB = new Date(b.Modified).getTime();
                 return dateB-dateA;
             });
             Data = [];
             ExcelData = [];
             PTOTansactions.forEach(item => {
-                let PostedOn = new Date(item.PostedOn.split('-')[1] + '/' + item.PostedOn.split('-')[2].split('T')[0] + '/' + item.PostedOn.split('-')[0]);
-                let From =[null,undefined,''].includes(item.From)? new Date():new Date(item.From.split('-')[1] + '/' + item.From.split('-')[2].split('T')[0] + '/' + item.From.split('-')[0]);
-                let To =[null,undefined,''].includes(item.To)? new Date(): new Date(item.To.split('-')[1] + '/' + item.To.split('-')[2].split('T')[0] + '/' + item.To.split('-')[0]);
+                let PostedOn = new Date(DateUtilities.GetDateMMDDYYYYAsInList(item.PostedOn));
+                let From =[null,undefined,''].includes(item.From)? new Date():new Date(DateUtilities.GetDateMMDDYYYYAsInList(item.From));
+                let To =[null,undefined,''].includes(item.To)? new Date(): new Date(DateUtilities.GetDateMMDDYYYYAsInList(item.To));
                 
                 Data.push({
                     Id: item.Id,
                     Employee: item.Employee.Title,
-                    TransactionType: this.getStatus(item.TransactionType),
-                    PostedOn: `${PostedOn.getMonth() + 1}/${PostedOn.getDate()}/${PostedOn.getFullYear()}`,
-                    // From: [null,undefined,''].includes(item.From)? '-':`${From.getMonth() + 1}/${From.getDate()}/${From.getFullYear()}`,
-                    // To: [null,undefined,''].includes(item.To)? '-':`${To.getMonth() + 1}/${To.getDate()}/${To.getFullYear()}`,
+                    TransactionType: this.getStatus(item.TransactionType,isTimeOffEmployee),
+                    PostedOn : DateUtilities.getDateMMDDYYYY(PostedOn),
+                    PostedOnForGrid : `<span class='d-none'>${DateUtilities.getDateYYYYMMDDForSorting(PostedOn)}</span>${DateUtilities.getDateMMDDYYYY(PostedOn)}`,
+                    From : [null,undefined,''].includes(item.From)? '-':DateUtilities.getDateMMDDYYYY(From),
+                    FromForGrid : [null,undefined,''].includes(item.From)? '-':`<span class='d-none'>${DateUtilities.getDateYYYYMMDDForSorting(From)}</span>${DateUtilities.getDateMMDDYYYY(From)}`,
+                    To : [null,undefined,''].includes(item.To)? '-':DateUtilities.getDateMMDDYYYY(To),
+                    ToForGrid : [null,undefined,''].includes(item.To)? '-':`<span class='d-none'>${DateUtilities.getDateYYYYMMDDForSorting(To)}</span>${DateUtilities.getDateMMDDYYYY(To)}`,
                     Hours: [null, undefined, ''].includes(item.Hours) ? 0.00 : parseFloat(item.Hours),
                     Reason: item.Reason,
                     Year:item.Year
@@ -336,10 +361,10 @@ class PTOSummaryReport extends React.Component<PTOSummaryReportProps,PTOSummaryR
                 ExcelData.push({
                     Id: item.Id,
                     Employee: item.Employee.Title,
-                    TransactionType: this.getStatus(item.TransactionType),
-                    PostedOn: `${PostedOn.getMonth() + 1}/${PostedOn.getDate()}/${PostedOn.getFullYear()}`,
-                    // From: `${From.getMonth() + 1}/${From.getDate()}/${From.getFullYear()}`,
-                    // To: `${To.getMonth() + 1}/${To.getDate()}/${To.getFullYear()}`,
+                    TransactionType: this.getStatus(item.TransactionType,isTimeOffEmployee),
+                    PostedOn : DateUtilities.getDateMMDDYYYY(PostedOn),
+                    From : [null,undefined,''].includes(item.From)? '-':DateUtilities.getDateMMDDYYYY(From),
+                    To : [null,undefined,''].includes(item.To)? '-':DateUtilities.getDateMMDDYYYY(To),
                     Hours: [null, undefined, ''].includes(item.Hours) ? 0.00 : parseFloat(item.Hours),
                     Reason: [null, undefined, ''].includes(item.Reason) ? '' :item.Reason,
                     Year:item.Year
@@ -350,20 +375,38 @@ class PTOSummaryReport extends React.Component<PTOSummaryReportProps,PTOSummaryR
             // Data.sort((a, b) => b.Id - a.Id);//acending order
             // ExcelData.sort((a, b) => b.Id - a.Id);//acending order
 
-            this.setState({ RowClickedEmployeeTitle: EmployeeTitle, PTOHistoryData: Data, PTOHistoryExcelData: ExcelData, showPTOTransactionPopup: true, loading: false })
-        }, (error) => {
-            this.setState({ ActionToasterMessage: 'Error', loading: false, redirect: true })
-            console.log(error);
-        });
+            this.setState({ RowClickedEmployeeTitle: EmployeeTitle, PTOHistoryData: Data, PTOHistoryExcelData: ExcelData, showPTOTransactionPopup: row?true:false,isTimeOffEmployee:isTimeOffEmployee, loading: false })
+        // }, (error) => {
+        //     this.setState({ ActionToasterMessage: 'Error', loading: false, redirect: true })
+        //     console.log(error);
+        // });
     }
-    private getStatus(value){
+    catch(error)
+    {
+        this.setState({ ActionToasterMessage: 'Error', loading: false, redirect: true })
+        console.log(error);
+    }
+    }
+    private getStatus(value,isTimeOffEmployee){
         let Status=value;
-        if(value == "rejected by Manager"){
-                Status = "Rejected by Reporting Manager"
+        if(value =="approved by Manager")
+            {
+                Status = "Approved by Synergy Manager";
+            }
+        else if(value == "rejected by Manager"){
+                if(isTimeOffEmployee)
+                Status = "Rejected by Synergy Manager";
+               else
+               Status = "Rejected by Reporting Manager";
+
             }
         else if(value =="rejected by Synergy")
             {
-                Status = "Rejected by Synergy"
+                Status = "Rejected by Synergy";
+            }
+        else if(value =="rejected by HR")
+            {
+                Status = "Rejected by HR";
             }
         return Status;
     }
@@ -420,7 +463,8 @@ class PTOSummaryReport extends React.Component<PTOSummaryReportProps,PTOSummaryR
             // },
             {
                 name: "Date Of Joining",
-                selector: (row, i) => row.DateOfJoining,
+                selector: (row, i) => row.DateOfJoiningForGrid,
+                cell: row => <div className='' dangerouslySetInnerHTML={{ __html: row.DateOfJoiningForGrid }} onClick={(event)=>this.handleRowClicked(event,row.Id,row.Employee)}/>,
                 width: '200px',
                 sortable: true
             },
@@ -526,6 +570,89 @@ class PTOSummaryReport extends React.Component<PTOSummaryReportProps,PTOSummaryR
                 sortable: true,
             }
         ];
+        const searchKeys=['Employee','EmployeeClassification','Policy','DateOfJoining','PTOGranted','PTOAvailed','PTOApplied','PTOBalanceAfterDeduction'];
+
+        const historyColumns = [
+            {
+              name: "Transaction Type",
+              selector: (row, i) => row.TransactionType,
+              width: '250px',
+              sortable: true
+            },
+            {
+              name: "Date",
+              selector: (row, i) => row.PostedOnForGrid,
+              cell: row => <div className='' dangerouslySetInnerHTML={{ __html: row.PostedOnForGrid }}/>,
+              width: '150px',
+              sortable: true
+            },
+            // {
+            //   name: "From",
+            //   selector: (row, i) => row.From,
+            //   width: '150px',
+            //   sortable: true
+            // },
+            // {
+            //   name: "To",
+            //   selector: (row, i) => row.To,
+            //   width: '150px',
+            //   sortable: true
+            // },
+            {
+              name: "Hours",
+              selector: (row, i) => row.Hours,
+              width: '70px',
+              sortable: true
+            },
+            {
+              name: "Reason",
+              selector: (row, i) => row.Reason,
+              sortable: true,
+            },
+          ];
+          const historyExportColumns = [
+            {
+              name: "Employee",
+              selector: "Employee",
+              width: '200px',
+              sortable: true
+            },
+            {
+              name: "Transaction Type",
+              selector: "TransactionType",
+              width: '200px',
+              sortable: true
+            },
+            {
+              name: "Date",
+              selector: "PostedOn",
+              width: '230px',
+              sortable: true
+            },
+            // {
+            //   name: "From",
+            //   selector: "From",
+            //   sortable: true
+            // },
+            // {
+            //   name: "To",
+            //   selector: "To",
+            //   sortable: true
+            // },
+            {
+              name: "Hours",
+              selector: "Hours",
+              sortable: true
+            },
+            {
+              name: "Reason",
+              selector: "Reason",
+              width: '220px',
+              sortable: true,
+            },
+          ];
+          const historySearchKeys=['TransactionType','PostedOn','Hours','Reason'];
+
         if(this.state.isAdmin){
             columns.push(
                 {
@@ -539,13 +666,14 @@ class PTOSummaryReport extends React.Component<PTOSummaryReportProps,PTOSummaryR
                     selector: 'IsActive',
                     sortable: true,
                 });
+                searchKeys.push('IsActive');
         }
         if (!this.state.isPageAccessable) {
-            let url = this.siteURL + "/SitePages/AccessDenied.aspx"
-            window.location.href = url
+            let url = this.siteURL + "/SitePages/AccessDenied.aspx";
+            window.location.href = url;
         }
         if (this.state.Homeredirect) {
-            let url = `/Dashboard/`
+            let url = `/Dashboard/`;
             return (<Navigate to={url} />);
         }
         // if (this.state.redirect) {
@@ -555,9 +683,11 @@ class PTOSummaryReport extends React.Component<PTOSummaryReportProps,PTOSummaryR
         else {
             return (
                 <React.Fragment>
-                    <PTOTransactionHistoryPopup isVisible={this.state.showPTOTransactionPopup} isSuccess={false} onCancel={this.closePTOTransactionPopup} EmployeeTitle={this.state.RowClickedEmployeeTitle} Year={this.state.Year} Data={this.state.PTOHistoryData} ExcelData={this.state.PTOHistoryExcelData}></PTOTransactionHistoryPopup>
+                    {/* <PTOTransactionHistoryPopup isVisible={this.state.showPTOTransactionPopup} isSuccess={false} onCancel={this.closePTOTransactionPopup} EmployeeTitle={this.state.RowClickedEmployeeTitle} Year={this.state.Year} Data={this.state.PTOHistoryData} ExcelData={this.state.PTOHistoryExcelData} isTimeOffEmployee={this.state.isTimeOffEmployee}></PTOTransactionHistoryPopup> */}
+                    <PTOTransactionHistoryPopup isVisible={this.state.showPTOTransactionPopup} isSuccess={false} onCancel={this.closePTOTransactionPopup} EmployeeTitle={this.state.RowClickedEmployeeTitle} Year={this.state.Year} Data={this.state.PTOHistoryData} ExcelData={this.state.PTOHistoryExcelData} isTimeOffEmployee={false}></PTOTransactionHistoryPopup>
+                    <div id="content" className="content p-2 pt-2">
                     <div className='container-fluid'>
-                        <div className='FormContent-2'>
+                        <div className='FormContent'>
                             <div className="title">PTO Summary Report
                                 <div className='mandatory-note'>
                                     <span className='mandatoryhastrick'>*</span> indicates a required field
@@ -566,6 +696,8 @@ class PTOSummaryReport extends React.Component<PTOSummaryReportProps,PTOSummaryR
                             <div className="after-title"></div>
                             <div className="media-m-2 media-p-1">
                                 <div className="my-2">
+                                    {/* Admin view */}
+                                    {this.state.isAdmin &&  
                                     <div className="row pt-2 px-4 mx-1 py-2">
                                         {/* <div className="col-md-4">
                                             <div className="light-text ">
@@ -642,6 +774,76 @@ class PTOSummaryReport extends React.Component<PTOSummaryReportProps,PTOSummaryR
                                             </div>
                                         </div>}
                                     </div>
+                                    }
+                                    {/* Employee view */}
+                                    {!this.state.isAdmin &&
+                                    <>
+                                     <div className="row pt-2 px-4 mx-1 py-2">
+                                       <div className="col-md-4">
+                                            <div className="light-text">
+                                                <label>Year</label>
+                                                <select className="form-control" name="Year" title="Year" id='Year' onChange={this.handleChangeEvents}>
+                                                    {this.state.YearsList.map((option) => (
+                                                        <option value={option} selected={option == this.state.Year}>{option}</option>
+                                                    ))}
+                                                </select>
+                                            </div>
+                                        </div>
+                                        </div>
+                                    <div className="row pt-2 px-4 mx-1 py-2">
+                                        <div className={"col-md-3"}>
+                                                <div className="light-text-readonly">
+                                                    <label>Employee Name</label>
+                                                    <input className="txtEmployeeName form-control" required={true} name="EmployeeName" title="Employee Name" value={this.state.PTOData.length?this.state.PTOData[0].Employee:this.props.spContext.userDisplayName} disabled />
+                                                </div>
+                                            </div>
+                                        <div className={"col-md-3"}>
+                                                <div className="light-text-readonly">
+                                                    <label>Employee Classification</label>
+                                                    <input className="txtEmployeeClassification form-control" required={true} name="EmployeeClassification" title="Employee Classification" value={this.state.PTOData.length?this.state.PTOData[0].EmployeeClassification:''} disabled />
+                                                </div>
+                                            </div>
+                                        <div className={"col-md-3"}>
+                                                <div className="light-text-readonly">
+                                                    <label>Policy</label>
+                                                    <input className="txtPolicy form-control" required={true} name="Policy" title="Policy" value={this.state.PTOData.length?this.state.PTOData[0].Policy:''} disabled />
+                                                </div>
+                                            </div>
+                                        <div className={"col-md-3"}>
+                                                <div className="light-text-readonly">
+                                                    <label>Date Of Joining</label>
+                                                    <input className="txtDateOfJoining form-control" required={true} name="DateOfJoining" title="Date Of Joining" value={this.state.PTOData.length?this.state.PTOData[0].DateOfJoining:''} disabled />
+                                                </div>
+                                            </div>
+                                    </div>
+                                     <div className="row pt-2 px-4 mx-1 py-2">
+                                     <div className={"col-md-3"}>
+                                             <div className="light-text-readonly">
+                                                 <label>PTO Granted (YTD)</label>
+                                                 <input className="txtPTOGranted form-control" required={true} name="PTOGranted" title="PTO Granted (YTD)" value={this.state.PTOData.length?this.state.PTOData[0].PTOGranted:''} disabled />
+                                             </div>
+                                         </div>
+                                     <div className={"col-md-3"}>
+                                             <div className="light-text-readonly">
+                                                 <label>PTO Taken</label>
+                                                 <input className="txtPTOTaken form-control" required={true} name="PTOTaken" title="PTO Taken" value={this.state.PTOData.length?this.state.PTOData[0].PTOAvailed:''} disabled />
+                                             </div>
+                                         </div>
+                                     <div className={"col-md-3"}>
+                                             <div className="light-text-readonly">
+                                                 <label>PTO Applied</label>
+                                                 <input className="txtPTOApplied form-control" required={true} name="PTOApplied" title="PTO Applied" value={this.state.PTOData.length?this.state.PTOData[0].PTOApplied:''} disabled />
+                                             </div>
+                                         </div>
+                                     <div className={"col-md-3"}>
+                                             <div className="light-text-readonly">
+                                                 <label>PTO Balance</label>
+                                                 <input className="txtPTOBalance form-control" required={true} name="PTOBalance" title="PTO Balance" value={this.state.PTOData.length?this.state.PTOData[0].PTOBalanceAfterDeduction:''} disabled />
+                                             </div>
+                                         </div>
+                                 </div>
+                                 </>
+                                   }
                                 </div>
                                 {/* <div className="row mx-1" id="">
                                     <div className="col-sm-12 text-center my-4" id="">
@@ -649,11 +851,17 @@ class PTOSummaryReport extends React.Component<PTOSummaryReportProps,PTOSummaryR
                                         <button type="button" className="CancelButtons btn" onClick={this.handleCancel}>Cancel</button>
                                     </div>
                                 </div> */}
-                                <div className='c-v-table dataTables_wrapper-overflow'>
-                                    <TableGenerator columns={columns} data={this.state.PTOData} fileName={'Employee(s) PTO Summary Report'} showExportExcel={this.state.PTOData.length ? true : false} searchBoxLeft={true} ExportExcelCustomisedColumns={Exportcolumns} ExportExcelCustomisedData={this.state.PTOExcelData} wrapColumns={['Employee', 'EmployeeClassification']} LargeWidthColumns={['Employee', 'EmployeeClassification']} onRowClick={this.handleRowClicked}></TableGenerator>
-                                </div>
+                               
+                                   {this.state.isAdmin ?  <div className='c-v-table dataTables_wrapper-overflow'><TableGenerator columns={columns} searchKeys={searchKeys} data={this.state.PTOData} fileName={'Employee(s) PTO Summary Report'} showExportExcel={this.state.PTOData.length ? true : false} searchBoxLeft={true} ExportExcelCustomisedColumns={Exportcolumns} ExportExcelCustomisedData={this.state.PTOExcelData} wrapColumns={['Employee', 'EmployeeClassification']} LargeWidthColumns={['Employee', 'EmployeeClassification']} onRowClick={this.handleRowClicked} paginationPerPage={25}></TableGenerator></div>:
+
+                                    <div className='c-v-table table-head-1st-td dataTables_wrapper-overflow'>
+                                     <div className="fw-bold px-2">PTO Transaction History</div> 
+                                    <TableGenerator columns={historyColumns} searchKeys={historySearchKeys} data={this.state.PTOHistoryData} fileName={'PTO Transaction History'} showExportExcel={this.state.PTOHistoryData.length ? true : false} searchBoxLeft={true} ExportExcelCustomisedColumns={historyExportColumns} ExportExcelCustomisedData={this.state.PTOHistoryExcelData} wrapColumns={["Reason"]} LargeWidthColumns={["Reason","Employee"]} paginationPerPage={25}></TableGenerator></div>
+                                   }
+                                
                             </div>
                         </div>
+                    </div>
                     </div>
                     {this.state.showToaster && <Toaster />}
                     {this.state.loading && <Loader />}

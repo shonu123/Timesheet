@@ -28,46 +28,40 @@ import { addDays } from 'office-ui-fabric-react';
 import { PeoplePicker, PrincipalType } from "@pnp/spfx-controls-react/lib/PeoplePicker";
 import DateUtilities from '../../Utilities/DateUtilities';
 
-interface PTOPolicyProps {
+interface TimeOffTypeProps {
     match: any;
     spContext: any;
     spHttpClient: SPHttpClient;
     context: any;
     history: any;
 }
-interface PTOPolicyState {
+interface TimeOffTypeState {
 
 }
 
-class PTOPolicy extends Component<PTOPolicyProps, PTOPolicyState> {
+class TimeOffType extends Component<TimeOffTypeProps, TimeOffTypeState> {
     private siteURL: string;
-    private Policy;
-    private YearsOfExperience;
-    private HoursPerMonth;
+    private TimeOffType;
     private Comments;
-    constructor(props: PTOPolicyProps) {
+    constructor(props: TimeOffTypeProps) {
         super(props);
         sp.setup({
             spfxContext: this.props.context
         });
-        this.Policy = React.createRef();
-        this.YearsOfExperience = React.createRef();
-        this.HoursPerMonth = React.createRef();
+        this.TimeOffType = React.createRef();
         this.Comments = React.createRef();
         this.siteURL = this.props.spContext.webAbsoluteUrl;
     }
     public state = {
         formData: {
             Title: '',
-            YearsOfExperience: '',
-            HoursPerMonth: '',
+            IsEligibleforPTO:false,
             IsActive: true,
             CommentsHistory:[],
         },
         Comments:'',
-        PTOPolicyData: [],
+        TimeOffTypeData: [],
         ExportExcelData: [],
-        PolicyObject:[],
 
         SaveUpdateText: 'Submit',
         showLabel: false,
@@ -77,7 +71,7 @@ class PTOPolicy extends Component<PTOPolicyProps, PTOPolicyState> {
         modalText: '',
         modalTitle: '',
         isSuccess: true,
-        addNewPTOPolicy: false,
+        addNewTimeOffType: false,
         isNewform: true,
         isRedirect: false,
         isPageAccessable:true,
@@ -85,7 +79,7 @@ class PTOPolicy extends Component<PTOPolicyProps, PTOPolicyState> {
     };
 
     public componentDidMount() {
-        highlightCurrentNav("PTOPolicyMaster");
+        highlightCurrentNav("TimeOffTypeMaster");
         this.setState({ loading: true });
         this.loadListData();
     }
@@ -99,31 +93,23 @@ class PTOPolicy extends Component<PTOPolicyProps, PTOPolicyState> {
             this.setState({
                 formData: {
                     Title: '',
-                    YearsOfExperience: '',
-                    HoursPerMonth: '',
+                    IsEligibleforPTO:false,
                     IsActive: true,
                     CommentsHistory:[],
                 },
                 Comments:'',
                 SaveUpdateText: 'Submit',
-                addNewPTOPolicy: false,   
+                addNewTimeOffType: false,   
             });
     }
     private handleChange = (event) => {
         const formData = { ...this.state.formData };
         const { name } = event.target;
         let inputvalue = event.target.value;
-        let value = event.target.type == 'checkbox' ? event.target.checked : inputvalue;
-        if (name == 'YearsOfExperience') {
-
-            value =value.includes("-")?value.match(/\d{0,2}(\-\d{0,2})?/)[0]:value.includes("+")?value.match(/\d{0,2}(\+)?/)[0]:value.match(/\d{0,2}(\-\d{0,2})?/)[0]; //To match expression as YY-YY or YY+
-        }
-        else if(name == 'Comments')
+        let value = event.target.type == 'checkbox' ? event.target.checked : inputvalue
+        if(name == 'Comments')
         {
             this.setState({ Comments:value });   
-        }
-        else if (name == 'HoursPerMonth') {
-            value = value.match(/\d{0,3}(\.\d{0,5})?/)[0];
         }
         name == 'Comments'?'':formData[name] = value;
         this.setState({ formData });
@@ -132,9 +118,7 @@ class PTOPolicy extends Component<PTOPolicyProps, PTOPolicyState> {
         event.preventDefault();
         this.setState({ loading: true });
         let data = {
-            Title: { val: this.state.formData.Title, required: true, Name: 'Policy', Type: ControlType.string, Focusid: this.Policy },
-            YearsOfExperience: { val: this.state.formData.YearsOfExperience, required: true, Name: 'Years of Experience', Type: ControlType.string,Focusid:this.YearsOfExperience },
-            HoursPerMonth: { val: this.state.formData.HoursPerMonth, required: true, Name: 'Hours Per Month', Type: ControlType.string, Focusid: this.HoursPerMonth },
+            Title: { val: this.state.formData.Title, required: true, Name: 'Time Off Type', Type: ControlType.string, Focusid: this.TimeOffType },
         };
         const formdata = { ...this.state.formData };
         const id = this.props.match.params.id ? this.props.match.params.id : 0;
@@ -159,36 +143,22 @@ class PTOPolicy extends Component<PTOPolicyProps, PTOPolicyState> {
         }
     }
     private checkDuplicates = (formData, id) => {
-        let PTOPloicyList = 'Policy';
-        let filterString = ''
+        let TimeOffTypeList = 'TimeOffTypes';
+        let filterString = '';
         try {
             if (id == 0)
-                filterString = `Title eq '${formData.Title}' and YearsOfExperience eq '${formData.YearsOfExperience}' and IsActive eq '1'`;
+                filterString = `Title eq '${formData.Title.replace(/'/g,"''")}' and IsActive eq '1'`;
             else
-                filterString = filterString = `Title eq '${formData.Title}' and YearsOfExperience eq '${formData.YearsOfExperience}' and IsActive eq '1' and Id ne ` + id;
-            sp.web.lists.getByTitle(PTOPloicyList).items.filter(filterString).get().
+                filterString = filterString = `Title eq '${formData.Title.replace(/'/g,"''")}' and IsActive eq '1' and Id ne ` + id;
+            sp.web.lists.getByTitle(TimeOffTypeList).items.filter(filterString).get().
                 then((response: any[]) => {
                     if (response.length > 0) {
                         this.setState({ loading: false });
                         customToaster('toster-error', ToasterTypes.Error, 'Duplicate record is not accepted', 4000)
                     }
-                    else if( (!formData.YearsOfExperience.includes("-") && !formData.YearsOfExperience.includes("+")) || formData.YearsOfExperience=='-' || formData.YearsOfExperience=='+' || formData.YearsOfExperience.charAt(0)=='-' || formData.YearsOfExperience.charAt(0)=='+' || formData.YearsOfExperience.charAt(formData.YearsOfExperience.length-1)=='-') //To format the YearsOfExperience
-                    {
-                        this.setState({ loading: false });
-                        document.getElementById("txtYearsOfExperience").focus();
-                        document.getElementById("txtYearsOfExperience").classList.add('mandatory-FormContent-focus');
-                        customToaster('toster-error', ToasterTypes.Error, 'Please enter Years of Experience in the correct format (e.g., 0-5 or 7+)', 4000);
-                    }
-                    else if(formData.YearsOfExperience.includes("-") && parseInt(formData.YearsOfExperience.split('-')[0])>parseInt(formData.YearsOfExperience.split('-')[1])) //To format the YearsOfExperience
-                    {
-                        this.setState({ loading: false });
-                        document.getElementById("txtYearsOfExperience").focus();
-                        document.getElementById("txtYearsOfExperience").classList.add('mandatory-FormContent-focus');
-                        customToaster('toster-error', ToasterTypes.Error, 'Min year cannot be greater than Max year', 4000);
-                    }
                     else {
-                        formData.CommentsHistory.push({"User": this.props.spContext.userDisplayName,"Date": new Date().toISOString(),"Comments": this.state.Comments.trim()});
-                        this.InsertorUpdatedata(formData, id, PTOPloicyList);
+                       formData.CommentsHistory.push({"User": this.props.spContext.userDisplayName,"Date": new Date().toISOString(),"Comments": this.state.Comments.trim()});
+                        this.InsertorUpdatedata(formData, id, TimeOffTypeList);
                     }
                 });
         }
@@ -198,34 +168,34 @@ class PTOPolicy extends Component<PTOPolicyProps, PTOPolicyState> {
         }
     }
     // this function is used save data in the list
-    private async InsertorUpdatedata(formdata, ItemId, PTOPolicyList) {
+    private async InsertorUpdatedata(formdata, ItemId, TimeOffTypeList) {
         formdata['CommentsHistory'] = JSON.stringify(formdata.CommentsHistory);
         if (ItemId > 0) {    //update existing record
-            sp.web.lists.getByTitle(PTOPolicyList).items.getById(ItemId).update(formdata).then((res) => {
-                customToaster('toster-success', ToasterTypes.Success, 'Policy updated successfully.', 2000)
-                    this.resetPolicyMasterForm();
+            sp.web.lists.getByTitle(TimeOffTypeList).items.getById(ItemId).update(formdata).then((res) => {
+                customToaster('toster-success', ToasterTypes.Success, 'Time Off Type updated successfully.', 2000)
+                    this.resetTimeOffTypeMasterForm();
                     this.setState({
                         modalTitle: 'Success',
-                        modalText: 'Policy updated successfully',
+                        modalText: 'Time Off Type updated successfully',
                         showHideModal: false,
                         isSuccess: true,
                         loading: false,
                         isRedirect: false,
-                        addNewPTOPolicy: false
+                        addNewTimeOffType: false
                     });
             },(error) => {
                 console.log(error);
             });
         }
         else {                             //Add New record
-            sp.web.lists.getByTitle(PTOPolicyList).items.add(formdata)
+            sp.web.lists.getByTitle(TimeOffTypeList).items.add(formdata)
                 .then((res) => {
-                    customToaster('toster-success', ToasterTypes.Success, 'Policy added successfully', 2000)
-                    this.resetPolicyMasterForm();
-                    this.setState({ showHideModal: false, addNewPTOPolicy: false, loading: false, isRedirect: true });
+                    customToaster('toster-success', ToasterTypes.Success, 'Time Off Type added successfully', 2000)
+                    this.resetTimeOffTypeMasterForm();
+                    this.setState({ showHideModal: false, addNewTimeOffType: false, loading: false, isRedirect: true });
                     this.setState({
                         modalTitle: 'Success',
-                        modalText: 'Policy added successfully',
+                        modalText: 'Time Off Type added successfully',
                         showHideModal: false,
                         isSuccess: true,
                         isRedirect: false
@@ -234,7 +204,7 @@ class PTOPolicy extends Component<PTOPolicyProps, PTOPolicyState> {
                 .catch((err) => {
                     console.log('Failed to add');
                     customToaster('toster-error', ToasterTypes.Error, 'Sorry! something went wrong', 4000)
-                    this.setState({ showHideModal: false, isRedirect: true, loading: false, addNewPTOPolicy: false });
+                    this.setState({ showHideModal: false, isRedirect: true, loading: false, addNewTimeOffType: false });
                 });
         }
     }
@@ -246,34 +216,31 @@ class PTOPolicy extends Component<PTOPolicyProps, PTOPolicyState> {
     private async loadListData() {
         this.setState({ isRedirect: false })
         try {
-            let [Policies,Policy, groups] = await Promise.all([
-                sp.web.lists.getByTitle('Policy').items.select('Title,YearsOfExperience,HoursPerMonth,*').orderBy("Title", false).getAll(),
-                sp.web.lists.getByTitle('AllPolicies').items.filter("IsActive eq 1").select('*').orderBy('Title').getAll(),
+            let [TimeOffTypes, groups] = await Promise.all([
+                sp.web.lists.getByTitle('TimeOffTypes').items.select('Title,*').orderBy("Title", false).getAll(),
                 sp.web.currentUser.groups(),
             ])
             let userGroups = [];
             for (const grp of groups) {
                 userGroups.push(grp.Title);
             }
-            let ExcelData = []
+            let ExcelData = [];
             let Data = [];
-            if (Policies.length) {
-                Policies.sort((a, b) => b.Id - a.Id);
+            if (TimeOffTypes.length) {
+                TimeOffTypes.sort((a, b) => b.Id - a.Id);
 
-                for (const d of Policies) {
+                for (const d of TimeOffTypes) {
                     ExcelData.push({
                         Id: d.Id,
                         Title: d.Title,
-                        YearsOfExperience:d.YearsOfExperience,
-                        HoursPerMonth:d.HoursPerMonth,
+                        IsEligibleforPTO: d.IsEligibleforPTO ? "Yes" : "No",
                         IsActive: d.IsActive ? "Active" : "In-Active"
                     })
 
                     Data.push({
                         Id: d.Id,
                         Title: d.Title,
-                        YearsOfExperience:d.YearsOfExperience,
-                        HoursPerMonth:d.HoursPerMonth,
+                        IsEligibleforPTO: d.IsEligibleforPTO ? "Yes" : "No",
                         IsActive: d.IsActive ? "Active" : "In-Active"
                     })
                 }
@@ -286,8 +253,7 @@ class PTOPolicy extends Component<PTOPolicyProps, PTOPolicyState> {
                 pageAccessable = false;
             }
             this.setState({
-                PTOPolicyData: Data,
-                PolicyObject:Policy,
+                TimeOffTypeData: Data,
                 SaveUpdateText: 'Submit',
                 showLabel: false,
                 loading: false,
@@ -303,45 +269,43 @@ class PTOPolicy extends Component<PTOPolicyProps, PTOPolicyState> {
     private async onEditClickHandler(id) {
         try {
             let filterQuery = "ID eq '" + id + "'";
-            let selectQuery = "Title,YearsOfExperience,HoursPerMonth,*";
-            var data = await sp.web.lists.getByTitle('Policy').items.filter(filterQuery).select(selectQuery).get();
+            let selectQuery = "Title,*";
+            var data = await sp.web.lists.getByTitle('TimeOffTypes').items.filter(filterQuery).select(selectQuery).get();
             this.setState({
                 formData:
                 {
                     Title: data[0].Title,
-                    YearsOfExperience: data[0].YearsOfExperience,
-                    HoursPerMonth: data[0].HoursPerMonth.toString(),
+                    IsEligibleforPTO: data[0].IsEligibleforPTO,
                     IsActive: data[0].IsActive,
                     CommentsHistory:[null,undefined,''].includes(data[0].CommentsHistory)?[]:JSON.parse(data[0].CommentsHistory),
                 },
                 Comments:'',
                 SaveUpdateText: 'Update',
                 showLabel: false,
-                addNewPTOPolicy: true,
+                addNewTimeOffType: true,
                 loading:false
             });
-            setTimeout(()=>{document.getElementById("txtYearsOfExperience").scrollIntoView({ behavior: 'smooth', block: 'start' })},300);
-            setTimeout(()=>{document.getElementById("txtYearsOfExperience").focus()},300);
+            setTimeout(()=>{document.getElementById("chkIsEligibleforPTO").scrollIntoView({ behavior: 'smooth', block: 'start' })},300);
+            setTimeout(()=>{document.getElementById("chkIsEligibleforPTO").focus()},300);
         }
         catch (e) {
             console.log('failed to fetch data for record :' + id);
         }
     }
-    private resetPolicyMasterForm = () => {
+    private resetTimeOffTypeMasterForm = () => {
         this.setState({
             formData: {
                 Title: '',
-                YearsOfExperience: '',
-                HoursPerMonth: '',
+                IsEligibleforPTO:false,
                 IsActive: true,
                 CommentsHistory:[],
             },
-           Comments:'', SaveUpdateText: 'Submit', addNewPTOPolicy: false, isRedirect: true
+           Comments:'', SaveUpdateText: 'Submit', addNewTimeOffType: false, isRedirect: true
         });
     }
     private handleRowClicked = (row) => {
         this.setState({loading:true});
-        window.location.hash = `#/PTOPolicyMaster/${row.Id}`;
+        window.location.hash = `#/TimeOffTypeMaster/${row.Id}`;
         this.props.match.params.id = row.Id;
         this.onEditClickHandler(row.Id);
     }
@@ -369,16 +333,16 @@ class PTOPolicy extends Component<PTOPolicyProps, PTOPolicyState> {
         this.setState({ formData });
     }
     private cancelHandler = () => {
-        this.resetPolicyMasterForm();
+        this.resetTimeOffTypeMasterForm();
     }
     public handleClose = () => {
         this.setState({ showHideModal: false });
-        this.resetPolicyMasterForm();
+        this.resetTimeOffTypeMasterForm();
     }
-    private addNewPolicyMaster = () => {
+    private addNewTimeOffTypeMaster = () => {
         var formdata = { ...this.state.formData };
-        this.setState({ addNewPTOPolicy: true, showLabel: false, formData: formdata });
-        setTimeout(()=>{document.getElementById('Policy')?document.getElementById('Policy').focus():''},300);
+        this.setState({ addNewTimeOffType: true, showLabel: false, formData: formdata });
+        setTimeout(()=>{document.getElementById('txtTimeOffType')?document.getElementById('txtTimeOffType').focus():''},300);
     }
     public render() {
         const columns = [
@@ -390,7 +354,7 @@ class PTOPolicy extends Component<PTOPolicyProps, PTOPolicyState> {
                     return (
                         <React.Fragment>
                             <div style={{ paddingLeft: '10px' }}>
-                                <NavLink title="Edit" className="csrLink ms-draggable" to={`/PTOPolicyMaster/${record.Id}`}>
+                                <NavLink title="Edit" className="csrLink ms-draggable" to={`/TimeOffTypeMaster/${record.Id}`}>
                                     <FontAwesomeIcon icon={faEdit} onClick={() => { this.onEditClickHandler(record.Id); }}></FontAwesomeIcon>
                                 </NavLink>
                             </div>
@@ -400,18 +364,13 @@ class PTOPolicy extends Component<PTOPolicyProps, PTOPolicyState> {
                 width: '100px'
             },
             {
-                name: "Policy",
+                name: "Time Off Type",
                 selector: (row, i) => row.Title,
                 sortable: true,
             },
             {
-                name: "Years of Experience",
-                selector: (row, i) => row.YearsOfExperience,
-                sortable: true,
-            },
-            {
-                name: "Hours Per Month",
-                selector: (row, i) => row.HoursPerMonth,
+                name: "Eligible for PTO",
+                selector: (row, i) => row.IsEligibleforPTO,
                 sortable: true,
             },
             {
@@ -422,18 +381,13 @@ class PTOPolicy extends Component<PTOPolicyProps, PTOPolicyState> {
         ];
         const ExcelColumns = [
             {
-                name: "Policy",
+                name: "Time Off Type",
                 selector:"Title",
                 sortable: true,
             },
             {
-                name: "Years of Experience",
-                selector:"YearsOfExperience",
-                sortable: true,
-            },
-            {
-                name: "Hours Per Month",
-                selector: "HoursPerMonth",
+                name: "Eligible for PTO",
+                selector: 'IsEligibleforPTO',
                 sortable: true,
             },
             {
@@ -442,9 +396,9 @@ class PTOPolicy extends Component<PTOPolicyProps, PTOPolicyState> {
                 sortable: true,
             },
         ];
-        const searchKeys=[ 'Title','YearsOfExperience','HoursPerMonth' , 'IsActive'];
+        const searchKeys=['Title','IsEligibleforPTO','IsActive'];
         if (this.state.isRedirect) {
-            return (<Navigate to={'/PTOPolicyMaster'} />);
+            return (<Navigate to={'/TimeOffTypeMaster'} />);
         }
         if (!this.state.isPageAccessable) {
             let url = this.siteURL+"/SitePages/AccessDenied.aspx";
@@ -457,8 +411,8 @@ class PTOPolicy extends Component<PTOPolicyProps, PTOPolicyState> {
                 <div id="content" className="content p-2 pt-2">
                     <div className='container-fluid'>
                         <div className='FormContent'>
-                            <div className='title'>PTO Policy
-                                {this.state.addNewPTOPolicy &&
+                            <div className='title'>Time Off Type
+                                {this.state.addNewTimeOffType &&
                                     <div className='mandatory-note'>
                                         <span className='mandatoryhastrick'>*</span> indicates a required field
                                     </div>
@@ -468,44 +422,37 @@ class PTOPolicy extends Component<PTOPolicyProps, PTOPolicyState> {
                             <div className="row justify-content-md-left">
                                 <div className="col-12 col-md-12 col-lg-12">
 
-                                    <div className={this.state.addNewPTOPolicy ? 'mx-2 activediv' : 'mx-2'}>
+                                    <div className={this.state.addNewTimeOffType ? 'mx-2 activediv' : 'mx-2'}>
                                         <div className="text-right pt-2">
-                                            <button type="button" id="btnSubmit" title='Add New Policy' className="SubmitButtons btn" onClick={this.addNewPolicyMaster}>
+                                            <button type="button" id="btnSubmit" title='Add New Time Off Type' className="SubmitButtons btn" onClick={this.addNewTimeOffTypeMaster}>
                                                 <span className='' id='addEmpClassification'><FontAwesomeIcon icon={faPlus}></FontAwesomeIcon> Add</span>
                                             </button>
                                         </div>
                                     </div>
-                                    <div className="c-v-table PolicyFrom">
+                                    <div className="c-v-table TimeOffTypeFrom">
                                         <div className="light-box border-box-shadow mx-2">
-                                            <div className={this.state.addNewPTOPolicy ? '' : 'activediv'}>
+                                            <div className={this.state.addNewTimeOffType ? '' : 'activediv'}>
                                                 <div className="my-2">
                                                     <div className="row pt-2 px-2">
-                                                        <div className="col-md-3">
-                                                                <div className="light-text">
-                                                                    <label>Policy<span className="mandatoryhastrick">*</span></label>
-                                                                    <select className="form-control" name="Title" title="Policy" id='Policy' disabled={this.props.match.params.id ? true : false} onChange={this.handleChange} value={this.state.formData.Title} ref={this.Policy}>
-                                                                    <option value=''>None</option>
-                                                                    {this.state.PolicyObject.map((option) => (
-                                                                        <option value={option.Title} selected={option.Title == this.state.formData.Title}>{option.Title}</option>
-                                                                    ))}
-                                                                    </select>
-                                                                </div>
-                                                            </div>
-                                                        <div className="col-md-3">
+                                                    <div className="col-md-3">
                                                             <div className='light-text'>
-                                                                <label>Years Of Experience<span className="mandatoryhastrick">*</span>
+                                                                <label>Time Off Type<span className="mandatoryhastrick">*</span>
                                                                 </label>
-                                                                <input className="form-control" type={"text"} title={"Years Of Experience"} placeholder="e.g., 0-5 or 7+" value={this.state.formData.YearsOfExperience || ''}
-                                                                    required={true} onChange={this.handleChange} onBlur={this.handleonBlur} name={"YearsOfExperience"} ref={this.YearsOfExperience} autoComplete="off"  maxLength={10} id={"txtYearsOfExperience"}
+                                                                <input className="form-control" type={"text"} title={"Time Off Type"} placeholder="" value={this.state.formData.Title || ''}
+                                                                    required={true} onChange={this.handleChange} onBlur={this.handleonBlur} name={"Title"} ref={this.TimeOffType} autoComplete="off"  maxLength={250} id={"txtTimeOffType"} disabled={this.props.match.params.id>0}
                                                                 />
                                                             </div>
                                                         </div>
                                                         <div className="col-md-3">
-                                                         <div className='light-text'>
-                                                                <label>Hours Per Month<span className="mandatoryhastrick">*</span>
-                                                                </label>
-                                                                <input className="form-control" type={"text"} title={"Hours Per Month"} placeholder="e.g., 15.15" value={this.state.formData.HoursPerMonth || ''}
-                                                                    required={true} onChange={this.handleChange} onBlur={this.handleonBlur} name={"HoursPerMonth"} ref={this.HoursPerMonth} autoComplete="off"  maxLength={10} id={"txtHoursPerMonth"}
+                                                            <div className="light-text" >
+                                                                <InputCheckBox
+                                                                    label={"Is Eligible for PTO"}
+                                                                    name={"IsEligibleforPTO"}
+                                                                    checked={this.state.formData.IsEligibleforPTO}
+                                                                    onChange={this.handleChange}
+                                                                    isforMasters={false}
+                                                                    isdisable={false}
+                                                                    id='chkIsEligibleforPTO'
                                                                 />
                                                             </div>
                                                         </div>
@@ -559,8 +506,8 @@ class PTOPolicy extends Component<PTOPolicyProps, PTOPolicyState> {
                                         </div>
                                     </div>
                                     {this.state.showToaster && <Toaster />}
-                                    {!this.state.addNewPTOPolicy && <div className="c-v-table">
-                                        <TableGenerator columns={columns} searchKeys={searchKeys} data={this.state.PTOPolicyData} fileName={'Policies'} showExportExcel={this.state.PTOPolicyData.length ? true : false} searchBoxLeft={true} ExportExcelCustomisedColumns={ExcelColumns} ExportExcelCustomisedData={this.state.ExportExcelData} onRowClick={this.handleRowClicked}></TableGenerator>
+                                    {!this.state.addNewTimeOffType && <div className="c-v-table">
+                                        <TableGenerator columns={columns} searchKeys={searchKeys} data={this.state.TimeOffTypeData} fileName={'Time Off Types'} showExportExcel={this.state.TimeOffTypeData.length ? true : false} searchBoxLeft={true} ExportExcelCustomisedColumns={ExcelColumns} ExportExcelCustomisedData={this.state.ExportExcelData} onRowClick={this.handleRowClicked}></TableGenerator>
                                     </div>}
                                 </div>
                             </div>
@@ -571,4 +518,4 @@ class PTOPolicy extends Component<PTOPolicyProps, PTOPolicyState> {
         );
     }
 }
-export default PTOPolicy;
+export default TimeOffType;

@@ -460,8 +460,6 @@ class TimeOffRequestForm extends React.Component<TimeOffRequestFormProps, TimeOf
             }
         }
         let EmployeeEmail = data[0].Employee.EMail, EmployeeId = data[0].Employee.ID;
-        this.userAccessableRecord(userGroups, EmployeeId, SynergyManagerIds);
-        let result = this.buttonsVisibility(data[0].Status, EmployeeId, SynergyManagerIds, userGroups);
         let PTOData = this.state.PTOData;
         PTOData.PTOAvailableBalance = [null, undefined, ''].includes(data[0].PTOAvailableBalance) ? '0' : parseFloat(data[0].PTOAvailableBalance).toFixed(4);
         //TO table related
@@ -474,6 +472,7 @@ class TimeOffRequestForm extends React.Component<TimeOffRequestFormProps, TimeOf
         TimeOffTableData.PTOTotal = [null, undefined, ''].includes(data[0].PTOTotal) ? 0 : parseFloat(data[0].PTOTotal);
         TimeOffTableData.TOTotal = [null, undefined, ''].includes(data[0].TOTotal) ? 0 : parseFloat(data[0].TOTotal);
         let PTOTransactionsDayWise=this.mapDatesToHours(TimeOffTableData.PTOSubTotal,new Date(DateUtilities.GetDateMMDDYYYYAsInList(data[0].From)));
+        let result = this.buttonsVisibility(data[0].Status, EmployeeId, SynergyManagerIds, userGroups);
         this.setState({
             EmployeeId: data[0].Employee.ID,
             EmployeeName: data[0].Employee.Title,
@@ -502,6 +501,7 @@ class TimeOffRequestForm extends React.Component<TimeOffRequestFormProps, TimeOf
             PTOTransactionsDayWise:PTOTransactionsDayWise,
             PTOTransactionListData:PTOTransactionListData
         })
+        this.userAccessableRecord(userGroups, EmployeeId, SynergyManagerIds);
     }
     // Below functions are used to check permissions and authentication
     private buttonsVisibility(Status, EmployeeID, SynergyManagerIds, userGroups) {
@@ -2156,7 +2156,7 @@ class TimeOffRequestForm extends React.Component<TimeOffRequestFormProps, TimeOf
         for (let i in TimeOffTableData.TimeOffRowsData) {
 
             if (parseFloat(TimeOffTableData.TimeOffRowsData[i].Total) == 0) {
-                isValid.message = "Total time Off hours in a week cannot be 0 .";
+                isValid.message = "Total time off hours in a week cannot be 0 .";
                 isValid.status = false;
                 document.getElementById(i + "_Total_TimeOffRow").focus();
                 document.getElementById(i + "_Total_TimeOffRow").classList.add('mandatory-FormContent-focus');
@@ -2428,10 +2428,10 @@ class TimeOffRequestForm extends React.Component<TimeOffRequestFormProps, TimeOf
                 const dayKey = daysMapping[dayOfWeek];
                 
                 // Get the value from the data object
-                const value = data[0][dayKey]; // Assuming data is an array with one object
+                const value = [null,undefined,''].includes(data[0][dayKey])?0:parseFloat(data[0][dayKey]); // Assuming data is an array with one object
                 
                 // If there is a value, add it to the result
-                if (value) {
+                if (value>0) {
                     result.push({
                         [DateUtilities.getDateMMDDYYYY(currentDate)]: value
                     });
@@ -2548,7 +2548,7 @@ class TimeOffRequestForm extends React.Component<TimeOffRequestFormProps, TimeOf
                                            {this.bindTimeOffTypes()}
                                         </div>
                                         </div> */}
-                                    <div className="row pt-2 px-2">
+                                    <div className="row py-4 px-2">
 
                                         {/* <div className="col-md-3">
                                                                 <div className="custom-dropdown">

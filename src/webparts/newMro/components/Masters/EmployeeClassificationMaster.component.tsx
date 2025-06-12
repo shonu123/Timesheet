@@ -448,7 +448,7 @@ class EmployeeClassification extends Component<EmployeeClassificationProps, Empl
                                                         />
 
                                                         <div className="col-md-3">
-                                                            <div className="light-text" id='chkPTO'>
+                                                            <div className="light-text" >
                                                                 <InputCheckBox
                                                                     label={"PTO"}
                                                                     name={"PTO"}
@@ -456,11 +456,12 @@ class EmployeeClassification extends Component<EmployeeClassificationProps, Empl
                                                                     onChange={this.handleChange}
                                                                     isforMasters={false}
                                                                     isdisable={false}
+                                                                    id='chkPTO'
                                                                 />
                                                             </div>
                                                         </div>
                                                         <div className="col-md-3">
-                                                            <div className="light-text" id='chkIsActive'>
+                                                            <div className="light-text" >
                                                                 <InputCheckBox
                                                                     label={"Is Active"}
                                                                     name={"IsActive"}
@@ -468,6 +469,7 @@ class EmployeeClassification extends Component<EmployeeClassificationProps, Empl
                                                                     onChange={this.handleChange}
                                                                     isforMasters={false}
                                                                     isdisable={false}
+                                                                    id='chkIsActive'
                                                                 />
                                                             </div>
                                                         </div>

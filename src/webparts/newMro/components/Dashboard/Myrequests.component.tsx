@@ -9,6 +9,8 @@ import "@pnp/sp/webs";
 import "@pnp/sp/lists";
 import "@pnp/sp/items";
 import Loader from '../Shared/Loader';
+import DateUtilities from '../../Utilities/DateUtilities';
+
 export interface MyRequestsProps {
     match: any;
     spContext: any;
@@ -49,7 +51,7 @@ class MyRequests extends React.Component<MyRequestsProps, MyRequestsState> {
         const userId = this.props.spContext.userId;
         let dateFilter = new Date()
         dateFilter.setDate(new Date().getDate()-60);
-        let date = `${dateFilter.getMonth() + 1}/${dateFilter.getDate()}/${dateFilter.getFullYear()}`
+        let date =DateUtilities.getDateMMDDYYYY(dateFilter);
         var filterQuery = "and WeekStartDate ge '"+date+"'"
 
         var filterString = "Initiator/Id eq '"+userId+"' "+filterQuery
@@ -61,13 +63,13 @@ class MyRequests extends React.Component<MyRequestsProps, MyRequestsState> {
                 for (const d of response) {
                     let date;
                     if(!["",undefined,null].includes(d.WeekStartDate)){
-                        date = new Date(d.WeekStartDate.split('-')[1]+'/'+d.WeekStartDate.split('-')[2].split('T')[0]+'/'+d.WeekStartDate.split('-')[0])
-                        date = `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`
+                        date = new Date(DateUtilities.GetDateMMDDYYYYAsInList(d.WeekStartDate));
                     }
 
                     Data.push({
                         Id : d.Id,
-                        Date : date,
+                        Date : DateUtilities.getDateMMDDYYYY(date),
+                        DateForGrid : `<span class='d-none'>${DateUtilities.getDateYYYYMMDDForSorting(date)}</span>${DateUtilities.getDateMMDDYYYY(date)}`,
                         Company: d.ClientName,
                         PendingWith: d.PendingWith == "Approver" ||d.PendingWith == "Manager" ?"Reporting Manager":d.PendingWith,
                         Status : this.getStatus(d.Status),
@@ -95,8 +97,8 @@ class MyRequests extends React.Component<MyRequestsProps, MyRequestsState> {
             }
         return Status
     }
-    private  handleRowClicked = (row) => {
-        let ID = row.Id
+    private  handleRowClicked = (row,Id?) => {
+        let ID = row.Id?row.Id:Id;
         this.setState({TimesheetID:ID,redirect:true})
       }
 
@@ -121,7 +123,8 @@ class MyRequests extends React.Component<MyRequestsProps, MyRequestsState> {
             },
             {
                 name: "Week Start Date",
-                selector: (row, i) => row.Date,
+                selector: (row, i) => row.DateForGrid,
+                cell: row => <div className='' dangerouslySetInnerHTML={{ __html: row.DateForGrid }} onClick={(event)=>this.handleRowClicked(event,row.Id)}/>,
                 sortable: true
             },
             {
@@ -140,6 +143,7 @@ class MyRequests extends React.Component<MyRequestsProps, MyRequestsState> {
                 sortable: true
             }
         ];
+        const searchKeys=['Date','Company','PendingWith','Status'];
         if(this.state.redirect){
             let url = `/WeeklyTimesheet/${this.state.TimesheetID}`;
         return (<Navigate to={url}/>);
@@ -148,7 +152,7 @@ class MyRequests extends React.Component<MyRequestsProps, MyRequestsState> {
             <React.Fragment>
             <div>
                 <div className=''>
-                    <TableGenerator columns={columns} data={this.state.Requests} fileName={'My Timesheets'} showExportExcel={false} showAddButton={true} customBtnClass='px-1 text-right' navigateOnBtnClick={`/WeeklyTimesheet`} btnDivID='divAddNewWeeklyTimeSheet' btnSpanID='newWeeklyTimeSheet' btnCaption=' New' btnTitle='New Weekly Timesheet' searchBoxLeft={false} onRowClick={this.handleRowClicked}></TableGenerator>
+                    <TableGenerator columns={columns} searchKeys={searchKeys} data={this.state.Requests} fileName={'My Timesheets'} showExportExcel={false} showAddButton={true} customBtnClass='px-1 text-right' navigateOnBtnClick={`/WeeklyTimesheet`} btnDivID='divAddNewWeeklyTimeSheet' btnSpanID='newWeeklyTimeSheet' btnCaption=' New' btnTitle='New Weekly Timesheet' searchBoxLeft={false} onRowClick={this.handleRowClicked}></TableGenerator>
                 </div>
             </div>
             {this.state.loading && <Loader />}

@@ -10,9 +10,10 @@ interface modalProps {
   Year:any;
   Data: any;
   ExcelData: any;
+  isTimeOffEmployee
 }
 
-const PTOTransactionHistoryPopup = ({ isVisible, EmployeeTitle,Year, Data, ExcelData, onCancel }: modalProps) => {
+const PTOTransactionHistoryPopup = ({ isVisible, EmployeeTitle,Year, Data, ExcelData,isTimeOffEmployee=false, onCancel }: modalProps) => {
   const columns = [
     // {
     //     name: "",
@@ -28,7 +29,8 @@ const PTOTransactionHistoryPopup = ({ isVisible, EmployeeTitle,Year, Data, Excel
     },
     {
       name: "Date",
-      selector: (row, i) => row.PostedOn,
+      selector: (row, i) => row.PostedOnForGrid,
+      cell: row => <div className='' dangerouslySetInnerHTML={{ __html: row.PostedOnForGrid }}/>,
       width: '150px',
       sortable: true
     },
@@ -97,6 +99,39 @@ const PTOTransactionHistoryPopup = ({ isVisible, EmployeeTitle,Year, Data, Excel
       sortable: true,
     },
   ];
+  const searchKeys=['TransactionType','PostedOn','Hours','Reason'];
+  if(isTimeOffEmployee)  //if Employee is member of 'Time Off Members' hide date and shows From date and To date
+  {
+    columns.splice(1,1);
+    searchKeys.splice(1,1);
+    Exportcolumns.splice(2,1)
+    columns.splice(1,0, {
+         name: "From",
+         selector: (row, i) => row.FromForGrid,
+         cell: row => <div className='' dangerouslySetInnerHTML={{ __html: row.FromForGrid }}/>,
+         width: '150px',
+        sortable: true
+       },
+       {
+           name: "To",
+           selector: (row, i) => row.ToForGrid,
+           cell: row => <div className='' dangerouslySetInnerHTML={{ __html: row.ToForGrid }}/>,
+          width: '150px',
+           sortable: true
+    })
+    searchKeys.splice(1,0,'From','To');
+
+    Exportcolumns.splice(2,0, {
+        name: "From",
+        selector: "From",
+        sortable: true
+    },
+    {
+      name: "To",
+      selector: "To",
+      sortable: true
+    })
+  }
   return isVisible ? (
     <div className="modal" tabIndex={-1} style={{ display: 'block' }} >
       <div className="py-4">
@@ -111,7 +146,7 @@ const PTOTransactionHistoryPopup = ({ isVisible, EmployeeTitle,Year, Data, Excel
               <div className="after-title"></div>
               <div className="media-m-2 media-p-1">
                 <div className='c-v-table table-head-1st-td dataTables_wrapper-overflow'>
-                  <TableGenerator columns={columns} data={Data} fileName={`PTO Transaction History`} showExportExcel={Data.length ? true : false} searchBoxLeft={true} ExportExcelCustomisedColumns={Exportcolumns} wrapColumns={["Reason"]} LargeWidthColumns={["Reason","Employee"]} ExportExcelCustomisedData={ExcelData}></TableGenerator>
+                  <TableGenerator columns={columns} searchKeys={searchKeys} data={Data} fileName={`PTO Transaction History`} showExportExcel={Data.length ? true : false} searchBoxLeft={true} ExportExcelCustomisedColumns={Exportcolumns} wrapColumns={["Reason"]} LargeWidthColumns={["Reason","Employee"]} ExportExcelCustomisedData={ExcelData}></TableGenerator>
                 </div>
               </div>
             </div>

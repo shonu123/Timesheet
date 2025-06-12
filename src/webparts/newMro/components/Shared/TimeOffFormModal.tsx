@@ -436,6 +436,7 @@ const PTOFormModal = ({
       return acc + (isNaN(val) ? 0 : val);
     }, 0);
     PTOSubTotal['Total'] = PTOTotal;
+    
 
     const TOTotal = Object.keys(TOSubTotal).reduce((acc, key) => {
       const val = parseFloat((TOSubTotal as any)[key]);
@@ -459,7 +460,8 @@ const PTOFormModal = ({
       PTOTotal,
       TOTotal,
     };
-
+    finalOutput.PTOSubTotal = [finalOutput.PTOSubTotal]
+    finalOutput.TOSubTotal = [finalOutput.TOSubTotal]
     onSubmit(finalOutput);
     onClose();
   };
@@ -516,7 +518,7 @@ const PTOFormModal = ({
                   {rows.map((row, rowIndex) => (
                     <tr key={rowIndex}>
                       <td style={{ width: 220 }}>
-                        <SearchableDropdown label="Time Off Type" Title="Time Off Type" isLabelRequired={false} name="TimeOffType" id={`TimeOffType_${rowIndex}`} placeholderText="Select Time Off Type" className="" selectedValue={row.TimeOffType} optionLabel="label" optionValue="value" OptionsList={selectOptions} onChange={(selectedOption, actionMeta) => handleTypeChange(rowIndex, selectedOption)} isRequired={false} refElement={selectRefs.current[rowIndex]} disabled={false} noOptionsMessage="No options available" />
+                        <SearchableDropdown label="Time Off Type" Title="Time Off Type" isLabelRequired={false} name="TimeOffType" id={`TimeOffType_${rowIndex}`} placeholderText="Time Off Type" className="ddlTimeOffType form-control text-left" selectedValue={row.TimeOffType} optionLabel="label" optionValue="value" OptionsList={selectOptions} onChange={(selectedOption, actionMeta) => handleTypeChange(rowIndex, selectedOption)} isRequired={false} refElement={selectRefs.current[rowIndex]} disabled={false} noOptionsMessage="No options available" />
                       </td>
                       {filteredDays.map((_, dayIndex) => (
                         <td key={dayIndex}>
@@ -570,7 +572,7 @@ const PTOFormModal = ({
                 </tbody>
               </table>
               <div className="">
-                <div className="col-md-12 text-center my-2 mt-5">
+                <div className="text-center my-2">
                   <button type="button" onClick={handleSubmit} className="SubmitButtons btn" title="Submit">
                     Submit
                   </button>

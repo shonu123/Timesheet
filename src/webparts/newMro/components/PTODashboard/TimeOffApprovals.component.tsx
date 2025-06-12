@@ -16,7 +16,7 @@ import customToaster from '../Shared/Toaster.component';
 import { ToasterTypes } from '../../Constants/Constants';
 import DateUtilities from '../../Utilities/DateUtilities';
 
-export interface HRApprovalProps {
+export interface TimeOffApprovalsProps {
     match: any;
     spContext: any;
     spHttpClient: SPHttpClient;
@@ -24,7 +24,7 @@ export interface HRApprovalProps {
     history: any;
 }
 
-export interface HRApprovalState {
+export interface TimeOffApprovalsState {
     // SynergyManager: Array<Object>;
     // loading:boolean;
     // message : string;
@@ -42,8 +42,8 @@ export interface HRApprovalState {
     // AssignedToId:String;
 }
 
-class HRApproval extends React.Component<HRApprovalProps, HRApprovalState> {
-    constructor(props: HRApprovalProps) {
+class TimeOffApprovals extends React.Component<TimeOffApprovalsProps, TimeOffApprovalsState> {
+    constructor(props: TimeOffApprovalsProps) {
         super(props);
         sp.setup({
             spfxContext: this.props.context
@@ -51,7 +51,7 @@ class HRApproval extends React.Component<HRApprovalProps, HRApprovalState> {
         // this.state = {SynergyManager: [], loading:false,message:'',title:'',showHideModal:false,isSuccess:true,comments:'',Action:'',errorMessage:'',ItemID:0,SelectedRows:[],SelectedValue:'',AssignedToId:'',DelegateToId:''};
     }
     public state = {
-        HRApprovals: [],
+        SynergyManager: [],
         loading: false, message: '',
         title: '',
         showHideModal: false,
@@ -62,7 +62,7 @@ class HRApproval extends React.Component<HRApprovalProps, HRApprovalState> {
         ItemID: 0,
         SelectedRows: [],
         SelectedValue: '',
-        DelegateToUsers: [],
+        // DelegateToUsers: [],
         TimeOffID:'',
         redirect: false,
         //  AssignedToId:'',
@@ -70,20 +70,27 @@ class HRApproval extends React.Component<HRApprovalProps, HRApprovalState> {
     };
 
     public componentDidMount() {
-        this.getHRApprovals();
+        this.SynergyManagerApproval();
     }
-    private getHRApprovals = async () => {
+    // this function is used to get 1 month records of weeklytime data of the employees who's manager is current logged in user from weeklytimesheet list
+    private SynergyManagerApproval = async () => {
         this.setState({ loading: true });
         const userId = this.props.spContext.userId;
-        var filterString = "PendingWith eq 'HR'";
+        // let dateFilter = new Date()
+        // dateFilter.setDate(new Date().getDate() - 60);
+        // let date = `${dateFilter.getMonth() + 1}/${dateFilter.getDate()}/${dateFilter.getFullYear()}`
+        // var filterQuery = "and From ge '" + date + "'"
+        // var filterString = "SynergyManager/Id eq '"+userId+"' and PendingWith eq 'Manager' and Status eq '"+StatusType.Submit+"'"
+        var filterString = "SynergyManager/Id eq '"+userId+"' and PendingWith eq 'Manager'";
         sp.web.lists.getByTitle('TimeOffEmployees').items.top(5000).filter(filterString).expand("SynergyManager,Employee").select('SynergyManager/Title,SynergyManager/EMail,Employee/Title,Employee/EMail,*').orderBy('Modified', false).getAll()
             .then((response) => {
+                // console.log(response)
                 let Data = [];
                 for (const d of response) {
                     let fromDate = new Date(DateUtilities.GetDateMMDDYYYYAsInList(d.From));
                     let toDate = new Date(DateUtilities.GetDateMMDDYYYYAsInList(d.To));
-                    
                     //let timeOffTypeStr = "<div>"+JSON.parse(d.TimeOffType).join("</div><div>")+"</div>"
+                    
                     Data.push({
                         Id : d.Id,
                         EmployeName: d.Employee.Title,
@@ -101,8 +108,9 @@ class HRApproval extends React.Component<HRApprovalProps, HRApprovalState> {
                         PendingWith: d.PendingWith == "Approver" ||d.PendingWith == "Manager" ?"Synergy Manager":d.PendingWith,
                         Status : this.getStatus(d.Status),
                     })
+                    
                 }
-                this.setState({HRApprovals:Data,loading:false})
+                this.setState({SynergyManager:Data,loading:false})
             }).catch(err => {
                 console.log('Failed to fetch data.', err);
             });
@@ -169,7 +177,7 @@ class HRApproval extends React.Component<HRApprovalProps, HRApprovalState> {
             // },
             {
                 name: "From",
-                selector: (row, i) => row.FromDate ,
+                selector: (row, i) => row.FromDateForGrid ,
                 cell: row => <div className='' dangerouslySetInnerHTML={{ __html: row.FromDateForGrid }} onClick={(event)=>this.handleRowClicked(event,row.Id)}/>,
                 width: '120px',
                 sortable: true
@@ -219,6 +227,7 @@ class HRApproval extends React.Component<HRApprovalProps, HRApprovalState> {
             },
         ];
         const searchKeys=['EmployeName','FromDate','ToDate','PTOAvailableBalance','PTOTotal','TOTotal','TotalHrs','Status'];
+
         if(this.state.redirect){
             let url = `/TimeOffRequestForm/${this.state.TimeOffID}`;
         return (<Navigate to={url}/>);
@@ -227,7 +236,7 @@ class HRApproval extends React.Component<HRApprovalProps, HRApprovalState> {
             <React.Fragment>
                 <div>
                     <div className=''>
-                        <TableGenerator columns={columns} searchKeys={searchKeys} data={this.state.HRApprovals} fileName={''} showExportExcel={false}
+                        <TableGenerator columns={columns} searchKeys={searchKeys} data={this.state.SynergyManager} fileName={''} showExportExcel={false}
                             showAddButton={false} searchBoxLeft={true} onRowClick={this.handleRowClicked} ></TableGenerator>
                     </div>
                 </div>
@@ -237,4 +246,4 @@ class HRApproval extends React.Component<HRApprovalProps, HRApprovalState> {
         );
     }
 }
-export default HRApproval
+export default TimeOffApprovals;

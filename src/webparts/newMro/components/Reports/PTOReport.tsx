@@ -583,7 +583,7 @@ class PTOReport extends React.Component<PTOReportProps, PTOReportState> {
         else {
             return (
                 <React.Fragment>
-                    <PTOTransactionHistoryPopup isVisible={this.state.showPTOTransactionPopup} isSuccess={false} onCancel={this.closePTOTransactionPopup} EmployeeTitle={this.state.RowClickedEmployeeTitle} Year={this.state.Year} Data={this.state.PTOHistoryData} ExcelData={this.state.PTOHistoryExcelData}></PTOTransactionHistoryPopup>
+                    {/* <PTOTransactionHistoryPopup isVisible={this.state.showPTOTransactionPopup} isSuccess={false} onCancel={this.closePTOTransactionPopup} EmployeeTitle={this.state.RowClickedEmployeeTitle} Year={this.state.Year} Data={this.state.PTOHistoryData} ExcelData={this.state.PTOHistoryExcelData}></PTOTransactionHistoryPopup> */}
                     <div className='container-fluid'>
                         <div className='FormContent-2'>
                             <div className="title">PTO Report

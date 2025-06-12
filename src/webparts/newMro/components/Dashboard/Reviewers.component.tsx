@@ -16,6 +16,8 @@ import { Toaster } from 'react-hot-toast';
 import customToaster from '../Shared/Toaster.component';
 import { ToasterTypes } from '../../Constants/Constants';
 import { addDays } from 'office-ui-fabric-react';
+import DateUtilities from '../../Utilities/DateUtilities';
+
 export interface ReviewerApprovalsProps {
     match: any;
     spContext: any;
@@ -80,7 +82,7 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
         const userId = this.props.spContext.userId;
         let dateFilter = new Date()
         dateFilter.setDate(new Date().getDate()-60);
-        let date = `${dateFilter.getMonth() + 1}/${dateFilter.getDate()}/${dateFilter.getFullYear()}`
+        let date = DateUtilities.getDateMMDDYYYY(dateFilter);
         var filterQuery = " and WeekStartDate ge '"+date+"'"
 
         // var filterString = "Reviewers/Id eq '"+userId+"' and PendingWith eq 'Reviewer' and Status eq '"+StatusType.ManagerApprove+"'"
@@ -119,14 +121,15 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
 
                 let Data = [];
                 for (const d of responseData) {
-                    let date = new Date(d.WeekStartDate.split('-')[1]+'/'+d.WeekStartDate.split('-')[2].split('T')[0]+'/'+d.WeekStartDate.split('-')[0])
+                    let date = new Date(DateUtilities.GetDateMMDDYYYYAsInList(d.WeekStartDate))
                     let isBillable = true;
                     if(d.ClientName.toLowerCase().includes('synergy')){
                         isBillable = false
                     }
                     Data.push({
                         Id : d.Id,
-                        Date : `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`,
+                        Date : DateUtilities.getDateMMDDYYYY(date),
+                        DateForGrid : `<span class='d-none'>${DateUtilities.getDateYYYYMMDDForSorting(date)}</span>${DateUtilities.getDateMMDDYYYY(date)}`,
                         EmployeName: d.Name,
                         PendingWith: d.PendingWith,
                         Status : this.getStatus(d.Status),
@@ -155,7 +158,7 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
 
                 if(delRmData.length){
                     for (const d of delRmData) {
-                        let date = new Date(d.WeekStartDate.split('-')[1]+'/'+d.WeekStartDate.split('-')[2].split('T')[0]+'/'+d.WeekStartDate.split('-')[0])
+                        let date = new Date(DateUtilities.GetDateMMDDYYYYAsInList(d.WeekStartDate))
                         let isBillable = true;
                         if (d.ClientName.toLowerCase().includes('synergy')) {
                             isBillable = false
@@ -166,7 +169,8 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
                         // }
                         Data.push({
                             Id: d.Id,
-                            Date: `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`,
+                            Date : DateUtilities.getDateMMDDYYYY(date),
+                            DateForGrid : `<span class='d-none'>${DateUtilities.getDateYYYYMMDDForSorting(date)}</span>${DateUtilities.getDateMMDDYYYY(date)}`,
                             EmployeName: d.Name,
                             PendingWith: d.PendingWith == "Approver" || d.PendingWith == "Manager" ? "Reporting Manager" : d.PendingWith,
                             Status: d.Status == StatusType.ReviewerReject ? 'Rejected by Synergy' : d.Status == StatusType.ManagerReject ? 'Rejected by Reporting Manager' : d.Status,
@@ -268,13 +272,22 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
     }
 
 // This function is used to Display confirm popup based on Approve/Reject
-    private showConfirmApproveRejectPopup = (e) =>{
+    private showConfirmApproveRejectPopup = async(e) =>{
         // console.log(e.target.id);
         // console.log(e.target.dataset);
         // console.log(e.target.dataset.name)
         let recordId = parseInt(e.target.id);
         this.setState({ItemID : recordId})
-        let name = e.target.dataset.name
+        let name = e.target.dataset.name;
+        //HOLDING THE REVIEWER FROM APPROVING THE TIMESHEET IF CORRESPONDING TimeOffRec is not approved by HR :START
+        let selRecord=this.state.Reviewers.find(item=>item.Id==e.target.id);
+        let TimeOffRec= await this.getTimeOffItemDataByFromDate(selRecord.Date,selRecord.EmployeeId);
+        if(TimeOffRec.length && TimeOffRec[0].Status!=StatusType.Approved)
+        {
+            customToaster('toster-warning', ToasterTypes.Warning,`'time off request' pending with HR approval. Cannot ${name.toLowerCase()}`, 4000); 
+            return false;
+        }
+        //HOLDING THE REVIEWER FROM APPROVING THE TIMESHEET IF CORRESPONDING TimeOffRec is not approved by HR:END
         if(name == 'Approve')
         {
             this.setState({message : 'Are you sure you want to approve?',title : 'Approve', Action : 'Approve',showHideModal : true,isSuccess:true,ModalHeader:'modal-header-Approve'});
@@ -289,6 +302,27 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
         else{
             this.setState({showHideModal : false})
         }
+    }
+    //This function is used to get employee's corresponding week timeoffrequest
+    private async getTimeOffItemDataByFromDate(FromDate,EmployeeId) {
+        let TimeOff=[];
+        if (![null, "", undefined].includes(FromDate)) {
+            let prevDate = addDays(new Date(FromDate), -1);
+            let nextDate = addDays(new Date(FromDate), 1);
+            let prev = DateUtilities.getDateMMDDYYYY(prevDate);
+            let next = DateUtilities.getDateMMDDYYYY(nextDate);
+            let StatusfilterQuery=`(Status eq '${StatusType.Submit}' or Status eq '${StatusType.ManagerApprove}' or Status eq '${StatusType.Approved}')`;
+            let filterQuery = `(From gt '${prev}' and From lt '${next}' and Employee/ID eq '${EmployeeId}') and ${StatusfilterQuery}`;
+            let selectQuery = "Employee/ID,Employee/Title,Employee/EMail,SynergyManager/ID,SynergyManager/Title,SynergyManager/EMail,*";
+            try {
+                 TimeOff = await sp.web.lists.getByTitle('TimeOffEmployees').items.filter(filterQuery).select(selectQuery).expand('Employee,SynergyManager').getAll();
+                 return TimeOff;
+            }
+            catch (e) {
+                console.log('Failed to get TimeOffRequest Data' +e);
+            }
+        }
+       
     }
     //this function calls handleApprove/handleReject function based on the user action
     private handleApproveReject = (e) =>{
@@ -361,32 +395,33 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
         }
         sp.web.lists.getByTitle('WeeklyTimeSheet').items.getById(data[0].Id).update(postObject).then((res) => {
                 // to update Employee PTO
-                if(currentEmployeePTO.length && InitialRecord[0].EligibleforPTO && InitialRecord[0].PTOHrs!=0 && parseFloat(PTOHrs)>0)
-                {
-                    sp.web.lists.getByTitle('EmployeePTO').items.getById(currentEmployeePTO[0].Id).update(PTOData).then((resPTO) => {
-                        // to add Employee PTO transaction
-                        PTOTransactionRecords
-                        .forEach(pto => {
-                            sp.web.lists.getByTitle('PTOTransactions').items.getById(pto.ID).inBatch(PTOTransactionBatch).update(Transaction);
-                        });
-                        // sp.web.lists.getByTitle('PTOTransactions').items.add(PTOTransaction).then((resPTOTranc) => {
-                        Promise.all([PTOTransactionBatch.execute()]).then((resPTOTranc) => {
-                            this.setState({showHideModal : false,ItemID:0,message:'',title:'',Action:'',loading: false,successPopUp:false,modalTitle:'Record approved successfully'});
-                            customToaster('toster-success',ToasterTypes.Success,'Weekly timesheet '+StatusType.Approved.toLowerCase()+ ' succesfully',2000);
-                        this.ReviewerApproval();
-                        }).catch(err => {
-                           console.log('Error while adding PTO transaction.', err);
-                        });
-                     }).catch(err => {
-                   console.log('Error while update Employee PTO.', err);
-                    });
-                  }
-                  else
-                  {
+                //COMMENTED TO STOP PTO CONSIDERATION FROM TIMESHEET FORM
+                // if(currentEmployeePTO.length && InitialRecord[0].EligibleforPTO && InitialRecord[0].PTOHrs!=0 && parseFloat(PTOHrs)>0)
+                // {
+                //     sp.web.lists.getByTitle('EmployeePTO').items.getById(currentEmployeePTO[0].Id).update(PTOData).then((resPTO) => {
+                //         // to add Employee PTO transaction
+                //         PTOTransactionRecords
+                //         .forEach(pto => {
+                //             sp.web.lists.getByTitle('PTOTransactions').items.getById(pto.ID).inBatch(PTOTransactionBatch).update(Transaction);
+                //         });
+                //         // sp.web.lists.getByTitle('PTOTransactions').items.add(PTOTransaction).then((resPTOTranc) => {
+                //         Promise.all([PTOTransactionBatch.execute()]).then((resPTOTranc) => {
+                //             this.setState({showHideModal : false,ItemID:0,message:'',title:'',Action:'',loading: false,successPopUp:false,modalTitle:'Record approved successfully'});
+                //             customToaster('toster-success',ToasterTypes.Success,'Weekly timesheet '+StatusType.Approved.toLowerCase()+ ' succesfully',2000);
+                //         this.ReviewerApproval();
+                //         }).catch(err => {
+                //            console.log('Error while adding PTO transaction.', err);
+                //         });
+                //      }).catch(err => {
+                //    console.log('Error while update Employee PTO.', err);
+                //     });
+                //   }
+                //   else
+                //   {
                     this.setState({showHideModal : false,ItemID:0,message:'',title:'',Action:'',loading: false,successPopUp:false,modalTitle:'Record approved successfully'});
                     customToaster('toster-success',ToasterTypes.Success,'Weekly timesheet '+StatusType.Approved.toLowerCase()+ ' succesfully',2000);
                 this.ReviewerApproval();
-                  }
+                  //}
         }).catch(err => {
            console.log('Failed to fetch data.', err);
     });
@@ -522,30 +557,31 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
     
             sp.web.lists.getByTitle('WeeklyTimeSheet').items.getById(data[0].Id).update(postObject).then((res) => {
                     // to update Employee PTO
-                    if(currentEmployeePTO.length && InitialRecord[0].EligibleforPTO && InitialRecord[0].PTOHrs!=0 && parseFloat(PTOHrs)>0){
-                        sp.web.lists.getByTitle('EmployeePTO').items.getById(currentEmployeePTO[0].Id).update(PTOData).then((resPTO) => {
-                            // to add Employee PTO transaction
-                            // sp.web.lists.getByTitle('PTOTransactions').items.add(PTOTransaction).then((resPTOTranc) => {
-                        PTOTransactionRecords
-                        .forEach(pto => {
-                            sp.web.lists.getByTitle('PTOTransactions').items.getById(pto.ID).inBatch(PTOTransactionBatch).update(Transaction);
-                        });
-                        Promise.all([PTOTransactionBatch.execute()]).then((resPTOTranc) => {
-                                this.setState({showHideModal : false,ItemID:0,message:'',title:'',Action:'',loading: false,successPopUp:false,modalTitle:'Record rejected successfully'});
-                             customToaster('toster-success',ToasterTypes.Success,'Weekly timesheet '+StatusType.Reject.toLowerCase()+ ' succesfully',2000);
-                             this.ReviewerApproval();
-                            }).catch(err => {
-                               console.log('Error while adding PTO transaction.', err);
-                            });
-                          }).catch(err => {
-                       console.log('Error while update Employee PTO.', err);
-                         });
-                    }
-                    else{
+                    //COMMENTED TO STOP PTO CONSIDERATION FROM TIMESHEET FORM
+                    // if(currentEmployeePTO.length && InitialRecord[0].EligibleforPTO && InitialRecord[0].PTOHrs!=0 && parseFloat(PTOHrs)>0){
+                    //     sp.web.lists.getByTitle('EmployeePTO').items.getById(currentEmployeePTO[0].Id).update(PTOData).then((resPTO) => {
+                    //         // to add Employee PTO transaction
+                    //         // sp.web.lists.getByTitle('PTOTransactions').items.add(PTOTransaction).then((resPTOTranc) => {
+                    //     PTOTransactionRecords
+                    //     .forEach(pto => {
+                    //         sp.web.lists.getByTitle('PTOTransactions').items.getById(pto.ID).inBatch(PTOTransactionBatch).update(Transaction);
+                    //     });
+                    //     Promise.all([PTOTransactionBatch.execute()]).then((resPTOTranc) => {
+                    //             this.setState({showHideModal : false,ItemID:0,message:'',title:'',Action:'',loading: false,successPopUp:false,modalTitle:'Record rejected successfully'});
+                    //          customToaster('toster-success',ToasterTypes.Success,'Weekly timesheet '+StatusType.Reject.toLowerCase()+ ' succesfully',2000);
+                    //          this.ReviewerApproval();
+                    //         }).catch(err => {
+                    //            console.log('Error while adding PTO transaction.', err);
+                    //         });
+                    //       }).catch(err => {
+                    //    console.log('Error while update Employee PTO.', err);
+                    //      });
+                    // }
+                    // else{
                         this.setState({showHideModal : false,ItemID:0,message:'',title:'',Action:'',loading: false,successPopUp:false,modalTitle:'Record rejected successfully'});
                              customToaster('toster-success',ToasterTypes.Success,'Weekly timesheet '+StatusType.Reject.toLowerCase()+ ' succesfully',2000);
                              this.ReviewerApproval();
-                    }
+                    //}
             }).catch(err => {
                console.log('Failed to fetch data.', err);
         });
@@ -675,8 +711,8 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
         console.log('Failed to fetch data.', err);
     });
     }
-    private  handleRowClicked = (row) => {
-        let ID = row.Id
+    private  handleRowClicked = (row,Id?) => {
+        let ID = row.Id?row.Id:Id;
         this.setState({TimesheetID:ID,redirect:true})
     }
     public render() {
@@ -700,7 +736,8 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
                 },
                 {
                     name: "Date",
-                    selector: (row, i) => row.Date,
+                    selector: (row, i) => row.DateForGrid,
+                    cell: row => <div className='' dangerouslySetInnerHTML={{ __html: row.DateForGrid }} onClick={(event)=>this.handleRowClicked(event,row.Id)}/>,
                     width: '100px',
                     sortable: true
                 },
@@ -801,6 +838,8 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
                     // width: '100px'
                 }
             ];
+            const searchKeys=['Date','EmployeName','Client','Status','PendingWith','BillableHrs','OTTotalHrs','TotalBillableHours','HolidayHrs','PTOHrs','GrandTotal'];
+
             if(this.state.redirect){
                 let url = `/WeeklyTimesheet/${this.state.TimesheetID}`;
             return (<Navigate to={url}/>);
@@ -815,7 +854,7 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
                 
                 <div>
                     <div className=''>
-                        <TableGenerator columns={columns} data={this.state.Reviewers} fileName={'My Reviews'} showExportExcel={false} showAddButton={false} searchBoxLeft={true} ExportExcelCustomisedData={this.state.ExportExcelData} onRowClick={this.handleRowClicked}></TableGenerator>
+                        <TableGenerator columns={columns} searchKeys={searchKeys} data={this.state.Reviewers} fileName={'My Reviews'} showExportExcel={false} showAddButton={false} searchBoxLeft={true} ExportExcelCustomisedData={this.state.ExportExcelData} onRowClick={this.handleRowClicked}></TableGenerator>
                     </div>
                 </div>
                     <Toaster />  

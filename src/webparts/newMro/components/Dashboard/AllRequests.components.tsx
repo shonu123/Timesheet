@@ -9,6 +9,7 @@ import "@pnp/sp/webs";
 import "@pnp/sp/lists";
 import "@pnp/sp/items";
 import Loader from '../Shared/Loader';
+import DateUtilities from '../../Utilities/DateUtilities';
 export interface AllRequestsProps {
     match: any;
     spContext: any;
@@ -48,7 +49,7 @@ class AllRequests extends React.Component<AllRequestsProps,AllRequestsState> {
         let userID = this.props.spContext.userId;
         let dateFilter = new Date();
         dateFilter.setDate(new Date().getDate()-60);
-        let date = `${dateFilter.getMonth() + 1}/${dateFilter.getDate()}/${dateFilter.getFullYear()}`;
+        let date = DateUtilities.getDateMMDDYYYY(dateFilter);
         var TimeSheetFilterQuery = "WeekStartDate ge '"+date+"'";
         let EmpMasterSelQuery = "Employee/ID,Employee/Title,ReportingManager/EMail,Reviewers/EMail,ReportingManager/ID,Reviewers/ID";
         let TimeSheetSelQuery = "Initiator/ID,Initiator/EMail,Reviewers/EMail,Reviewers/Id,ReportingManager/Id,ReportingManager/EMail,ReportingManager/Title,*";
@@ -95,14 +96,15 @@ class AllRequests extends React.Component<AllRequestsProps,AllRequestsState> {
                     }
                     // ExcelRm = ExcelRm.substring(0, ExcelRm.lastIndexOf("\n"));
                 }
-                let date = new Date(d.WeekStartDate.split('-')[1]+'/'+d.WeekStartDate.split('-')[2].split('T')[0]+'/'+d.WeekStartDate.split('-')[0]);
+                let date = new Date(DateUtilities.GetDateMMDDYYYYAsInList(d.WeekStartDate));
                 let isBillable = true;
                 if(d.ClientName.toLowerCase().includes('synergy')){
                     isBillable = false
                 }
                 Data.push({
                     Id : d.Id,
-                    Date : `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`,
+                    Date : DateUtilities.getDateMMDDYYYY(date),
+                    DateForGrid : `<span class='d-none'>${DateUtilities.getDateYYYYMMDDForSorting(date)}</span>${DateUtilities.getDateMMDDYYYY(date)}`,
                     EmployeName: d.Name,
                     // Status : d.Status == StatusType.Submit?'Pending With Reporting Manager':d.Status== StatusType.InProgress?'Pending With Reviewer':d.Status,
                     Status : this.getStatus(d.Status),
@@ -115,11 +117,12 @@ class AllRequests extends React.Component<AllRequestsProps,AllRequestsState> {
                     HolidayHrs:parseFloat(parseFloat(JSON.parse(d.ClientHolidayHrs)[0].Total).toFixed(2)),
                     PTOHrs:parseFloat(parseFloat(JSON.parse(d.PTOHrs)[0].Total).toFixed(2)),
                     TotalHours: parseFloat(parseFloat(d.GrandTotal).toFixed(2)),
-                    RM : Rm
+                    RM : ExcelRm,
+                    RMForGrid : Rm
                 })
                 ExcelData.push({
                     Id : d.Id,
-                    Date : `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`,
+                    Date : DateUtilities.getDateMMDDYYYY(date),
                     EmployeName: d.Name,
                     // Status : d.Status == StatusType.Submit?'Pending With Reporting Manager':d.Status== StatusType.InProgress?'Pending With Reviewer':d.Status,
                     Status : this.getStatus(d.Status),
@@ -245,7 +248,8 @@ class AllRequests extends React.Component<AllRequestsProps,AllRequestsState> {
             },
             {
                 name: "Date",
-                selector: (row, i) => row.Date,
+                selector: (row, i) => row.DateForGrid,
+                cell: row => <div className='' dangerouslySetInnerHTML={{ __html: row.DateForGrid }} onClick={(event)=>this.handleRowClicked(event,row.Id)}/>,
                 width: '120px',
                 sortable: true
             },
@@ -263,8 +267,8 @@ class AllRequests extends React.Component<AllRequestsProps,AllRequestsState> {
             },
             {
                 name: "Reporting Manager",
-                selector: (row, i) => row.RM,
-                cell: row => <div className='divManagers' dangerouslySetInnerHTML={{ __html: row.RM }} onClick={(event)=>this.handleRowClicked(event,row.Id)}/>,
+                selector: (row, i) => row.RMForGrid,
+                cell: row => <div className='divManagers' dangerouslySetInnerHTML={{ __html: row.RMForGrid }} onClick={(event)=>this.handleRowClicked(event,row.Id)}/>,
                 width: '230px',
                 sortable: true
             },
@@ -403,6 +407,8 @@ class AllRequests extends React.Component<AllRequestsProps,AllRequestsState> {
                 sortable: true
             }
         ];
+        const searchKeys=['Date','EmployeName','Client','RM','Status','PendingWith','BillableHours','OTTotalHrs','TotalBillableHrs','HolidayHrs','PTOHrs','TotalHours'];
+
         if(this.state.redirect){
             let url = `/WeeklyTimesheet/${this.state.TimesheetID}`;
         return (<Navigate to={url}/>);
@@ -417,7 +423,7 @@ class AllRequests extends React.Component<AllRequestsProps,AllRequestsState> {
                         </button></NavLink>
                 </div></div>
                 <div className='c-v-table'>
-                    <TableGenerator columns={columns} data={this.state.AllRequests} fileName={'All Timesheets'} showExportExcel={this.state.AllRequests.length?true:false} searchBoxLeft={true} ExportExcelCustomisedColumns={Exportcolumns} ExportExcelCustomisedData={this.state.ExportExcelData} wrapColumns={["RM","Client"]} LargeWidthColumns={["EmployeName","Client","RM"]} onRowClick={this.handleRowClicked}></TableGenerator>
+                    <TableGenerator columns={columns} searchKeys={searchKeys} data={this.state.AllRequests} fileName={'All Timesheets'} showExportExcel={this.state.AllRequests.length?true:false} searchBoxLeft={true} ExportExcelCustomisedColumns={Exportcolumns} ExportExcelCustomisedData={this.state.ExportExcelData} wrapColumns={["RM","Client"]} LargeWidthColumns={["EmployeName","Client","RM"]} onRowClick={this.handleRowClicked}></TableGenerator>
                 </div>
             </div>
             {this.state.loading && <Loader />}

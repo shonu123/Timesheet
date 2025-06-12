@@ -27,6 +27,8 @@ import ImportExcel from '../Shared/ImportExcel';
 import DatePicker from "../Shared/DatePickerField";
 import { addDays } from 'office-ui-fabric-react';
 import { PeoplePicker, PrincipalType } from "@pnp/spfx-controls-react/lib/PeoplePicker";
+import DateUtilities from '../../Utilities/DateUtilities';
+
 
 interface TimesheetDelegationProps {
     match: any;
@@ -327,21 +329,25 @@ class TimesheetDelegation extends Component<TimesheetDelegationProps, TimesheetD
         let tableDataObj = []
         let excelData = []
         for (const d of filterDelegates) {
+            let From=new Date(DateUtilities.GetDateMMDDYYYYAsInList(d.From));
+            let To=new Date(DateUtilities.GetDateMMDDYYYYAsInList(d.To));
                     tableDataObj.push({
                         Id : d.Id,
                         Client: d.Client==null?'':d.Client,
                         ReportingManager: d.Authorizer.Title,
                         DelegateTo:d.DelegateTo.Title,
-                        FromDate : d.From.split('-')[1]+'/'+d.From.split('-')[2].split('T')[0]+'/'+d.From.split('-')[0],
-                        ToDate: d.To.split('-')[1]+'/'+d.To.split('-')[2].split('T')[0]+'/'+d.To.split('-')[0],
+                        FromDate : DateUtilities.getDateMMDDYYYY(From),
+                        FromDateForGrid : `<span class='d-none'>${DateUtilities.getDateYYYYMMDDForSorting(From)}</span>${DateUtilities.getDateMMDDYYYY(From)}`,
+                        ToDate : DateUtilities.getDateMMDDYYYY(From),
+                        ToDateForGrid : `<span class='d-none'>${DateUtilities.getDateYYYYMMDDForSorting(To)}</span>${DateUtilities.getDateMMDDYYYY(To)}`,
                     })
                     excelData.push({
                         Id : d.Id,
                         Client: d.Client,
                         ReportingManager: d.Authorizer.Title,
                         DelegateTo:d.DelegateTo.Title,
-                        FromDate : d.From.split('-')[1]+'/'+d.From.split('-')[2].split('T')[0]+'/'+d.From.split('-')[0],
-                        ToDate: d.To.split('-')[1]+'/'+d.To.split('-')[2].split('T')[0]+'/'+d.To.split('-')[0],
+                        FromDate : DateUtilities.getDateMMDDYYYY(From),
+                        ToDate : DateUtilities.getDateMMDDYYYY(From),
                     })
         }
         //
@@ -601,12 +607,12 @@ class TimesheetDelegation extends Component<TimesheetDelegationProps, TimesheetD
             }
              }
              if(!data[0].Client.toLowerCase().includes('synergy')){
-                this.setState({isSynergyEmployee:false,AuthorizerId:data[0].AuthorizerId,DelegateToId:data[0].DelegateToId,DelegateToObj: Delegateobj,DelegateToName:data[0].DelegateTo.Title,From :new Date(data[0].From.split('-')[1]+'/'+data[0].From.split('-')[2].split('T')[0]+'/'+data[0].From.split('-')[0]),To: new Date(data[0].To.split('-')[1]+'/'+data[0].To.split('-')[2].split('T')[0]+'/'+data[0].To.split('-')[0]),ActionHistory:JSON.parse(data[0].ActionHistory),PreviousDateHistory:JSON.parse(data[0].PreviousDateHistory),Client: data[0].Client,ItemID:data[0].ID,SaveUpdateText:'Update',addNewRequest:true,DelegateToEMail:data[0].DelegateTo.EMail,loading:false})
+                this.setState({isSynergyEmployee:false,AuthorizerId:data[0].AuthorizerId,DelegateToId:data[0].DelegateToId,DelegateToObj: Delegateobj,DelegateToName:data[0].DelegateTo.Title,From : new Date(DateUtilities.getDateMMDDYYYY(data[0].From)),To: new Date(DateUtilities.getDateMMDDYYYY(data[0].To)),ActionHistory:JSON.parse(data[0].ActionHistory),PreviousDateHistory:JSON.parse(data[0].PreviousDateHistory),Client: data[0].Client,ItemID:data[0].ID,SaveUpdateText:'Update',addNewRequest:true,DelegateToEMail:data[0].DelegateTo.EMail,loading:false})
                 if(Delegateobj.length==0)
                 customToaster('toster-error',ToasterTypes.Error,"'Delegate To' not configured for '"+data[0].Client+"' client.",4000);
              }
              else{
-                this.setState({isSynergyEmployee:true,AuthorizerId:data[0].AuthorizerId,DelegateToId:data[0].DelegateToId,DelegateToObj: Delegateobj,DelegateToName:data[0].DelegateTo.Title,From :new Date(data[0].From.split('-')[1]+'/'+data[0].From.split('-')[2].split('T')[0]+'/'+data[0].From.split('-')[0]),To: new Date(data[0].To.split('-')[1]+'/'+data[0].To.split('-')[2].split('T')[0]+'/'+data[0].To.split('-')[0]),ActionHistory:JSON.parse(data[0].ActionHistory),PreviousDateHistory:JSON.parse(data[0].PreviousDateHistory),Client: data[0].Client,ItemID:data[0].ID,SaveUpdateText:'Update',addNewRequest:true,DelegateToEMail:data[0].DelegateTo.EMail,loading:false})
+                this.setState({isSynergyEmployee:true,AuthorizerId:data[0].AuthorizerId,DelegateToId:data[0].DelegateToId,DelegateToObj: Delegateobj,DelegateToName:data[0].DelegateTo.Title,From :new Date(DateUtilities.getDateMMDDYYYY(data[0].From)),To: new Date(DateUtilities.getDateMMDDYYYY(data[0].To)),ActionHistory:JSON.parse(data[0].ActionHistory),PreviousDateHistory:JSON.parse(data[0].PreviousDateHistory),Client: data[0].Client,ItemID:data[0].ID,SaveUpdateText:'Update',addNewRequest:true,DelegateToEMail:data[0].DelegateTo.EMail,loading:false})
              }
                 //Comments: data[0].Comments,
                 // document.getElementById("txtClientName").scrollIntoView({behavior: 'smooth', block: 'start'});
@@ -646,10 +652,11 @@ class TimesheetDelegation extends Component<TimesheetDelegationProps, TimesheetD
             addNewRequest: false
         });
     }
-    private  handleRowClicked = (row) => {
-        window.location.hash=`#/TimesheetDelegation/${row.Id}`;
-        this.props.match.params.id = row.Id
-        this.onEditClickHandler(row.Id)
+    private  handleRowClicked = (row,Id?) => {
+        let ID=row.Id?row.Id:Id;
+        window.location.hash=`#/TimesheetDelegation/${ID}`;
+        this.props.match.params.id = ID;
+        this.onEditClickHandler(ID);
       }
     private cancelHandler(){
         this.resetForm()
@@ -856,68 +863,70 @@ class TimesheetDelegation extends Component<TimesheetDelegationProps, TimesheetD
             },
             {
                 name: "From",
-                selector: (row, i) => row.FromDate,
+                selector: (row, i) => row.FromDateForGrid,
+                cell: row => <div className='' dangerouslySetInnerHTML={{ __html: row.FromDateForGrid }} onClick={(event)=>this.handleRowClicked(event,row.Id)}/>,
                 // width: '250px',
                 sortable: true
             },
             {
                 name: "To",
-                selector: (row, i) => row.ToDate,
+                selector: (row, i) => row.ToDateForGrid,
+                cell: row => <div className='' dangerouslySetInnerHTML={{ __html: row.ToDateForGrid }} onClick={(event)=>this.handleRowClicked(event,row.Id)}/>,
                 // width: '250px',
                 sortable: true
             }
            
         ];
-        const AdminColumns = [
-            {
-                name: "Edit",
-                selector: (row, i) => row.Id,
-                export: false,
-                cell: record => {
-                    return (
-                        <React.Fragment>
-                            <div style={{ paddingLeft: '10px' }}>
-                                <NavLink title="Edit"  className="csrLink ms-draggable" to={''}>
-                                    <FontAwesomeIcon icon={faEdit} onClick={() => { this.onEditClickHandler(record.Id);}}></FontAwesomeIcon>
-                                </NavLink>
-                            </div>
-                        </React.Fragment>
-                    );
-                },
-                width: '100px'
-            },
-            {
-                name: "Client",
-                selector: (row, i) => row.Client,
-                // width: '250px',
-                sortable: true
-            },
-            {
-                name: "Reporting Manager",
-                selector: (row, i) => row.ReportingManager,
-                // width: '250px',
-                sortable: true
-            },
-            {
-                name: "Delegate To",
-                selector: (row, i) => row.DelegateTo,
-                // width: '250px',
-                sortable: true
-            },
-            {
-                name: "From",
-                selector: (row, i) => row.FromDate,
-                width: '250px',
-                sortable: true
-            },
-            {
-                name: "To",
-                selector: (row, i) => row.ToDate,
-                // width: '250px',
-                sortable: true
-            }
+        // const AdminColumns = [
+        //     {
+        //         name: "Edit",
+        //         selector: (row, i) => row.Id,
+        //         export: false,
+        //         cell: record => {
+        //             return (
+        //                 <React.Fragment>
+        //                     <div style={{ paddingLeft: '10px' }}>
+        //                         <NavLink title="Edit"  className="csrLink ms-draggable" to={''}>
+        //                             <FontAwesomeIcon icon={faEdit} onClick={() => { this.onEditClickHandler(record.Id);}}></FontAwesomeIcon>
+        //                         </NavLink>
+        //                     </div>
+        //                 </React.Fragment>
+        //             );
+        //         },
+        //         width: '100px'
+        //     },
+        //     {
+        //         name: "Client",
+        //         selector: (row, i) => row.Client,
+        //         // width: '250px',
+        //         sortable: true
+        //     },
+        //     {
+        //         name: "Reporting Manager",
+        //         selector: (row, i) => row.ReportingManager,
+        //         // width: '250px',
+        //         sortable: true
+        //     },
+        //     {
+        //         name: "Delegate To",
+        //         selector: (row, i) => row.DelegateTo,
+        //         // width: '250px',
+        //         sortable: true
+        //     },
+        //     {
+        //         name: "From",
+        //         selector: (row, i) => row.FromDate,
+        //         width: '250px',
+        //         sortable: true
+        //     },
+        //     {
+        //         name: "To",
+        //         selector: (row, i) => row.ToDate,
+        //         // width: '250px',
+        //         sortable: true
+        //     }
            
-        ];
+        // ];
         const ExcelColumns = [
             {
                 name: "Client",
@@ -944,6 +953,22 @@ class TimesheetDelegation extends Component<TimesheetDelegationProps, TimesheetD
             }
            
         ];
+        const searchKeys=['DelegateTo','FromDate','ToDate'];
+
+        if(this.state.isAdmin)
+        {
+            columns.splice(1,0,  {
+                name: "Client",
+                selector: (row, i) => row.Client,
+                sortable: true
+            },
+            {
+                name: "Reporting Manager",
+                selector: (row, i) => row.ReportingManager,
+                sortable: true
+            });
+            searchKeys.splice(0,0,'Client','ReportingManager');
+        }
         if(this.state.isRedirect){
                 return (<Navigate to={'/ClientMaster'} />);
         }
@@ -1080,7 +1105,7 @@ class TimesheetDelegation extends Component<TimesheetDelegationProps, TimesheetD
                                         </div>
                                         {this.state.showToaster&&<Toaster /> }
                                         <div className="c-v-table">
-                                            <TableGenerator columns={this.state.isAdmin?AdminColumns:columns} data={this.state.DelegationsListData} fileName={'Timesheet Delegations'}showExportExcel={this.state.DelegationsListData.length?true:false} searchBoxLeft={true} ExportExcelCustomisedColumns={ExcelColumns} ExportExcelCustomisedData={this.state.ExportExcelData} wrapColumns={"DelegateTo"} LargeWidthColumns={[,"Client","ReportingManager","DelegateTo"]} onRowClick={this.handleRowClicked}></TableGenerator>
+                                            <TableGenerator columns={columns} searchKeys={searchKeys} data={this.state.DelegationsListData} fileName={'Timesheet Delegations'}showExportExcel={this.state.DelegationsListData.length?true:false} searchBoxLeft={true} ExportExcelCustomisedColumns={ExcelColumns} ExportExcelCustomisedData={this.state.ExportExcelData} wrapColumns={"DelegateTo"} LargeWidthColumns={[,"Client","ReportingManager","DelegateTo"]} onRowClick={this.handleRowClicked}></TableGenerator>
                                         </div>
                                     </div>
                                 </div>

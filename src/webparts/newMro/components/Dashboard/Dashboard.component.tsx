@@ -235,11 +235,11 @@ class Dashboard extends React.Component<DashboardProps, DashboardState> {
                     for (let Matrix of EmpMasterResp) {
                         if (Matrix.ReportingManager && Matrix.ReportingManager.some(manager => manager.ID === DelgAuthorizerID)) {
                             isManager = true;
-                            break;
+                            //break;
                         }
                         if (Matrix.Reviewers && Matrix.Reviewers.some(Reviewer => Reviewer.ID === DelgAuthorizerID)) {
                             isReviewer = true;
-                            break;
+                            //break;
                         }
                     }
                     // for (let Matrix of EmpMasterResp) {

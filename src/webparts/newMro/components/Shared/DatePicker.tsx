@@ -104,8 +104,8 @@ const CustomDatePicker = ({ handleChange, selectedDate, className,id='', labelNa
         <DatePicker
           selected={selectedDate}
           onChange={handleChange}
-          // minDate={addDays(getStartDate(new Date()), -30)}
-          maxDate={new Date()}
+          minDate={minDate}
+          maxDate={maxDate}
           filterDate={date => filterDays(date, Day)}
           className={className + " " + (selectedDate == null ? "mandatory-FormContent-focus" : "")}
           disabled={isDisabled}
