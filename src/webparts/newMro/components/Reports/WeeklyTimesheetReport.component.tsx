@@ -233,17 +233,23 @@ class WeeklyTimesheetReport extends React.Component<WeeklyTimesheetReportProps, 
         this.getReportData(postObject)
     }
     private getStatus(value) {
-        let Status = value
+        let Status = value;
         if (value == "approved by Manager") {
-            Status = "Approved by Reporting Manager"
+            Status = "Approved by Reporting Manager";
+        }
+        if (value == "approved by Synergy") {
+            Status = "Approved by Reviewer";
         }
         else if (value == "rejected by Manager") {
-            Status = "Rejected by Reporting Manager"
+            Status = "Rejected by Reporting Manager";
         }
         else if (value == "rejected by Synergy") {
-            Status = "Rejected by Synergy"
+            Status = "Rejected by Synergy";
         }
-        return Status
+        else if (value == "rejected by HR") {
+            Status = "Rejected by HR";
+        }
+        return Status;
     }
     private getReportData = async (postObject) => {
         let client = postObject.Client
@@ -272,14 +278,14 @@ class WeeklyTimesheetReport extends React.Component<WeeklyTimesheetReportProps, 
             }
         }
         filterQuery += "and Status ne '" + StatusType.Save + "' and Status ne '" + StatusType.Revoke + "'";
-        let reportData = await sp.web.lists.getByTitle('WeeklyTimeSheet').items.top(5000).filter(filterQuery).expand('Initiator').select('Initiator/Title,TotalHrs,BillableSubtotalHrs,NonBillableSubTotalHrs,ClientName,WeekStartDate,Status,*').orderBy('WeekStartDate,ClientName,Initiator/Title', true).getAll()
+        let reportData = await sp.web.lists.getByTitle('WeeklyTimeSheet').items.top(5000).filter(filterQuery).expand('Initiator').select('Initiator/Title,Initiator/Id,TotalHrs,BillableSubtotalHrs,NonBillableSubTotalHrs,ClientName,WeekStartDate,Status,*').orderBy('WeekStartDate,ClientName,Initiator/Title', true).getAll()
         if (reportData.length > 0) {
             var PDFData = [];
             //PDFData = reportData.filter(report => [StatusType.Approved, StatusType.ManagerApprove].includes(report.Status));
             PDFData = reportData;
             let weeklyData = [];
             let row = 1;
-            reportData.forEach(report => {
+            reportData.forEach( report  =>  {
                 let { Initiator, WeekStartDate, TotalHrs, ClientName, Status } = report;
                 const startDate = new Date(DateUtilities.GetDateMMDDYYYYAsInList(report.WeekStartDate));
                 let weekDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
@@ -300,74 +306,94 @@ class WeeklyTimesheetReport extends React.Component<WeeklyTimesheetReportProps, 
                 let BillHrs = JSON.parse(report.BillableSubtotalHrs)[0],NonBillhrs = JSON.parse(report.NonBillableSubTotalHrs)[0],Totalhrs = JSON.parse(report.TotalHrs)[0],blanksHrs = { Mon: '', Tue: '', Wed: '', Thu: '', Fri: '', Sat: '', Sun: '', Total: '0' };
                 let b={},PTOHours = JSON.parse(report.PTOHrs),ClientHolidayHrs = JSON.parse(report.ClientHolidayHrs);
                  // Code for PTO Hours to be included in Billable hours :start
+                //  if(report.EligibleforPTO && !report.ClientName.toLowerCase().includes('synergy'))
+                //  {
+                //      let WeekDays=['Mon','Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+                //      let PTOHrs=PTOHours[0].Total;
+                //      if(parseFloat(PTOHours[0].PTOAfterDeduction)<0)
+                //      PTOHrs=parseFloat(PTOHours[0].Total)+parseFloat(PTOHours[0].PTOAfterDeduction);// Code for PTO:Calculating PTOHrs considering from Timeoff Hrs 
+                //      let PTOBalance=PTOHours[0].PTOBalance;
+                //      if(parseFloat(PTOHours[0].Total)!=0 && parseFloat(PTOHrs)>0)
+                //      {
+                //         WeekDays.forEach(day=>{
+                //             if(PTOHours[0][day]!='' && parseFloat(PTOBalance)>0)
+                //             {
+                //                 let DayTimeOffHrs=parseFloat(PTOHours[0][day])>PTOBalance?PTOBalance:PTOHours[0][day];
+                //                 NonBillhrs[day]=Number(parseFloat(NonBillhrs[day])-parseFloat(DayTimeOffHrs)).toFixed(4);//reduce from NonBillable day
+                //                 PTOHours[0][day]=Number(parseFloat(DayTimeOffHrs)-parseFloat(DayTimeOffHrs)).toFixed(4);//reduce from TimeOff day
+                //                 NonBillhrs['Total']=Number(parseFloat(NonBillhrs['Total'])-parseFloat(DayTimeOffHrs)).toFixed(4);//reduce from NonBillable Total
+                //                 BillHrs[day]=Number(parseFloat(BillHrs[day])+parseFloat(DayTimeOffHrs)).toFixed(4);// increase Billable day
+                //                 BillHrs['Total']=Number(parseFloat(BillHrs['Total'])+parseFloat(DayTimeOffHrs)).toFixed(4);//increase Billable Total
+                //                 PTOBalance=parseFloat(PTOBalance)-parseFloat(DayTimeOffHrs)// reduced from PTOBalance
+                //             }
+                //         })
+                //      }
+                //  }
+                //Above code is for PTO hours considering from time off row in timesheet from. 
+                //But now PTO hours considering from Time Off Request form, so below code is required.
                  if(report.EligibleforPTO && !report.ClientName.toLowerCase().includes('synergy'))
                  {
-                     let WeekDays=['Mon','Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-                     let PTOHrs=PTOHours[0].Total;
-                     if(parseFloat(PTOHours[0].PTOAfterDeduction)<0)
-                     PTOHrs=parseFloat(PTOHours[0].Total)+parseFloat(PTOHours[0].PTOAfterDeduction);// Code for PTO:Calculating PTOHrs considering from Timeoff Hrs 
-                     let PTOBalance=PTOHours[0].PTOBalance;
-                     if(parseFloat(PTOHours[0].Total)!=0 && parseFloat(PTOHrs)>0)
-                     {
-                        WeekDays.forEach(day=>{
-                            if(PTOHours[0][day]!='' && parseFloat(PTOBalance)>0)
+                        let WeekDays=['Mon','Tue', 'Wed', 'Thu', 'Fri'];
+                        let PTOSubTotalRow=[null,undefined,''].includes(report.PTOSubTotal)?[]:JSON.parse(report.PTOSubTotal);
+                        if(PTOSubTotalRow.length)
+                        {
+                            let PTOHrs=parseFloat(PTOSubTotalRow[0].Total);
+                            if(parseFloat(PTOSubTotalRow[0].Total)!=0 && PTOHrs>0)
                             {
-                                let DayTimeOffHrs=parseFloat(PTOHours[0][day])>PTOBalance?PTOBalance:PTOHours[0][day];
-                                NonBillhrs[day]=Number(parseFloat(NonBillhrs[day])-parseFloat(DayTimeOffHrs)).toFixed(2);//reduce from NonBillable day
-                                PTOHours[0][day]=Number(parseFloat(DayTimeOffHrs)-parseFloat(DayTimeOffHrs)).toFixed(2);//reduce from TimeOff day
-                                NonBillhrs['Total']=Number(parseFloat(NonBillhrs['Total'])-parseFloat(DayTimeOffHrs)).toFixed(2);//reduce from NonBillable Total
-                                BillHrs[day]=Number(parseFloat(BillHrs[day])+parseFloat(DayTimeOffHrs)).toFixed(2);// increase Billable day
-                                BillHrs['Total']=Number(parseFloat(BillHrs['Total'])+parseFloat(DayTimeOffHrs)).toFixed(2);//increase Billable Total
-                                PTOBalance=parseFloat(PTOBalance)-parseFloat(DayTimeOffHrs)// reduced from PTOBalance
+                               WeekDays.forEach(day=>{
+                                   if(PTOSubTotalRow[0][day]!='')
+                                   {
+                                       let DayTimeOffHrs=PTOSubTotalRow[0][day];
+                                       NonBillhrs[day]=parseFloat((parseFloat(NonBillhrs[day])-parseFloat(DayTimeOffHrs)).toFixed(4));//reduce from NonBillable day
+                                       PTOHours[0][day]=parseFloat((parseFloat(DayTimeOffHrs)-parseFloat(DayTimeOffHrs)).toFixed(4));//reduce from TimeOff day
+                                       NonBillhrs['Total']=parseFloat((parseFloat(NonBillhrs['Total'])-parseFloat(DayTimeOffHrs)).toFixed(4));//reduce from NonBillable Total
+                                       BillHrs[day]=parseFloat((parseFloat(BillHrs[day])+parseFloat(DayTimeOffHrs)).toFixed(4));// increase Billable day
+                                       BillHrs['Total']=parseFloat((parseFloat(BillHrs['Total'])+parseFloat(DayTimeOffHrs)).toFixed(4));//increase Billable Total
+                                   }
+                               })
                             }
-                        })
-                     }
+                        }
                  }
                  // Code for PTO Hours to be included in Billable hours :end
                 report.ClientName.toLowerCase().includes('synergy') ? BillHrs = blanksHrs : '';
                 NonBillhrs = {
-                    Mon: NonBillhrs.Mon =="0.00"?PTOHours[0].Mon ==""?ClientHolidayHrs[0].Mon==""?'':ClientHolidayHrs[0].Mon:ClientHolidayHrs[0].Mon==""?PTOHours[0].Mon:Number(parseFloat(PTOHours[0].Mon)+parseFloat(ClientHolidayHrs[0].Mon)).toFixed(2)
+                    Mon: NonBillhrs.Mon =="0.00"?PTOHours[0].Mon ==""?ClientHolidayHrs[0].Mon==""?'':ClientHolidayHrs[0].Mon:ClientHolidayHrs[0].Mon==""?PTOHours[0].Mon:parseFloat((parseFloat(PTOHours[0].Mon)+parseFloat(ClientHolidayHrs[0].Mon)).toFixed(4))
                     :NonBillhrs.Mon,
-                    Tue: NonBillhrs.Tue =="0.00"?PTOHours[0].Tue ==""?ClientHolidayHrs[0].Tue==""?'':ClientHolidayHrs[0].Tue:ClientHolidayHrs[0].Tue==""?PTOHours[0].Tue:Number(parseFloat(PTOHours[0].Tue)+parseFloat(ClientHolidayHrs[0].Tue)).toFixed(2)
+                    Tue: NonBillhrs.Tue =="0.00"?PTOHours[0].Tue ==""?ClientHolidayHrs[0].Tue==""?'':ClientHolidayHrs[0].Tue:ClientHolidayHrs[0].Tue==""?PTOHours[0].Tue:parseFloat((parseFloat(PTOHours[0].Tue)+parseFloat(ClientHolidayHrs[0].Tue)).toFixed(4))
                     :NonBillhrs.Tue,
-                    Wed: NonBillhrs.Wed =="0.00"?PTOHours[0].Wed ==""?ClientHolidayHrs[0].Wed==""?'':ClientHolidayHrs[0].Wed:ClientHolidayHrs[0].Wed==""?PTOHours[0].Wed:Number(parseFloat(PTOHours[0].Wed)+parseFloat(ClientHolidayHrs[0].Wed)).toFixed(2)
+                    Wed: NonBillhrs.Wed =="0.00"?PTOHours[0].Wed ==""?ClientHolidayHrs[0].Wed==""?'':ClientHolidayHrs[0].Wed:ClientHolidayHrs[0].Wed==""?PTOHours[0].Wed:parseFloat((parseFloat(PTOHours[0].Wed)+parseFloat(ClientHolidayHrs[0].Wed)).toFixed(4))
                     :NonBillhrs.Wed,
-                    Thu: NonBillhrs.Thu =="0.00"?PTOHours[0].Thu ==""?ClientHolidayHrs[0].Thu==""?'':ClientHolidayHrs[0].Thu:ClientHolidayHrs[0].Thu==""?PTOHours[0].Thu:Number(parseFloat(PTOHours[0].Thu)+parseFloat(ClientHolidayHrs[0].Thu)).toFixed(2)
+                    Thu: NonBillhrs.Thu =="0.00"?PTOHours[0].Thu ==""?ClientHolidayHrs[0].Thu==""?'':ClientHolidayHrs[0].Thu:ClientHolidayHrs[0].Thu==""?PTOHours[0].Thu:parseFloat((parseFloat(PTOHours[0].Thu)+parseFloat(ClientHolidayHrs[0].Thu)).toFixed(4))
                     :NonBillhrs.Thu,
-                    Fri: NonBillhrs.Fri =="0.00"?PTOHours[0].Fri ==""?ClientHolidayHrs[0].Fri==""?'':ClientHolidayHrs[0].Fri:ClientHolidayHrs[0].Fri==""?PTOHours[0].Fri:Number(parseFloat(PTOHours[0].Fri)+parseFloat(ClientHolidayHrs[0].Fri)).toFixed(2)
+                    Fri: NonBillhrs.Fri =="0.00"?PTOHours[0].Fri ==""?ClientHolidayHrs[0].Fri==""?'':ClientHolidayHrs[0].Fri:ClientHolidayHrs[0].Fri==""?PTOHours[0].Fri:parseFloat((parseFloat(PTOHours[0].Fri)+parseFloat(ClientHolidayHrs[0].Fri)).toFixed(4))
                     :NonBillhrs.Fri,
-                    Sat: NonBillhrs.Sat =="0.00"?PTOHours[0].Sat ==""?ClientHolidayHrs[0].Sat==""?'':ClientHolidayHrs[0].Sat:ClientHolidayHrs[0].Sat==""?PTOHours[0].Sat:Number(parseFloat(PTOHours[0].Sat)+parseFloat(ClientHolidayHrs[0].Sat)).toFixed(2)
+                    Sat: NonBillhrs.Sat =="0.00"?PTOHours[0].Sat ==""?ClientHolidayHrs[0].Sat==""?'':ClientHolidayHrs[0].Sat:ClientHolidayHrs[0].Sat==""?PTOHours[0].Sat:parseFloat((parseFloat(PTOHours[0].Sat)+parseFloat(ClientHolidayHrs[0].Sat)).toFixed(4))
                     :NonBillhrs.Sat,
-                    Sun: NonBillhrs.Sun =="0.00"?PTOHours[0].Sun ==""?ClientHolidayHrs[0].Sun==""?'':ClientHolidayHrs[0].Sun:ClientHolidayHrs[0].Sun==""?PTOHours[0].Sun:Number(parseFloat(PTOHours[0].Sun)+parseFloat(ClientHolidayHrs[0].Sun)).toFixed(2)
+                    Sun: NonBillhrs.Sun =="0.00"?PTOHours[0].Sun ==""?ClientHolidayHrs[0].Sun==""?'':ClientHolidayHrs[0].Sun:ClientHolidayHrs[0].Sun==""?PTOHours[0].Sun:parseFloat((parseFloat(PTOHours[0].Sun)+parseFloat(ClientHolidayHrs[0].Sun)).toFixed(4))
                     :NonBillhrs.Sun,
                     Total: NonBillhrs.Total
                 }
                 weeklyData.push({
                     SNo: row,
                     Employee: report.Initiator.Title,
-                    MNB: NonBillhrs.Mon,
-                    MB: BillHrs.Mon,
-                    TNB: NonBillhrs.Tue,
-                    TB: BillHrs.Tue,
-                    WNB: NonBillhrs.Wed,
-                    WB: BillHrs.Wed,
-                    ThNB: NonBillhrs.Thu,
-                    ThB: BillHrs.Thu,
-                    FB: BillHrs.Fri,
-                    FNB: NonBillhrs.Fri,
-                    // commented on 25 july 2024
-                    // SB: BillHrs.Sat == "" ? "0" : BillHrs.Sat,
-                    // SNB: NonBillhrs.Sat == "" ? "0" : NonBillhrs.Sat,
-                    // SuB: BillHrs.Sun == "" ? "0" : BillHrs.Sun,
-                    // SuNB: NonBillhrs.Sun == "" ? "0" : NonBillhrs.Sun,
-                    SB: BillHrs.Sat,
-                    SNB: NonBillhrs.Sat,
-                    SuB: BillHrs.Sun,
-                    SuNB: NonBillhrs.Sun,
+                    MNB:[''].includes(NonBillhrs.Mon)?'':parseFloat(NonBillhrs.Mon),
+                    MB:  [''].includes(BillHrs.Mon)?'':parseFloat(BillHrs.Mon),
+                    TNB:[''].includes(NonBillhrs.Tue)?'':parseFloat(NonBillhrs.Tue),
+                    TB:  [''].includes(BillHrs.Tue)?'':parseFloat(BillHrs.Tue),
+                    WNB:[''].includes(NonBillhrs.Wed)?'':parseFloat(NonBillhrs.Wed),
+                    WB:  [''].includes(BillHrs.Wed)?'':parseFloat(BillHrs.Wed),
+                    ThNB:[''].includes(NonBillhrs.Thu)?'':parseFloat(NonBillhrs.Thu),
+                    ThB:  [''].includes(BillHrs.Thu)?'':parseFloat(BillHrs.Thu),
+                    FNB:[''].includes(NonBillhrs.Fri)?'':parseFloat(NonBillhrs.Fri),
+                    FB:  [''].includes(BillHrs.Fri)?'':parseFloat(BillHrs.Fri),
+                    SNB:[''].includes(NonBillhrs.Sat)?'':parseFloat(NonBillhrs.Sat),
+                    SB:  [''].includes(BillHrs.Sat)?'':parseFloat(BillHrs.Sat),
+                    SuNB:[''].includes(NonBillhrs.Sun)?'':parseFloat(NonBillhrs.Sun),
+                    SuB: [''].includes(BillHrs.Sun)?'':parseFloat(BillHrs.Sun),
                     Status: this.getStatus(report.Status),
-                    TotalNB: NonBillhrs.Total,
-                    TotalB: BillHrs.Total,
-                    TotalH: Totalhrs.Total,
+                    TotalNB: parseFloat(NonBillhrs.Total),
+                    TotalB: parseFloat(BillHrs.Total),
+                    TotalH: parseFloat(Totalhrs.Total),
                 })
                 row++;
             });
@@ -539,31 +565,37 @@ class WeeklyTimesheetReport extends React.Component<WeeklyTimesheetReportProps, 
     }
     private showRMStatus(status){
         if(status == 'Approved by Reporting Manager'){
-            return 'RM Approved'
+            return 'RM Approved';
+        }
+        else if(status == 'Approved by Reviewer'){
+            return 'Reviewer Approved';
         }
         else if(status == 'Rejected by Reporting Manager'){
-            return "RM Rejected"
+            return "RM Rejected";
         }
         else if(status=="Rejected by Synergy"){
-            return "Reviewer Rejected"
+            return "Reviewer Rejected";
         }
-        return status
+        else if(status=="Rejected by HR"){
+            return "HR Rejected";
+        }
+        return status;
     }
     private getStatusClass(Status) {
         if (Status == "Submitted") {
-            return "span-blue"
+            return "span-blue";
         }
         else if (Status == "Approved") {
-            return "span-green"
+            return "span-green";
         }
         else if (Status == "Approved by Reporting Manager") {
-            return "span-manager-approve"
+            return "span-manager-approve";
         }
-        else if (Status == "Rejected by Reporting Manager") {
-            return "span-rejected"
+        else if (Status == "Approved by Reviewer") {
+            return "span-reviewer-approve";
         }
-        else if (Status == "Rejected by Synergy") {
-            return "span-rejected"
+        else if (Status == "Rejected by Reporting Manager" || Status == "Rejected by Synergy" || Status == "Rejected by HR") {
+            return "span-rejected";
         }
     }
     //-------- Modiefied on 6/17/2024 ----------------

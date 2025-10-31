@@ -20,9 +20,10 @@ interface DropDownProps {
     refElement?: any;
     noOptionsMessage?:string;
     isCustomStylesApplicable?:boolean;
+    menuIsOpen?:boolean;
 }
 
-const SearchableDropdown = ({isLabelRequired=true, label, Title, name, id, placeholderText, className, selectedValue,optionLabel,optionValue, selectedlabel, OptionsList, onChange, isRequired, disabled = false, refElement,noOptionsMessage='No options',isCustomStylesApplicable=false }: DropDownProps) => {
+const SearchableDropdown = ({isLabelRequired=true, label, Title, name, id, placeholderText, className, selectedValue,optionLabel,optionValue, selectedlabel, OptionsList, onChange, isRequired, disabled = false, refElement,noOptionsMessage='No options',isCustomStylesApplicable=false,menuIsOpen=false }: DropDownProps) => {
     const options = OptionsList.map((item) => ({
         label: typeof(item)=='string'?item:optionLabel.includes('.')?item[optionLabel.split('.')[0]][optionLabel.split('.')[1]]:item[optionLabel],
         value: typeof(item)=='string'?item:optionValue.includes('.')?item[optionValue.split('.')[0]][optionValue.split('.')[1]]:item[optionValue],
@@ -110,7 +111,7 @@ const getOptionStyle = (option) => ({
                 isClearable={!['', "None", null, undefined].includes(selectedValue)}
                 isSearchable={true}
                 noOptionsMessage={() => noOptionsMessage}
-                //menuIsOpen
+                menuIsOpen={menuIsOpen?menuIsOpen:undefined}
                 // styles={isCustomStylesApplicable?customStyles:undefined} // Apply custom styles
                 // components={isCustomStylesApplicable? { MenuList }:undefined} // Use custom MenuList component
 

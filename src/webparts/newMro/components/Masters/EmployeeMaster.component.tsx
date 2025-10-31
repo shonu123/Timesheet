@@ -331,7 +331,7 @@ class Employee extends Component<EmployeeProps, EmployeeState> {
                    if(isDuplicated)
                    {
                      //this.setState({ loading: false });
-                     customToaster('toster-error', ToasterTypes.Error, 'Duplicate record is not accepted', 4000)
+                     customToaster('toster-error', ToasterTypes.Error, 'Duplicate record is not accepted', 4000);
                    }
                    else{
                      let PreviousPTOHours=this.state.PreviousPTOAfterDeduction;
@@ -380,10 +380,10 @@ class Employee extends Component<EmployeeProps, EmployeeState> {
        let formdata=this.state.formData;
        let ItemId=this.props.match.params.id ? this.props.match.params.id : 0;
        let EmployeeList='Employees';
-       let  PTOfilterQuery='Employee/ID eq '+ formdata.EmployeeId+' and Year eq '+(new Date().getFullYear());
+       let  PTOfilterQuery=`Employee/ID eq '${formdata.EmployeeId}' and Year eq '${(new Date().getFullYear())}' and EmpMatrixID eq '${ItemId}'`;
         let [EmpPTORecord, EmpApprovalMatrixRecords] = await Promise.all([
-            sp.web.lists.getByTitle('EmployeePTO').items.filter(PTOfilterQuery).select('Employee/ID,Employee/Title,*').expand('Employee').get(),
-            sp.web.lists.getByTitle('EmployeeMaster').items.filter('Employee/ID eq ' + formdata.EmployeeId).select('Employee/ID,Employee/Title,*').expand('Employee').orderBy('Title').getAll()
+            sp.web.lists.getByTitle('EmployeePTO').items.filter(PTOfilterQuery).select('Employee/ID,Employee/Title,*').expand('Employee').getAll(),
+            sp.web.lists.getByTitle('EmployeeMaster').items.filter(`Employee/ID eq '${formdata.EmployeeId}' and EmpMatrixID eq '${ItemId}'`).select('Employee/ID,Employee/Title,*').expand('Employee').orderBy('Title').getAll()
         ])
         let DOJ = DateUtilities.getDateMMDDYYYY(this.state.formData.DateOfJoining);
       let  EmpPostData={
@@ -415,7 +415,7 @@ class Employee extends Component<EmployeeProps, EmployeeState> {
             Policy: this.state.formData.Policy,
             EligibleforPTO: this.state.formData.EligibleforPTO,
             IsActive: this.state.formData.IsActive,
-            Year:new Date().getFullYear().toString()
+            Year:new Date().getFullYear().toString(),
         }
         let PTOTransactionforHours={
             EmployeeId:this.state.formData.EmployeeId,
@@ -459,6 +459,7 @@ class Employee extends Component<EmployeeProps, EmployeeState> {
                 sp.web.lists.getByTitle('EmployeePTO').items.getById(EmpPTORecord[0].ID).update(EmpPTOData).then((res) => 
                 {
                     //console.log("EmployeePTO Record updated successfully");
+                    PTOTransactionforHours['EmpMatrixID']=ItemId.toString();
                     if(PreviousPTOHours!=UpdatedPTOHours)
                     {
                         sp.web.lists.getByTitle('PTOTransactions').items.add(PTOTransactionforHours).then((EmpPTOres) => 
@@ -486,6 +487,8 @@ class Employee extends Component<EmployeeProps, EmployeeState> {
                 { 
                     if(this.state.formData.EligibleforPTO)
                     {
+                        EmpPTOData['EmpMatrixID']=ItemId.toString();
+                        PTOTransactionforHours['EmpMatrixID']=ItemId.toString();
                     sp.web.lists.getByTitle('EmployeePTO').items.add(EmpPTOData).then((res) => 
                     {
                         //console.log("EmployeePTO Record updated successfully");
@@ -551,6 +554,8 @@ class Employee extends Component<EmployeeProps, EmployeeState> {
                 .then((res) => {
                     //add EmployeePTO Data
                     if (!EmpPTORecord.length && this.state.formData.EligibleforPTO) {
+                        EmpPTOData['EmpMatrixID']=res.data.Id.toString();
+                        PTOTransaction['EmpMatrixID']=res.data.Id.toString();
                         sp.web.lists.getByTitle('EmployeePTO').items.add(EmpPTOData).then((EmpPTOres) => {
                             //console.log("EmployeePTO Record added successfully");
                             //below is condition to add PTO Transaction only if PTO Hours to Grant is other than 0 or empty
@@ -826,7 +831,7 @@ class Employee extends Component<EmployeeProps, EmployeeState> {
         try {
             let filterQuery = "ID eq '" + id + "'";
             let selectQuery = "Employee/Title,Employee/Id,Employee/EMail,SynergyManager/Title,SynergyManager/Id,SynergyManager/EMail,*";
-            let  PTOfilterQuery='Employee/ID eq '+ EmployeeId+' and Year eq '+(new Date().getFullYear());
+            let  PTOfilterQuery=`Employee/ID eq '${EmployeeId}' and Year eq '${(new Date().getFullYear())}' and EmpMatrixID eq '${id}'`;
             var [EmpData,EmpPTOData] =await Promise.all([
                 sp.web.lists.getByTitle('Employees').items.filter(filterQuery).expand('Employee,SynergyManager').select(selectQuery).get(),
                 sp.web.lists.getByTitle('EmployeePTO').items.filter(PTOfilterQuery).select('Employee/ID,Employee/Title,*').expand('Employee').get(),
@@ -1175,7 +1180,7 @@ class Employee extends Component<EmployeeProps, EmployeeState> {
                                                                 </select>
                                                             </div>
                                                         </div> */}
-                                                         <div className="row pt-2 px-2">
+                                                         <div className="row pt-2 px-2">l
                                                         <div className="col-md-3">
                                                             <div className="custom-dropdown">
                                                                <SearchableDropdown label="Employee Classification" Title="Employee Classification"  name="EmployeeClassification" id="EmployeeClassification" placeholderText="Select Classification" className="" selectedValue={this.state.formData.EmployeeClassification} optionLabel={'Title'} optionValue={'Title'} OptionsList={this.state.EmployeeClassificationObject} onChange={(selectedOption,actionMeta)=>{this.handleChange(selectedOption,actionMeta)}} isRequired={true} refElement={this.EmployeeClassification} noOptionsMessage="No Employee Classification"></SearchableDropdown>

@@ -101,10 +101,11 @@ class EmployeeMasterForm extends React.Component<EmployeeMasterFormProps, Employ
         showHideModal: false,
         modalTitle: '',
         modalText: '',
-        message: "Success",
+        message: "",
         showToaster: false,
         GlobalHolidayList: [],
         EmployeeClassification:'',    //PTO change
+        EmpMatrixID:'0',
         EligibleforPTO: false,
         Comments:'',
         CommentsHistory:[],
@@ -170,6 +171,7 @@ class EmployeeMasterForm extends React.Component<EmployeeMasterFormProps, Employ
                 this.setState({ isPageAccessable: false })
             }
             let filterdHolidays = this.getHolidays(Holidays,'None');
+                filterdHolidays.unshift('Not Applicable');
             Employees = Employees.filter(item=>item.IsActive==true); //if new item to show only active employees
             clients = clients.filter(item=>item.IsActive==true); //if new item to show only active clients
             //this.setState({ ClientsObject: clients, GlobalHolidayList: Holidays, HolidaysObject: filterdHolidays, loading: false })
@@ -245,7 +247,8 @@ class EmployeeMasterForm extends React.Component<EmployeeMasterFormProps, Employ
             this.setState({ isPageAccessable: false })
         }
         let filterdHolidays = this.getHolidays(Holidays, data[0].ClientName);
-        this.setState({ ClientsObject: Clients, ItemID: ID, EmployeeEmail: data[0].Employee.EMail, EmployeeId: data[0].Employee.ID, ClientName: data[0].ClientName, isActive: data[0].IsActive,previousIsActive:data[0].IsActive, DateOfJoining: date,startDateOfDOJ:DOJInEmpMaster, SelectedEmployee: data[0].Employee.ID, SelectedClient: data[0].ClientName, HolidayType: data[0].HolidayType, weekStartDay: data[0].WeekStartDay, MandatoryProjectCode: data[0].MandatoryProjectCode ? "Yes" : "No", MandatoryDescription: data[0].MandatoryDescription ? "Yes" : "No", EmployeeClassification:data[0].EmployeeClassification, Policy:[null,undefined,''].includes(data[0].Policy)?'None':data[0].Policy,CommentsHistory:[null,undefined,''].includes(data[0].CommentsHistory)?[]:JSON.parse(data[0].CommentsHistory),EligibleforPTO: data[0].EligibleforPTO, ReportingManagerEmail: ReportingManagersEmail, ReportingManagerId: ReportingManagerIds, ReviewerEmail: ReviewersEMail, ReviewerId: ReviewerIds,HolidaysObject: filterdHolidays, GlobalHolidayList: Holidays, isDisabled: disabled, isPageAccessable: pageAccessable, showToaster: true, loading: false,EmployeesObject:Employees })
+                   filterdHolidays.unshift('Not Applicable');
+        this.setState({ ClientsObject: Clients, ItemID: ID, EmployeeEmail: data[0].Employee.EMail, EmployeeId: data[0].Employee.ID, ClientName: data[0].ClientName, isActive: data[0].IsActive,previousIsActive:data[0].IsActive, DateOfJoining: date,startDateOfDOJ:DOJInEmpMaster, SelectedEmployee: data[0].Employee.ID, SelectedClient: data[0].ClientName, HolidayType: data[0].HolidayType, weekStartDay: data[0].WeekStartDay, MandatoryProjectCode: data[0].MandatoryProjectCode ? "Yes" : "No", MandatoryDescription: data[0].MandatoryDescription ? "Yes" : "No", EmployeeClassification:data[0].EmployeeClassification,EmpMatrixID:data[0].EmpMatrixID, Policy:[null,undefined,''].includes(data[0].Policy)?'None':data[0].Policy,CommentsHistory:[null,undefined,''].includes(data[0].CommentsHistory)?[]:JSON.parse(data[0].CommentsHistory),EligibleforPTO: data[0].EligibleforPTO, ReportingManagerEmail: ReportingManagersEmail, ReportingManagerId: ReportingManagerIds, ReviewerEmail: ReviewersEMail, ReviewerId: ReviewerIds,HolidaysObject: filterdHolidays, GlobalHolidayList: Holidays, isDisabled: disabled, isPageAccessable: pageAccessable, showToaster: true, loading: false,EmployeesObject:Employees })
         document.getElementById('divDateofJoining').getElementsByTagName('input')[0].focus();
     }
     // this function is used to bind users to people pickers
@@ -289,7 +292,7 @@ class EmployeeMasterForm extends React.Component<EmployeeMasterFormProps, Employ
             //     HolidayClients.push(client.ClientName)
             // }
             if (!HolidayClients.includes(client)) {
-                HolidayClients.push(client)
+                HolidayClients.push(client);
             }
         }
         return HolidayClients;
@@ -317,7 +320,8 @@ class EmployeeMasterForm extends React.Component<EmployeeMasterFormProps, Employ
         this.setState({ [name]: value });
         if (name == 'ClientName') {
             if (value != '') {
-                let HolidayClients = this.getHolidays(this.state.GlobalHolidayList, value)
+                let HolidayClients = this.getHolidays(this.state.GlobalHolidayList, value);
+                   HolidayClients.unshift('Not Applicable');
                 this.setState({ HolidaysObject: HolidayClients, HolidayType: ''})
             }
             else {
@@ -342,10 +346,10 @@ class EmployeeMasterForm extends React.Component<EmployeeMasterFormProps, Employ
                     if(SelectedEmployee!=undefined)
                     {
                         let startDateOfDOJ=new Date(DateUtilities.GetDateMMDDYYYYAsInList(SelectedEmployee.DateOfJoining));
-                        this.setState({EmployeeClassification:SelectedEmployee.EmployeeClassification,Policy:SelectedEmployee.Policy, EligibleforPTO: SelectedEmployee.EligibleforPTO,startDateOfDOJ:startDateOfDOJ});    
+                        this.setState({EmployeeClassification:SelectedEmployee.EmployeeClassification,Policy:SelectedEmployee.Policy, EligibleforPTO: SelectedEmployee.EligibleforPTO,startDateOfDOJ:startDateOfDOJ,EmpMatrixID:SelectedEmployee.Id});    
                     }
                     else{
-                        this.setState({EmployeeClassification:'',Policy:'None', EligibleforPTO:false,startDateOfDOJ:new Date()});    
+                        this.setState({EmployeeClassification:'',Policy:'None', EligibleforPTO:false,startDateOfDOJ:new Date(),EmpMatrixID:'0'});    
                     }
         }
           //PTO change
@@ -371,9 +375,9 @@ class EmployeeMasterForm extends React.Component<EmployeeMasterFormProps, Employ
             // let filterQuery = "Employee/Id eq '" + this.state.EmployeeId + "' and ClientName eq '" + this.state.ClientName + "' and IsActive eq 1";
             let filterQuery ='';
             if(this.state.ItemID>0)
-                filterQuery = `Employee/Id eq '${this.state.EmployeeId}' and ClientName eq '${this.state.ClientName.replace(/'/g,"''")}' and IsActive eq 1 and Id ne ${this.state.ItemID}`;
+                filterQuery = `Employee/Id eq '${this.state.EmployeeId}' and EmpMatrixID eq '${this.state.EmpMatrixID}' and ClientName eq '${this.state.ClientName.replace(/'/g,"''")}' and IsActive eq 1 and Id ne ${this.state.ItemID}`;
             else
-            filterQuery = `Employee/Id eq '${this.state.EmployeeId}' and ClientName eq '${this.state.ClientName.replace(/'/g,"''")}' and IsActive eq 1`;
+            filterQuery = `Employee/Id eq '${this.state.EmployeeId}' and EmpMatrixID eq '${this.state.EmpMatrixID}' and ClientName eq '${this.state.ClientName.replace(/'/g,"''")}' and IsActive eq 1`;
 
             let selectQuery = "Employee/Title,Employee/ID,*";
             let duplicateRecord = await sp.web.lists.getByTitle(this.listName).items.filter(filterQuery).select(selectQuery).expand('Employee').orderBy('Title').get();
@@ -498,7 +502,8 @@ class EmployeeMasterForm extends React.Component<EmployeeMasterFormProps, Employ
                     HolidayType: this.state.HolidayType,
                     EmployeeClassification:this.state.EmployeeClassification,
                     Policy:this.state.Policy,
-                    CommentsHistory:JSON.stringify(this.state.CommentsHistory)
+                    CommentsHistory:JSON.stringify(this.state.CommentsHistory),
+                    EmpMatrixID:this.state.EmpMatrixID.toString()
                 }
                 this.setState({ errorMessage: '',loading: true });
                 this.InsertorUpdatedata(postObject, '');

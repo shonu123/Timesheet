@@ -28,6 +28,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { StatusType } from '../../Constants/Constants';
 import TableGenerator from '../Shared/TableGenerator';
 import DateUtilities from '../../Utilities/DateUtilities';
+import InputCheckBox from '../Shared/InputCheckBox';
 
 export interface PTODetailedReportProps {
     match: any;
@@ -60,11 +61,12 @@ class PTODetailedReport extends React.Component<PTODetailedReportProps, PTODetai
 
     public state = {
         // EmployeeEmail: '',
-        // ClientName: "All Clients",
-        ClientName: "",
+        ClientName: "All Clients",
+        // ClientName: "",
         EmployeeId: '0',
         startDate: null,
         endDate: null,
+        GenerateonlyGranted:false,
         ClientsObject: [],
         EmployeesObj: [],
         AllEmployees: [],
@@ -116,7 +118,7 @@ class PTODetailedReport extends React.Component<PTODetailedReportProps, PTODetai
             EmpObj.sort((a, b) => a.Title.localeCompare(b.Title));
             Clients.sort((a, b) => a.Title.localeCompare(b.Title));
             if (Clients.length > 0) {
-                // Clients.unshift({ Title: "All Clients" });
+                Clients.unshift({ Title: "All Clients" });
                 EmpObj.unshift({ ID: "0", Title: "All Employees" });
                 this.setState({ AllEmployees: EmpObj, EmployeesObj: EmpObj, ClientsObject: Clients, loading: false, isHavingClients: true, showToaster: true });
             }
@@ -274,8 +276,8 @@ class PTODetailedReport extends React.Component<PTODetailedReportProps, PTODetai
         // this.setState({Homeredirect : true,showToaster:false});
         // document.getElementById('divNavReportItems').classList.remove('show');
         // document.getElementById('Reports').classList.remove('heighlightMasters');
-        // this.setState({ ClientName: "All Clients",EmployeeId: '0',startDate: null, endDate: null,EmployeesObj:this.state.AllEmployees,PTOData:[],PTOExcelData:[]});
-        this.setState({ ClientName: "",EmployeeId: '0',startDate: null, endDate: null,EmployeesObj:this.state.AllEmployees,PTOData:[],PTOExcelData:[]});
+        this.setState({ ClientName: "All Clients",EmployeeId: '0',startDate: null, endDate: null,GenerateonlyGranted:false,EmployeesObj:this.state.AllEmployees,PTOData:[],PTOExcelData:[]});
+        //this.setState({ ClientName: "",EmployeeId: '0',startDate: null, endDate: null,EmployeesObj:this.state.AllEmployees,PTOData:[],PTOExcelData:[]});
     }
     private handleSubmit = () => {
         this.setState({loading:true});
@@ -298,7 +300,8 @@ class PTODetailedReport extends React.Component<PTODetailedReportProps, PTODetai
             Client: this.state.ClientName,
             Employee: parseInt(this.state.EmployeeId),
             StartDate: selectedStartDate,
-            EndDate: selectedEndDate
+            EndDate: selectedEndDate,
+            GenerateonlyGranted:this.state.GenerateonlyGranted
         }
         this.generateDatatable(postObject);
     }
@@ -343,6 +346,10 @@ class PTODetailedReport extends React.Component<PTODetailedReportProps, PTODetai
                 filterQuery = "ClientName eq'" + client.replace(/'/g, "''") + "' and EmployeeId eq '" + Employee + "' and PostedOn gt '" + prev + "' and PostedOn lt '" + next + "' and IsActive eq 1";
             }
         }
+        if(postObject.GenerateonlyGranted)
+        filterQuery += " and TransactionType eq 'Granted'"; 
+        else
+        filterQuery += " and TransactionType ne 'Granted' and TransactionType ne 'Deducted'"; 
         try{
             let reportData = await sp.web.lists.getByTitle('PTOTransactions').items.top(5000).filter(filterQuery).expand('Employee').select('Employee/Title,Employee/Id,ClientName,*').orderBy('ClientName,Employee/Title', true).getAll();
             //Below is to filter exact date range.. Records , Due to DST, inaccurate rocords will fetched from above query.
@@ -358,16 +365,26 @@ class PTODetailedReport extends React.Component<PTODetailedReportProps, PTODetai
                 ExcelData = [];
                 reportData.forEach(item => {
                     let PostedOn = new Date(DateUtilities.GetDateMMDDYYYYAsInList(item.PostedOn));
+                    let SubmittedDate =[null,undefined,''].includes(item.SubmittedDate)? new Date():new Date(DateUtilities.GetDateMMDDYYYYAsInList(item.SubmittedDate));
                     let From =[null,undefined,''].includes(item.From)? new Date():new Date(DateUtilities.GetDateMMDDYYYYAsInList(item.From));
                     let To =[null,undefined,''].includes(item.To)? new Date(): new Date(DateUtilities.GetDateMMDDYYYYAsInList(item.To));
                     let isTimeOffEmployee=this.getIsTimeOffEmployee( item.Employee.Id);
+                    let TimeOffTypesFromList=[null,undefined,''].includes(item.TimeOffTypes)?[]:JSON.parse(item.TimeOffTypes),TimeOffTypes = '',ExcelTimeOffTypes = '';
+                        TimeOffTypesFromList.forEach(type => {
+                            TimeOffTypes+=`<div>${type}</div>`;
+                            ExcelTimeOffTypes+=type+'\n';
+                        });
                     Data.push({
                         Id: item.Id,
                         ClientName:item.ClientName,
                         Employee: item.Employee.Title,
                         TransactionType: this.getStatus(item.TransactionType,isTimeOffEmployee),
-                        PostedOn : DateUtilities.getDateMMDDYYYY(PostedOn),
-                        PostedOnForGrid : `<span class='d-none'>${DateUtilities.getDateYYYYMMDDForSorting(PostedOn)}</span>${DateUtilities.getDateMMDDYYYY(PostedOn)}`,
+                        TimeOffTypesForGrid:TimeOffTypes,
+                        TimeOffTypes:ExcelTimeOffTypes,
+                        PostedOn : ['granted','deducted'].includes(item.TransactionType.toLowerCase())?'':DateUtilities.getDateMMDDYYYY(PostedOn),
+                        PostedOnForGrid : ['granted','deducted'].includes(item.TransactionType.toLowerCase())?'':`<span class='d-none'>${DateUtilities.getDateYYYYMMDDForSorting(PostedOn)}</span>${DateUtilities.getDateMMDDYYYY(PostedOn)}`,
+                         SubmittedDate : ['granted','deducted'].includes(item.TransactionType.toLowerCase())?DateUtilities.getDateMMDDYYYY(PostedOn):[null,undefined,''].includes(item.SubmittedDate)?'':DateUtilities.getDateMMDDYYYY(SubmittedDate),
+                         SubmittedDateForGrid :['granted','deducted'].includes(item.TransactionType.toLowerCase())?`<span class='d-none'>${DateUtilities.getDateYYYYMMDDForSorting(PostedOn)}</span>${DateUtilities.getDateMMDDYYYY(PostedOn)}`:[null,undefined,''].includes(item.SubmittedDate)?'':`<span class='d-none'>${DateUtilities.getDateYYYYMMDDForSorting(SubmittedDate)}</span>${DateUtilities.getDateMMDDYYYY(SubmittedDate)}`,
                         From : [null,undefined,''].includes(item.From)? '-':DateUtilities.getDateMMDDYYYY(From),
                         FromForGrid : [null,undefined,''].includes(item.From)? '-':`<span class='d-none'>${DateUtilities.getDateYYYYMMDDForSorting(From)}</span>${DateUtilities.getDateMMDDYYYY(From)}`,
                         To : [null,undefined,''].includes(item.To)? '-':DateUtilities.getDateMMDDYYYY(To),
@@ -382,7 +399,9 @@ class PTODetailedReport extends React.Component<PTODetailedReportProps, PTODetai
                         ClientName:[null, undefined, ''].includes(item.ClientName) ? '' :item.ClientName,
                         Employee: item.Employee.Title,
                         TransactionType: this.getStatus(item.TransactionType,isTimeOffEmployee),
-                        PostedOn : DateUtilities.getDateMMDDYYYY(PostedOn),
+                        TimeOffTypes:ExcelTimeOffTypes,
+                        PostedOn : ['granted','deducted'].includes(item.TransactionType.toLowerCase())?'':DateUtilities.getDateMMDDYYYY(PostedOn),
+                        SubmittedDate :['granted','deducted'].includes(item.TransactionType.toLowerCase())?DateUtilities.getDateMMDDYYYY(PostedOn):[null,undefined,''].includes(item.SubmittedDate)?'':DateUtilities.getDateMMDDYYYY(SubmittedDate),
                         From : [null,undefined,''].includes(item.From)? '-':DateUtilities.getDateMMDDYYYY(From),
                         To : [null,undefined,''].includes(item.To)? '-':DateUtilities.getDateMMDDYYYY(To),
                         PTOHours: [null, undefined, ''].includes(item.Hours) ? 0.00 : parseFloat(parseFloat(item.Hours).toFixed(4)),
@@ -412,24 +431,32 @@ class PTODetailedReport extends React.Component<PTODetailedReportProps, PTODetai
     }
     private getStatus(value,isTimeOffEmployee){
         let Status=value;
-        if(value =="approved by Manager")
-            {
-                Status = "Approved by Synergy Manager";
-            }
-        else if(value == "rejected by Manager"){
-                if(isTimeOffEmployee)
-                Status = "Rejected by Synergy Manager";
-               else
-               Status = "Rejected by Reporting Manager";
+        // if(value =="approved by Manager")
+        //     {
+        //         Status = "Approved by Synergy Manager";
+        //     }
+        // else if(value == "rejected by Manager"){
+        //         if(isTimeOffEmployee)
+        //         Status = "Rejected by Synergy Manager";
+        //        else
+        //        Status = "Rejected by Reporting Manager";
 
-            }
-        else if(value =="rejected by Synergy")
+        //     }
+        // else if(value =="rejected by Synergy")
+        //     {
+        //         Status = "Rejected by Synergy";
+        //     }
+        // else if(value =="rejected by HR")
+        //     {
+        //         Status = "Rejected by HR";
+        //     }
+             if([StatusType.Submit,StatusType.ManagerApprove,StatusType.ReviewerApprove].includes(value))
             {
-                Status = "Rejected by Synergy";
+                Status = StatusType.InProgress;
             }
-        else if(value =="rejected by HR")
+            else if([StatusType.ManagerReject,StatusType.ReviewerReject,StatusType.HRReject].includes(value))
             {
-                Status = "Rejected by HR";
+                Status = StatusType.Reject;
             }
         return Status;
     }
@@ -447,58 +474,72 @@ class PTODetailedReport extends React.Component<PTODetailedReportProps, PTODetai
             {
                 name: "Client Name",
                 selector: (row, i) => row.ClientName,
-                width: '230px',
+                // width: '230px',
                 sortable: true
             },
             {
                 name: "Employee Name",
                 selector: (row, i) => row.Employee,
-                width: '230px',
+                // width: '230px',
                 sortable: true
             },
             {
-                name: "Transaction Type",
+                name: "Transaction Status",
                 selector: (row, i) => row.TransactionType,
-                width: '230px',
+                // width: '230px',
                 sortable: true
             },
             {
-                name: "Date",
+                name: "Time Off Type",
+                selector: (row, i) => row.TimeOffTypesForGrid,
+                cell: row => <div className='' dangerouslySetInnerHTML={{ __html: row.TimeOffTypesForGrid }}/>,
+                // width: '200px',
+                sortable: true
+              },
+            {
+                name: "Time Off Date",
                 selector: (row, i) => row.PostedOnForGrid,
                 cell: row => <div className='' dangerouslySetInnerHTML={{ __html: row.PostedOnForGrid }}/>,
-                width: '120px',
+                // width: '200px',
                 sortable: true
             },
-            {
-                name: "From",
-                selector: (row, i) => row.FromForGrid,
-                cell: row => <div className='' dangerouslySetInnerHTML={{ __html: row.FromForGrid }}/>,
-                width: '150px',
-               sortable: true
-              },
-              {
-                  name: "To",
-                  selector: (row, i) => row.ToForGrid,
-                  cell: row => <div className='' dangerouslySetInnerHTML={{ __html: row.ToForGrid }}/>,
-                 width: '150px',
-                  sortable: true
-             },
+             {
+              name: "Submitted Date",
+              selector: (row, i) => row.SubmittedDateForGrid,
+              cell: row => <div className='' dangerouslySetInnerHTML={{ __html: row.SubmittedDateForGrid }}/>,
+            //   width: '200px',
+              sortable: true
+            },
+            // {
+            //     name: "From",
+            //     selector: (row, i) => row.FromForGrid,
+            //     cell: row => <div className='' dangerouslySetInnerHTML={{ __html: row.FromForGrid }}/>,
+            //     width: '150px',
+            //    sortable: true
+            //   },
+            //   {
+            //       name: "To",
+            //       selector: (row, i) => row.ToForGrid,
+            //       cell: row => <div className='' dangerouslySetInnerHTML={{ __html: row.ToForGrid }}/>,
+            //      width: '150px',
+            //       sortable: true
+            //  },
             {
                 name: "Previous PTO Balance",
                 selector: (row, i) => row.PreviousPTOBalance,
-                width: '200px',
+                // width: '200px',
                 sortable: true
             },
             {
-                name: "Requested PTO Hours",
+                name: "Applied PTO Hours",
                 selector: (row, i) => row.PTOHours,
-                width: '200px',
+                // width: '200px',
                 sortable: true
             },
             {
                 name: "Current PTO Balance",
                 selector: (row, i) => row.CurrentPTOBalance,
-                width: '200px',
+                // width: '200px',
                 sortable: true
             },
             {
@@ -521,26 +562,37 @@ class PTODetailedReport extends React.Component<PTODetailedReportProps, PTODetai
                 sortable: true
             },
             {
-                name: "Transaction Type",
+                name: "Transaction Status",
                 selector: "TransactionType",
                 width: '230px',
                 sortable: true
             },
             {
-                name: "Date",
+                name: "Time Off Type",
+                selector: "TimeOffTypes",
+                width: '200px',
+                sortable: true
+              },
+            {
+                name: "Time Off Date",
                 selector: "PostedOn",
                 sortable: true
             },
             {
-                name: "From",
-                selector: "From",
+                name: "Submitted Date",
+                selector: "SubmittedDate",
                 sortable: true
             },
-            {
-              name: "To",
-              selector: "To",
-              sortable: true
-            },
+            // {
+            //     name: "From",
+            //     selector: "From",
+            //     sortable: true
+            // },
+            // {
+            //   name: "To",
+            //   selector: "To",
+            //   sortable: true
+            // },
             {
                 name: "Previous PTO Balance",
                 selector: "PreviousPTOBalance",
@@ -548,7 +600,7 @@ class PTODetailedReport extends React.Component<PTODetailedReportProps, PTODetai
                 sortable: true
             },
             {
-                name: "Requested PTO Hours",
+                name: "Applied PTO Hours",
                 selector: "PTOHours",
                 sortable: true
             },
@@ -564,8 +616,15 @@ class PTODetailedReport extends React.Component<PTODetailedReportProps, PTODetai
                 sortable: true,
             }
         ];
-        const searchKeys=['ClientName','Employee','TransactionType','PostedOn','Form','To','PreviousPTOBalance','PTOHours','CurrentPTOBalance','Reason'];
-
+        const searchKeys=['ClientName','Employee','TransactionType','TimeOffTypes','PostedOn','SubmittedDate','Form','To','PreviousPTOBalance','PTOHours','CurrentPTOBalance','Reason'];
+          //if generate only granted: Client Name,TimeOffType,TimeOffDate fields are always empty.
+          if(this.state.GenerateonlyGranted)            
+          {
+            columns.splice(0,1);
+            columns.splice(2,2);
+            Exportcolumns.splice(0,1);
+            Exportcolumns.splice(2,2);
+          }
         if (!this.state.isPageAccessable) {
             let url = this.siteURL+"/SitePages/AccessDenied.aspx";
             window.location.href = url;
@@ -644,7 +703,21 @@ class PTODetailedReport extends React.Component<PTODetailedReportProps, PTODetai
                                         </div>
 
                                     </div>
-
+                                    <div className="row pt-2 px-2">
+                                        <div className="col-md-3">
+                                                <div className="light-text">
+                                                    <InputCheckBox
+                                                        label={"Generate only Granted?"}
+                                                        name={"GenerateonlyGranted"}
+                                                        checked={this.state.GenerateonlyGranted}
+                                                        onChange={this.handleChangeEvents}
+                                                        isforMasters={false}
+                                                        isdisable={false}
+                                                        id='chkGenerateonlyGranted'
+                                                    />
+                                                </div>
+                                            </div>
+                                    </div>
                                 </div>
                                 <div className="row mx-1" id="">
                                     <div className="col-sm-12 text-center my-4" id="">
@@ -656,7 +729,7 @@ class PTODetailedReport extends React.Component<PTODetailedReportProps, PTODetai
                                     </div>
                                 </div>
                                 {this.state.PTOData.length>0 && <div className='c-v-table table-head-1st-td dataTables_wrapper-overflow'>
-                                    <TableGenerator columns={columns} searchKeys={searchKeys} data={this.state.PTOData} fileName={'Employee(s) PTO Detailed Report'} showExportExcel={this.state.PTOData.length ? true : false} searchBoxLeft={true} ExportExcelCustomisedColumns={Exportcolumns} ExportExcelCustomisedData={this.state.PTOExcelData} wrapColumns={['Employee']} LargeWidthColumns={["ClientName","Employee","Reason"]} paginationPerPage={25}></TableGenerator>
+                                    <TableGenerator columns={columns} searchKeys={searchKeys} data={this.state.PTOData} fileName={'Employee(s) PTO Detailed Report'} showExportExcel={this.state.PTOData.length ? true : false} searchBoxLeft={true} ExportExcelCustomisedColumns={Exportcolumns} ExportExcelCustomisedData={this.state.PTOExcelData} wrapColumns={['Employee','TimeOffTypes']} LargeWidthColumns={["ClientName","Employee","Reason"]} paginationPerPage={25}></TableGenerator>
                                 </div>}
                             </div>
                         </div>

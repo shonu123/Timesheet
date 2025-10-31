@@ -212,14 +212,22 @@ class AllRequests extends React.Component<AllRequestsProps,AllRequestsState> {
         let Status=value
         if(value =="approved by Manager")
         {
-            Status = "Approved by Reporting Manager"
+            Status = "Approved by Reporting Manager";
         }
         else if(value == "rejected by Manager"){
-                Status = "Rejected by Reporting Manager"
+                Status = "Rejected by Reporting Manager";
+            }
+        else if(value =="approved by Synergy")
+            {
+                Status = "Approved by Reviewer";
             }
         else if(value =="rejected by Synergy")
             {
-                Status = "Rejected by Synergy"
+                Status = "Rejected by Synergy";
+            }
+        else if(value =="rejected by HR")
+            {
+                Status = "Rejected by HR";
             }
         return Status
     }
@@ -250,50 +258,50 @@ class AllRequests extends React.Component<AllRequestsProps,AllRequestsState> {
                 name: "Date",
                 selector: (row, i) => row.DateForGrid,
                 cell: row => <div className='' dangerouslySetInnerHTML={{ __html: row.DateForGrid }} onClick={(event)=>this.handleRowClicked(event,row.Id)}/>,
-                width: '120px',
+                // width: '120px',
                 sortable: true
             },
             {
                 name: "Employee Name",
                 selector: (row, i) => row.EmployeName,
-                width: '250px',
+                // width: '250px',
                 sortable: true
             },
             {
                 name: "Client",
                 selector: (row, i) => row.Client,
-                width: '130px',
+                // width: '130px',
                 sortable: true
             },
             {
                 name: "Reporting Manager",
                 selector: (row, i) => row.RMForGrid,
                 cell: row => <div className='divManagers' dangerouslySetInnerHTML={{ __html: row.RMForGrid }} onClick={(event)=>this.handleRowClicked(event,row.Id)}/>,
-                width: '230px',
+                // width: '230px',
                 sortable: true
             },
             {
                 name: "Status",
                 selector: (row, i) => row.Status,
-                width: '220px',
+                // width: '220px',
                 sortable: true
             },
             {
                 name: "Pending With",
                 selector: (row, i) => row.PendingWith,
-                width: '180px',
+                // width: '180px',
                 sortable: true
             },
             {
                 name: "Hours",
                 selector: (row, i) => row.BillableHours,
-                width: '100px',
+                // width: '100px',
                 sortable: true,
             },
             {
                 name: "OT",
                 selector: (row, i) => row.OTTotalHrs,
-                width: '100px',
+                // width: '100px',
                 sortable: true,
             },
             // {
@@ -305,19 +313,19 @@ class AllRequests extends React.Component<AllRequestsProps,AllRequestsState> {
             {
                 name: "Total Billable",
                 selector: (row, i) => row.TotalBillableHrs,
-                width: '150px',
+                // width: '150px',
                 sortable: true,
             },
             {
                 name: "Holiday",
                 selector: (row, i) =>row.HolidayHrs,
-                width: '100px',
+                // width: '100px',
                 sortable: true,
             },
             {
                 name: "Time Off",
                 selector: (row, i) =>row.PTOHrs,
-                width: '110px',
+                // width: '110px',
                 sortable: true,
             },
             // {

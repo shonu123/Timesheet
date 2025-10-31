@@ -3,7 +3,7 @@ import { Toaster } from 'react-hot-toast';
 import Select from 'react-select';
 import Loader from './Loader';
 import customToaster from './Toaster.component';
-import { ToasterTypes } from '../../Constants/Constants';
+import { ToasterTypes,StatusType } from '../../Constants/Constants';
 import SearchableDropdown from './SearchableDropdown';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faClose, faPlus } from '@fortawesome/free-solid-svg-icons';
@@ -16,13 +16,16 @@ interface TimeOffTypeOption {
 interface PTOFormModalProps {
   isVisible: boolean;
   onClose: () => void;
+  onReset: () => void;
   onSubmit: (data: any) => void;
   ptoBalance: number;
   dates: string[];
   days: string[];
   timeOffTypes: TimeOffTypeOption[];
+  EligibleforPTO:boolean;
   ptoFormData: any;
   weekDetails?: any;
+  showResetBtn:boolean;
 }
 
 interface RowData {
@@ -35,19 +38,22 @@ interface RowData {
 const PTOFormModal = ({
   isVisible,
   onClose,
+  onReset,
   onSubmit,
   ptoBalance,
   dates,
   days,
   timeOffTypes,
+  EligibleforPTO,
   ptoFormData,
   weekDetails,
+  showResetBtn,
 }: PTOFormModalProps) => {
   const inputRefs = useRef<(HTMLInputElement | null)[][]>([]);
   const selectRefs = useRef<(HTMLDivElement | null)[]>([]);
-  const [showToaster, setshowToaster] = useState(false)
-  const [ptoFormDataRows, setPTOFormDataRows] = useState(ptoFormData)
-  const [loading, setLoading] = useState(false)
+  const [showToaster, setshowToaster] = useState(false);
+  const [ptoFormDataRows, setPTOFormDataRows] = useState(ptoFormData);
+  const [loading, setLoading] = useState(false);
 
   const createEmptyRow = (): RowData => ({
     TimeOffType: null,
@@ -77,11 +83,30 @@ const PTOFormModal = ({
       };
     });
   };
+  // To avoid duplicated time Off Type selection
+  const mapUniqueTimeOffTypes = ( data: any[],timeOffTypes: TimeOffTypeOption[] )=> {
+    let UniqueTimeOffTypesArr=[];
+     data.map((item) => {
+       let currRow=timeOffTypes.find(t=>item.TimeOffType!=null && t.Title.toLowerCase()==item.TimeOffType.toLowerCase());
+       let TOTArr=[];
+      if(currRow!=undefined)
+      {
+         TOTArr.push({label: currRow.Title,value: currRow.Title, IsPTOEligible: currRow.IsEligibleforPTO});
+      }
+       let filteredTimeOffTypes=timeOffTypes.filter(t=>!(data.some(Sel=>Sel.TimeOffType==t.Title)));
+          filteredTimeOffTypes.map((t) => (
+            TOTArr.push({label: t.Title,value: t.Title,IsPTOEligible: t.IsEligibleforPTO})
+          ));
+     TOTArr.sort((a,b)=>a.value.localeCompare(b.value));
+     UniqueTimeOffTypesArr.push(TOTArr);
+    });
+    return UniqueTimeOffTypesArr;
+  };
+  const [selectOptions, setselectOptions] = useState<Object[]>(mapUniqueTimeOffTypes([createEmptyRow()], timeOffTypes));
 
   const [rows, setRows] = useState<RowData[]>([createEmptyRow()]);
   const [columnTotals, setColumnTotals] = useState<string[]>([]);
   const [errorMessage, setErrorMessage] = useState<string>('');
-
 
   const [filteredDays, setFilteredDays] = useState<string[]>([]);
   const [filteredDates, setFilteredDates] = useState<string[]>([]);
@@ -170,8 +195,11 @@ const PTOFormModal = ({
 
   useEffect(() => {
     if (isVisible) {
+      setLoading(true);
       if (ptoFormDataRows.length && filteredDays.length && timeOffTypes.length) {
         const mappedRows = mapPtoFormDataToRows(ptoFormDataRows, filteredDays, timeOffTypes);
+        const mappedTOTypes = mapUniqueTimeOffTypes(mappedRows, timeOffTypes);
+        setselectOptions(mappedTOTypes);
         setRows(mappedRows);
 
         const totalSum = mappedRows.reduce((acc, row) => acc + row.total, 0);
@@ -187,12 +215,16 @@ const PTOFormModal = ({
         setColumnTotals(dayTotals);
         setGrandTotal(totalSumDisplay);
       } else {
+        const mappedTOTypes = mapUniqueTimeOffTypes([createEmptyRow()], timeOffTypes);
+        setselectOptions(mappedTOTypes);
         setRows([createEmptyRow()]);
         setColumnTotals(Array(filteredDays.length).fill('0.00'));
         setGrandTotal('0.00');
       }
+      setLoading(false);
+
     }
-  }, [isVisible,  timeOffTypes, filteredDays]);
+  }, [isVisible,timeOffTypes,filteredDays]);
 
 
   const handleHourChange = (rowIndex: number, dayIndex: number, value: string) => {
@@ -208,15 +240,22 @@ const PTOFormModal = ({
       setRows([...rows]);
     }
   };
-
+// var selectOptions = timeOffTypes.map((t) => ({
+//     label: t.Title,
+//     value: t.Title,
+//     IsPTOEligible: t.IsEligibleforPTO,
+//   }));
 
   const handleTypeChange = (rowIndex: number, selectedOption: any) => {
     const updatedRows = [...rows];
     updatedRows[rowIndex].TimeOffType = selectedOption?.value ?? null;
-    const filteredTimeOff = timeOffTypes.filter(item => item.Title == selectedOption.value)
-    updatedRows[rowIndex].IsPTOEligible = filteredTimeOff ? filteredTimeOff[0].IsEligibleforPTO : false
+    const filteredTimeOff = timeOffTypes.filter(item => item.Title == (selectedOption?.value ?? null));
+    updatedRows[rowIndex].IsPTOEligible = filteredTimeOff.length ? filteredTimeOff[0].IsEligibleforPTO : false;
     // updatedRows[rowIndex].IsPTOEligible = selectedOption?.IsPTOEligible ?? undefined;
-    setRows(updatedRows);
+    // To avoid duplicated time Off Type selection
+     const mappedTOTypes = mapUniqueTimeOffTypes(updatedRows, timeOffTypes);
+      setselectOptions(mappedTOTypes);
+      setRows(updatedRows);
   };
 
   // const calculateTotals = (updatedRows: RowData[]) => {
@@ -261,7 +300,8 @@ const PTOFormModal = ({
 
     const totalSum = updatedRows.reduce((acc, row) => acc + row.total, 0);
     const grandTotalDisplay = totalSum === 0 ? '0.00' : totalSum.toString();
-
+     const mappedTOTypes = mapUniqueTimeOffTypes([...updatedRows], timeOffTypes);
+    setselectOptions(mappedTOTypes);
     setRows([...updatedRows]);
     setColumnTotals(dayTotals);
     setGrandTotal(grandTotalDisplay);
@@ -279,7 +319,7 @@ const PTOFormModal = ({
           firstNonDisabledInput.classList.add('mandatory-FormContent-focus');
           firstNonDisabledInput.focus();
         }
-        customToaster('toster-error', ToasterTypes.Error, `Total hours for row ${i + 1} cannot be zero.`, 4000)
+        customToaster('toster-error', ToasterTypes.Error, `Total time off hours in a week cannot be 0 .`, 4000)
         return false;
       }
     }
@@ -292,7 +332,7 @@ const PTOFormModal = ({
     const newRows = rows.filter((_, i) => i !== index);
     // console.log("ptoFormData :" , ptoFormData)
     // ptoFormData = newRows
-    setPTOFormDataRows(newRows)
+    setPTOFormDataRows(newRows);
     calculateTotals(newRows);
   };
 
@@ -344,7 +384,7 @@ const PTOFormModal = ({
         customToaster(
           'toster-error',
           ToasterTypes.Error,
-          `Total hours for ${filteredDays[i]} (${filteredDates[i]}) exceed 8 hours.`,
+          `Total hours for ${filteredDays[i]} (${filteredDates[i]}) cannot exceed 8 hours.`,
           4000
         );
         return false;
@@ -356,7 +396,7 @@ const PTOFormModal = ({
       const row = rows[i];
 
       if (!row.TimeOffType) {
-        customToaster('toster-error', ToasterTypes.Error, `Time off type is required for row ${i + 1}.`, 4000)
+        customToaster('toster-error', ToasterTypes.Error, `Time Off Type cannot be blank.`, 4000)
 
         let ddlSearchId = "TimeOffType_" + i;
         document.getElementById(ddlSearchId).getElementsByTagName('input')[0].focus();
@@ -373,7 +413,7 @@ const PTOFormModal = ({
           firstNonDisabledInput.classList.add('mandatory-FormContent-focus');
           firstNonDisabledInput.focus();
         }
-        customToaster('toster-error', ToasterTypes.Error, `Total hours for row ${i + 1} cannot be zero.`, 4000)
+        customToaster('toster-error', ToasterTypes.Error, `Hours cannot be blank, Please provide valid hours.`, 4000)
         return false;
       }
     }
@@ -459,6 +499,7 @@ const PTOFormModal = ({
       TOSubTotal,
       PTOTotal,
       TOTotal,
+      IsActive:true
     };
     finalOutput.PTOSubTotal = [finalOutput.PTOSubTotal]
     finalOutput.TOSubTotal = [finalOutput.TOSubTotal]
@@ -469,12 +510,6 @@ const PTOFormModal = ({
   useEffect(() => {
     calculateTotals(rows);
   }, []);
-
-  const selectOptions = timeOffTypes.map((t) => ({
-    label: t.Title,
-    value: t.Title,
-    IsPTOEligible: t.IsEligibleforPTO,
-  }));
 
   return isVisible ? (
     <div
@@ -496,11 +531,13 @@ const PTOFormModal = ({
             className="modal-header rounded-t-lg"
             style={{ fontWeight: 700, fontSize: '1.5rem' }}
           >
-            <h5 className="modal-title">PTO Request Form</h5>
+            <h5 className="modal-title">Time Off Request Form</h5>
+            <button type="button" className='btn-fa-close' onClick={onClose} id={'btnClose'}><span title='Close' ><FontAwesomeIcon icon={faClose} id={'iconClose'}></FontAwesomeIcon></span></button>
           </div>
           <div className="modal-body p-6" style={{ color: '#6b7280', fontSize: '16px' }}>
-            <div className="table-responsive">
-              <div className="mb-4 font-semibold">PTO Balance: {ptoBalance}</div>
+            {/* <div className="table-responsive"> removed scroll bar for table to overcome the issue of scroll on the open of timeofftype dropdown menu */}
+            <div className="">
+              {EligibleforPTO && <div className="mb-2 font-semibold">PTO Balance: {ptoBalance}</div>}
               <table className="table table-bordered timetable table-tdp-0 text-center align-middle">
                 <thead>
                   <tr>
@@ -518,7 +555,7 @@ const PTOFormModal = ({
                   {rows.map((row, rowIndex) => (
                     <tr key={rowIndex}>
                       <td style={{ width: 220 }}>
-                        <SearchableDropdown label="Time Off Type" Title="Time Off Type" isLabelRequired={false} name="TimeOffType" id={`TimeOffType_${rowIndex}`} placeholderText="Time Off Type" className="ddlTimeOffType form-control text-left" selectedValue={row.TimeOffType} optionLabel="label" optionValue="value" OptionsList={selectOptions} onChange={(selectedOption, actionMeta) => handleTypeChange(rowIndex, selectedOption)} isRequired={false} refElement={selectRefs.current[rowIndex]} disabled={false} noOptionsMessage="No options available" />
+                        <SearchableDropdown label="Time Off Type" Title="Time Off Type" isLabelRequired={false} name="TimeOffType" id={`TimeOffType_${rowIndex}`} placeholderText="Time Off Type" className="ddlTimeOffType form-control text-left" selectedValue={row.TimeOffType} optionLabel="label" optionValue="value" OptionsList={selectOptions[rowIndex]} onChange={(selectedOption, actionMeta) => handleTypeChange(rowIndex, selectedOption)} isRequired={false} refElement={selectRefs.current[rowIndex]} disabled={false} noOptionsMessage="No Time Off Type"/>
                       </td>
                       {filteredDays.map((_, dayIndex) => (
                         <td key={dayIndex}>
@@ -537,7 +574,7 @@ const PTOFormModal = ({
                         </td>
                       ))}
                       <td>{row.total}</td>
-                      <td>
+                      <td className=' text-start'>
                         {rows.length === 1 ? (
                           <button type="button" className='span-fa-plus' onClick={addRow} id='addnewRow'><span title='Add new time off row' ><FontAwesomeIcon icon={faPlus}></FontAwesomeIcon></span></button>
 
@@ -556,12 +593,14 @@ const PTOFormModal = ({
                     </tr>
                   ))}
                   <tr>
-                    <td>
-                      <strong>Grand Total</strong>
-                    </td>
+                  <td className="fw-bold text-start">
+                            <div className="p-2 fw-bold">
+                                <i className="fas fa-business-time color-gray"></i> Grand Total
+                            </div>
+                  </td>
                     {columnTotals.map((total, index) => (
                       <td key={index}>
-                        <strong>{total}</strong>
+                        {total}
                       </td>
                     ))}
                     <td>
@@ -571,22 +610,22 @@ const PTOFormModal = ({
                   </tr>
                 </tbody>
               </table>
+              <div className="light-box my-2 ml-2 p-2 text-center divInfo"><b>Note : </b><div>Submitting or Removing this form does not permanently store you request. Please save or submit your timesheet to finalize your time off request.</div></div>
               <div className="">
                 <div className="text-center my-2">
                   <button type="button" onClick={handleSubmit} className="SubmitButtons btn" title="Submit">
                     Submit
                   </button>
-                  <button type="button" onClick={onClose} className="CancelButtons btn" title="Cancel">
-                    Cancel
+                   {showResetBtn && <button type="button" onClick={onReset} className="txt-white CancelButtons bc-burgundy btn" title="Reset">Remove</button>}
+                  <button type="button" onClick={onClose} className="CancelButtons btn" title="Close">
+                    Close
                   </button>
+                 
                 </div>
               </div>
             </div>
             <span className="text-danger">{errorMessage}</span>
           </div>
-
-
-
           {showToaster && <Toaster />}
           {loading && <Loader />}
         </div>

@@ -49,17 +49,20 @@ class MyRequests extends React.Component<MyRequestsProps, MyRequestsState> {
     private MyRequests = async () => {
         this.setState({ loading: true });
         const userId = this.props.spContext.userId;
-        let dateFilter = new Date()
+        let dateFilter = new Date();
         dateFilter.setDate(new Date().getDate()-60);
         let date =DateUtilities.getDateMMDDYYYY(dateFilter);
-        var filterQuery = "and WeekStartDate ge '"+date+"'"
-
-        var filterString = "Initiator/Id eq '"+userId+"' "+filterQuery
-
-        sp.web.lists.getByTitle('WeeklyTimeSheet').items.top(2000).filter(filterString).expand("Initiator").select('Initiator/Title','*').orderBy('Modified', false).get()
+        try{
+         let EmpFilterQuery=`Employee/Id eq '${userId}' and IsActive eq 1`;
+         let Employees = await sp.web.lists.getByTitle('Employees').items.top(5000).filter(EmpFilterQuery).expand("Employee").select('Employee/Title','*').getAll();
+         let EmpMatrixID=Employees.length?Employees[0].Id:0;
+        var filterQuery = `WeekStartDate ge '${date}' and Initiator/Id eq '${userId}' and EmpMatrixID eq '${EmpMatrixID}'`;
+        
+        sp.web.lists.getByTitle('WeeklyTimeSheet').items.top(2000).filter(filterQuery).expand("Initiator").select('Initiator/Title','*').orderBy('Modified', false).getAll()
             .then((response) => {
                 // console.log(response)
                 let Data = [];
+                response.sort((a,b)=>b.Id-a.Id);
                 for (const d of response) {
                     let date;
                     if(!["",undefined,null].includes(d.WeekStartDate)){
@@ -81,19 +84,32 @@ class MyRequests extends React.Component<MyRequestsProps, MyRequestsState> {
             }).catch(err => {
                 console.log('Failed to fetch data.', err);
             });
+        }
+        catch(err)
+        {
+             console.log('Failed to load My Time Offs' ,err);
+        }
     }
     private getStatus(value){
         let Status=value
         if(value =="approved by Manager")
         {
-            Status = "Approved by Reporting Manager"
+            Status = "Approved by Reporting Manager";
         }
         else if(value == "rejected by Manager"){
-                Status = "Rejected by Reporting Manager"
+                Status = "Rejected by Reporting Manager";
+            }
+        else if(value =="approved by Synergy")
+            {
+                Status = "Approved by Reviewer";
             }
         else if(value =="rejected by Synergy")
             {
-                Status = "Rejected by Synergy"
+                Status = "Rejected by Synergy";
+            }
+        else if(value =="rejected by HR")
+            {
+                Status = "Rejected by HR";
             }
         return Status
     }
@@ -133,15 +149,16 @@ class MyRequests extends React.Component<MyRequestsProps, MyRequestsState> {
                 sortable: true
             },
             {
-                name: "Pending With",
-                selector: (row, i) => row.PendingWith,
-                sortable: true,
-            },
-            {
                 name: "Status",
                 selector: (row, i) => row.Status,
                 sortable: true
+            },
+            {
+                name: "Pending With",
+                selector: (row, i) => row.PendingWith,
+                sortable: true,
             }
+            
         ];
         const searchKeys=['Date','Company','PendingWith','Status'];
         if(this.state.redirect){

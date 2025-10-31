@@ -2477,11 +2477,11 @@ li {
   background-color: rgb(0 0 0 / 32%)!important;
 }
 .table-head-1st-td .eBWcrR .bRirNn:nth-child(1){
-  min-width: 150px;
-  max-width: 150px;
+  min-width: 200px;
+  max-width: 200px;
 }
 .table-head-1st-td .sc-jrcTuL .lkrJOt:nth-child(1){
-  min-width: 150px !important;
+  min-width: 200px !important;
 }
 .class-grand-total{
   position: absolute;
@@ -2919,7 +2919,7 @@ min-width: 185px !important;
   background-color: #ffff;
 }
 .R-LSkBlue{
-  background-color: #d2eaf3;
+  background-color: #5dcff7;
 }
 .Reportheader-row{
   font-size: 14px;
@@ -3088,6 +3088,14 @@ span.iconArrow {
   border-radius: 22px;
   font-size: 15px;
   border: 2px solid #a1cb70;
+}
+.span-reviewer-approve {
+  display: inline-block;
+  padding: 2px 7px;
+  background-color: #c6e69f;
+  border-radius: 22px;
+  font-size: 15px;
+  border: 2px solid #95ce54;
 }
 .span-rejected{
   display: inline-block;
@@ -3516,13 +3524,55 @@ position: absolute;
   padding-top: 0px !important;
 }
 .ddlTimeOffType  .css-13cymwt-control
-    {
-        height:40px;
-        border:none !important;
+{
+    height:40px;
+    border:none !important;
+}
+.ddlTimeOffType .css-1nmdiq5-menu .css-qr46ko
+{
+  /* position: fixed; */
+  background: white;
+  border: 1px solid lightgrey;
+  box-shadow: 2px 12px 22px #656565;
+}
+.ClickHere
+{
+  color:blue;
+  font-weight: bold;
+  cursor: pointer;
+}
+.divClickHere
+{
+background: #c7e1e5;
+}
+.mandatory-8hourstotal{
+  border-color: transparent!important;
+  box-shadow: 0 0 0 0.2rem rgba(223,43,42,.75)!important;
+  -webkit-box-shadow: 0 0 0 0.2rem rgba(223,43,42,.75)!important; 
+  outline: none!important;
+}
+.btn-fa-close{
+        display: inline-block;
+        /* margin: auto; */
+        width: 35px;
+        height: 35px;
+        text-align: center;
+        border-radius: 20%;
+        background: #dc3545;
+        color: #fff;
+        font-size: 20px;
+        padding: 1px;
+        /* transform: rotate(45deg); */
     }
-    .ClickHere
-    {
-      color:blue;
-      font-weight: bold;
+  .btn-fa-close:hover{
       cursor: pointer;
-    }
+      opacity: .7;
+      scale: .9;
+      background: #dc3545;
+  }
+  .rdt_TableCol_Sortable div{
+    overflow: visible !important;
+    white-space: normal !important;
+    text-overflow: unset !important;
+}
+

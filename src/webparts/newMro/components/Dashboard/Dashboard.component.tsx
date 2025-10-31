@@ -192,7 +192,7 @@ class Dashboard extends React.Component<DashboardProps, DashboardState> {
             // this.setState({ showMyApprovalsTab: true});
             //this.onHandleClick('Approvers')
         }
-        else if(isReviewer || isReviewerDelegated){
+        else if(isReviewer || isReviewerDelegated || userGroup.includes('Timesheet HR')){
             this.setState({ showMyReviewersTab: true});
             //this.onHandleClick('Reviewers')
         }
@@ -206,20 +206,20 @@ class Dashboard extends React.Component<DashboardProps, DashboardState> {
     this.setState({isEmployeeConfigured: EmployeeConfigured,isReviewer:isReviewer,justDelegateToPerson:justDelegateToPerson,loading:false});
         if(![null,undefined,''].includes(localStorage.getItem('PreviouslySelectedTab')))
         {
-            this.onHandleClick(localStorage.getItem('PreviouslySelectedTab'))
+            this.onHandleClick(localStorage.getItem('PreviouslySelectedTab'));
             return false;
         }
         if(isAdminloggedin){
-            this.onHandleClick('AllRequests')
+            this.onHandleClick('AllRequests');
         }
         else if(isManager&&isReviewer || isManager){
-            this.onHandleClick('Approvers')
+            this.onHandleClick('Approvers');
         }
-        else if(isReviewer){
-            this.onHandleClick('Reviewers')
+        else if(isReviewer || userGroup.includes('Timesheet HR')){
+            this.onHandleClick('Reviewers');
         }
         else if(showTab && isEmployee){
-            this.onHandleClick('MyRequests')
+            this.onHandleClick('MyRequests');
         }
         // [null,undefined,''].includes(localStorage.getItem('PreviouslySelectedTab'))?'':this.onHandleClick(localStorage.getItem('PreviouslySelectedTab'));
     }

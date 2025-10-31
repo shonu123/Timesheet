@@ -15,6 +15,8 @@ import { Toaster } from 'react-hot-toast';
 import customToaster from '../Shared/Toaster.component';
 import { ToasterTypes } from '../../Constants/Constants';
 import DateUtilities from '../../Utilities/DateUtilities';
+import CommonUtilities from '../../Utilities/CommonUtilities';
+
 
 export interface TimeOffApprovalsProps {
     match: any;
@@ -81,7 +83,14 @@ class TimeOffApprovals extends React.Component<TimeOffApprovalsProps, TimeOffApp
         // let date = `${dateFilter.getMonth() + 1}/${dateFilter.getDate()}/${dateFilter.getFullYear()}`
         // var filterQuery = "and From ge '" + date + "'"
         // var filterString = "SynergyManager/Id eq '"+userId+"' and PendingWith eq 'Manager' and Status eq '"+StatusType.Submit+"'"
-        var filterString = "SynergyManager/Id eq '"+userId+"' and PendingWith eq 'Manager'";
+       
+        var filterString = "(SynergyManager/Id eq '"+userId+"' and PendingWith eq 'Manager' and IsActive eq 1 and IsSubmittedFromTimesheetForm ne 1)";
+         //If current logged in user is manager and as well as HR, filter Pending with HR requests also
+        let groups= await sp.web.currentUser.groups();
+        if(groups.some(grp=>grp.Title=="Timesheet HR"))
+        {
+            filterString+= " or (PendingWith eq 'HR' and IsSubmittedFromTimesheetForm ne 1)";
+        }
         sp.web.lists.getByTitle('TimeOffEmployees').items.top(5000).filter(filterString).expand("SynergyManager,Employee").select('SynergyManager/Title,SynergyManager/EMail,Employee/Title,Employee/EMail,*').orderBy('Modified', false).getAll()
             .then((response) => {
                 // console.log(response)
@@ -106,33 +115,16 @@ class TimeOffApprovals extends React.Component<TimeOffApprovalsProps, TimeOffApp
                         TotalHrs:parseFloat(d.TotalHours),
                         // PendingWith: d.PendingWith == "Approver" ||d.PendingWith == "Manager" ?"Reporting Manager":d.PendingWith,
                         PendingWith: d.PendingWith == "Approver" ||d.PendingWith == "Manager" ?"Synergy Manager":d.PendingWith,
-                        Status : this.getStatus(d.Status),
+                        Status : CommonUtilities.getTOStatus(d.Status),
+                        StatusForGrid:`<span class='${CommonUtilities.getStatusClass(d.Status)}' title='${CommonUtilities.getTOStatus(d.Status)}'>${CommonUtilities.getTOStatusInShortForm(d.Status)}</span>`
                     })
                     
                 }
-                this.setState({SynergyManager:Data,loading:false})
+                this.setState({SynergyManager:Data,loading:false});
             }).catch(err => {
                 console.log('Failed to fetch data.', err);
             });
     }
-    private getStatus(value){
-        let Status=value
-        if(value =="approved by Manager")
-        {
-            // Status = "Approved by Reporting Manager"
-            Status = "Approved by Synergy Manager"
-        }
-        else if(value == "rejected by Manager"){
-                // Status = "Rejected by Reporting Manager"
-                Status = "Rejected by Synergy Manager"
-            }
-        else if(value =="rejected by HR")
-            {
-                Status = "Rejected by HR"
-            }
-        return Status
-    }
-
     private  handleRowClicked = (row,Id?) => {
         let ID = row.Id?row.Id:Id;
         this.setState({TimeOffID:ID,redirect:true})
@@ -160,7 +152,7 @@ class TimeOffApprovals extends React.Component<TimeOffApprovalsProps, TimeOffApp
             {
                 name: "Employee Name",
                 selector: (row, i) => row.EmployeName,
-                width: '250px',
+                // width: '250px',
                 sortable: true
             },
             // {
@@ -179,38 +171,38 @@ class TimeOffApprovals extends React.Component<TimeOffApprovalsProps, TimeOffApp
                 name: "From",
                 selector: (row, i) => row.FromDateForGrid ,
                 cell: row => <div className='' dangerouslySetInnerHTML={{ __html: row.FromDateForGrid }} onClick={(event)=>this.handleRowClicked(event,row.Id)}/>,
-                width: '120px',
+                // width: '120px',
                 sortable: true
             },
             {
                 name: "To",
                 selector: (row, i) => row.ToDateForGrid,
                 cell: row => <div className='' dangerouslySetInnerHTML={{ __html: row.ToDateForGrid }} onClick={(event)=>this.handleRowClicked(event,row.Id)}/>,
-                width: '120px',
+                // width: '120px',
                 sortable: true
             },
             {
                 name: "PTO Balance",
                 selector: (row, i) => row.PTOAvailableBalance,
                 sortable: true,
-                width: '210px'
+                // width: '130px'
             },
             {
                 name: "Paid Time Off",
                 selector: (row, i) => row.PTOTotal,
-                width: '130px',
+                // width: '130px',
                 sortable: true
             },
             {
                 name: "Time Off",
                 selector: (row, i) => row.TOTotal,
-                width: '110px',
+                // width: '110px',
                 sortable: true
             },
             {
                 name: "Total",
                 selector: (row, i) => row.TotalHrs,
-                width: '100px',
+                // width: '100px',
                 sortable: true
             },
             // {
@@ -222,7 +214,8 @@ class TimeOffApprovals extends React.Component<TimeOffApprovalsProps, TimeOffApp
             {
                 name: "Status",
                 selector: (row, i) => row.Status,
-                // width: '220px',
+                cell: row => <div className='' dangerouslySetInnerHTML={{ __html: row.StatusForGrid }} onClick={(event)=>this.handleRowClicked(event,row.Id)}/>,
+                width: '220px',
                 sortable: true,
             },
         ];

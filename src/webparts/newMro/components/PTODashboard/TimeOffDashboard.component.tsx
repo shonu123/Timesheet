@@ -66,7 +66,7 @@ class TimeOffDashboard extends React.Component<TimeOffDashboardProps, TimeOffDas
                 customToaster('toster-error',ToasterTypes.Error,'Sorry! something went wrong',4000);
             }
             else{
-                let status = message.split('-')[1]
+                let status = message.split('-')[1];
                 setTimeout(() => {
                     switch (status) {
                         case StatusType.Submit:
@@ -85,7 +85,7 @@ class TimeOffDashboard extends React.Component<TimeOffDashboardProps, TimeOffDas
                             customToaster('toster-warning', ToasterTypes.Warning,"Attention: This Time Off request has been modified.Please review the changes.", 3000);
                             break;
                         case "Invalid":
-                            customToaster('toster-error',ToasterTypes.Error,'No data found!',4000)
+                            customToaster('toster-error',ToasterTypes.Error,'No data found!',4000);
                             break; 
                         default:
                             break;
@@ -142,7 +142,7 @@ class TimeOffDashboard extends React.Component<TimeOffDashboardProps, TimeOffDas
             this.onHandleClick('AllTimeOffs')
             EmployeeConfigured = true;
         }
-        if(userGroup.includes('Timesheet HR')){
+        if(!isManager && userGroup.includes('Timesheet HR')){
             EmployeeConfigured=true;
             this.setState({ showHRApprovalsTab: true});
             this.onHandleClick('HRApprovals')
@@ -243,8 +243,8 @@ class TimeOffDashboard extends React.Component<TimeOffDashboardProps, TimeOffDas
                                         <a className="nav-link active" id="TimeOffApprovals-tab" data-toggle="tab" href="#/TimeOffApprovals" role="tab" aria-controls="home" aria-selected="true">My Approvals</a>
                                     </li>}
 
-                                    {this.state.showHRApprovalsTab &&   <li className="nav-item" role="presentation" onClick={() => {this.onHandleClick('HRApprovals');localStorage.setItem('PreviouslySelectedTimeOffTab','HRApprovals');}} >
-                                        <a className="nav-link active" id="HRApprovals-tab" data-toggle="tab" href="#/HRApprovals" role="tab" aria-controls="home" aria-selected="true">HR Approvals</a>
+                                    {!this.state.showMyApprovalsTab && this.state.showHRApprovalsTab &&   <li className="nav-item" role="presentation" onClick={() => {this.onHandleClick('HRApprovals');localStorage.setItem('PreviouslySelectedTimeOffTab','HRApprovals');}} >
+                                        <a className="nav-link active" id="HRApprovals-tab" data-toggle="tab" href="#/HRApprovals" role="tab" aria-controls="home" aria-selected="true">My Approvals</a>
                                     </li>}
                                     {/* {this.state.showMyApprovalsTab &&   <li className="nav-item" role="presentation" onClick={() => this.onHandleClick('MyTeamPTOs')} >
                                         <a className="nav-link" id="MyTeamPTOs-tab" data-toggle="tab" href="#/MyTeamPTOs" role="tab" aria-controls="MyTeamPTOs" aria-selected="true">My Team PTOs</a>
@@ -260,7 +260,7 @@ class TimeOffDashboard extends React.Component<TimeOffDashboardProps, TimeOffDas
 
                                     <div className="tab-pane fade csTimeOffHRApprovals" id="HRTab" role="tabpanel" aria-labelledby="HR-tab">
                                         <div className="border-box-shadow light-box table-responsive dataTables_wrapper-overflow p-2">
-                                            {this.state.showHRComp && <HRApproval {...this.props} />}
+                                            {!this.state.showApproveComp && this.state.showHRComp && <HRApproval {...this.props} />}
                                         </div>
                                     </div>
                                     <div className="tab-pane fade" id="MyTimeOffs" role="tabpanel" aria-labelledby="MyTimeOffs-tab">

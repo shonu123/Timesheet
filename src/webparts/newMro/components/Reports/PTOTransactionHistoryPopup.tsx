@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import { sp } from '@pnp/sp';
 import TableGenerator from '../Shared/TableGenerator';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faClose } from '@fortawesome/free-solid-svg-icons';
 
 interface modalProps {
   isVisible: boolean;
@@ -22,17 +24,31 @@ const PTOTransactionHistoryPopup = ({ isVisible, EmployeeTitle,Year, Data, Excel
     //     width: '5px'
     // },
     {
-      name: "Transaction Type",
+      name: "Transaction Status",
       selector: (row, i) => row.TransactionType,
-      width: '250px',
+      width: '280px',
       sortable: true
     },
     {
-      name: "Date",
+      name: "Time Off Type",
+      selector: (row, i) => row.TimeOffTypesForGrid,
+      cell: row => <div className='' dangerouslySetInnerHTML={{ __html: row.TimeOffTypesForGrid }}/>,
+      width: '200px',
+      sortable: true
+    },
+    {
+      name: "Time Off Date",
       selector: (row, i) => row.PostedOnForGrid,
       cell: row => <div className='' dangerouslySetInnerHTML={{ __html: row.PostedOnForGrid }}/>,
-      width: '150px',
+      width: '200px',
       sortable: true
+    },
+    {
+    name: "Submitted Date",
+    selector: (row, i) => row.SubmittedDateForGrid,
+    cell: row => <div className='' dangerouslySetInnerHTML={{ __html: row.SubmittedDateForGrid }}/>,
+    width: '200px',
+    sortable: true
     },
     // {
     //   name: "From",
@@ -66,14 +82,26 @@ const PTOTransactionHistoryPopup = ({ isVisible, EmployeeTitle,Year, Data, Excel
       sortable: true
     },
     {
-      name: "Transaction Type",
+      name: "Transaction Status",
       selector: "TransactionType",
       width: '200px',
       sortable: true
     },
     {
-      name: "Date",
+      name: "Time Off Type",
+      selector: "TimeOffTypes",
+      width: '200px',
+      sortable: true
+    },
+    {
+      name: "Time Off Date",
       selector: "PostedOn",
+      width: '230px',
+      sortable: true
+    },
+     {
+      name: "Submitted Date",
+      selector: "SubmittedDate",
       width: '230px',
       sortable: true
     },
@@ -99,7 +127,7 @@ const PTOTransactionHistoryPopup = ({ isVisible, EmployeeTitle,Year, Data, Excel
       sortable: true,
     },
   ];
-  const searchKeys=['TransactionType','PostedOn','Hours','Reason'];
+  const searchKeys=['TransactionType','TimeOffTypes','PostedOn','SubmittedDate','Hours','Reason'];
   if(isTimeOffEmployee)  //if Employee is member of 'Time Off Members' hide date and shows From date and To date
   {
     columns.splice(1,1);
@@ -136,8 +164,8 @@ const PTOTransactionHistoryPopup = ({ isVisible, EmployeeTitle,Year, Data, Excel
     <div className="modal" tabIndex={-1} style={{ display: 'block' }} >
       <div className="py-4">
         <div className="modal-content">
-          <div className={'text-right'}>
-            <button type="button" onClick={onCancel} className={`bg-danger text-white`} data-dismiss="modal" title='Close'>X</button>
+          <div className={'text-right pr-4 pt-2'}>
+            <button type="button" className='btn-fa-close' onClick={onCancel} id={'btnClose'}><span title='Close' ><FontAwesomeIcon icon={faClose} id={'iconClose'}></FontAwesomeIcon></span></button>
           </div>
           <div className="light-box border-box-shadow m-1 p-2">
             <div className='FormContent-2'>
@@ -146,7 +174,7 @@ const PTOTransactionHistoryPopup = ({ isVisible, EmployeeTitle,Year, Data, Excel
               <div className="after-title"></div>
               <div className="media-m-2 media-p-1">
                 <div className='c-v-table table-head-1st-td dataTables_wrapper-overflow'>
-                  <TableGenerator columns={columns} searchKeys={searchKeys} data={Data} fileName={`PTO Transaction History`} showExportExcel={Data.length ? true : false} searchBoxLeft={true} ExportExcelCustomisedColumns={Exportcolumns} wrapColumns={["Reason"]} LargeWidthColumns={["Reason","Employee"]} ExportExcelCustomisedData={ExcelData}></TableGenerator>
+                  <TableGenerator columns={columns} searchKeys={searchKeys} data={Data} fileName={`PTO Transaction History`} showExportExcel={Data.length ? true : false} searchBoxLeft={true} ExportExcelCustomisedColumns={Exportcolumns} wrapColumns={["Reason","TimeOffTypes"]} LargeWidthColumns={["Reason","Employee"]} ExportExcelCustomisedData={ExcelData}></TableGenerator>
                 </div>
               </div>
             </div>

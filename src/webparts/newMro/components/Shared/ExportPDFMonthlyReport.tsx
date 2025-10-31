@@ -7,7 +7,7 @@ import Loader from './Loader';
 import { StatusType, ToasterTypes } from "../../Constants/Constants";
 import customToaster from "./Toaster.component";
 
-const ExportPDFMonthlyReport = ({ ReportData,ReportHeaders,ReportFields,ClientName,DateRange, filename,LogoImgUrl,btnTitle='Export to PDF',className=''}) => {
+const ExportPDFMonthlyReport = ({ ReportData,ReportHeaders,IsThisReportForInternal,ReportFields,ClientName,DateRange, filename,LogoImgUrl,btnTitle='Export to PDF',className=''}) => {
     const [loading,setLoading] = useState(false)
     pdfMake.vfs = pdfFonts.pdfMake.vfs;
     const fetchImageAsBase64 = async (imageUrl) => {
@@ -107,6 +107,8 @@ const ExportPDFMonthlyReport = ({ ReportData,ReportHeaders,ReportFields,ClientNa
                 let FiledsTable=getFieldsTable();
                 let ReportTable=getTimesheetReport(ReportData);
                 let TimesheetTabelWidths=['5%','19%','19%','19%','19%','19%'];
+                if(IsThisReportForInternal)
+                  TimesheetTabelWidths=['3%','12%','15%','8%','8%','8%','8%','8%','15%','15%'];  
                 tables.push(
                     { 
                         image:logoBase64, 
@@ -220,6 +222,13 @@ const ExportPDFMonthlyReport = ({ ReportData,ReportHeaders,ReportFields,ClientNa
                 }
                 tableBodyRow.push({text:WeekObj.DateRange,style:styles.Hcenter_cell});
                 tableBodyRow.push({text:WeekObj.BillableHours,style:styles.Hcenter_cell});
+                if(IsThisReportForInternal)
+                {
+                 tableBodyRow.push({text:WeekObj.PaidTimeOff,style:styles.Hcenter_cell});
+                 tableBodyRow.push({text:WeekObj.TimeOff,style:styles.Hcenter_cell});
+                 tableBodyRow.push({text:WeekObj.Holiday,style:styles.Hcenter_cell});
+                 tableBodyRow.push({text:WeekObj.GrandTotal,style:styles.Hcenter_cell});
+                }
                 tableBodyRow.push({text:WeekObj.ApprovedBy,style:styles.Hcenter_cell});
                 tableBodyRow.push({text:WeekObj.ApprovedOn,style:styles.Hcenter_cell});
                 noOfWeeks++;

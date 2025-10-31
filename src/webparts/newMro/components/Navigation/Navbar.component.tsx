@@ -101,6 +101,7 @@ class NavBar extends React.Component<NavBarProps, NavBarState> {
     }
     public getOnLoad = async ()=>
     {
+        document.getElementById('workbenchPageContent')?document.getElementById('workbenchPageContent').classList.remove('p_ZwSiC_hHQBj'):'';
         let currUserID=this.props.spContext.userId;
         // let filterQuery = "Employee/ID eq '"+this.props.spContext.userId+"' and EligibleforPTO eq 1 and IsActive eq 1";
         let filterQuery = "(Employee/ID eq '"+currUserID+"' or SynergyManager/ID eq '"+currUserID+"') and IsActive eq 1";

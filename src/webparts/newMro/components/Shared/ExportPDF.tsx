@@ -39,6 +39,10 @@ const ExportToPDF = ({ AllTimesheetsData, filename,LogoImgUrl,btnTitle='Export t
             styles.Status_cell= { padding:[5,7],fillColor:'#d9e7c8',border:[true, true, true, true],lineWidth: 2,lineColor: '#a1cb70'};
             Status = 'Waiting for Reviewer Approval';
         }
+        else if(value == StatusType.ReviewerApprove.toString()){
+            styles.Status_cell= { padding:[5,7],fillColor:'#c6e69f',border:[true, true, true, true],lineWidth: 2,lineColor: '#95ce54'};
+            Status = 'Waiting for HR Approval';
+        }
         else if(value == StatusType.Approved.toString()){
             styles.Status_cell= { padding:[5,7],fillColor:'#91d392',border:[true, true, true, true],lineWidth: 2,lineColor: '#6ad36c'};
             Status = 'Approved';
@@ -51,6 +55,10 @@ const ExportToPDF = ({ AllTimesheetsData, filename,LogoImgUrl,btnTitle='Export t
             styles.Status_cell= { padding:[5,7],fillColor:'#f7d3d3',border:[true, true, true, true],lineWidth: 2,lineColor: '#f19891'};
            Status = "Rejected by Reviewer";
         }
+        else if(value == StatusType.HRReject.toString()){
+            styles.Status_cell= { padding:[5,7],fillColor:'#f7d3d3',border:[true, true, true, true],lineWidth: 2,lineColor: '#f19891'};
+           Status = "Rejected by HR";
+        }
         return Status;
     }
     const actionDetails = (status)=>{
@@ -58,11 +66,11 @@ const ExportToPDF = ({ AllTimesheetsData, filename,LogoImgUrl,btnTitle='Export t
             ActionBy: "Approved By",
             ActionDate: "Approved Date"
         }
-        if(status == 'Rejected by Reporting Manager' || status == 'Rejected by Reviewer'){
-            actionObj.ActionBy = "Rejected By"
-            actionObj.ActionDate = "Rejected Date"
+        if(status == 'Rejected by Reporting Manager' || status == 'Rejected by Reviewer' || status == 'Rejected by HR'){
+            actionObj.ActionBy = "Rejected By";
+            actionObj.ActionDate = "Rejected Date";
         }
-        return actionObj
+        return actionObj;
     }
     var FilteredTimehseets=[];
     var weeks= ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];

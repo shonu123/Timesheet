@@ -445,6 +445,8 @@ finalArray.sort((a, b) => {
                 return StatusType.Revoke;
             else if(StatusType.ManagerApprove.toString().toLowerCase()==item.Status.toLowerCase())
                 return StatusType.ManagerApprove;
+            else if(StatusType.ReviewerApprove.toString().toLowerCase()==item.Status.toLowerCase())
+                return StatusType.ReviewerApprove;
             else if(StatusType.Approved.toString().toLowerCase()==item.Status.toLowerCase())
                 return StatusType.Approved;
             else
@@ -505,7 +507,8 @@ let legend = [
     { v: 'Submitted', t: "s", s: { font: { bold: true },fill: { fgColor: { rgb: 'fafac5' } },border: allBorders } },
     // { v: 'Revoked', t: "s", s: { font: { bold: true },fill: { fgColor: { rgb: 'fae3ea' } },border: allBorders } },dbf6ff
     { v: 'Approved by Manager', t: "s", s: { font: { bold: true },fill: { fgColor: { rgb: 'dbf6ff' } },border: allBorders } },
-    { v: 'Approved', t: "s", s: { font: { bold: true },fill: { fgColor: { rgb: 'eedcf7' } },border: allBorders } },
+    { v: 'Approved by Reviewer', t: "s", s: { font: { bold: true },fill: { fgColor: { rgb: 'AFEAFF' } },border: allBorders } },
+    { v: 'Approved', t: "s", s: { font: { bold: true },fill: { fgColor: { rgb: 'CBC8EA' } },border: allBorders } },
     { v: 'Rejected', t: "s", s: { font: { bold: true },fill: { fgColor: { rgb: 'fad2d2' } },border: allBorders } }
 ]
 workSheetRows.push(legend)
@@ -550,11 +553,14 @@ let dataColums = []
                         case StatusType.Revoke:
                             color = "fae3ea"; // Color for Revoked
                             break;
-                            case StatusType.ManagerApprove:
+                        case StatusType.ManagerApprove:
                             color ="dbf6ff"// Color for Manager Approved
                             break;
+                        case StatusType.ReviewerApprove:
+                            color ="AFEAFF"// Color for Reviewer Approved
+                            break;
                         case StatusType.Approved:
-                            color ="eedcf7"// Color for Approved a9e6fc/eedcf7
+                            color ="CBC8EA"// Color for Approved a9e6fc/eedcf7
                             break;
                         default:
                             color = "ffffff"; // Default color
@@ -577,12 +583,12 @@ let dataColums = []
             let Total =0
             for(let t of tempArr){
                 // console.log(t.s.fill.fgColor.rgb)
-                if(t.s.fill.fgColor.rgb == 'eedcf7'){
+                if(t.s.fill.fgColor.rgb == 'CBC8EA'){
                     Total += parseFloat(t.v)
                 }
             } 
             // console.log("Approved Total = "+Total)
-            tempArr.push({ v: Total, t: "s", s: { alignment: { wrapText: true },border: allBorders, font: { bold: false}, fill: { fgColor: { rgb: 'eedcf7' }} } })
+            tempArr.push({ v: Total, t: "s", s: { alignment: { wrapText: true },border: allBorders, font: { bold: false}, fill: { fgColor: { rgb: 'CBC8EA' }} } })
             workSheetRows.push(tempArr);
         });
         let lastColumn = columnOrder.length
@@ -628,7 +634,7 @@ for (let i = 7; i < workSheetRows.length; i++) {
         let cellData = rowData[j];
         dataObj["col" + (j + 1)] = cellData.v;
         let fgColorRgb = cellData.s.fill.fgColor.rgb;
-        dataObj["colorClass" + (j + 1)] = fgColorRgb == "fad2d2" ? "R-LRed" : fgColorRgb == "fafac5" ? "R-LYellow" : fgColorRgb == "eedcf7" ? "R-LPurple" :fgColorRgb == "dbf6ff"?'R-LBlue': "R-White";
+        dataObj["colorClass" + (j + 1)] = fgColorRgb == "fad2d2" ? "R-LRed" : fgColorRgb == "fafac5" ? "R-LYellow" : fgColorRgb == "CBC8EA" ? "R-LPurple" :fgColorRgb == "dbf6ff"?'R-LBlue':fgColorRgb == "AFEAFF"?"R-LSkBlue":"R-White";
     }
 
     SampleData.push(dataObj);

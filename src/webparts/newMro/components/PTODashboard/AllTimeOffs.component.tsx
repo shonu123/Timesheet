@@ -10,6 +10,8 @@ import "@pnp/sp/lists";
 import "@pnp/sp/items";
 import Loader from '../Shared/Loader';
 import DateUtilities from '../../Utilities/DateUtilities';
+import CommonUtilities from '../../Utilities/CommonUtilities';
+
 
 export interface AllTimeOffsProps {
     match: any;
@@ -52,7 +54,7 @@ class AllTimeOffs extends React.Component<AllTimeOffsProps,AllTimeOffsState> {
         const userId = this.props.spContext.userId;
         let YearStart = `01/01/${new Date().getFullYear()}`;
         let YearEnd = `12/31/${new Date().getFullYear()}`;
-        var filterString = "From ge '"+YearStart+"' and From le '"+YearEnd+"'";
+        var filterString = "From ge '"+YearStart+"' and From le '"+YearEnd+"' and IsActive eq 1";
         sp.web.lists.getByTitle('TimeOffEmployees').items.top(5000).filter(filterString).expand("Employee,SynergyManager").select('SynergyManager/Title,Employee/Title','*').orderBy('From', false).get()
             .then((response) => {
                 // console.log(response)
@@ -88,7 +90,8 @@ class AllTimeOffs extends React.Component<AllTimeOffsProps,AllTimeOffsState> {
                         TOTotal: [null,undefined,''].includes(d.TOTotal)?0:parseFloat(d.TOTotal),
                         TotalHrs: parseFloat(d.TotalHours),
                         PendingWith: d.PendingWith == "Manager" ?"Synergy Manager":d.PendingWith,
-                        Status : this.getStatus(d.Status),
+                        Status : CommonUtilities.getTOStatus(d.Status),
+                        StatusForGrid:`<span class='${CommonUtilities.getStatusClass(d.Status)}' title='${CommonUtilities.getTOStatus(d.Status)}'>${CommonUtilities.getTOStatusInShortForm(d.Status)}</span>`,
                         SynMngr : ExcelSynMngr,
                         SynMngrForGrid : SynMngr
                     })
@@ -103,7 +106,7 @@ class AllTimeOffs extends React.Component<AllTimeOffsProps,AllTimeOffsState> {
                         TOTotal: [null,undefined,''].includes(d.TOTotal)?0:parseFloat(d.TOTotal),
                         TotalHrs: parseFloat(d.TotalHours),
                         PendingWith: d.PendingWith == "Manager" ?"Synergy Manager":d.PendingWith,
-                        Status : this.getStatus(d.Status),
+                        Status : CommonUtilities.getTOStatus(d.Status),
                         SynMngr : ExcelSynMngr
                     })
                 }
@@ -112,22 +115,6 @@ class AllTimeOffs extends React.Component<AllTimeOffsProps,AllTimeOffsState> {
                 console.log('Failed to fetch data.', err);
             });
     }
-    private getStatus(value){
-        let Status=value
-        if(value =="approved by Manager")
-        {
-            Status = "Approved by Synergy Manager";
-        }
-        else if(value == "rejected by Manager"){
-                Status = "Rejected by Synergy Manager";
-            }
-        else if(value =="rejected by HR")
-            {
-                Status = "Rejected by HR";
-            }
-        return Status;
-    }
-
     private  handleRowClicked = (row,Id?) => {
         let ID = row.Id?row.Id:Id;
         this.setState({TimeOffID:ID,redirect:true})
@@ -155,7 +142,7 @@ class AllTimeOffs extends React.Component<AllTimeOffsProps,AllTimeOffsState> {
             {
                 name: "Employee Name",
                 selector: (row, i) => row.EmployeName,
-                width: '250px',
+                // width: '250px',
                 sortable: true
             },
             {
@@ -175,54 +162,53 @@ class AllTimeOffs extends React.Component<AllTimeOffsProps,AllTimeOffsState> {
                 name: "From",
                 selector: (row, i) => row.FromDateForGrid ,
                 cell: row => <div className='' dangerouslySetInnerHTML={{ __html: row.FromDateForGrid }} onClick={(event)=>this.handleRowClicked(event,row.Id)}/>,
-                width: '120px',
+                // width: '120px',
                 sortable: true
             },
             {
                 name: "To",
                 selector: (row, i) => row.ToDateForGrid,
                 cell: row => <div className='' dangerouslySetInnerHTML={{ __html: row.ToDateForGrid }} onClick={(event)=>this.handleRowClicked(event,row.Id)}/>,
-                width: '120px',
+                // width: '120px',
                 sortable: true
             },
             {
                 name: "PTO Balance",
                 selector: (row, i) => row.PTOAvailableBalance,
                 sortable: true,
-                width: '120px'
+                // width: '120px'
             },
             {
                 name: "Paid Time Off",
                 selector: (row, i) => row.PTOTotal,
-                width: '130px',
+                // width: '130px',
                 sortable: true
             },
             {
                 name: "Time Off",
                 selector: (row, i) => row.TOTotal,
-                width: '110px',
+                // width: '110px',
                 sortable: true
             },
             {
                 name: "Total",
                 selector: (row, i) => row.TotalHrs,
-                width: '100px',
+                // width: '100px',
                 sortable: true
             },
-            {
-                name: "Pending With",
-                selector: (row, i) => row.PendingWith,
-                width: '160px',
-                sortable: true
-            },
-            {
+             {
                 name: "Status",
                 selector: (row, i) => row.Status,
+                cell: row => <div className='' dangerouslySetInnerHTML={{ __html: row.StatusForGrid }} onClick={(event)=>this.handleRowClicked(event,row.Id)}/>,
                 width: '220px',
                 sortable: true
             },
-            
-           
+            // {
+            //     name: "Pending With",
+            //     selector: (row, i) => row.PendingWith,
+            //     // width: '160px',
+            //     sortable: true
+            // }
         ];
         const Exportcolumns = [  
             {
@@ -280,19 +266,20 @@ class AllTimeOffs extends React.Component<AllTimeOffsProps,AllTimeOffsState> {
                 sortable: true
             },
             {
-                name: "Pending With",
-                selector: "PendingWith",
-                width: '180px',
-                sortable: true
-            },
-            {
                 name: "Status",
                 selector:  "Status",
                 width: '220px',
                 sortable: true
             },
+            // {
+            //     name: "Pending With",
+            //     selector: "PendingWith",
+            //     width: '180px',
+            //     sortable: true
+            // }
         ];
-        const searchKeys=['EmployeName','SynMngr','FromDate','ToDate','PTOAvailableBalance','PTOTotal','TOTotal','TotalHrs','PendingWith','Status'];
+        // const searchKeys=['EmployeName','SynMngr','FromDate','ToDate','PTOAvailableBalance','PTOTotal','TOTotal','TotalHrs','PendingWith','Status'];
+        const searchKeys=['EmployeName','SynMngr','FromDate','ToDate','PTOAvailableBalance','PTOTotal','TOTotal','TotalHrs','Status'];
         if(this.state.redirect){
             let url = `/TimeOffRequestForm/${this.state.TimeOffID}`;
         return (<Navigate to={url}/>);

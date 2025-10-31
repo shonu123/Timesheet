@@ -62,8 +62,9 @@ class PTOSummaryReport extends React.Component<PTOSummaryReportProps,PTOSummaryR
     }
     public state = {
         EmployeeId: -1,
+        EmpMatrixID:0,
         Year: new Date().getFullYear(),
-        Status:'',
+        Status:'1',
         RowClickedEmployeeTitle: '',
         EmployeesObj: [], //for Employee dropdown
         AllPTOData: [],
@@ -103,6 +104,7 @@ class PTOSummaryReport extends React.Component<PTOSummaryReportProps,PTOSummaryR
             userGroups.push(grp.Title);
         }
         let isAdmin = false;
+        let filteredPTOEligibleEmp;
             if (userGroups.includes('Timesheet Administrators') || userGroups.includes('Dashboard Admins')) {
                 this.setState({ isAdmin: true, EmployeeId: '0',isPageAccessable: true })
                 document.getElementById("Employee").getElementsByTagName('input')[0].focus();
@@ -110,14 +112,17 @@ class PTOSummaryReport extends React.Component<PTOSummaryReportProps,PTOSummaryR
             }
             else if(userGroups.includes('Synergycom Timesheet Members') || userGroups.includes('Time Off Members')) // for provide access to employee who is Active and eligible for PTO
             {
-                let filteredPTOEligibleEmp=Employees.find(Emp=>Emp.Employee.ID ==this.props.spContext.userId && Emp.EligibleforPTO == true && Emp.IsActive == true );
+                 filteredPTOEligibleEmp=Employees.find(Emp=>Emp.Employee.ID ==this.props.spContext.userId && Emp.EligibleforPTO == true && Emp.IsActive == true );
                 if(filteredPTOEligibleEmp!=undefined)
-                this.setState({ isPageAccessable: true })
+                this.setState({ isPageAccessable: true });
                 else
-                this.setState({ isPageAccessable: false })
+                {
+                    this.setState({ isPageAccessable: false });
+                    return false;
+                }
             }
             else {
-                this.setState({ isPageAccessable: false })
+                this.setState({ isPageAccessable: false });
                 return false;
             }
         let EmpIds = []
@@ -132,8 +137,9 @@ class PTOSummaryReport extends React.Component<PTOSummaryReportProps,PTOSummaryR
         }
         else {
             EmpObj.push({ ID: this.props.spContext.userId, Title: this.props.spContext.userDisplayName });
-            this.setState({ EmployeeId: this.props.spContext.userId });
-            this.handleRowClicked(undefined,this.props.spContext.userId,this.props.spContext.userDisplayName);
+            let EmpMatrixID=filteredPTOEligibleEmp!=undefined?filteredPTOEligibleEmp.Id:0;
+            this.setState({ EmployeeId: this.props.spContext.userId,EmpMatrixID:EmpMatrixID,Status:'1'});
+            this.handleRowClicked(undefined,this.props.spContext.userId,EmpMatrixID,this.props.spContext.userDisplayName);
         }
         //Year dropdown from 2024(Released Year of PTO) to currYear 
         let currYear=new Date().getFullYear();
@@ -163,7 +169,7 @@ class PTOSummaryReport extends React.Component<PTOSummaryReportProps,PTOSummaryR
 
         }
         else
-        filterQuery="Employee/Id eq '"+EmployeeId+"' and Year eq "+Year;
+        filterQuery=`Employee/Id eq '${EmployeeId}' and Year eq '${Year}' and IsActive eq ${Status}`;
         
         let [EmployeesPTO] = await Promise.all([
             sp.web.lists.getByTitle('EmployeePTO').items.top(5000).expand('Employee').select('Employee/Title,Employee/Id,*').filter(filterQuery).orderBy('Employee/Title', true).getAll(),
@@ -181,13 +187,14 @@ class PTOSummaryReport extends React.Component<PTOSummaryReportProps,PTOSummaryR
                         EligibleforPTO: d.EligibleforPTO ? 'Yes' : 'No',
                         DateOfJoining : DateUtilities.getDateMMDDYYYY(joiningDate),
                         DateOfJoiningForGrid : `<span class='d-none'>${DateUtilities.getDateYYYYMMDDForSorting(joiningDate)}</span>${DateUtilities.getDateMMDDYYYY(joiningDate)}`,
-                        PTOApplied: [null, undefined, ''].includes(d.PTOApplied) ? 0.00 : parseFloat(parseFloat(d.PTOApplied).toFixed(4)),
-                        PTOBalance: [null, undefined, ''].includes(d.PTOBalance) ? 0.00 : parseFloat(parseFloat(d.PTOBalance).toFixed(4)),
-                        PTOBalanceAfterDeduction: [null, undefined, ''].includes(d.PTOBalanceAfterDeduction) ? 0.00 : parseFloat(parseFloat(d.PTOBalanceAfterDeduction).toFixed(4)),
-                        PTOAvailed: [null, undefined, ''].includes(d.PTOAvailed) ? 0.00 : parseFloat(parseFloat(d.PTOAvailed).toFixed(4)),
-                        PTOGranted: [null, undefined, ''].includes(d.PTOGranted) ? 0.00 : parseFloat(parseFloat(d.PTOGranted).toFixed(4)),
+                        PTOApplied: [null, undefined, ''].includes(d.PTOApplied) ? 0 : parseFloat(parseFloat(d.PTOApplied).toFixed(4)),
+                        PTOBalance: [null, undefined, ''].includes(d.PTOBalance) ? 0 : parseFloat(parseFloat(d.PTOBalance).toFixed(4)),
+                        PTOBalanceAfterDeduction: [null, undefined, ''].includes(d.PTOBalanceAfterDeduction) ? 0 : parseFloat(parseFloat(d.PTOBalanceAfterDeduction).toFixed(4)),
+                        PTOAvailed: [null, undefined, ''].includes(d.PTOAvailed) ? 0 : parseFloat(parseFloat(d.PTOAvailed).toFixed(4)),
+                        PTOGranted: [null, undefined, ''].includes(d.PTOGranted) ? 0 : parseFloat(parseFloat(d.PTOGranted).toFixed(4)),
                         IsActive: d.IsActive ? 'Active' : 'In-Active',
-                        Year:d.Year
+                        Year:d.Year,
+                        EmpMatrixID:d.EmpMatrixID
                     })
                     ExcelData.push({
                         Id: d.Employee.Id,
@@ -196,11 +203,11 @@ class PTOSummaryReport extends React.Component<PTOSummaryReportProps,PTOSummaryR
                         Policy: d.Policy == 'None' ? 'NA' : d.Policy,
                         EligibleforPTO: d.EligibleforPTO ? 'Yes' : 'No',
                         DateOfJoining : DateUtilities.getDateMMDDYYYY(joiningDate),
-                        PTOApplied: [null, undefined, ''].includes(d.PTOApplied) ? '0.00' : parseFloat(d.PTOApplied).toFixed(4),
-                        PTOBalance: [null, undefined, ''].includes(d.PTOBalance) ? '0.00' : parseFloat(d.PTOBalance).toFixed(4),
-                        PTOBalanceAfterDeduction: [null, undefined, ''].includes(d.PTOBalanceAfterDeduction) ? '0.00' : parseFloat(d.PTOBalanceAfterDeduction).toFixed(4),
-                        PTOAvailed: [null, undefined, ''].includes(d.PTOAvailed) ? '0.00' : parseFloat(d.PTOAvailed).toFixed(4),
-                        PTOGranted: [null, undefined, ''].includes(d.PTOGranted) ? '0.00' : parseFloat(d.PTOGranted).toFixed(4),
+                        PTOApplied: [null, undefined, ''].includes(d.PTOApplied) ? '0' : parseFloat(parseFloat(d.PTOApplied).toFixed(4)),
+                        PTOBalance: [null, undefined, ''].includes(d.PTOBalance) ? '0' : parseFloat(parseFloat(d.PTOBalance).toFixed(4)),
+                        PTOBalanceAfterDeduction: [null, undefined, ''].includes(d.PTOBalanceAfterDeduction) ? '0' : parseFloat(parseFloat(d.PTOBalanceAfterDeduction).toFixed(4)),
+                        PTOAvailed: [null, undefined, ''].includes(d.PTOAvailed) ? '0' : parseFloat(parseFloat(d.PTOAvailed).toFixed(4)),
+                        PTOGranted: [null, undefined, ''].includes(d.PTOGranted) ? '0' : parseFloat(parseFloat(d.PTOGranted).toFixed(4)),
                         IsActive: d.IsActive ? 'Active' : 'In-Active',
                         Year:d.Year
                     })
@@ -232,7 +239,7 @@ class PTOSummaryReport extends React.Component<PTOSummaryReportProps,PTOSummaryR
         else if (name == 'Year') {
             latestData = await this.getLatestPTOData(this.state.isAdmin,this.state.EmployeeId,value,this.state.Status);
             if(!this.state.isAdmin)
-            this.handleRowClicked(undefined,this.props.spContext.userId,this.props.spContext.userDisplayName);
+            this.handleRowClicked(undefined,this.props.spContext.userId,this.state.EmpMatrixID,this.props.spContext.userDisplayName);
         }
         else if(name == 'Status')
         {
@@ -254,36 +261,36 @@ class PTOSummaryReport extends React.Component<PTOSummaryReportProps,PTOSummaryR
         }
         this.setState({ toDate: date});
     }
-    private  handleRowClicked = async (row,Id?,EmpName?,isAdmin?) => {
-        let EmployeeId;
-        let EmployeeTitle;
-        let Year;
+    private  handleRowClicked = async (row,Id?,EmpMatID?,EmpName?,isAdmin?) => {
+        let EmployeeId,EmpMatrixID,EmployeeTitle,Year;
         if (row)   //for handle history icon click and DOJ click
         {
-            if(row.Id)
+            if(row.Id) // to handle on row click
             {
                 EmployeeId = row.Id?row.Id:Id;
+                EmpMatrixID = row.EmpMatrixID?row.EmpMatrixID:EmpMatID;
                 EmployeeTitle = row.Employee?row.Employee:EmpName;
                 Year=row.Year;
             }
-            else{
+            else{ // to handle history icon click and DOJ click
                 EmployeeId = row.currentTarget.id?row.currentTarget.id:Id;
-                EmployeeTitle = row.currentTarget.getAttribute('name')?row.currentTarget.getAttribute('name'):EmpName;
+                EmpMatrixID = row.currentTarget.getAttribute('name')?row.currentTarget.getAttribute('name').split('_')[1]:EmpMatID;
+                EmployeeTitle = row.currentTarget.getAttribute('name')?row.currentTarget.getAttribute('name').split('_')[0]:EmpName;
                 Year=this.state.Year;
             }
         }
-        else {
+        else { // to handle for employee view PTO transactions history
             EmployeeId = Id;
+            EmpMatrixID = EmpMatID;
             EmployeeTitle = EmpName;
             Year=this.state.Year;
-
         }
 
         var Data = [];
         var ExcelData = [];
         this.setState({ loading: true });
         let selectQuery = "Employee/Id,Employee/Title,*";
-        let filterQuery= "Employee/Id eq " + EmployeeId+" and Year eq "+Year+" and IsActive eq 1";
+        let filterQuery= `Employee/Id eq '${EmployeeId}' and Year eq '${Year}' and IsActive eq 1 and EmpMatrixID eq '${EmpMatrixID}'`;
         try{
         let [EmpGroups,PTOTansactions] =await Promise.all([
             sp.web.getUserById(EmployeeId).groups(),
@@ -341,20 +348,31 @@ class PTOSummaryReport extends React.Component<PTOSummaryReportProps,PTOSummaryR
             ExcelData = [];
             PTOTansactions.forEach(item => {
                 let PostedOn = new Date(DateUtilities.GetDateMMDDYYYYAsInList(item.PostedOn));
+                let SubmittedDate =[null,undefined,''].includes(item.SubmittedDate)? new Date():new Date(DateUtilities.GetDateMMDDYYYYAsInList(item.SubmittedDate));
                 let From =[null,undefined,''].includes(item.From)? new Date():new Date(DateUtilities.GetDateMMDDYYYYAsInList(item.From));
                 let To =[null,undefined,''].includes(item.To)? new Date(): new Date(DateUtilities.GetDateMMDDYYYYAsInList(item.To));
+                let TimeOffTypesFromList=[null,undefined,''].includes(item.TimeOffTypes)?[]:JSON.parse(item.TimeOffTypes),TimeOffTypes = '',ExcelTimeOffTypes = '';
+                TimeOffTypesFromList.forEach(type => {
+                    TimeOffTypes+=`<div>${type}</div>`;
+                    ExcelTimeOffTypes+=type+'\n';
+                });
+
                 
                 Data.push({
                     Id: item.Id,
                     Employee: item.Employee.Title,
                     TransactionType: this.getStatus(item.TransactionType,isTimeOffEmployee),
-                    PostedOn : DateUtilities.getDateMMDDYYYY(PostedOn),
-                    PostedOnForGrid : `<span class='d-none'>${DateUtilities.getDateYYYYMMDDForSorting(PostedOn)}</span>${DateUtilities.getDateMMDDYYYY(PostedOn)}`,
+                    TimeOffTypesForGrid:TimeOffTypes,
+                    TimeOffTypes:ExcelTimeOffTypes,
+                    PostedOn : ['granted','deducted'].includes(item.TransactionType.toLowerCase())?'':DateUtilities.getDateMMDDYYYY(PostedOn),
+                    PostedOnForGrid : ['granted','deducted'].includes(item.TransactionType.toLowerCase())?'':`<span class='d-none'>${DateUtilities.getDateYYYYMMDDForSorting(PostedOn)}</span>${DateUtilities.getDateMMDDYYYY(PostedOn)}`,
+                    SubmittedDate : ['granted','deducted'].includes(item.TransactionType.toLowerCase())?DateUtilities.getDateMMDDYYYY(PostedOn):[null,undefined,''].includes(item.SubmittedDate)?'':DateUtilities.getDateMMDDYYYY(SubmittedDate),
+                    SubmittedDateForGrid :['granted','deducted'].includes(item.TransactionType.toLowerCase())?`<span class='d-none'>${DateUtilities.getDateYYYYMMDDForSorting(PostedOn)}</span>${DateUtilities.getDateMMDDYYYY(PostedOn)}`:[null,undefined,''].includes(item.SubmittedDate)?'':`<span class='d-none'>${DateUtilities.getDateYYYYMMDDForSorting(SubmittedDate)}</span>${DateUtilities.getDateMMDDYYYY(SubmittedDate)}`,
                     From : [null,undefined,''].includes(item.From)? '-':DateUtilities.getDateMMDDYYYY(From),
                     FromForGrid : [null,undefined,''].includes(item.From)? '-':`<span class='d-none'>${DateUtilities.getDateYYYYMMDDForSorting(From)}</span>${DateUtilities.getDateMMDDYYYY(From)}`,
                     To : [null,undefined,''].includes(item.To)? '-':DateUtilities.getDateMMDDYYYY(To),
                     ToForGrid : [null,undefined,''].includes(item.To)? '-':`<span class='d-none'>${DateUtilities.getDateYYYYMMDDForSorting(To)}</span>${DateUtilities.getDateMMDDYYYY(To)}`,
-                    Hours: [null, undefined, ''].includes(item.Hours) ? 0.00 : parseFloat(item.Hours),
+                    Hours: [null, undefined, ''].includes(item.Hours) ? 0 : parseFloat(item.Hours),
                     Reason: item.Reason,
                     Year:item.Year
                 })
@@ -362,10 +380,12 @@ class PTOSummaryReport extends React.Component<PTOSummaryReportProps,PTOSummaryR
                     Id: item.Id,
                     Employee: item.Employee.Title,
                     TransactionType: this.getStatus(item.TransactionType,isTimeOffEmployee),
-                    PostedOn : DateUtilities.getDateMMDDYYYY(PostedOn),
+                    TimeOffTypes:ExcelTimeOffTypes,
+                    PostedOn : ['granted','deducted'].includes(item.TransactionType.toLowerCase())?'':DateUtilities.getDateMMDDYYYY(PostedOn),
+                    SubmittedDate :['granted','deducted'].includes(item.TransactionType.toLowerCase())?DateUtilities.getDateMMDDYYYY(PostedOn):[null,undefined,''].includes(item.SubmittedDate)?'':DateUtilities.getDateMMDDYYYY(SubmittedDate),
                     From : [null,undefined,''].includes(item.From)? '-':DateUtilities.getDateMMDDYYYY(From),
                     To : [null,undefined,''].includes(item.To)? '-':DateUtilities.getDateMMDDYYYY(To),
-                    Hours: [null, undefined, ''].includes(item.Hours) ? 0.00 : parseFloat(item.Hours),
+                    Hours: [null, undefined, ''].includes(item.Hours) ? 0 : parseFloat(item.Hours),
                     Reason: [null, undefined, ''].includes(item.Reason) ? '' :item.Reason,
                     Year:item.Year
                 })
@@ -389,25 +409,33 @@ class PTOSummaryReport extends React.Component<PTOSummaryReportProps,PTOSummaryR
     }
     private getStatus(value,isTimeOffEmployee){
         let Status=value;
-        if(value =="approved by Manager")
-            {
-                Status = "Approved by Synergy Manager";
-            }
-        else if(value == "rejected by Manager"){
-                if(isTimeOffEmployee)
-                Status = "Rejected by Synergy Manager";
-               else
-               Status = "Rejected by Reporting Manager";
+        // if(value =="approved by Manager")
+        //     {
+        //         Status = "Approved by Synergy Manager";
+        //     }
+        // else if(value == "rejected by Manager"){
+        //         if(isTimeOffEmployee)
+        //         Status = "Rejected by Synergy Manager";
+        //        else
+        //        Status = "Rejected by Reporting Manager";
 
-            }
-        else if(value =="rejected by Synergy")
-            {
-                Status = "Rejected by Synergy";
-            }
-        else if(value =="rejected by HR")
-            {
-                Status = "Rejected by HR";
-            }
+        //     }
+        // else if(value =="rejected by Synergy")
+        //     {
+        //         Status = "Rejected by Synergy";
+        //     }
+        // else if(value =="rejected by HR")
+        //     {
+        //         Status = "Rejected by HR";
+        //     }
+        if([StatusType.Submit,StatusType.ManagerApprove,StatusType.ReviewerApprove].includes(value))
+        {
+            Status = StatusType.InProgress;
+        }
+        else if([StatusType.ManagerReject,StatusType.ReviewerReject,StatusType.HRReject].includes(value))
+        {
+            Status = StatusType.Reject;
+        }
         return Status;
     }
     private closePTOTransactionPopup = () => {
@@ -431,7 +459,7 @@ class PTOSummaryReport extends React.Component<PTOSummaryReportProps,PTOSummaryR
                     return (
                         <React.Fragment>
                             <div style={{ paddingLeft: '10px' }}>
-                                <FontAwesomeIcon icon={faHistory} id={record.Id} name={record.Employee} title={'View History'} onClick={this.handleRowClicked}></FontAwesomeIcon>
+                                <FontAwesomeIcon icon={faHistory} id={record.Id} name={record.Employee+'_'+record.EmpMatrixID}  title={'View History'} onClick={this.handleRowClicked}></FontAwesomeIcon>
                             </div>
                         </React.Fragment>
                     );
@@ -441,20 +469,20 @@ class PTOSummaryReport extends React.Component<PTOSummaryReportProps,PTOSummaryR
             {
                 name: "Employee",
                 selector: (row, i) => row.Employee,
-                width: '230px',
+                // width: '230px',
                 sortable: true
             },
-            {
-                name: "Employee Classification",
-                selector: (row, i) => row.EmployeeClassification,
-                width: '230px',
-                sortable: true
-            },
-            {
-                name: "Policy",
-                selector: (row, i) => row.Policy,
-                sortable: true
-            },
+            // {
+            //     name: "Employee Classification",
+            //     selector: (row, i) => row.EmployeeClassification,
+            //     width: '230px',
+            //     sortable: true
+            // },
+            // {
+            //     name: "Policy",
+            //     selector: (row, i) => row.Policy,
+            //     sortable: true
+            // },
             // {
             //     name: "Eligible for PTO",
             //     selector: (row, i) => row.EligibleforPTO,
@@ -464,14 +492,14 @@ class PTOSummaryReport extends React.Component<PTOSummaryReportProps,PTOSummaryR
             {
                 name: "Date Of Joining",
                 selector: (row, i) => row.DateOfJoiningForGrid,
-                cell: row => <div className='' dangerouslySetInnerHTML={{ __html: row.DateOfJoiningForGrid }} onClick={(event)=>this.handleRowClicked(event,row.Id,row.Employee)}/>,
-                width: '200px',
+                cell: row => <div className='' dangerouslySetInnerHTML={{ __html: row.DateOfJoiningForGrid }} onClick={(event)=>this.handleRowClicked(event,row.Id,row.EmpMatrixID,row.Employee)}/>,
+                // width: '200px',
                 sortable: true
             },
             {
                 name: "PTO Granted (YTD)",
                 selector: (row, i) => row.PTOGranted,
-                width: '180px',
+                // width: '180px',
                 sortable: true,
             },
             {
@@ -564,26 +592,41 @@ class PTOSummaryReport extends React.Component<PTOSummaryReportProps,PTOSummaryR
             //     selector: 'IsActive',
             //     sortable: true,
             // },
-            {
-                name: "Year",
-                selector: 'Year',
-                sortable: true,
-            }
+            // {
+            //     name: "Year",
+            //     selector: 'Year',
+            //     sortable: true,
+            // }
         ];
-        const searchKeys=['Employee','EmployeeClassification','Policy','DateOfJoining','PTOGranted','PTOAvailed','PTOApplied','PTOBalanceAfterDeduction'];
+        // const searchKeys=['Employee','EmployeeClassification','Policy','DateOfJoining','PTOGranted','PTOAvailed','PTOApplied','PTOBalanceAfterDeduction'];
+        const searchKeys=['Employee','DateOfJoining','PTOGranted','PTOAvailed','PTOApplied','PTOBalanceAfterDeduction'];
 
         const historyColumns = [
             {
-              name: "Transaction Type",
+              name: "Transaction Status",
               selector: (row, i) => row.TransactionType,
-              width: '250px',
+            //   width: '280px',
               sortable: true
             },
             {
-              name: "Date",
+              name: "Time Off Type",
+              selector: (row, i) => row.TimeOffTypesForGrid,
+              cell: row => <div className='' dangerouslySetInnerHTML={{ __html: row.TimeOffTypesForGrid }}/>,
+            //   width: '200px',
+              sortable: true
+            },
+            {
+              name: "Time Off Date",
               selector: (row, i) => row.PostedOnForGrid,
               cell: row => <div className='' dangerouslySetInnerHTML={{ __html: row.PostedOnForGrid }}/>,
-              width: '150px',
+            //   width: '200px',
+              sortable: true
+            },
+            {
+              name: "Submitted Date",
+              selector: (row, i) => row.SubmittedDateForGrid,
+              cell: row => <div className='' dangerouslySetInnerHTML={{ __html: row.SubmittedDateForGrid }}/>,
+            //   width: '200px',
               sortable: true
             },
             // {
@@ -601,7 +644,7 @@ class PTOSummaryReport extends React.Component<PTOSummaryReportProps,PTOSummaryR
             {
               name: "Hours",
               selector: (row, i) => row.Hours,
-              width: '70px',
+            //   width: '70px',
               sortable: true
             },
             {
@@ -618,14 +661,26 @@ class PTOSummaryReport extends React.Component<PTOSummaryReportProps,PTOSummaryR
               sortable: true
             },
             {
-              name: "Transaction Type",
+              name: "Transaction Status",
               selector: "TransactionType",
               width: '200px',
               sortable: true
             },
             {
-              name: "Date",
+              name: "Time Off Type",
+              selector: "TimeOffTypes",
+              width: '200px',
+              sortable: true
+            },
+            {
+              name: "Time Off Date",
               selector: "PostedOn",
+              width: '230px',
+              sortable: true
+            },
+            {
+              name: "Submitted Date",
+              selector: "SubmittedDate",
               width: '230px',
               sortable: true
             },
@@ -651,7 +706,7 @@ class PTOSummaryReport extends React.Component<PTOSummaryReportProps,PTOSummaryR
               sortable: true,
             },
           ];
-          const historySearchKeys=['TransactionType','PostedOn','Hours','Reason'];
+          const historySearchKeys=['TransactionType','TimeOffTypes','PostedOn','SubmittedDate','Hours','Reason'];
 
         if(this.state.isAdmin){
             columns.push(
@@ -779,7 +834,7 @@ class PTOSummaryReport extends React.Component<PTOSummaryReportProps,PTOSummaryR
                                     {!this.state.isAdmin &&
                                     <>
                                      <div className="row pt-2 px-4 mx-1 py-2">
-                                       <div className="col-md-4">
+                                       <div className="col-md-4 ml-auto">
                                             <div className="light-text">
                                                 <label>Year</label>
                                                 <select className="form-control" name="Year" title="Year" id='Year' onChange={this.handleChangeEvents}>
@@ -852,11 +907,11 @@ class PTOSummaryReport extends React.Component<PTOSummaryReportProps,PTOSummaryR
                                     </div>
                                 </div> */}
                                
-                                   {this.state.isAdmin ?  <div className='c-v-table dataTables_wrapper-overflow'><TableGenerator columns={columns} searchKeys={searchKeys} data={this.state.PTOData} fileName={'Employee(s) PTO Summary Report'} showExportExcel={this.state.PTOData.length ? true : false} searchBoxLeft={true} ExportExcelCustomisedColumns={Exportcolumns} ExportExcelCustomisedData={this.state.PTOExcelData} wrapColumns={['Employee', 'EmployeeClassification']} LargeWidthColumns={['Employee', 'EmployeeClassification']} onRowClick={this.handleRowClicked} paginationPerPage={25}></TableGenerator></div>:
+                                   {this.state.isAdmin ?  <div className='c-v-table dataTables_wrapper-overflow'><TableGenerator columns={columns} searchKeys={searchKeys} data={this.state.PTOData} fileName={'Employee(s) PTO Summary Report'} showExportExcel={this.state.PTOData.length ? true : false} searchBoxLeft={true} ExportExcelCustomisedColumns={Exportcolumns} ExportExcelCustomisedData={this.state.PTOExcelData} ExcelHeader={`PTO Summary Report - ${this.state.Year}`} wrapColumns={['Employee', 'EmployeeClassification']} LargeWidthColumns={['Employee', 'EmployeeClassification']} onRowClick={this.handleRowClicked} paginationPerPage={25}></TableGenerator></div>:
 
                                     <div className='c-v-table table-head-1st-td dataTables_wrapper-overflow'>
                                      <div className="fw-bold px-2">PTO Transaction History</div> 
-                                    <TableGenerator columns={historyColumns} searchKeys={historySearchKeys} data={this.state.PTOHistoryData} fileName={'PTO Transaction History'} showExportExcel={this.state.PTOHistoryData.length ? true : false} searchBoxLeft={true} ExportExcelCustomisedColumns={historyExportColumns} ExportExcelCustomisedData={this.state.PTOHistoryExcelData} wrapColumns={["Reason"]} LargeWidthColumns={["Reason","Employee"]} paginationPerPage={25}></TableGenerator></div>
+                                    <TableGenerator columns={historyColumns} searchKeys={historySearchKeys} data={this.state.PTOHistoryData} fileName={'PTO Transaction History'} showExportExcel={this.state.PTOHistoryData.length ? true : false} searchBoxLeft={true} ExportExcelCustomisedColumns={historyExportColumns} ExportExcelCustomisedData={this.state.PTOHistoryExcelData} wrapColumns={["Reason","TimeOffTypes"]} LargeWidthColumns={["Reason","Employee"]} paginationPerPage={25}></TableGenerator></div>
                                    }
                                 
                             </div>
