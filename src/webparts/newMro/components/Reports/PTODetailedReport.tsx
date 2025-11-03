@@ -27,6 +27,9 @@ import { faCloudDownload } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { StatusType } from '../../Constants/Constants';
 import TableGenerator from '../Shared/TableGenerator';
+import DateUtilities from '../../Utilities/DateUtilities';
+import InputCheckBox from '../Shared/InputCheckBox';
+
 export interface PTODetailedReportProps {
     match: any;
     spContext: any;
@@ -57,18 +60,21 @@ class PTODetailedReport extends React.Component<PTODetailedReportProps, PTODetai
     }
 
     public state = {
+        // EmployeeEmail: '',
         ClientName: "All Clients",
+        // ClientName: "",
+        EmployeeId: '0',
+        startDate: null,
+        endDate: null,
+        GenerateonlyGranted:false,
         ClientsObject: [],
         EmployeesObj: [],
         AllEmployees: [],
-        startDate: null,
-        endDate: null,
+      
         loading: false,
-        EmployeeEmail: '',
         Homeredirect: false,
         isPageAccessable: true,
         showToaster: false,
-        EmployeeId: '0',
         isHavingClients: true,
         isHavingEmployees: true,
         ResultExcelData : [],
@@ -82,41 +88,47 @@ class PTODetailedReport extends React.Component<PTODetailedReportProps, PTODetai
         this.getOnLoadData()
     }
     private async getOnLoadData() {
-        let selectQuery = "Employee/ID,Employee/Title"
-        let [groups, Clients, Employees] = await Promise.all([
-            sp.web.currentUser.groups(),
-            sp.web.lists.getByTitle('Client').items.select('*').orderBy('Title').get(),
-            sp.web.lists.getByTitle('EmployeeMaster').items.expand('Employee').select(selectQuery).orderBy('Employee/Title', true).getAll()
-        ]);
-        let userGroups = []
-        for (const grp of groups) {
-            userGroups.push(grp.Title)
-        }
-        if (userGroups.includes('Timesheet Administrators') || userGroups.includes('Dashboard Admins')) {
-            this.setState({ isPageAccessable: true })
-        }
-        else {
-            this.setState({ isPageAccessable: false })
-            return false
-        }
-
-        let EmpNames = []
-        let EmpObj = []
-        for (const name of Employees) {
-            if (!EmpNames.includes(name.Employee.Title)) {
-                EmpNames.push(name.Employee.Title)
-                EmpObj.push({ ID: name.Employee.ID, Title: name.Employee.Title })
+        let selectQuery = "Employee/ID,Employee/Title";
+        try {
+            let [groups, Clients, Employees] = await Promise.all([
+                sp.web.currentUser.groups(),
+                sp.web.lists.getByTitle('Client').items.top(5000).select('*').orderBy('Title').getAll(),
+                sp.web.lists.getByTitle('Employees').items.top(5000).expand('Employee').select(selectQuery).orderBy('Employee/Title', true).getAll()
+            ]);
+            let userGroups = [];
+            for (const grp of groups) {
+                userGroups.push(grp.Title);
             }
+            if (userGroups.includes('Timesheet Administrators') || userGroups.includes('Dashboard Admins')) {
+                this.setState({ isPageAccessable: true });
+            }
+            else {
+                this.setState({ isPageAccessable: false });
+                return false;
+            }
+
+            let EmpNames = [];
+            let EmpObj = [];
+            for (const name of Employees) {
+                if (!EmpNames.includes(name.Employee.Title)) {
+                    EmpNames.push(name.Employee.Title);
+                    EmpObj.push({ ID: name.Employee.ID, Title: name.Employee.Title });
+                }
+            }
+            EmpObj.sort((a, b) => a.Title.localeCompare(b.Title));
+            Clients.sort((a, b) => a.Title.localeCompare(b.Title));
+            if (Clients.length > 0) {
+                Clients.unshift({ Title: "All Clients" });
+                EmpObj.unshift({ ID: "0", Title: "All Employees" });
+                this.setState({ AllEmployees: EmpObj, EmployeesObj: EmpObj, ClientsObject: Clients, loading: false, isHavingClients: true, showToaster: true });
+            }
+            else
+                this.setState({ AllEmployees: EmpObj, EmployeesObj: EmpObj, ClientsObject: Clients, loading: false, isHavingClients: false, showToaster: true });
         }
-        EmpObj.sort((a, b) => a.Title.localeCompare(b.Title));
-        if (Clients.length > 0)
-        {
-            Clients.unshift({Title:"All Clients"});
-            EmpObj.unshift({ID:"0",Title:"All Employees"});
-            this.setState({ AllEmployees: EmpObj, EmployeesObj: EmpObj, ClientsObject: Clients, loading: false, isHavingClients: true, showToaster: true })
+        catch (error) {
+            customToaster('toster-error', ToasterTypes.Error, 'Sorry! something went wrong', 4000);
+            console.log("Sorry something went wrong! while getting onLoad data", error);
         }
-        else
-            this.setState({ AllEmployees: EmpObj, EmployeesObj: EmpObj, ClientsObject: Clients, loading: false, isHavingClients: false, showToaster: true })
     }
     private handleClientChange = (event,actionMeta?) => {
         this.setState({ loading: true });
@@ -141,31 +153,36 @@ class PTODetailedReport extends React.Component<PTODetailedReportProps, PTODetai
        this.getClientEmployees(value);
     }
     private async getClientEmployees(value) {
-        if (value != "All Clients") {
-            let selectQuery = "Employee/ID,Employee/Title"
-            let filterQuery = "ClientName eq '" + value + "'"
-            let clientEmployees = await sp.web.lists.getByTitle('EmployeeMaster').items.filter(filterQuery).expand('Employee').select(selectQuery).orderBy('Employee/Title', true).getAll()
-            let EmpNames = []
-            let EmpObj = []
-            for (const name of clientEmployees) {
-                if (!EmpNames.includes(name.Employee.Title)) {
-                    EmpNames.push(name.Employee.Title)
-                    EmpObj.push({ ID: name.Employee.ID, Title: name.Employee.Title })
+        try {
+            if (value != "All Clients") {
+                let selectQuery = "Employee/ID,Employee/Title";
+                let filterQuery = "ClientName eq '" + value.replace(/'/g, "''") + "'";
+                let clientEmployees = await sp.web.lists.getByTitle('EmployeeMaster').items.filter(filterQuery).expand('Employee').select(selectQuery).orderBy('Employee/Title', true).getAll()
+                let EmpNames = [];
+                let EmpObj = [];
+                for (const name of clientEmployees) {
+                    if (!EmpNames.includes(name.Employee.Title)) {
+                        EmpNames.push(name.Employee.Title);
+                        EmpObj.push({ ID: name.Employee.ID, Title: name.Employee.Title });
+                    }
+                }
+                EmpObj.sort((a, b) => a.Title.localeCompare(b.Title));
+                if (EmpObj.length > 0) {
+                    EmpObj.unshift({ ID: "0", Title: "All Employees" });
+                    this.setState({ EmployeesObj: EmpObj, loading: false, isHavingEmployees: true, EmployeeId: '0' });
+                }
+                else {
+                    this.setState({ EmployeesObj: EmpObj, loading: false, isHavingEmployees: false, EmployeeId: '-1' });
+                    customToaster('toster-error', ToasterTypes.Error, 'There are no employees associated with this client', 4000);
                 }
             }
-            EmpObj.sort((a, b) => a.Title.localeCompare(b.Title));
-            if (EmpObj.length > 0)
-            {
-                EmpObj.unshift({ID:"0",Title:"All Employees"});
-                this.setState({ EmployeesObj: EmpObj, loading: false, isHavingEmployees: true, EmployeeId: '0' });
-            }
             else {
-                this.setState({ EmployeesObj: EmpObj, loading: false, isHavingEmployees: false, EmployeeId: '-1' });
-                customToaster('toster-error', ToasterTypes.Error, 'There are no employees associated with this client', 4000);
+                this.setState({ EmployeesObj: this.state.AllEmployees, loading: false, isHavingEmployees: true, EmployeeId: '0' })
             }
         }
-        else {
-            this.setState({ EmployeesObj: this.state.AllEmployees, loading: false, isHavingEmployees: true, EmployeeId: '0' })
+        catch (error) {
+            customToaster('toster-error', ToasterTypes.Error, 'Sorry! something went wrong', 4000);
+            console.log("Sorry something went wrong! while getting Employees of selected client", error);
         }
     }
     private handleChangeEvents = (event,actionMeta?) => {
@@ -256,9 +273,11 @@ class PTODetailedReport extends React.Component<PTODetailedReportProps, PTODetai
         return isvalid;
     }
     private handleCancel = async (e)=>{
-        this.setState({Homeredirect : true,showToaster:false});
-        document.getElementById('divNavReportItems').classList.remove('show');
-        document.getElementById('Reports').classList.remove('heighlightMasters');
+        // this.setState({Homeredirect : true,showToaster:false});
+        // document.getElementById('divNavReportItems').classList.remove('show');
+        // document.getElementById('Reports').classList.remove('heighlightMasters');
+        this.setState({ ClientName: "All Clients",EmployeeId: '0',startDate: null, endDate: null,GenerateonlyGranted:false,EmployeesObj:this.state.AllEmployees,PTOData:[],PTOExcelData:[]});
+        //this.setState({ ClientName: "",EmployeeId: '0',startDate: null, endDate: null,EmployeesObj:this.state.AllEmployees,PTOData:[],PTOExcelData:[]});
     }
     private handleSubmit = () => {
         this.setState({loading:true});
@@ -273,15 +292,16 @@ class PTODetailedReport extends React.Component<PTODetailedReportProps, PTODetai
             return false
         }
         let date = new Date(this.state.startDate)
-        let selectedStartDate = `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`
+        let selectedStartDate = DateUtilities.getDateMMDDYYYY(date);
         date = new Date(this.state.endDate)
-        let selectedEndDate = `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`
+        let selectedEndDate =DateUtilities.getDateMMDDYYYY(date);
 
         let postObject = {
             Client: this.state.ClientName,
             Employee: parseInt(this.state.EmployeeId),
             StartDate: selectedStartDate,
-            EndDate: selectedEndDate
+            EndDate: selectedEndDate,
+            GenerateonlyGranted:this.state.GenerateonlyGranted
         }
         this.generateDatatable(postObject);
     }
@@ -291,7 +311,7 @@ class PTODetailedReport extends React.Component<PTODetailedReportProps, PTODetai
         const end = new Date(endDate);
 
         for (let date = new Date(start); date <= end; date.setDate(date.getDate() + 1)) {
-            const formattedDate = `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`
+            const formattedDate =DateUtilities.getDateMMDDYYYY(date);
             dateRangeArray.push(formattedDate);
         }
 
@@ -305,8 +325,8 @@ class PTODetailedReport extends React.Component<PTODetailedReportProps, PTODetai
         // let prevDate = addDays(new Date(startDate), -7);
         let prevDate = addDays(new Date(startDate), -1);
         let nextDate = addDays(new Date(EndDate), 1);
-        let prev = `${prevDate.getMonth() + 1}/${prevDate.getDate()}/${prevDate.getFullYear()}`;
-        let next = `${nextDate.getMonth() + 1}/${nextDate.getDate()}/${nextDate.getFullYear()}`;
+        let prev = DateUtilities.getDateMMDDYYYY(prevDate);
+        let next = DateUtilities.getDateMMDDYYYY(nextDate);
         var Data = [];
         var ExcelData = [];
         let filterQuery = '';
@@ -320,16 +340,20 @@ class PTODetailedReport extends React.Component<PTODetailedReportProps, PTODetai
         }
         else {
             if (Employee == 0) {
-                filterQuery = "ClientName eq'" + client + "' and PostedOn gt '" + prev + "' and PostedOn lt '" + next + "' and IsActive eq 1";
+                filterQuery = "ClientName eq'" + client.replace(/'/g, "''") + "' and PostedOn gt '" + prev + "' and PostedOn lt '" + next + "' and IsActive eq 1";
             }
             else {
-                filterQuery = "ClientName eq'" + client + "' and EmployeeId eq '" + Employee + "' and PostedOn gt '" + prev + "' and PostedOn lt '" + next + "' and IsActive eq 1";
+                filterQuery = "ClientName eq'" + client.replace(/'/g, "''") + "' and EmployeeId eq '" + Employee + "' and PostedOn gt '" + prev + "' and PostedOn lt '" + next + "' and IsActive eq 1";
             }
         }
+        if(postObject.GenerateonlyGranted)
+        filterQuery += " and TransactionType eq 'Granted'"; 
+        else
+        filterQuery += " and TransactionType ne 'Granted' and TransactionType ne 'Deducted'"; 
         try{
-            let reportData = await sp.web.lists.getByTitle('PTOTransactions').items.top(5000).filter(filterQuery).expand('Employee').select('Employee/Title,ClientName,*').orderBy('ClientName,Employee/Title', true).getAll();
+            let reportData = await sp.web.lists.getByTitle('PTOTransactions').items.top(5000).filter(filterQuery).expand('Employee').select('Employee/Title,Employee/Id,ClientName,*').orderBy('ClientName,Employee/Title', true).getAll();
             //Below is to filter exact date range.. Records , Due to DST, inaccurate rocords will fetched from above query.
-            reportData = reportData.filter(item=>new Date(item.PostedOn.split('-')[1] + '/' + item.PostedOn.split('-')[2].split('T')[0] + '/' + item.PostedOn.split('-')[0])>=new Date(startDate) && new Date(item.PostedOn.split('-')[1] + '/' + item.PostedOn.split('-')[2].split('T')[0] + '/' + item.PostedOn.split('-')[0])<=new Date(EndDate));
+            reportData = reportData.filter(item=>new Date(DateUtilities.GetDateMMDDYYYYAsInList(item.PostedOn))>=new Date(startDate) && new Date(DateUtilities.GetDateMMDDYYYYAsInList(item.PostedOn))<=new Date(EndDate));
             if (reportData.length > 0) {
                 //Sorted to get latest modified records first
                 reportData.sort((a, b) => {
@@ -340,27 +364,49 @@ class PTODetailedReport extends React.Component<PTODetailedReportProps, PTODetai
                 Data = [];
                 ExcelData = [];
                 reportData.forEach(item => {
-                    let PostedOn = new Date(item.PostedOn.split('-')[1] + '/' + item.PostedOn.split('-')[2].split('T')[0] + '/' + item.PostedOn.split('-')[0]);
+                    let PostedOn = new Date(DateUtilities.GetDateMMDDYYYYAsInList(item.PostedOn));
+                    let SubmittedDate =[null,undefined,''].includes(item.SubmittedDate)? new Date():new Date(DateUtilities.GetDateMMDDYYYYAsInList(item.SubmittedDate));
+                    let From =[null,undefined,''].includes(item.From)? new Date():new Date(DateUtilities.GetDateMMDDYYYYAsInList(item.From));
+                    let To =[null,undefined,''].includes(item.To)? new Date(): new Date(DateUtilities.GetDateMMDDYYYYAsInList(item.To));
+                    let isTimeOffEmployee=this.getIsTimeOffEmployee( item.Employee.Id);
+                    let TimeOffTypesFromList=[null,undefined,''].includes(item.TimeOffTypes)?[]:JSON.parse(item.TimeOffTypes),TimeOffTypes = '',ExcelTimeOffTypes = '';
+                        TimeOffTypesFromList.forEach(type => {
+                            TimeOffTypes+=`<div>${type}</div>`;
+                            ExcelTimeOffTypes+=type+'\n';
+                        });
                     Data.push({
                         Id: item.Id,
                         ClientName:item.ClientName,
                         Employee: item.Employee.Title,
-                        TransactionType: this.getStatus(item.TransactionType),
-                        PostedOn: `${PostedOn.getMonth() + 1}/${PostedOn.getDate()}/${PostedOn.getFullYear()}`,
-                        PTOHours: [null, undefined, ''].includes(item.Hours) ? 0.00 : parseFloat(item.Hours),
-                        PreviousPTOBalance:[null, undefined, ''].includes(item.PreviousPTOBalance) ? 0.00 : parseFloat(item.PreviousPTOBalance),
-                        CurrentPTOBalance:[null, undefined, ''].includes(item.CurrentPTOBalance) ? 0.00 : parseFloat(item.CurrentPTOBalance),
+                        TransactionType: this.getStatus(item.TransactionType,isTimeOffEmployee),
+                        TimeOffTypesForGrid:TimeOffTypes,
+                        TimeOffTypes:ExcelTimeOffTypes,
+                        PostedOn : ['granted','deducted'].includes(item.TransactionType.toLowerCase())?'':DateUtilities.getDateMMDDYYYY(PostedOn),
+                        PostedOnForGrid : ['granted','deducted'].includes(item.TransactionType.toLowerCase())?'':`<span class='d-none'>${DateUtilities.getDateYYYYMMDDForSorting(PostedOn)}</span>${DateUtilities.getDateMMDDYYYY(PostedOn)}`,
+                         SubmittedDate : ['granted','deducted'].includes(item.TransactionType.toLowerCase())?DateUtilities.getDateMMDDYYYY(PostedOn):[null,undefined,''].includes(item.SubmittedDate)?'':DateUtilities.getDateMMDDYYYY(SubmittedDate),
+                         SubmittedDateForGrid :['granted','deducted'].includes(item.TransactionType.toLowerCase())?`<span class='d-none'>${DateUtilities.getDateYYYYMMDDForSorting(PostedOn)}</span>${DateUtilities.getDateMMDDYYYY(PostedOn)}`:[null,undefined,''].includes(item.SubmittedDate)?'':`<span class='d-none'>${DateUtilities.getDateYYYYMMDDForSorting(SubmittedDate)}</span>${DateUtilities.getDateMMDDYYYY(SubmittedDate)}`,
+                        From : [null,undefined,''].includes(item.From)? '-':DateUtilities.getDateMMDDYYYY(From),
+                        FromForGrid : [null,undefined,''].includes(item.From)? '-':`<span class='d-none'>${DateUtilities.getDateYYYYMMDDForSorting(From)}</span>${DateUtilities.getDateMMDDYYYY(From)}`,
+                        To : [null,undefined,''].includes(item.To)? '-':DateUtilities.getDateMMDDYYYY(To),
+                        ToForGrid : [null,undefined,''].includes(item.To)? '-':`<span class='d-none'>${DateUtilities.getDateYYYYMMDDForSorting(To)}</span>${DateUtilities.getDateMMDDYYYY(To)}`,
+                        PTOHours: [null, undefined, ''].includes(item.Hours) ? 0.00 : parseFloat(parseFloat(item.Hours).toFixed(4)),
+                        PreviousPTOBalance:[null, undefined, ''].includes(item.PreviousPTOBalance) ? 0.00 : parseFloat(parseFloat(item.PreviousPTOBalance).toFixed(4)),
+                        CurrentPTOBalance:[null, undefined, ''].includes(item.CurrentPTOBalance) ? 0.00 : parseFloat(parseFloat(item.CurrentPTOBalance).toFixed(4)),
                         Reason: item.Reason,
                     })
                     ExcelData.push({
                         Id: item.Id,
                         ClientName:[null, undefined, ''].includes(item.ClientName) ? '' :item.ClientName,
                         Employee: item.Employee.Title,
-                        TransactionType: this.getStatus(item.TransactionType),
-                        PostedOn: `${PostedOn.getMonth() + 1}/${PostedOn.getDate()}/${PostedOn.getFullYear()}`,
-                        PTOHours: [null, undefined, ''].includes(item.Hours) ? 0.00 : parseFloat(item.Hours),
-                        PreviousPTOBalance:[null, undefined, ''].includes(item.PreviousPTOBalance) ? 0.00 : parseFloat(item.PreviousPTOBalance),
-                        CurrentPTOBalance:[null, undefined, ''].includes(item.CurrentPTOBalance) ? 0.00 : parseFloat(item.CurrentPTOBalance),
+                        TransactionType: this.getStatus(item.TransactionType,isTimeOffEmployee),
+                        TimeOffTypes:ExcelTimeOffTypes,
+                        PostedOn : ['granted','deducted'].includes(item.TransactionType.toLowerCase())?'':DateUtilities.getDateMMDDYYYY(PostedOn),
+                        SubmittedDate :['granted','deducted'].includes(item.TransactionType.toLowerCase())?DateUtilities.getDateMMDDYYYY(PostedOn):[null,undefined,''].includes(item.SubmittedDate)?'':DateUtilities.getDateMMDDYYYY(SubmittedDate),
+                        From : [null,undefined,''].includes(item.From)? '-':DateUtilities.getDateMMDDYYYY(From),
+                        To : [null,undefined,''].includes(item.To)? '-':DateUtilities.getDateMMDDYYYY(To),
+                        PTOHours: [null, undefined, ''].includes(item.Hours) ? 0.00 : parseFloat(parseFloat(item.Hours).toFixed(4)),
+                        PreviousPTOBalance:[null, undefined, ''].includes(item.PreviousPTOBalance) ? 0.00 : parseFloat(parseFloat(item.PreviousPTOBalance).toFixed(4)),
+                        CurrentPTOBalance:[null, undefined, ''].includes(item.CurrentPTOBalance) ? 0.00 : parseFloat(parseFloat(item.CurrentPTOBalance).toFixed(4)),
                         Reason: [null, undefined, ''].includes(item.Reason) ? '' :item.Reason,
                     })
                 }
@@ -373,17 +419,44 @@ class PTODetailedReport extends React.Component<PTODetailedReportProps, PTODetai
             }
         }
         catch (error) {
+            customToaster('toster-error',ToasterTypes.Error,'Sorry! something went wrong',4000);
             console.log("Sorry something went wrong! while getting PTO transactions data", error);
         }
     }
-    private getStatus(value){
+    private getIsTimeOffEmployee = async (EmployeeId)=>
+    {
+        let EmpGroups= await sp.web.getUserById(EmployeeId).groups();
+        let isTimeOffEmployee = EmpGroups.some(Grp=>Grp.Title=='Time Off Members');
+        return isTimeOffEmployee;
+    }
+    private getStatus(value,isTimeOffEmployee){
         let Status=value;
-        if(value == "rejected by Manager"){
-                Status = "Rejected by Reporting Manager";
-            }
-        else if(value =="rejected by Synergy")
+        // if(value =="approved by Manager")
+        //     {
+        //         Status = "Approved by Synergy Manager";
+        //     }
+        // else if(value == "rejected by Manager"){
+        //         if(isTimeOffEmployee)
+        //         Status = "Rejected by Synergy Manager";
+        //        else
+        //        Status = "Rejected by Reporting Manager";
+
+        //     }
+        // else if(value =="rejected by Synergy")
+        //     {
+        //         Status = "Rejected by Synergy";
+        //     }
+        // else if(value =="rejected by HR")
+        //     {
+        //         Status = "Rejected by HR";
+        //     }
+             if([StatusType.Submit,StatusType.ManagerApprove,StatusType.ReviewerApprove].includes(value))
             {
-                Status = "Rejected by Synergy";
+                Status = StatusType.InProgress;
+            }
+            else if([StatusType.ManagerReject,StatusType.ReviewerReject,StatusType.HRReject].includes(value))
+            {
+                Status = StatusType.Reject;
             }
         return Status;
     }
@@ -401,43 +474,72 @@ class PTODetailedReport extends React.Component<PTODetailedReportProps, PTODetai
             {
                 name: "Client Name",
                 selector: (row, i) => row.ClientName,
-                width: '230px',
+                // width: '230px',
                 sortable: true
             },
             {
                 name: "Employee Name",
                 selector: (row, i) => row.Employee,
-                width: '230px',
+                // width: '230px',
                 sortable: true
             },
             {
-                name: "Transaction Type",
+                name: "Transaction Status",
                 selector: (row, i) => row.TransactionType,
-                width: '230px',
+                // width: '230px',
                 sortable: true
             },
             {
-                name: "Date",
-                selector: (row, i) => row.PostedOn,
-                width: '120px',
+                name: "Time Off Type",
+                selector: (row, i) => row.TimeOffTypesForGrid,
+                cell: row => <div className='' dangerouslySetInnerHTML={{ __html: row.TimeOffTypesForGrid }}/>,
+                // width: '200px',
+                sortable: true
+              },
+            {
+                name: "Time Off Date",
+                selector: (row, i) => row.PostedOnForGrid,
+                cell: row => <div className='' dangerouslySetInnerHTML={{ __html: row.PostedOnForGrid }}/>,
+                // width: '200px',
                 sortable: true
             },
+             {
+              name: "Submitted Date",
+              selector: (row, i) => row.SubmittedDateForGrid,
+              cell: row => <div className='' dangerouslySetInnerHTML={{ __html: row.SubmittedDateForGrid }}/>,
+            //   width: '200px',
+              sortable: true
+            },
+            // {
+            //     name: "From",
+            //     selector: (row, i) => row.FromForGrid,
+            //     cell: row => <div className='' dangerouslySetInnerHTML={{ __html: row.FromForGrid }}/>,
+            //     width: '150px',
+            //    sortable: true
+            //   },
+            //   {
+            //       name: "To",
+            //       selector: (row, i) => row.ToForGrid,
+            //       cell: row => <div className='' dangerouslySetInnerHTML={{ __html: row.ToForGrid }}/>,
+            //      width: '150px',
+            //       sortable: true
+            //  },
             {
                 name: "Previous PTO Balance",
                 selector: (row, i) => row.PreviousPTOBalance,
-                width: '200px',
+                // width: '200px',
                 sortable: true
             },
             {
-                name: "Requested PTO Hours",
+                name: "Applied PTO Hours",
                 selector: (row, i) => row.PTOHours,
-                width: '200px',
+                // width: '200px',
                 sortable: true
             },
             {
                 name: "Current PTO Balance",
                 selector: (row, i) => row.CurrentPTOBalance,
-                width: '200px',
+                // width: '200px',
                 sortable: true
             },
             {
@@ -460,16 +562,37 @@ class PTODetailedReport extends React.Component<PTODetailedReportProps, PTODetai
                 sortable: true
             },
             {
-                name: "Transaction Type",
+                name: "Transaction Status",
                 selector: "TransactionType",
                 width: '230px',
                 sortable: true
             },
             {
-                name: "Date",
+                name: "Time Off Type",
+                selector: "TimeOffTypes",
+                width: '200px',
+                sortable: true
+              },
+            {
+                name: "Time Off Date",
                 selector: "PostedOn",
                 sortable: true
             },
+            {
+                name: "Submitted Date",
+                selector: "SubmittedDate",
+                sortable: true
+            },
+            // {
+            //     name: "From",
+            //     selector: "From",
+            //     sortable: true
+            // },
+            // {
+            //   name: "To",
+            //   selector: "To",
+            //   sortable: true
+            // },
             {
                 name: "Previous PTO Balance",
                 selector: "PreviousPTOBalance",
@@ -477,7 +600,7 @@ class PTODetailedReport extends React.Component<PTODetailedReportProps, PTODetai
                 sortable: true
             },
             {
-                name: "Requested PTO Hours",
+                name: "Applied PTO Hours",
                 selector: "PTOHours",
                 sortable: true
             },
@@ -493,6 +616,15 @@ class PTODetailedReport extends React.Component<PTODetailedReportProps, PTODetai
                 sortable: true,
             }
         ];
+        const searchKeys=['ClientName','Employee','TransactionType','TimeOffTypes','PostedOn','SubmittedDate','Form','To','PreviousPTOBalance','PTOHours','CurrentPTOBalance','Reason'];
+          //if generate only granted: Client Name,TimeOffType,TimeOffDate fields are always empty.
+          if(this.state.GenerateonlyGranted)            
+          {
+            columns.splice(0,1);
+            columns.splice(2,2);
+            Exportcolumns.splice(0,1);
+            Exportcolumns.splice(2,2);
+          }
         if (!this.state.isPageAccessable) {
             let url = this.siteURL+"/SitePages/AccessDenied.aspx";
             window.location.href = url;
@@ -504,8 +636,9 @@ class PTODetailedReport extends React.Component<PTODetailedReportProps, PTODetai
         else {
             return (
                 <React.Fragment>
+                    <div id="content" className="content p-2 pt-2">
                     <div className='container-fluid'>
-                        <div className='FormContent-2'>
+                        <div className='FormContent'>
                             <div className="title">PTO Detailed Report
                                 <div className='mandatory-note'>
                                     <span className='mandatoryhastrick'>*</span> indicates a required field
@@ -552,7 +685,7 @@ class PTODetailedReport extends React.Component<PTODetailedReportProps, PTODetai
                                         <div className="col-md-3">
                                             <div className="light-text div-readonly">
                                                 <label className="z-in-9">Start Date<span className="mandatoryhastrick">*</span></label>
-                                                <div className="custom-datepicker" id="divDateofJoining">
+                                                <div className="custom-datepicker" id="divStartDate">
 
                                                     <DatePicker onDatechange={this.handleStartDate} selectedDate={this.state.startDate} ref={this.startDate} endDate={new Date()} placeholderText='MM/DD/YYYY' id={'txtStartDate'} title={"Start Date"}/>
                                                 </div>
@@ -562,7 +695,7 @@ class PTODetailedReport extends React.Component<PTODetailedReportProps, PTODetai
                                         <div className="col-md-3">
                                             <div className="light-text div-readonly">
                                                 <label className="z-in-9">End Date<span className="mandatoryhastrick">*</span></label>
-                                                <div className="custom-datepicker" id="divDateofJoining">
+                                                <div className="custom-datepicker" id="divEndDate">
 
                                                     <DatePicker onDatechange={this.handleEndDate} ref={this.endDate} endDate={this.getcurrWeekSunDay()} selectedDate={this.state.endDate} id={'txtEndDate'} title={"End Date"}/>
                                                 </div>
@@ -570,22 +703,37 @@ class PTODetailedReport extends React.Component<PTODetailedReportProps, PTODetai
                                         </div>
 
                                     </div>
-
+                                    <div className="row pt-2 px-2">
+                                        <div className="col-md-3">
+                                                <div className="light-text">
+                                                    <InputCheckBox
+                                                        label={"Generate only Granted?"}
+                                                        name={"GenerateonlyGranted"}
+                                                        checked={this.state.GenerateonlyGranted}
+                                                        onChange={this.handleChangeEvents}
+                                                        isforMasters={false}
+                                                        isdisable={false}
+                                                        id='chkGenerateonlyGranted'
+                                                    />
+                                                </div>
+                                            </div>
+                                    </div>
                                 </div>
                                 <div className="row mx-1" id="">
                                     <div className="col-sm-12 text-center my-4" id="">
                                         {/* <button type="button" className="DownloadButtons btn" onClick={this.handleSubmit}>
                                         <FontAwesomeIcon icon={faCloudDownload} className=''></FontAwesomeIcon>Download</button> */}
                                         {/* <button type="button" className="ReportCancelButtons btn" onClick={this.handleCancel}>Cancel</button> */}
-                                        <button type="button" className="SubmitButtons btn" onClick={this.handleSubmit} title='Submit'>Submit</button>
-                                        <button type="button" className="CancelButtons btn" onClick={this.handleCancel} title='Cancel'>Cancel</button>
+                                        <button type="button" className="SubmitButtons btn" onClick={this.handleSubmit} title='Search'>Search</button>
+                                        <button type="button" className="CancelButtons btn" onClick={this.handleCancel} title='Clear'>Clear</button>
                                     </div>
                                 </div>
                                 {this.state.PTOData.length>0 && <div className='c-v-table table-head-1st-td dataTables_wrapper-overflow'>
-                                    <TableGenerator columns={columns} data={this.state.PTOData} fileName={'Employee(s) PTO Detailed Report'} showExportExcel={this.state.PTOData.length ? true : false} searchBoxLeft={true} ExportExcelCustomisedColumns={Exportcolumns} ExportExcelCustomisedData={this.state.PTOExcelData} wrapColumns={['Employee']} LargeWidthColumns={["ClientName","Employee","Reason"]} ></TableGenerator>
+                                    <TableGenerator columns={columns} searchKeys={searchKeys} data={this.state.PTOData} fileName={'Employee(s) PTO Detailed Report'} showExportExcel={this.state.PTOData.length ? true : false} searchBoxLeft={true} ExportExcelCustomisedColumns={Exportcolumns} ExportExcelCustomisedData={this.state.PTOExcelData} wrapColumns={['Employee','TimeOffTypes']} LargeWidthColumns={["ClientName","Employee","Reason"]} paginationPerPage={25}></TableGenerator>
                                 </div>}
                             </div>
                         </div>
+                    </div>
                     </div>
                     {this.state.showToaster && <Toaster />}
                     {this.state.loading && <Loader />}

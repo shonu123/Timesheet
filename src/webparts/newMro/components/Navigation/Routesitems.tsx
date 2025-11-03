@@ -6,6 +6,7 @@ import GuardedRoute from './GuardedRoute';
 //const Dashboard = React.lazy(() => import('../Dashboard/Dashboard.component'));
 import Dashboard from '../Dashboard/Dashboard.component';
 import PTODashboard from '../PTODashboard/PTODashboard.component';
+import TimeOffDashboard from '../PTODashboard/TimeOffDashboard.component';
 import PurchaseRequest from '../Forms/PurchaserequestForm.component';
 // const Home = lazy(() => import('../Home/Home.component'));
 import Home from '../Home/Home.component';
@@ -23,16 +24,18 @@ import EmployeeMasterView from '../Masters/EmployeeMasterView.component';
 import Clients from '../Masters/ClientMaster.component';
 import EmployeeClassification from '../Masters/EmployeeClassificationMaster.component';
 import PTOPolicy from '../Masters/PTOPolicyMaster.component';
+import TimeOffType from '../Masters/TimeOffTypeMaster.component';
 import Employee from '../Masters/EmployeeMaster.component';
 import EmpPTOCredit from '../Masters/EmployeePTOCredit.component';
 import TimesheetReport from '../Reports/TimesheetReport.component';
 import DailyTimesheetReport from '../Reports/DailyTimesheetReport.component';
 import WeeklyTimesheetReport from '../Reports/WeeklyTimesheetReport.component';
+import MonthlyTimesheetReport from '../Reports/MonthlyTimesheetReport.component';
 import PTOReport from '../Reports/PTOReport';
 import PTOSummaryReport from '../Reports/PTOSummaryReport';
 import PTODetailedReport from '../Reports/PTODetailedReport';
 // import WeeklyTimesheetReport from '../Reports/WeeklyTimesheetReportPDF.component';
-import PTOForm from '../Forms/PTOForm.component';
+import TimeOffRequestForm from '../Forms/TimeOffRequestForm.component';
 import DelegateManagerApprovals from '../Forms/AutoManagerDelegtion.component'
 import DelegateReviewerApprovals from '../Forms/Test.component';
 // import DelegateReviewerApprovals from '../Forms/AutoReviewerDelegation.component';
@@ -97,6 +100,10 @@ class Routesitems extends Component<RoutesProps, RoutesState> {
             let params =useParams();
             return <PTOPolicy {...this.context}{...this.props}  {...{...props, match: {params}} } />
           }
+          const WrapperTimeOffTypeMaster = (props) => {
+            let params =useParams();
+            return <TimeOffType {...this.context}{...this.props}  {...{...props, match: {params}} } />
+          }
           const WrapperEmployeeMaster = (props) => {
             let params =useParams();
             return <Employee {...this.context}{...this.props}  {...{...props, match: {params}} } />
@@ -113,6 +120,10 @@ class Routesitems extends Component<RoutesProps, RoutesState> {
             let params =useParams();
             return <PTODashboard {...this.context}{...this.props}  {...{...props, match: {params}} } />
           }
+          const WrapperTimeOffDashboard = (props) => {
+            let params =useParams();
+            return <TimeOffDashboard {...this.context}{...this.props}  {...{...props, match: {params}} } />
+          }
           const TimesheetReports = (props) => {
             let params =useParams();
             return <TimesheetReport {...this.context}{...this.props}  {...{...props, match: {params}} } />
@@ -125,6 +136,10 @@ class Routesitems extends Component<RoutesProps, RoutesState> {
             let params =useParams();
             return <WeeklyTimesheetReport {...this.context}{...this.props}  {...{...props, match: {params}} } />
           }
+          const MonthlyTimesheetReports = (props) => {
+            let params =useParams();
+            return <MonthlyTimesheetReport {...this.context}{...this.props}  {...{...props, match: {params}} } />
+          }
           const PTOSummaryReports = (props) => {
             let params =useParams();
             return <PTOSummaryReport {...this.context}{...this.props}  {...{...props, match: {params}} } />
@@ -134,9 +149,9 @@ class Routesitems extends Component<RoutesProps, RoutesState> {
             let params =useParams();
             return <PTODetailedReport {...this.context}{...this.props}  {...{...props, match: {params}} } />
           }
-          const WrapperPTOForm = (props) => {
+          const WrapperTimeOffRequestForm = (props) => {
             let params =useParams();
-            return <PTOForm {...this.context}{...this.props}  {...{...props, match: {params}} } />
+            return <TimeOffRequestForm {...this.context}{...this.props}  {...{...props, match: {params}} } />
           }
           const WrapperManagerDelegatesForm = (props) => {
             let params =useParams();
@@ -150,11 +165,12 @@ class Routesitems extends Component<RoutesProps, RoutesState> {
             <Suspense fallback={<div></div>}>
                 <Routes>
                     {/* <Route path='/' element={<Dashboard {...this.context}{...this.props}  />} />WrapperDashboard */}
-                    <Route path='/:message?' element={<WrapperDashboard/>} />
+                    <Route path='/:message?' element={this.props.currentUserGroups.includes('Timesheet Administrators') || this.props.currentUserGroups.includes('Dashboard Admins') || this.props.currentUserGroups.includes('Synergycom Timesheet Members')?<WrapperDashboard/>:this.props.currentUserGroups.includes('Time Off Members')?<WrapperTimeOffDashboard/>:<WrapperDashboard/>} />
                     <Route path='/PTODashboard/:message?' element={<WrapperPTODashboard/>} />
+                    <Route path='/TimeOffDashboard/:message?' element={<WrapperTimeOffDashboard/>} />
                    <Route path='/WeeklyTimesheet/:id?' element ={<WrapperWeeklyTimesheet/>} />
                    <Route path='/EmployeeMasterForm/:id?/:redirect?' element ={<WrapperEmployeeMasterForm/>} />
-                   <Route path='/PTOForm/:id?' element ={<WrapperPTOForm/>} />
+                   <Route path='/TimeOffRequestForm/:id?' element ={<WrapperTimeOffRequestForm/>} />
                    <Route path='/DelegateApprovalTimesheets/:id?' element ={<WrapperManagerDelegatesForm/>} />
                    <Route path='/DelegateReviewTimesheets/:id?' element ={<WrapperReviewerDelegatesForm/>} />
                    <Route path='/EmployeeMasterView/:message?' element ={<WrapperMasterView/>} />
@@ -162,12 +178,14 @@ class Routesitems extends Component<RoutesProps, RoutesState> {
                    <Route path='/ClientMaster/:id?' element ={<WrapperClientMaster/>} />
                    <Route path='/EmployeeClassificationMaster/:id?' element ={<WrapperEmployeeClassificationMaster/>} />
                    <Route path='/PTOPolicyMaster/:id?' element ={<WrapperPTOPolicyMaster/>} />
+                   <Route path='/TimeOffTypeMaster/:id?' element ={<WrapperTimeOffTypeMaster/>} />
                    <Route path='/EmployeeMaster/:id?' element ={<WrapperEmployeeMaster/>} />
                    <Route path='/EmployeePTOCreditMaster/:id?' element ={<WrapperPTOCreditMaster/>} />
                     <Route path='/purchaserequest/:id?' element={<Wrapper />} />
                     <Route path='/TimesheetReport/' element ={<TimesheetReports/>} />
                     <Route path='/DailyTimesheetReport/' element ={<DailyTimesheetReports/>} />
                     <Route path='/WeeklyTimesheetReport/' element ={<WeeklyTimesheetReports/>} />
+                    <Route path='/Bi-WeeklyTimesheetReport/' element ={<MonthlyTimesheetReports/>} />
                     <Route path='/PTOSummaryReport/' element ={<PTOSummaryReports/>} />
                     <Route path='/PTODetailedReport/' element ={<PTODetailedReports/>} />
                     {/* <Route path='/TimesheetReport' element={(matchprops) => <TimesheetReport {...matchprops}{...this.props} />} /> */}

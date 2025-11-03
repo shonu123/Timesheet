@@ -268,7 +268,8 @@ class Clients extends Component<ClientProps, ClientState> {
         this.setState({ isRedirect: false })
         try{
             let [ClientsData, groups] = await Promise.all([
-                sp.web.lists.getByTitle('Client').items.select('DelegateTo/Title,*').expand('DelegateTo').orderBy("Title", false).getAll(),          sp.web.currentUser.groups(),
+                sp.web.lists.getByTitle('Client').items.select('DelegateTo/Title,*').expand('DelegateTo').orderBy("Title", false).getAll(),          
+                sp.web.currentUser.groups(),
             ])
             let userGroups = [];
             for (const grp of groups) {
@@ -302,7 +303,8 @@ class Clients extends Component<ClientProps, ClientState> {
                         ClientName: d.Title,
                         IsActive:  d.IsActive ? "Active" : "In-Active",
                         // Comments: d.Comments,
-                        DelegateTo: delegateToString,
+                        DelegateTo: delegateToStringExcel,
+                        DelegateToForGrid: delegateToString,
                     })
                 }
                 let pageAccessable = false;
@@ -456,10 +458,10 @@ class Clients extends Component<ClientProps, ClientState> {
             },
             {
                 name: "Delegate To",
-                selector: (row, i) => row.DelegateTo,
+                selector: (row, i) => row.DelegateToForGrid,
+                cell: row => <div className='divReviewers' dangerouslySetInnerHTML={{ __html: row.DelegateToForGrid }} onClick={(event)=>this.handleRowClicked(event,row.Id)}/>,
                 sortable: true,
                 width: '250px',
-                cell: row => <div className='divReviewers' dangerouslySetInnerHTML={{ __html: row.DelegateTo }} onClick={(event)=>this.handleRowClicked(event,row.Id)}/>
             },
 
             {
@@ -481,6 +483,7 @@ class Clients extends Component<ClientProps, ClientState> {
 
 
         ];
+        const searchKeys=['ClientName','DelegateTo','IsActive'];
         if (this.state.isRedirect) {
             return (<Navigate to={'/ClientMaster'} />);
         }
@@ -565,7 +568,7 @@ class Clients extends Component<ClientProps, ClientState> {
                                                         </div>
 
                                                         <div className="col-md-3">
-                                                            <div className="light-text" id='chkIsActive'>
+                                                            <div className="light-text">
                                                                 <InputCheckBox
                                                                     label={"Is Active"}
                                                                     name={"IsActive"}
@@ -573,6 +576,7 @@ class Clients extends Component<ClientProps, ClientState> {
                                                                     onChange={this.handleChange}
                                                                     isforMasters={false}
                                                                     isdisable={false}
+                                                                    id='chkIsActive'
                                                                 />
                                                             </div>
                                                         </div>
@@ -597,7 +601,7 @@ class Clients extends Component<ClientProps, ClientState> {
                                     </div>
                                     {this.state.showToaster && <Toaster />}
                                     <div className="c-v-table">
-                                        <TableGenerator columns={columns} data={this.state.ClientsObj} fileName={'Clients'} showExportExcel={this.state.ClientsObj.length?true:false} searchBoxLeft={true} ExportExcelCustomisedColumns={ExportExcelreportColumns} ExportExcelCustomisedData={this.state.ExportExcelData} wrapColumns={"DelegateTo"} LargeWidthColumns={["ClientName","DelegateTo"]} onRowClick={this.handleRowClicked}></TableGenerator>
+                                        <TableGenerator columns={columns} searchKeys={searchKeys} data={this.state.ClientsObj} fileName={'Clients'} showExportExcel={this.state.ClientsObj.length?true:false} searchBoxLeft={true} ExportExcelCustomisedColumns={ExportExcelreportColumns} ExportExcelCustomisedData={this.state.ExportExcelData} wrapColumns={"DelegateTo"} LargeWidthColumns={["ClientName","DelegateTo"]} onRowClick={this.handleRowClicked}></TableGenerator>
                                     </div>
                                 </div>
                             </div>

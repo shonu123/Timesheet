@@ -27,6 +27,7 @@ import { faCloudDownload } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { StatusType } from '../../Constants/Constants';
 import MyDataTable from '../Shared/customTableFreezePaneTable.comoponent';
+import DateUtilities from '../../Utilities/DateUtilities';
 export interface DailyTimesheetReportProps {
     match: any;
     spContext: any;
@@ -57,19 +58,20 @@ class DailyTimesheetReport extends React.Component<DailyTimesheetReportProps, Da
     }
 
     public state = {
-        EmployeeId: null,
+        // EmployeeId: null,
+        // EmployeeEmail: '',
         ClientName: "All Clients",
+        InitiatorId: '0',
+        startDate: null,
+        endDate: null,
         ClientsObject: [],
         EmployeesObj: [],
         AllEmployees: [],
-        startDate: null,
-        endDate: null,
+        
         loading: false,
-        EmployeeEmail: '',
         Homeredirect: false,
         isPageAccessable: true,
         showToaster: false,
-        InitiatorId: '0',
         isHavingClients: true,
         isHavingEmployees: true,
         ResultExcelData : [],
@@ -145,7 +147,7 @@ class DailyTimesheetReport extends React.Component<DailyTimesheetReportProps, Da
     private async getClientEmployees(value) {
         if (value != "All Clients") {
             let selectQuery = "Employee/ID,Employee/Title"
-            let filterQuery = "ClientName eq '" + value + "'"
+            let filterQuery = "ClientName eq '" + value.replace(/'/g, "''") + "'"
             let clientEmployees = await sp.web.lists.getByTitle('EmployeeMaster').items.filter(filterQuery).expand('Employee').select(selectQuery).orderBy('Employee/Title', true).getAll()
             let EmpNames = []
             let EmpObj = []
@@ -220,11 +222,11 @@ class DailyTimesheetReport extends React.Component<DailyTimesheetReportProps, Da
         }
         else if (this.state.startDate == null) {
             isvalid.status = false;
-            isvalid.message = 'Start Date cannot be blank'
+            isvalid.message = 'Start Date cannot be blank';
             // let prpel =  this.startDate
-            let element = document.getElementById('txtStartDate')
-            element.focus()
-            element.classList.add('mandatory-FormContent-focus');
+            let element = document.getElementById('txtStartDate');
+            element.focus();
+            //element.classList.add('mandatory-FormContent-focus');
             setTimeout(function (){
                 // prpel.current.input.classList.add('mandatory-FormContent-focus');
                 element.classList.add('mandatory-FormContent-focus');
@@ -232,11 +234,11 @@ class DailyTimesheetReport extends React.Component<DailyTimesheetReportProps, Da
         }
         else if (this.state.endDate == null) {
             isvalid.status = false;
-            isvalid.message = 'End Date cannot be blank'
+            isvalid.message = 'End Date cannot be blank';
             // let prpel =  this.endDate
-            let element = document.getElementById('txtEndDate')
-            element.focus()
-            element.classList.add('mandatory-FormContent-focus');
+            let element = document.getElementById('txtEndDate');
+            element.focus();
+            //element.classList.add('mandatory-FormContent-focus');
 
             // prpel.current.input.focus();
             setTimeout(function (){
@@ -245,10 +247,10 @@ class DailyTimesheetReport extends React.Component<DailyTimesheetReportProps, Da
         }
         else if (new Date(selectedStartDate) > new Date(selectedEndDate)) {
             isvalid.status = false;
-            isvalid.message = 'Start Date cannot be greater than End Date'
-            let element = document.getElementById('txtStartDate')
-            element.focus()
-            element.classList.add('mandatory-FormContent-focus');
+            isvalid.message = 'Start Date cannot be greater than End Date';
+            let element = document.getElementById('txtStartDate');
+            element.focus();
+            //element.classList.add('mandatory-FormContent-focus');
             // let prpel =  this.startDate
             // prpel.current.input.focus();
             setTimeout(function (){
@@ -258,9 +260,10 @@ class DailyTimesheetReport extends React.Component<DailyTimesheetReportProps, Da
         return isvalid;
     }
     private handleCancel = async (e)=>{
-        this.setState({Homeredirect : true,showToaster:false});
-        document.getElementById('divNavReportItems').classList.remove('show');
-        document.getElementById('Reports').classList.remove('heighlightMasters');
+        // this.setState({Homeredirect : true,showToaster:false});
+        // document.getElementById('divNavReportItems').classList.remove('show');
+        // document.getElementById('Reports').classList.remove('heighlightMasters');
+        this.setState({ ClientName: "All Clients",InitiatorId: '0', startDate: null,endDate: null,EmployeesObj:this.state.AllEmployees,ReportData:[],ExportExcelData:[]});
     }
     private handleSubmit = () => {
         this.setState({loading:true})
@@ -275,9 +278,9 @@ class DailyTimesheetReport extends React.Component<DailyTimesheetReportProps, Da
             return false
         }
         let date = new Date(this.state.startDate)
-        let selectedStartDate = `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`
+        let selectedStartDate = DateUtilities.getDateMMDDYYYYSeparatedWithIphen(date); // for file name / is considered as _ , to avoid this , replace with -
         date = new Date(this.state.endDate)
-        let selectedEndDate = `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`
+        let selectedEndDate = DateUtilities.getDateMMDDYYYYSeparatedWithIphen(date); // for file name / is considered as _ , to avoid this , replace with -
 
         let postObject = {
             Client: this.state.ClientName,
@@ -294,7 +297,7 @@ class DailyTimesheetReport extends React.Component<DailyTimesheetReportProps, Da
         const end = new Date(endDate);
 
         for (let date = new Date(start); date <= end; date.setDate(date.getDate() + 1)) {
-            const formattedDate = `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`
+            const formattedDate = DateUtilities.getDateMMDDYYYY(date);
             dateRangeArray.push(formattedDate);
         }
 
@@ -307,24 +310,24 @@ class DailyTimesheetReport extends React.Component<DailyTimesheetReportProps, Da
         let EndDate = postObject.EndDate
         let prevDate = addDays(new Date(startDate), -7);
         let nextDate = addDays(new Date(EndDate), 1);
-        let prev = `${prevDate.getMonth() + 1}/${prevDate.getDate()}/${prevDate.getFullYear()}`
-        let next = `${nextDate.getMonth() + 1}/${nextDate.getDate()}/${nextDate.getFullYear()}`
+        let prev = DateUtilities.getDateMMDDYYYY(prevDate);
+        let next = DateUtilities.getDateMMDDYYYY(nextDate);
 
         let filterQuery = ''
         if (client =="All Clients") {
             if (Employee == 0) {
-                filterQuery = "WeekStartDate gt '" + prev + "' and WeekStartDate lt '" + next + "'"
+                filterQuery = "WeekStartDate gt '" + prev + "' and WeekStartDate lt '" + next + "'";
             }
             else {
-                filterQuery = "InitiatorId eq '" + Employee + "' and WeekStartDate gt '" + prev + "' and WeekStartDate lt '" + next + "'"
+                filterQuery = "InitiatorId eq '" + Employee + "' and WeekStartDate gt '" + prev + "' and WeekStartDate lt '" + next + "'";
             }
         }
         else {
             if (Employee == 0) {
-                filterQuery = "ClientName eq'" + client + "' and WeekStartDate gt '" + prev + "' and WeekStartDate lt '" + next + "'"
+                filterQuery = "ClientName eq'" + client.replace(/'/g, "''") + "' and WeekStartDate gt '" + prev + "' and WeekStartDate lt '" + next + "'";
             }
             else {
-                filterQuery = "ClientName eq'" + client + "' and InitiatorId eq '" + Employee + "' and WeekStartDate gt '" + prev + "' and WeekStartDate lt '" + next + "'"
+                filterQuery = "ClientName eq'" + client.replace(/'/g, "''") + "' and InitiatorId eq '" + Employee + "' and WeekStartDate gt '" + prev + "' and WeekStartDate lt '" + next + "'";
             }
         }
         filterQuery+="and Status ne '"+StatusType.Save+"' and Status ne '"+StatusType.Revoke+"'"
@@ -335,14 +338,14 @@ class DailyTimesheetReport extends React.Component<DailyTimesheetReportProps, Da
             let headerDates = []
             reportData.forEach(report => {
                 let { Initiator, WeekStartDate, TotalHrs, ClientName, Status } = report;
-                const startDate = new Date(WeekStartDate.split('-')[1]+'/'+WeekStartDate.split('-')[2].split('T')[0]+'/'+WeekStartDate.split('-')[0]);
+                const startDate = new Date(DateUtilities.GetDateMMDDYYYYAsInList(WeekStartDate));
                 let weekDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
                 TotalHrs = JSON.parse(TotalHrs)
                 let dates = []
                 const currentDate = new Date(startDate);
                 for (let i = 0; i < 7; i++) {
                     let date = new Date(currentDate)
-                    dates.push(`${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`);
+                    dates.push(DateUtilities.getDateMMDDYYYY(date));
                     currentDate.setDate(currentDate.getDate() + 1);
                 }
                 const arrangedWeekDays = [];
@@ -442,6 +445,8 @@ finalArray.sort((a, b) => {
                 return StatusType.Revoke;
             else if(StatusType.ManagerApprove.toString().toLowerCase()==item.Status.toLowerCase())
                 return StatusType.ManagerApprove;
+            else if(StatusType.ReviewerApprove.toString().toLowerCase()==item.Status.toLowerCase())
+                return StatusType.ReviewerApprove;
             else if(StatusType.Approved.toString().toLowerCase()==item.Status.toLowerCase())
                 return StatusType.Approved;
             else
@@ -477,7 +482,7 @@ finalArray.sort((a, b) => {
     private generateExcel(dataTable, headerDates,startDate,endDate) {
         const wb = XLSX.utils.book_new();
         const workSheetRows = []
-        let filename = 'Timesheet Daily Report'
+        let filename = 'Timesheet Daily Report';
         let wrapColumnsArray = []
         let headerRow = []
         let allBorders = {
@@ -502,7 +507,8 @@ let legend = [
     { v: 'Submitted', t: "s", s: { font: { bold: true },fill: { fgColor: { rgb: 'fafac5' } },border: allBorders } },
     // { v: 'Revoked', t: "s", s: { font: { bold: true },fill: { fgColor: { rgb: 'fae3ea' } },border: allBorders } },dbf6ff
     { v: 'Approved by Manager', t: "s", s: { font: { bold: true },fill: { fgColor: { rgb: 'dbf6ff' } },border: allBorders } },
-    { v: 'Approved', t: "s", s: { font: { bold: true },fill: { fgColor: { rgb: 'eedcf7' } },border: allBorders } },
+    { v: 'Approved by Reviewer', t: "s", s: { font: { bold: true },fill: { fgColor: { rgb: 'AFEAFF' } },border: allBorders } },
+    { v: 'Approved', t: "s", s: { font: { bold: true },fill: { fgColor: { rgb: 'CBC8EA' } },border: allBorders } },
     { v: 'Rejected', t: "s", s: { font: { bold: true },fill: { fgColor: { rgb: 'fad2d2' } },border: allBorders } }
 ]
 workSheetRows.push(legend)
@@ -547,11 +553,14 @@ let dataColums = []
                         case StatusType.Revoke:
                             color = "fae3ea"; // Color for Revoked
                             break;
-                            case StatusType.ManagerApprove:
+                        case StatusType.ManagerApprove:
                             color ="dbf6ff"// Color for Manager Approved
                             break;
+                        case StatusType.ReviewerApprove:
+                            color ="AFEAFF"// Color for Reviewer Approved
+                            break;
                         case StatusType.Approved:
-                            color ="eedcf7"// Color for Approved a9e6fc/eedcf7
+                            color ="CBC8EA"// Color for Approved a9e6fc/eedcf7
                             break;
                         default:
                             color = "ffffff"; // Default color
@@ -574,12 +583,12 @@ let dataColums = []
             let Total =0
             for(let t of tempArr){
                 // console.log(t.s.fill.fgColor.rgb)
-                if(t.s.fill.fgColor.rgb == 'eedcf7'){
+                if(t.s.fill.fgColor.rgb == 'CBC8EA'){
                     Total += parseFloat(t.v)
                 }
             } 
             // console.log("Approved Total = "+Total)
-            tempArr.push({ v: Total, t: "s", s: { alignment: { wrapText: true },border: allBorders, font: { bold: false}, fill: { fgColor: { rgb: 'eedcf7' }} } })
+            tempArr.push({ v: Total, t: "s", s: { alignment: { wrapText: true },border: allBorders, font: { bold: false}, fill: { fgColor: { rgb: 'CBC8EA' }} } })
             workSheetRows.push(tempArr);
         });
         let lastColumn = columnOrder.length
@@ -625,7 +634,7 @@ for (let i = 7; i < workSheetRows.length; i++) {
         let cellData = rowData[j];
         dataObj["col" + (j + 1)] = cellData.v;
         let fgColorRgb = cellData.s.fill.fgColor.rgb;
-        dataObj["colorClass" + (j + 1)] = fgColorRgb == "fad2d2" ? "R-LRed" : fgColorRgb == "fafac5" ? "R-LYellow" : fgColorRgb == "eedcf7" ? "R-LPurple" :fgColorRgb == "dbf6ff"?'R-LBlue': "R-White";
+        dataObj["colorClass" + (j + 1)] = fgColorRgb == "fad2d2" ? "R-LRed" : fgColorRgb == "fafac5" ? "R-LYellow" : fgColorRgb == "CBC8EA" ? "R-LPurple" :fgColorRgb == "dbf6ff"?'R-LBlue':fgColorRgb == "AFEAFF"?"R-LSkBlue":"R-White";
     }
 
     SampleData.push(dataObj);
@@ -757,9 +766,10 @@ this.setState({ColumnsHeaders:hColumns,ReportData:SampleData,ExportExcelData:req
         else {
             return (
                 <React.Fragment>
+                     <div id="content" className="content p-2 pt-2">
                     <div className='container-fluid'>
-                        <div className='FormContent-2'>
-                            <div className="title">Timesheet Daily Report
+                        <div className='FormContent'>
+                            <div className="title"> Daily Report
                                 <div className='mandatory-note'>
                                     <span className='mandatoryhastrick'>*</span> indicates a required field
                                 </div>
@@ -805,7 +815,7 @@ this.setState({ColumnsHeaders:hColumns,ReportData:SampleData,ExportExcelData:req
                                         <div className="col-md-3">
                                             <div className="light-text div-readonly">
                                                 <label className="z-in-9">Start Date<span className="mandatoryhastrick">*</span></label>
-                                                <div className="custom-datepicker" id="divDateofJoining">
+                                                <div className="custom-datepicker" id="divStartDate">
 
                                                     <DatePicker onDatechange={this.handleStartDate} selectedDate={this.state.startDate} ref={this.startDate} endDate={new Date()} placeholderText='MM/DD/YYYY' id={'txtStartDate'} title={"Start Date"}/>
                                                 </div>
@@ -815,7 +825,7 @@ this.setState({ColumnsHeaders:hColumns,ReportData:SampleData,ExportExcelData:req
                                         <div className="col-md-3">
                                             <div className="light-text div-readonly">
                                                 <label className="z-in-9">End Date<span className="mandatoryhastrick">*</span></label>
-                                                <div className="custom-datepicker" id="divDateofJoining">
+                                                <div className="custom-datepicker" id="divEndDate">
 
                                                     <DatePicker onDatechange={this.handleEndDate} ref={this.endDate} endDate={this.getcurrWeekSunDay()} selectedDate={this.state.endDate} id={'txtEndDate'} title={"End Date"}/>
                                                 </div>
@@ -830,8 +840,8 @@ this.setState({ColumnsHeaders:hColumns,ReportData:SampleData,ExportExcelData:req
                                         {/* <button type="button" className="DownloadButtons btn" onClick={this.handleSubmit}>
                                         <FontAwesomeIcon icon={faCloudDownload} className=''></FontAwesomeIcon>Download</button> */}
                                         {/* <button type="button" className="ReportCancelButtons btn" onClick={this.handleCancel}>Cancel</button> */}
-                                        <button type="button" className="SubmitButtons btn" onClick={this.handleSubmit} title='Submit'>Submit</button>
-                                        <button type="button" className="CancelButtons btn" onClick={this.handleCancel} title='Cancel'>Cancel</button>
+                                        <button type="button" className="SubmitButtons btn" onClick={this.handleSubmit} title='Search'>Search</button>
+                                        <button type="button" className="CancelButtons btn" onClick={this.handleCancel} title='Clear'>Clear</button>
                                     </div>
                                 </div>
                                 {this.state.ReportData.length>0 &&
@@ -840,6 +850,7 @@ this.setState({ColumnsHeaders:hColumns,ReportData:SampleData,ExportExcelData:req
                                 </div>}
                             </div>
                         </div>
+                    </div>
                     </div>
                     {this.state.showToaster && <Toaster />}
                     {this.state.loading && <Loader />}

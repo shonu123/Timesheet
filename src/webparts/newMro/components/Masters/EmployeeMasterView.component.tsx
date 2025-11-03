@@ -13,6 +13,7 @@ import Loader from '../Shared/Loader';
 import { ToasterTypes } from '../../Constants/Constants';
 import toast, { Toaster } from 'react-hot-toast';
 import customToaster from '../Shared/Toaster.component';
+import DateUtilities from '../../Utilities/DateUtilities';
 export interface EmployeeMasterViewProps {
     match: any;
     spContext: any;
@@ -56,11 +57,11 @@ class EmployeeMasterView extends React.Component<EmployeeMasterViewProps, Employ
         highlightCurrentNav("employeemaster");
         this.EmployeeMasterData(this.state.currentTab);
         if(!["",undefined,null].includes(this.props.match.params.message)){
-            this.setState({showToaster:true})
-            let message = this.props.match.params.message
+            this.setState({showToaster:true});
+            let message = this.props.match.params.message;
             window.location.hash='#/EmployeeMasterView';
             if(message == 'Error'){
-                customToaster('toster-error',ToasterTypes.Error,'Sorry! something went wrong',4000)
+                customToaster('toster-error',ToasterTypes.Error,'Sorry! something went wrong',4000);
             }
             else{
                 let status = message.split('-')[1]
@@ -74,7 +75,7 @@ class EmployeeMasterView extends React.Component<EmployeeMasterViewProps, Employ
     private EmployeeMasterData = async (currentTab) => {
         if(![null,undefined,''].includes(localStorage.getItem('PreviouslySelectedMatrixTab')))
         currentTab=parseInt(localStorage.getItem('PreviouslySelectedMatrixTab'));
-        var selectQuery = "Employee/Title,ReportingManager/Title,Approvers/Title,Reviewers/Title,Notifiers/Title,*";
+        var selectQuery = "Employee/Title,Employee/EMail,ReportingManager/Title,Approvers/Title,Reviewers/Title,Notifiers/Title,*";
         var expandQuery = "Employee,ReportingManager,Approvers,Reviewers,Notifiers";
         var filterQuery = `IsActive eq ${currentTab}`;
         try{
@@ -110,14 +111,17 @@ class EmployeeMasterView extends React.Component<EmployeeMasterViewProps, Employ
                         // }
                         // ----------------------------------
     
-                        let date = new Date(d.DateOfJoining.split('-')[1]+'/'+d.DateOfJoining.split('-')[2].split('T')[0]+'/'+d.DateOfJoining.split('-')[0]);
+                        let date = new Date(DateUtilities.GetDateMMDDYYYYAsInList(d.DateOfJoining));
                         Data.push({
                             Id : d.Id,
                             Employee : d.Employee.Title,
                             Company : d.ClientName,
-                            ReportingManager: ReportingManagerString,
-                            Reviewers:ReviewersString,
-                            Doj : `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`,
+                            ReportingManagers: RMExcelString,
+                            Reviewers:ReviewerExcelString,
+                            ReportingManagersForGrid: ReportingManagerString,
+                            ReviewersForGrid:ReviewersString,
+                            Doj : DateUtilities.getDateMMDDYYYY(date),
+                            DojForGrid : `<span class='d-none'>${DateUtilities.getDateYYYYMMDDForSorting(date)}</span>${DateUtilities.getDateMMDDYYYY(date)}`,
                             EPTO:d.EligibleforPTO?"Yes":"No",
                             IsActive: d.IsActive?"Active":"In-Active"
                         })
@@ -126,7 +130,7 @@ class EmployeeMasterView extends React.Component<EmployeeMasterViewProps, Employ
                             Company : d.ClientName,
                             ReportingManager: RMExcelString,
                             Reviewers:ReviewerExcelString,
-                            Doj : `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`,
+                            Doj : DateUtilities.getDateMMDDYYYY(date),
                             EPTO:d.EligibleforPTO?"Yes":"No",
                             IsActive: d.IsActive?"Active":"In-Active"
                         })
@@ -216,8 +220,8 @@ class EmployeeMasterView extends React.Component<EmployeeMasterViewProps, Employ
             },
             {
                 name: "Reporting Manager",
-                selector: (row, i) => row.ReportingManager,
-                cell: row => <div className='divManagers' dangerouslySetInnerHTML={{ __html: row.ReportingManager }} onClick={(event)=>this.handleRowClicked(event,row.Id)}/>,
+                selector: (row, i) => row.ReportingManagersForGrid,
+                cell: row => <div className='divManagers' dangerouslySetInnerHTML={{ __html: row.ReportingManagersForGrid }} onClick={(event)=>this.handleRowClicked(event,row.Id)}/>,
                 width: '250px',
                 sortable: true
             },
@@ -229,10 +233,10 @@ class EmployeeMasterView extends React.Component<EmployeeMasterViewProps, Employ
             // },
             {
                 name: "Reviewers",
-                selector: (row, i) => row.Reviewers,
+                selector: (row, i) => row.ReviewersForGrid,
+                cell: row => <div className='divReviewers' dangerouslySetInnerHTML={{ __html: row.ReviewersForGrid }} onClick={(event)=>this.handleRowClicked(event,row.Id)}/>,
                 sortable: true,
                 width: '250px',
-                cell: row => <div className='divReviewers' dangerouslySetInnerHTML={{ __html: row.Reviewers }} onClick={(event)=>this.handleRowClicked(event,row.Id)}/>
             },
             {
                 name: "Client",
@@ -249,7 +253,8 @@ class EmployeeMasterView extends React.Component<EmployeeMasterViewProps, Employ
             // },
             {
                 name: "Date of Joining",
-                selector: (row, i) => row.Doj,
+                selector: (row, i) => row.DojForGrid,
+                cell: row => <div className='' dangerouslySetInnerHTML={{ __html: row.DojForGrid }} onClick={(event)=>this.handleRowClicked(event,row.Id)}/>,
                 sortable: true,
                 // width: '150px'
             },
@@ -296,6 +301,7 @@ class EmployeeMasterView extends React.Component<EmployeeMasterViewProps, Employ
             //     selector:"IsActive",
             // }
         ];
+        const searchKeys=['Employee','ReportingManagers','Reviewers','Company','Doj','EPTO'];
         
         if(this.state.redirect){
             let url = `/EmployeeMasterForm/${this.state.ItemID}`;
@@ -333,7 +339,7 @@ class EmployeeMasterView extends React.Component<EmployeeMasterViewProps, Employ
                             </div>}
             {this.state.loading && <Loader />}
                 <div className=''>
-                    <TableGenerator columns={columns} data={this.state.Details} ExportExcelCustomisedColumns={ExcelColumns} ExportExcelCustomisedData={this.state.ExcelData} fileName={'Approval Matrix'} showExportExcel={false}
+                    <TableGenerator columns={columns} searchKeys={searchKeys} data={this.state.Details} ExportExcelCustomisedColumns={ExcelColumns} ExportExcelCustomisedData={this.state.ExcelData} fileName={'Approval Matrix'} showExportExcel={false}
                     showAddButton={false} customBtnClass='px-1 text-right mt-2' btnDivID='divAddNewEmployeeMaster' navigateOnBtnClick={`/EmployeeMasterForm`} btnSpanID='newEmployeeMasterForm' btnCaption=' New' btnTitle='New Approval Matrix' searchBoxLeft={true}  onRowClick={this.handleRowClicked}></TableGenerator>
                 </div>
             </div>

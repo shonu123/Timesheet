@@ -24,6 +24,7 @@ import InputCheckBox from '../Shared/InputCheckBox';
 import { Toaster } from 'react-hot-toast';
 import customToaster from '../Shared/Toaster.component';
 import { ToasterTypes } from '../../Constants/Constants';
+import DateUtilities from '../../Utilities/DateUtilities';
 export interface EmployeeMasterFormProps {
     match: any;
     spContext: any;
@@ -82,6 +83,7 @@ class EmployeeMasterForm extends React.Component<EmployeeMasterFormProps, Employ
         DateOfJoining: new Date(),
         startDateOfDOJ:new Date(),
         isActive: true,
+        previousIsActive:true,
         loading: false,
         errorMessage: '',
         EmployeeEmail: '',
@@ -99,10 +101,11 @@ class EmployeeMasterForm extends React.Component<EmployeeMasterFormProps, Employ
         showHideModal: false,
         modalTitle: '',
         modalText: '',
-        message: "Success",
+        message: "",
         showToaster: false,
         GlobalHolidayList: [],
         EmployeeClassification:'',    //PTO change
+        EmpMatrixID:'0',
         EligibleforPTO: false,
         Comments:'',
         CommentsHistory:[],
@@ -168,6 +171,7 @@ class EmployeeMasterForm extends React.Component<EmployeeMasterFormProps, Employ
                 this.setState({ isPageAccessable: false })
             }
             let filterdHolidays = this.getHolidays(Holidays,'None');
+                filterdHolidays.unshift('Not Applicable');
             Employees = Employees.filter(item=>item.IsActive==true); //if new item to show only active employees
             clients = clients.filter(item=>item.IsActive==true); //if new item to show only active clients
             //this.setState({ ClientsObject: clients, GlobalHolidayList: Holidays, HolidaysObject: filterdHolidays, loading: false })
@@ -186,16 +190,16 @@ class EmployeeMasterForm extends React.Component<EmployeeMasterFormProps, Employ
 
         // console.log(data)
         let clickedEmployee=Employees.find(empMastrRecord=>empMastrRecord.Employee.Id==data[0].Employee.ID);
-        let date = new Date(data[0].DateOfJoining.split('-')[1]+'/'+data[0].DateOfJoining.split('-')[2].split('T')[0]+'/'+data[0].DateOfJoining.split('-')[0])
+        let date = new Date(DateUtilities.GetDateMMDDYYYYAsInList(data[0].DateOfJoining));
         let DOJInEmpMaster;
         // Below is condition for : to close endless loader if employee record is not found in Employees Master.| found issue in PROD while releasing PTO implementation
         if(clickedEmployee!=undefined)
         {
-            DOJInEmpMaster=new Date(clickedEmployee.DateOfJoining.split('-')[1]+'/'+clickedEmployee.DateOfJoining.split('-')[2].split('T')[0]+'/'+clickedEmployee.DateOfJoining.split('-')[0]);
+            DOJInEmpMaster=new Date(DateUtilities.GetDateMMDDYYYYAsInList(clickedEmployee.DateOfJoining));
         }
         else
         {
-            DOJInEmpMaster=new Date(data[0].DateOfJoining.split('-')[1]+'/'+data[0].DateOfJoining.split('-')[2].split('T')[0]+'/'+data[0].DateOfJoining.split('-')[0]);
+            DOJInEmpMaster=new Date(DateUtilities.GetDateMMDDYYYYAsInList(data[0].DateOfJoining));
             Employees.push({Employee:{Title:data[0].Employee.Title,Id:data[0].Employee.ID}});//to bind Employee name to Employee dropdown.
         }
         let ReportingManagersEmail = []
@@ -243,7 +247,8 @@ class EmployeeMasterForm extends React.Component<EmployeeMasterFormProps, Employ
             this.setState({ isPageAccessable: false })
         }
         let filterdHolidays = this.getHolidays(Holidays, data[0].ClientName);
-        this.setState({ ClientsObject: Clients, ItemID: ID, EmployeeEmail: data[0].Employee.EMail, EmployeeId: data[0].Employee.ID, ClientName: data[0].ClientName, isActive: data[0].IsActive, DateOfJoining: date,startDateOfDOJ:DOJInEmpMaster, SelectedEmployee: data[0].Employee.ID, SelectedClient: data[0].ClientName, HolidayType: data[0].HolidayType, weekStartDay: data[0].WeekStartDay, MandatoryProjectCode: data[0].MandatoryProjectCode ? "Yes" : "No", MandatoryDescription: data[0].MandatoryDescription ? "Yes" : "No", EmployeeClassification:data[0].EmployeeClassification, Policy:[null,undefined,''].includes(data[0].Policy)?'None':data[0].Policy,CommentsHistory:[null,undefined,''].includes(data[0].CommentsHistory)?[]:JSON.parse(data[0].CommentsHistory),EligibleforPTO: data[0].EligibleforPTO, ReportingManagerEmail: ReportingManagersEmail, ReportingManagerId: ReportingManagerIds, ReviewerEmail: ReviewersEMail, ReviewerId: ReviewerIds,HolidaysObject: filterdHolidays, GlobalHolidayList: Holidays, isDisabled: disabled, isPageAccessable: pageAccessable, showToaster: true, loading: false,EmployeesObject:Employees })
+                   filterdHolidays.unshift('Not Applicable');
+        this.setState({ ClientsObject: Clients, ItemID: ID, EmployeeEmail: data[0].Employee.EMail, EmployeeId: data[0].Employee.ID, ClientName: data[0].ClientName, isActive: data[0].IsActive,previousIsActive:data[0].IsActive, DateOfJoining: date,startDateOfDOJ:DOJInEmpMaster, SelectedEmployee: data[0].Employee.ID, SelectedClient: data[0].ClientName, HolidayType: data[0].HolidayType, weekStartDay: data[0].WeekStartDay, MandatoryProjectCode: data[0].MandatoryProjectCode ? "Yes" : "No", MandatoryDescription: data[0].MandatoryDescription ? "Yes" : "No", EmployeeClassification:data[0].EmployeeClassification,EmpMatrixID:data[0].EmpMatrixID, Policy:[null,undefined,''].includes(data[0].Policy)?'None':data[0].Policy,CommentsHistory:[null,undefined,''].includes(data[0].CommentsHistory)?[]:JSON.parse(data[0].CommentsHistory),EligibleforPTO: data[0].EligibleforPTO, ReportingManagerEmail: ReportingManagersEmail, ReportingManagerId: ReportingManagerIds, ReviewerEmail: ReviewersEMail, ReviewerId: ReviewerIds,HolidaysObject: filterdHolidays, GlobalHolidayList: Holidays, isDisabled: disabled, isPageAccessable: pageAccessable, showToaster: true, loading: false,EmployeesObject:Employees })
         document.getElementById('divDateofJoining').getElementsByTagName('input')[0].focus();
     }
     // this function is used to bind users to people pickers
@@ -287,7 +292,7 @@ class EmployeeMasterForm extends React.Component<EmployeeMasterFormProps, Employ
             //     HolidayClients.push(client.ClientName)
             // }
             if (!HolidayClients.includes(client)) {
-                HolidayClients.push(client)
+                HolidayClients.push(client);
             }
         }
         return HolidayClients;
@@ -315,7 +320,8 @@ class EmployeeMasterForm extends React.Component<EmployeeMasterFormProps, Employ
         this.setState({ [name]: value });
         if (name == 'ClientName') {
             if (value != '') {
-                let HolidayClients = this.getHolidays(this.state.GlobalHolidayList, value)
+                let HolidayClients = this.getHolidays(this.state.GlobalHolidayList, value);
+                   HolidayClients.unshift('Not Applicable');
                 this.setState({ HolidaysObject: HolidayClients, HolidayType: ''})
             }
             else {
@@ -339,11 +345,11 @@ class EmployeeMasterForm extends React.Component<EmployeeMasterFormProps, Employ
             let SelectedEmployee=this.state.EmployeesObject.find((option) =>option.Employee.Id==value);
                     if(SelectedEmployee!=undefined)
                     {
-                        let startDateOfDOJ=new Date(SelectedEmployee.DateOfJoining.split('-')[1]+'/'+SelectedEmployee.DateOfJoining.split('-')[2].split('T')[0]+'/'+SelectedEmployee.DateOfJoining.split('-')[0]);
-                        this.setState({EmployeeClassification:SelectedEmployee.EmployeeClassification,Policy:SelectedEmployee.Policy, EligibleforPTO: SelectedEmployee.EligibleforPTO,startDateOfDOJ:startDateOfDOJ});    
+                        let startDateOfDOJ=new Date(DateUtilities.GetDateMMDDYYYYAsInList(SelectedEmployee.DateOfJoining));
+                        this.setState({EmployeeClassification:SelectedEmployee.EmployeeClassification,Policy:SelectedEmployee.Policy, EligibleforPTO: SelectedEmployee.EligibleforPTO,startDateOfDOJ:startDateOfDOJ,EmpMatrixID:SelectedEmployee.Id});    
                     }
                     else{
-                        this.setState({EmployeeClassification:'',Policy:'None', EligibleforPTO:false,startDateOfDOJ:new Date()});    
+                        this.setState({EmployeeClassification:'',Policy:'None', EligibleforPTO:false,startDateOfDOJ:new Date(),EmpMatrixID:'0'});    
                     }
         }
           //PTO change
@@ -361,17 +367,29 @@ class EmployeeMasterForm extends React.Component<EmployeeMasterFormProps, Employ
     // this function is used to validate duplicate record if the  employee is already associated withe selected client or not
     private async validateDuplicateRecord() {
 
-        if (this.state.SelectedEmployee == this.state.EmployeeId && this.state.SelectedClient == this.state.ClientName) {
-            return 0;
-        }
-        else {
-            let filterQuery = "Employee/Id eq '" + this.state.EmployeeId + "' and ClientName eq '" + this.state.ClientName + "' and IsActive eq 1"
-            let selectQuery = "Employee/Title,Employee/ID,*"
+        try{
+        // if (this.state.SelectedEmployee == this.state.EmployeeId && this.state.SelectedClient == this.state.ClientName) {
+        //     return [];
+        // }
+        // else {
+            // let filterQuery = "Employee/Id eq '" + this.state.EmployeeId + "' and ClientName eq '" + this.state.ClientName + "' and IsActive eq 1";
+            let filterQuery ='';
+            if(this.state.ItemID>0)
+                filterQuery = `Employee/Id eq '${this.state.EmployeeId}' and EmpMatrixID eq '${this.state.EmpMatrixID}' and ClientName eq '${this.state.ClientName.replace(/'/g,"''")}' and IsActive eq 1 and Id ne ${this.state.ItemID}`;
+            else
+            filterQuery = `Employee/Id eq '${this.state.EmployeeId}' and EmpMatrixID eq '${this.state.EmpMatrixID}' and ClientName eq '${this.state.ClientName.replace(/'/g,"''")}' and IsActive eq 1`;
+
+            let selectQuery = "Employee/Title,Employee/ID,*";
             let duplicateRecord = await sp.web.lists.getByTitle(this.listName).items.filter(filterQuery).select(selectQuery).expand('Employee').orderBy('Title').get();
             // console.log(duplicateRecord);
             // console.log("length = "+duplicateRecord.length)
-            return duplicateRecord.length;
+            return duplicateRecord;
         }
+    //}
+    catch (e) {
+        console.log('Failed to validate duplicate record');
+        this.setState({ message: 'Error' });
+    }
     }
     // this functionis uesd to go to dashboard when clicked on cancel button
     private handleCancel = async (e) => {
@@ -450,34 +468,44 @@ class EmployeeMasterForm extends React.Component<EmployeeMasterFormProps, Employ
         // }
         else {
             // console.log(data);
-            this.state.CommentsHistory.push({"User": this.props.spContext.userDisplayName,"Date": new Date().toISOString(),"Comments": this.state.Comments.trim()});
-            let postObject = {
-                EmployeeId: this.state.EmployeeId,
-                ReportingManagerId: this.state.ReportingManagerId,
-                ClientName: this.state.ClientName,
-                IsActive: this.state.isActive,
-                ApproversId: this.state.ApproverId,
-                ReviewersId: this.state.ReviewerId,
-                // DelegateToId: this.state.DelegateToId,
-                // NotifiersId : this.state.NotifierId,
-                DateOfJoining: this.addBrowserwrtServer(new Date(this.state.DateOfJoining)),//this.state.DateOfJoining,
-                MandatoryDescription: this.state.MandatoryDescription == 'Yes' ? true : false,
-                MandatoryProjectCode: this.state.MandatoryProjectCode == 'Yes' ? true : false,
-                EligibleforPTO: this.state.EligibleforPTO,
-                WeekStartDay: this.state.weekStartDay,
-                HolidayType: this.state.HolidayType,
-                EmployeeClassification:this.state.EmployeeClassification,
-                Policy:this.state.Policy,
-                CommentsHistory:JSON.stringify(this.state.CommentsHistory)
-            }
-            let duplicate = await this.validateDuplicateRecord()
-            if (duplicate > 0) {
-                //    console.log("duplicate record found");
-                //    this.setState({showToaster:true})
-                customToaster('toster-error', ToasterTypes.Error, 'Current Employee is already associated with ' + this.state.ClientName + " client", 4000)
-            }
+            let ActiveReocrds = await this.validateDuplicateRecord();
+            //let ActiveReocrds=duplicate.filter(item=>item.IsActive);
+            //let InActiveRecords=duplicate.filter(item=>!item.IsActive);
+                if (this.state.ItemID > 0 && !this.state.previousIsActive && this.state.isActive && ActiveReocrds.length)
+                {   
+                    customToaster('toster-error', ToasterTypes.Error, `Current Employee is already associated with ${this.state.ClientName} client, with active status`, 4000);
+                }
+                else if(ActiveReocrds.length && this.state.isActive){
+                    customToaster('toster-error', ToasterTypes.Error, `Current Employee is already associated with ${this.state.ClientName} client`, 4000);
+                }
+            // if (duplicate.length > 0) {
+            //     //    console.log("duplicate record found");
+            //     //    this.setState({showToaster:true}) 
+            //     customToaster('toster-error', ToasterTypes.Error, 'Current Employee is already associated with ' + this.state.ClientName + " client", 4000);
+            // }
             else {
-                this.setState({ errorMessage: '',loading: true })
+                this.state.CommentsHistory.push({"User": this.props.spContext.userDisplayName,"Date": new Date().toISOString(),"Comments": this.state.Comments.trim()});
+                let postObject = {
+                    EmployeeId: this.state.EmployeeId,
+                    ReportingManagerId: this.state.ReportingManagerId,
+                    ClientName: this.state.ClientName,
+                    IsActive: this.state.isActive,
+                    ApproversId: this.state.ApproverId,
+                    ReviewersId: this.state.ReviewerId,
+                    // DelegateToId: this.state.DelegateToId,
+                    // NotifiersId : this.state.NotifierId,
+                    DateOfJoining: this.addBrowserwrtServer(new Date(this.state.DateOfJoining)),//this.state.DateOfJoining,
+                    MandatoryDescription: this.state.MandatoryDescription == 'Yes' ? true : false,
+                    MandatoryProjectCode: this.state.MandatoryProjectCode == 'Yes' ? true : false,
+                    EligibleforPTO: this.state.EligibleforPTO,
+                    WeekStartDay: this.state.weekStartDay,
+                    HolidayType: this.state.HolidayType,
+                    EmployeeClassification:this.state.EmployeeClassification,
+                    Policy:this.state.Policy,
+                    CommentsHistory:JSON.stringify(this.state.CommentsHistory),
+                    EmpMatrixID:this.state.EmpMatrixID.toString()
+                }
+                this.setState({ errorMessage: '',loading: true });
                 this.InsertorUpdatedata(postObject, '');
             }
         }
@@ -591,7 +619,7 @@ class EmployeeMasterForm extends React.Component<EmployeeMasterFormProps, Employ
                 body.push(<tr>
                     {/* <td className="" >{History[i]["Role"]}</td> */}
                     <td className="" >{History[i]["User"]}</td>
-                    <td className="" >{(new Date(History[i]["Date"]).getMonth() < 9 ? "0" + (new Date(History[i]["Date"]).getMonth() + 1) : new Date(History[i]["Date"]).getMonth() + 1) + "/" + (new Date(History[i]["Date"]).getDate() <= 9 ? "0" + new Date(History[i]["Date"]).getDate() : new Date(History[i]["Date"]).getDate()) + "/" + new Date(History[i]["Date"]).getFullYear()}  {"  " + new Date(History[i]["Date"]).toLocaleString('en-US', { timeZone: 'America/New_York', hour12: false }).split(",")[1]}</td>
+                    <td className="" >{DateUtilities.getDateMMDDYYYY(History[i]["Date"])}  {"  " + new Date(History[i]["Date"]).toLocaleString('en-US', { timeZone: 'America/New_York', hour12: false }).split(",")[1]}</td>
                     <td className="" >{History[i]["Comments"]}</td>
                 </tr>)
             }
@@ -896,7 +924,7 @@ class EmployeeMasterForm extends React.Component<EmployeeMasterFormProps, Employ
                                                 </div>
                                             </div> */}
                                             <div className="col-md-3">
-                                                <div className="light-text" id='chkIsActive'>
+                                                <div className="light-text">
                                                     <InputCheckBox
                                                         label={"Is Employee Active for this Client?"}
                                                         name={"isActive"}
@@ -904,6 +932,7 @@ class EmployeeMasterForm extends React.Component<EmployeeMasterFormProps, Employ
                                                         onChange={this.handleChangeEvents}
                                                         isforMasters={false}
                                                         isdisable={this.state.isDisabled}
+                                                        id='chkIsActive'
                                                     />
                                                 </div>
                                             </div>

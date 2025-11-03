@@ -6,6 +6,7 @@ import { faFileExcel, faFilePdf } from '@fortawesome/free-solid-svg-icons';
 import Loader from '../Shared/Loader';
 import { StatusType, ToasterTypes } from "../../Constants/Constants";
 import customToaster from "./Toaster.component";
+import DateUtilities from "../../Utilities/DateUtilities";
 
 const ExportToPDF = ({ AllTimesheetsData, filename,LogoImgUrl,btnTitle='Export to PDF',className=''}) => {
     // var loading=false;
@@ -38,6 +39,10 @@ const ExportToPDF = ({ AllTimesheetsData, filename,LogoImgUrl,btnTitle='Export t
             styles.Status_cell= { padding:[5,7],fillColor:'#d9e7c8',border:[true, true, true, true],lineWidth: 2,lineColor: '#a1cb70'};
             Status = 'Waiting for Reviewer Approval';
         }
+        else if(value == StatusType.ReviewerApprove.toString()){
+            styles.Status_cell= { padding:[5,7],fillColor:'#c6e69f',border:[true, true, true, true],lineWidth: 2,lineColor: '#95ce54'};
+            Status = 'Waiting for HR Approval';
+        }
         else if(value == StatusType.Approved.toString()){
             styles.Status_cell= { padding:[5,7],fillColor:'#91d392',border:[true, true, true, true],lineWidth: 2,lineColor: '#6ad36c'};
             Status = 'Approved';
@@ -50,6 +55,10 @@ const ExportToPDF = ({ AllTimesheetsData, filename,LogoImgUrl,btnTitle='Export t
             styles.Status_cell= { padding:[5,7],fillColor:'#f7d3d3',border:[true, true, true, true],lineWidth: 2,lineColor: '#f19891'};
            Status = "Rejected by Reviewer";
         }
+        else if(value == StatusType.HRReject.toString()){
+            styles.Status_cell= { padding:[5,7],fillColor:'#f7d3d3',border:[true, true, true, true],lineWidth: 2,lineColor: '#f19891'};
+           Status = "Rejected by HR";
+        }
         return Status;
     }
     const actionDetails = (status)=>{
@@ -57,23 +66,38 @@ const ExportToPDF = ({ AllTimesheetsData, filename,LogoImgUrl,btnTitle='Export t
             ActionBy: "Approved By",
             ActionDate: "Approved Date"
         }
-        if(status == 'Rejected by Reporting Manager' || status == 'Rejected by Reviewer'){
-            actionObj.ActionBy = "Rejected By"
-            actionObj.ActionDate = "Rejected Date"
+        if(status == 'Rejected by Reporting Manager' || status == 'Rejected by Reviewer' || status == 'Rejected by HR'){
+            actionObj.ActionBy = "Rejected By";
+            actionObj.ActionDate = "Rejected Date";
         }
-        return actionObj
+        return actionObj;
     }
     var FilteredTimehseets=[];
     var weeks= ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
     var  Months= ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
     AllTimesheetsData.forEach(timesheet => {
-        var WeekStartDate = new Date(timesheet.WeekStartDate.split('-')[1] + '/' + timesheet.WeekStartDate.split('-')[2].split('T')[0] + '/' + timesheet.WeekStartDate.split('-')[0]);
+        var WeekStartDate = new Date(DateUtilities.GetDateMMDDYYYYAsInList(timesheet.WeekStartDate));
         let WeekEnd=new Date(WeekStartDate);
         var WeekEndDate=new Date(WeekEnd.setDate(WeekEnd.getDate() + 6));
-        var SubmittedDate = new Date(timesheet.DateSubmitted.split('-')[1] + '/' + timesheet.DateSubmitted.split('-')[2].split('T')[0] + '/' + timesheet.DateSubmitted.split('-')[0]);
+        var SubmittedDate = new Date(DateUtilities.GetDateMMDDYYYYAsInList(timesheet.DateSubmitted));
         var CommentsHistory=JSON.parse(timesheet.CommentsHistory);
-        var ApprovedDate=new Date(CommentsHistory[CommentsHistory.length-1].Date);
-        var ActionBy=CommentsHistory[CommentsHistory.length-1].User;
+       // var ApprovedDate=new Date(CommentsHistory[CommentsHistory.length-1].Date);
+        // var ActionBy=CommentsHistory[CommentsHistory.length-1].User;
+        //To get only client reporting manager name and date
+        var ApprovedDate=new Date();
+        var ActionBy='';
+        for (let i = CommentsHistory.length - 1; i >= 0; i--) {
+            if (CommentsHistory[i].Action == StatusType.Reject) {
+                ApprovedDate = new Date(CommentsHistory[i].Date);
+                ActionBy = CommentsHistory[i].User;
+                break;
+            }
+            else if (CommentsHistory[i].Role == 'Manager' && CommentsHistory[i].Action == StatusType.Approved) {
+                ApprovedDate = new Date(CommentsHistory[i].Date);
+                ActionBy = CommentsHistory[i].User;
+                break;
+            }
+        }
         FilteredTimehseets.push( 
             {
             EmployeName: timesheet.Name,
@@ -340,8 +364,8 @@ const ExportToPDF = ({ AllTimesheetsData, filename,LogoImgUrl,btnTitle='Export t
         //EmpData.push([{text:'Name',style:styles.Employee_header},{text:'Client',style:styles.Employee_header},{text:'Weekly Start Date',style:styles.Employee_header}]);
         //EmpData.push([TimesheetData.EmployeName,TimesheetData.Client,TimesheetData. Date]);
         EmpData.push([{text:'Name',style:styles.Employee_header},':',TimesheetData.EmployeName,{text:'Submitted Date',style:styles.Employee_header},':',TimesheetData.SubmittedDate]);
-        EmpData.push([{text:'Client',style:styles.Employee_header},':',TimesheetData.Client,{text:actionDetails(TimesheetData.Status).ActionBy,style:styles.Employee_header},':',TimesheetData.ActionBy]);
-        EmpData.push([{text:'Week Start Date',style:styles.Employee_header},':',TimesheetData.StartDate,{text:actionDetails(TimesheetData.Status).ActionDate,style:styles.Employee_header},':',TimesheetData.ApprovedDate]);
+        EmpData.push([{text:'Client',style:styles.Employee_header},':',TimesheetData.Client,{text:actionDetails(getStatus(TimesheetData.Status)).ActionBy,style:styles.Employee_header},':',TimesheetData.ActionBy]);
+        EmpData.push([{text:'Week Start Date',style:styles.Employee_header},':',TimesheetData.StartDate,{text:actionDetails(getStatus(TimesheetData.Status)).ActionDate,style:styles.Employee_header},':',TimesheetData.ApprovedDate]);
         EmpData.push([{text:'Weekend Date',style:styles.Employee_header},':',TimesheetData.EndDate,{text:'Status',style:styles.Employee_header},':',{ 
             table: {
             widths: ['auto'],  // Only one column for the text

@@ -282,16 +282,18 @@ margin-bottom: 1.5rem;
 }
 .nav-tabs .nav-link{
   background-color: #f1f1f1;
-  margin: 0 6px 0 0;
+  /* margin: 0 6px 0 0; */
   color: #0D2F4B;
   border: 0!important;
-  /* border-bottom: 3px solid #0D2F4B!important; */
-  margin-right: 5px;
   border-radius: 0!important;
   font-weight: bold;
   text-align: center;
   text-align: left;
   font-size: 1.3rem;
+}
+/* for space between tabs */
+.nav-tabs li:not(:first-child){ 
+  margin-left: 5px;
 }
 .nav-tabs .nav-item {
   margin-bottom: 0px !important;
@@ -749,13 +751,13 @@ a{
   z-index: 1;
   font-size: 14px;
 } */
-.divIsActive{
+.divCheckbox{
   display: flex !important;
   width: 300px !important;
   position: relative;
   top: -8px;
 }
-#lblIsActive{
+.lblCheckbox{
 position: relative !important;
 /* width: 100px !important; */
 top: 0px !important;
@@ -2475,11 +2477,11 @@ li {
   background-color: rgb(0 0 0 / 32%)!important;
 }
 .table-head-1st-td .eBWcrR .bRirNn:nth-child(1){
-  min-width: 150px;
-  max-width: 150px;
+  min-width: 200px;
+  max-width: 200px;
 }
 .table-head-1st-td .sc-jrcTuL .lkrJOt:nth-child(1){
-  min-width: 150px !important;
+  min-width: 200px !important;
 }
 .class-grand-total{
   position: absolute;
@@ -2500,7 +2502,7 @@ li {
   display: none;
 }
 
-#divAddNewWeeklyTimeSheet,#divAddNewEmployeeMaster,#divNewWeeklyTimeSheet{
+#divAddNewWeeklyTimeSheet,#divAddNewEmployeeMaster,#divNewWeeklyTimeSheet,#divAddNewTimeOff{
   position: relative;
 }
 /* #newWeeklyTimeSheet{
@@ -2917,7 +2919,7 @@ min-width: 185px !important;
   background-color: #ffff;
 }
 .R-LSkBlue{
-  background-color: #d2eaf3;
+  background-color: #5dcff7;
 }
 .Reportheader-row{
   font-size: 14px;
@@ -3020,7 +3022,7 @@ span.iconArrow {
   }
 
   /* 5/27/2024 */
-  .tblWeeklyTimesheetReport{
+  .tblWeeklyTimesheetReport , .tblMonthlyTimesheetReport{
     /* Commented on 6/17/2024 */
     /* border: 1px solid black;
     border-collapse: collapse;
@@ -3035,19 +3037,29 @@ span.iconArrow {
     border: 1px solid black;
     padding: 3px;
 } */
-
-.tblWeeklyTimesheetReport th{
-  padding: 19px 10px;
+/* .tblWeeklyTimesheetReport th , .tblMonthlyTimesheetReport th{
+    padding: 19px 10px;
 		font-size: 15px;
 		font-weight: normal;
 		border-color: #252525;
 }
 
-.tblWeeklyTimesheetReport td{
+.tblWeeklyTimesheetReport td , .tblMonthlyTimesheetReport td{
   padding: 12px 6px;
   border-color: #f1f1f1;
+} */
+.tblWeeklyTimesheetReport th , .tblMonthlyTimesheetReport th{
+  font-size: 14px !important;
+  /* padding: 4px 6px !important; */
+  padding: 7px 6px !important;
+  /* border: 1px solid #282828;	 */
+  border: 0;
+  box-shadow: inset 1px 1px 0px #3763847a !important;
 }
-
+.tblWeeklyTimesheetReport td , .tblMonthlyTimesheetReport td{
+  padding: 6px 6px !important;
+  border: 1px solid #b3b6b757 !important;
+  }
 .tr-brd{
   /* background: black; */
   background: #001b24;
@@ -3076,6 +3088,14 @@ span.iconArrow {
   border-radius: 22px;
   font-size: 15px;
   border: 2px solid #a1cb70;
+}
+.span-reviewer-approve {
+  display: inline-block;
+  padding: 2px 7px;
+  background-color: #c6e69f;
+  border-radius: 22px;
+  font-size: 15px;
+  border: 2px solid #95ce54;
 }
 .span-rejected{
   display: inline-block;
@@ -3289,21 +3309,6 @@ margin-left: 5px;
   height: 20px;
   color: #ad0b00 !important;
 }
-
-.tblWeeklyTimesheetReport th{
-  font-size: 14px !important;
-  /* padding: 4px 6px !important; */
-  padding: 7px 6px !important;
-  /* border: 1px solid #282828;	 */
-  border: 0;
-  box-shadow: inset 1px 1px 0px #3763847a !important;
-}
-
-.tblWeeklyTimesheetReport td{
-  padding: 6px 6px !important;
-  border: 1px solid #b3b6b757 !important;
-  }
-
   .t-div{
     background-color: #fff;
     display: flex;
@@ -3420,5 +3425,154 @@ a#btnDownloadPDFFile:hover.a-export-pdf-button .fa-file-pdf {
   border-color: transparent !important;
 }
 .css-1nmdiq5-menu{
-  z-index: 10 !important;
+  z-index: 100 !important;
 }
+
+/* Monthly Report CSS */
+.tbodyMonthlyTimesheetReport tr:nth-child(odd) {
+  background-color: #f2f2f2; /* Light grey for odd rows */
+}
+.tbodyMonthlyTimesheetReport tr:nth-child(even) {
+  background-color: #ffffff; /* White for even rows */
+}
+.tbodyMonthlyTimesheetReport .OddSlNo
+{
+   background-color: #d0e0ed;  /*light blue for oddSlNo employees */
+}
+.tbodyMonthlyTimesheetReport .EvenSlNo
+{
+   background-color: #ffffff;  /*White for EvenSlNo employees */
+}
+#theadMonthlyTimesheetReport{
+  position: sticky;
+   top: 0;
+}
+/* PTO Form CSS */
+.divInfo
+{
+  font-style: italic;
+  text-align: center;
+}
+.TimeOffTypeMandatory
+{
+  border-color: transparent!important;
+  box-shadow: 0 0 0 0.2rem rgba(223,43,42,.75)!important;
+  -webkit-box-shadow: 0 0 0 0.2rem rgba(223,43,42,.75)!important;
+}
+.light-text-readonly input {
+  border: none;
+  outline: none;
+  padding: 0 !important;
+  font-size: 14px;
+  height: inherit !important;
+}
+
+.light-text-readonly label {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 700;
+}
+.div-multi-manager {
+  color: #a6a6a6;
+  font-size: 14px;
+  cursor: not-allowed;
+}
+.div-multi-manager div {
+  display: inline-block;
+  border-left: 1px solid rgb(204, 204, 204);
+  padding-right: 5px;
+  padding-left: 8px;
+  margin-bottom: 3px;
+}
+.div-multi-manager div:nth-child(1) {
+  margin-left: 0;
+  border-left: none;
+  padding-left: 0;
+}
+.css-1nmdiq5-menu{
+  z-index: 100 !important;
+  border: 1px solid rgb(66, 65, 65) !important;
+}
+.css-1nmdiq5-menu .css-qr46ko div[aria-selected='true'] {
+  background-color: #7e8185 !important;
+}
+/* custom dropdown CSS for TimeOffType dropdown in TimeOffRequest form screen */
+.EforPTOSpan{
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  margin-right: 5px;
+}
+.EforPTOOuterDiv{
+padding: 25px;
+display: flex;
+align-items: center;
+background-color: #c4c7ca;
+}
+.EforPTOInnerDiv{
+border-radius: 30px;
+background-color: #d9dce0;
+display: flex;
+align-items: center;
+padding-left: 10px;
+right: 15px;
+position: absolute;
+}
+/* To table related */
+.ddlTimeOffType 
+{
+  padding-top: 0px !important;
+}
+.ddlTimeOffType  .css-13cymwt-control
+{
+    height:40px;
+    border:none !important;
+}
+.ddlTimeOffType .css-1nmdiq5-menu .css-qr46ko
+{
+  /* position: fixed; */
+  background: white;
+  border: 1px solid lightgrey;
+  box-shadow: 2px 12px 22px #656565;
+}
+.ClickHere
+{
+  color:blue;
+  font-weight: bold;
+  cursor: pointer;
+}
+.divClickHere
+{
+background: #c7e1e5;
+}
+.mandatory-8hourstotal{
+  border-color: transparent!important;
+  box-shadow: 0 0 0 0.2rem rgba(223,43,42,.75)!important;
+  -webkit-box-shadow: 0 0 0 0.2rem rgba(223,43,42,.75)!important; 
+  outline: none!important;
+}
+.btn-fa-close{
+        display: inline-block;
+        /* margin: auto; */
+        width: 35px;
+        height: 35px;
+        text-align: center;
+        border-radius: 20%;
+        background: #dc3545;
+        color: #fff;
+        font-size: 20px;
+        padding: 1px;
+        /* transform: rotate(45deg); */
+    }
+  .btn-fa-close:hover{
+      cursor: pointer;
+      opacity: .7;
+      scale: .9;
+      background: #dc3545;
+  }
+  .rdt_TableCol_Sortable div{
+    overflow: visible !important;
+    white-space: normal !important;
+    text-overflow: unset !important;
+}
+

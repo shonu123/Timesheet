@@ -118,7 +118,7 @@ const DatePickercontrol = (props,ref) => {
         //  ref={reference}
          disabled={props.isDisabled}
          id={id}
-         titleText={title}
+         title={title}
          showIcon
          toggleCalendarOnIconClick
          minDate={[null,undefined,''].includes(StartDate)?undefined:StartDate}

@@ -10,6 +10,8 @@ import "@pnp/sp/lists";
 import "@pnp/sp/items";
 import Loader from '../Shared/Loader';
 import { StatusType } from '../../Constants/Constants';
+import DateUtilities from '../../Utilities/DateUtilities';
+
 
 export interface MyTeamProps {
     match: any;
@@ -55,12 +57,13 @@ class MyTeam extends React.Component<MyTeamProps, MyTeamState> {
             .then((response) => {
                 let Data = [];
                 for (const d of response) {
-                    let date = new Date(d.DateOfJoining.split('-')[1]+'/'+d.DateOfJoining.split('-')[2].split('T')[0]+'/'+d.DateOfJoining.split('-')[0]);
+                    let DOJ = new Date(DateUtilities.GetDateMMDDYYYYAsInList(d.DateOfJoining));
                     
                     Data.push({
                         Id: d.Id,
                         Employee: d.Employee.Title,
-                        Doj: `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`,
+                        DOJ : DateUtilities.getDateMMDDYYYY(DOJ),
+                        DOJForGrid : `<span class='d-none'>${DateUtilities.getDateYYYYMMDDForSorting(DOJ)}</span>${DateUtilities.getDateMMDDYYYY(DOJ)}`,
                         PDM: d.MandatoryDescription ? "Mandatory" : "Not-Mandatory",
                         PCM: d.MandatoryProjectCode ? "Mandatory" : "Not-Mandatory",
                     })
@@ -71,8 +74,8 @@ class MyTeam extends React.Component<MyTeamProps, MyTeamState> {
                 console.log('Failed to fetch data.', err);
             });
     }
-    private  handleRowClicked = (row) => {
-        let ID = row.Id
+    private  handleRowClicked = (row,Id?) => {
+        let ID = row.Id?row.Id:Id;
         this.setState({ItemID:ID,redirect:true})
       }
     public render() {
@@ -102,7 +105,8 @@ class MyTeam extends React.Component<MyTeamProps, MyTeamState> {
             },
             {
                 name: "Date of Joining",
-                selector: (row, i) => row.Doj,
+                selector: (row, i) => row.DOJForGrid,
+                cell: row => <div className='' dangerouslySetInnerHTML={{ __html: row.DOJForGrid }} onClick={(event)=>this.handleRowClicked(event,row.Id)}/>,
                 // width: '250px',
                 sortable: true
             },
@@ -119,6 +123,7 @@ class MyTeam extends React.Component<MyTeamProps, MyTeamState> {
                 sortable: true
             },
         ];
+        const searchKeys=['Employee','DOJ','PDM','PCM'];
         if(this.state.redirect){
             let url = `/EmployeeMasterForm/${this.state.ItemID}/Edit`;
         return (<Navigate to={url}/>);
@@ -127,7 +132,7 @@ class MyTeam extends React.Component<MyTeamProps, MyTeamState> {
             <React.Fragment>
                 <div>
                     <div className=''>
-                        <TableGenerator columns={columns} data={this.state.MyTeamMembers} fileName={'My Team'} showExportExcel={false}
+                        <TableGenerator columns={columns} searchKeys={searchKeys} data={this.state.MyTeamMembers} fileName={'My Team'} showExportExcel={false}
                             showAddButton={false} customBtnClass='' btnDivID='' navigateOnBtnClick='' btnSpanID='' btnCaption='' btnTitle='' searchBoxLeft={true} onRowClick={this.handleRowClicked}></TableGenerator>
                     </div>
                 </div>

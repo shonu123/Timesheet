@@ -27,6 +27,7 @@ import { faXmark, faEdit, faCheck, faPlus } from '@fortawesome/free-solid-svg-ic
 import toast, { Toaster } from 'react-hot-toast';
 import customToaster from '../Shared/Toaster.component';
 import { ToasterTypes } from '../../Constants/Constants';
+import DateUtilities from '../../Utilities/DateUtilities';
 interface HolidaysListProps {
     match: any;
     spContext: any;
@@ -200,8 +201,8 @@ class HolidaysList extends Component<HolidaysListProps, HolidaysListState> {
         let date = new Date(formData.HolidayDate)
         let prevDate = addDays(new Date(date), -1);
         let nextDate = addDays(new Date(date), 1);
-        let prev = `${prevDate.getMonth() + 1}/${prevDate.getDate()}/${prevDate.getFullYear()}`
-        let next = `${nextDate.getMonth() + 1}/${nextDate.getDate()}/${nextDate.getFullYear()}`
+        let prev = DateUtilities.getDateMMDDYYYY(prevDate);
+        let next = DateUtilities.getDateMMDDYYYY(nextDate);
 
         let filterQuery = "HolidayDate gt '" + prev + "' and HolidayDate lt '" + next + "'";
 
@@ -216,7 +217,7 @@ class HolidaysList extends Component<HolidaysListProps, HolidaysListState> {
                 then((response: any[]) => {
                     if (response.length > 0) {
                         let date = new Date(formData.HolidayDate)
-                        let dateSelected = `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`
+                        let dateSelected = DateUtilities.getDateMMDDYYYY(date);
                         // this.setState({ showLabel: true, errorMessage:  });
                         customToaster('toster-error',ToasterTypes.Error,'A holiday already exists on '+dateSelected+' for '+this.state.formData.ClientName,4000)
 
@@ -336,7 +337,8 @@ class HolidaysList extends Component<HolidaysListProps, HolidaysListState> {
                 this.setState({
                     CurrYearHolidaysData: HolidaysData.map(o => ({
                         Id: o.Id, ClientName: [null,undefined].includes(o.ClientName)?'':o.ClientName, HolidayName:[null,undefined].includes(o.HolidayName)?'':o.HolidayName,
-                         HolidayDate: o.HolidayDate.split('-')[1]+'/'+o.HolidayDate.split('-')[2].split('T')[0]+'/'+o.HolidayDate.split('-')[0],
+                         HolidayDate: DateUtilities.getDateMMDDYYYY(DateUtilities.GetDateMMDDYYYYAsInList(o.HolidayDate)),
+                         HolidayDateForGrid : `<span class='d-none'>${DateUtilities.getDateYYYYMMDDForSorting(DateUtilities.GetDateMMDDYYYYAsInList(o.HolidayDate))}</span>${DateUtilities.getDateMMDDYYYY(DateUtilities.GetDateMMDDYYYYAsInList(o.HolidayDate))}`,
                          IsActive:o.IsActive?"Active":"In-Active"
                     })),
                     ClientsObj : Clients,
@@ -369,7 +371,7 @@ class HolidaysList extends Component<HolidaysListProps, HolidaysListState> {
                  {
                   ClientName: response.ClientName,
                   HolidayName: response.HolidayName,
-                  HolidayDate:  new Date(response.HolidayDate.split('-')[1]+'/'+response.HolidayDate.split('-')[2].split('T')[0]+'/'+response.HolidayDate.split('-')[0]), 
+                  HolidayDate:  new Date(DateUtilities.GetDateMMDDYYYYAsInList(response.HolidayDate)), 
                   Year: response.Year,
                   IsActive:response.IsActive,
                 },
@@ -444,8 +446,8 @@ class HolidaysList extends Component<HolidaysListProps, HolidaysListState> {
                    HolidayListData[j].ClientName=HolidayListData[j].ClientName!=null?HolidayListData[j].ClientName:"";
                 //    console.log(i+","+j)
                     if (excelData[i] && (excelData[i]["Client Name"].toLowerCase().trim() == HolidayListData[j].ClientName.toLowerCase().trim()) &&(excelData[i]["Holiday Name"].toLowerCase().trim() == HolidayListData[j].HolidayName.toLowerCase().trim())) {
-                        let excelDataDate = `${new Date(excelData[i]["Holiday Date"]).getMonth() + 1}/${new Date(excelData[i]["Holiday Date"]).getDate()}/${new Date(excelData[i]["Holiday Date"]).getFullYear()}`
-                        let holidayListDate =`${new Date(HolidayListData[j].HolidayDate).getMonth() + 1}/${new Date(HolidayListData[j].HolidayDate).getDate()}/${new Date(HolidayListData[j].HolidayDate).getFullYear()}`     
+                        let excelDataDate = DateUtilities.getDateMMDDYYYY(excelData[i]["Holiday Date"]);
+                        let holidayListDate = DateUtilities.getDateMMDDYYYY(HolidayListData[j].HolidayDate); 
                         if(excelDataDate == holidayListDate){
                             if(excelData[i]["Status"].toLowerCase()==HolidayListData[j].IsActive.toLowerCase()){
                                 excelData.splice(i, 1);
@@ -632,11 +634,12 @@ class HolidaysList extends Component<HolidaysListProps, HolidaysListState> {
             isSuccess: false
         });
     }
-    private  handleRowClicked = (row) => {
+    private  handleRowClicked = (row,Id?) => {
+        let ID = row.Id?row.Id:Id;
         this.setState({loading:true});
-        window.location.hash=`#/HolidayMaster/${row.Id}`;
-        this.props.match.params.id = row.Id
-        this.onEditClickHandler(row.Id)
+        window.location.hash=`#/HolidayMaster/${ID}`;
+        this.props.match.params.id = ID;
+        this.onEditClickHandler(ID);
       }
     public render() {
         let ExportExcelreportColumns = [
@@ -674,44 +677,34 @@ class HolidaysList extends Component<HolidaysListProps, HolidaysListState> {
                         </React.Fragment>
                     );
                 },
-                header: 'Action',
-                dataKey: 'Id',
                 width: '100px',
             },
            
             {
                 name: "Client Name",
-                //selector: "Title",
                 selector: (row, i) => row.ClientName,
                 sortable: true,
-                header: 'Client Name',
-                dataKey: 'ClientName'
             },
             {
                 name: "Holiday Name",
-                //selector: "Vendor_x0020_Number",                
                 selector: (row, i) => row.HolidayName,
                 sortable: true,
-                header: 'Holiday Name',
-                dataKey: 'HolidayName'
             },
             {
                 name: "Holiday Date",
-                //selector: "Database",
-                selector: (row, i) => row.HolidayDate,
+                selector: (row, i) => row.HolidayDateForGrid,
+                cell: row => <div className='' dangerouslySetInnerHTML={{ __html: row.HolidayDateForGrid }} onClick={(event)=>this.handleRowClicked(event,row.Id)}/>,
                 sortable: true,
-                header: 'Holiday Date',
-                dataKey: 'HolidayDate'
             },
             {
                 name: "Status",
                 selector: (row, i) => row.IsActive,
                 sortable: true,
-                header: 'Holiday Date',
-                dataKey: 'HolidayDate'
             },
            
         ];
+        const searchKeys=['ClientName','HolidayName','HolidayDate','IsActive'];
+
         if(this.state.isRedirect){
                 // let url = `/HolidayMaster/`
                 //  let url = `/`
@@ -843,7 +836,7 @@ class HolidaysList extends Component<HolidaysListProps, HolidaysListState> {
                                                             isdisable={false}
                                                              /> */}
                                                             <div className="col-md-3">
-                                                                <div className="light-text" id='chkIsActive'>
+                                                                <div className="light-text" >
                                                                     <InputCheckBox
                                                                         label={"Is Active"}
                                                                         name={"IsActive"}
@@ -851,6 +844,7 @@ class HolidaysList extends Component<HolidaysListProps, HolidaysListState> {
                                                                         onChange={this.handleChange}
                                                                         isforMasters={false}
                                                                         isdisable={false}
+                                                                        id='chkIsActive'
                                                                     />
                                                                 </div>
                                                             </div>
@@ -870,7 +864,7 @@ class HolidaysList extends Component<HolidaysListProps, HolidaysListState> {
                                         </div>
                                         {this.state.showToaster&&<Toaster />  }
                                         <div className="c-v-table">
-                                            <TableGenerator columns={columns} data={this.state.CurrYearHolidaysData} fileName={'Holidays List'}showExportExcel={this.state.CurrYearHolidaysData.length?true:false} searchBoxLeft={true} ExportExcelCustomisedColumns={ExportExcelreportColumns} LargeWidthColumns={["ClientName"]} onRowClick={this.handleRowClicked} ></TableGenerator>
+                                            <TableGenerator columns={columns} searchKeys={searchKeys} data={this.state.CurrYearHolidaysData} fileName={'Holidays List'}showExportExcel={this.state.CurrYearHolidaysData.length?true:false} searchBoxLeft={true} ExportExcelCustomisedColumns={ExportExcelreportColumns} LargeWidthColumns={["ClientName"]} onRowClick={this.handleRowClicked} ></TableGenerator>
                                         </div>
                                     </div>
                                 </div>

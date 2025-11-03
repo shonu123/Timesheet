@@ -35,6 +35,7 @@ const customStyles = {
 };
 interface TableGeneratorProps {
   columns: any;
+  searchKeys?:any;
   data: any;
   fileName: string;
   showExportExcel?: boolean;
@@ -67,9 +68,10 @@ interface TableGeneratorProps {
   customButtonClick?:any;
   clearSelectedRows?:boolean;
   onRowClick?:any;
+  paginationPerPage?:number;
 }
 
-const TableGenerator = ({ columns, data, fileName,showExportExcel,showExportPDF=false,logoUrlToPDF,showMultiApproveOrReject=false,onClickApproveOrReject, ExportExcelCustomisedColumns,ExportExcelCustomisedData,ExcelHeader, prvPageNumber,prvSort,prvDirection,onChange,onSortChange,onSortDirection,showAddButton,btnSpanID,btnTitle,navigateOnBtnClick,btnCaption,customBtnClass,btnDivID,searchBoxLeft,wrapColumns,LargeWidthColumns,selectableRows,handleSelectedRows,customButton=false,customButtonClick,onRowClick,clearSelectedRows=true}: TableGeneratorProps) => {
+const TableGenerator = ({ columns,searchKeys=[], data, fileName,showExportExcel,showExportPDF=false,logoUrlToPDF,showMultiApproveOrReject=false,onClickApproveOrReject, ExportExcelCustomisedColumns,ExportExcelCustomisedData,ExcelHeader, prvPageNumber,prvSort,prvDirection,onChange,onSortChange,onSortDirection,showAddButton,btnSpanID,btnTitle,navigateOnBtnClick,btnCaption,customBtnClass,btnDivID,searchBoxLeft,wrapColumns,LargeWidthColumns,selectableRows,handleSelectedRows,customButton=false,customButtonClick,onRowClick,clearSelectedRows=true,paginationPerPage=10}: TableGeneratorProps) => {
   //let lsMyrequests = localStorage.getItem('PrvData');
  // const tableData = { columns, data };
   const [totalData, setData] = useState([]);
@@ -90,7 +92,7 @@ const TableGenerator = ({ columns, data, fileName,showExportExcel,showExportPDF=
       search='';
     }
     if (search) {
-      var allKeys = Object.keys(data[0]);
+      var allKeys =searchKeys.length?searchKeys:Object.keys(data[0]);
       totaldata = totaldata.filter(l => allKeys.some(field => {
         return (l[field] && l[field].toString().toLowerCase().includes(search.toLowerCase()));
       }));
@@ -147,6 +149,7 @@ const TableGenerator = ({ columns, data, fileName,showExportExcel,showExportPDF=
           actions
           customStyles={customStyles}
           paginationDefaultPage={1}
+          paginationPerPage={paginationPerPage}
           persistTableHead={true}
           onChangePage={onChange}
           onSort={onSortChange}

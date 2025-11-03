@@ -9,6 +9,7 @@ import "@pnp/sp/webs";
 import "@pnp/sp/lists";
 import "@pnp/sp/items";
 import Loader from '../Shared/Loader';
+import DateUtilities from '../../Utilities/DateUtilities';
 export interface AllRequestsProps {
     match: any;
     spContext: any;
@@ -48,7 +49,7 @@ class AllRequests extends React.Component<AllRequestsProps,AllRequestsState> {
         let userID = this.props.spContext.userId;
         let dateFilter = new Date();
         dateFilter.setDate(new Date().getDate()-60);
-        let date = `${dateFilter.getMonth() + 1}/${dateFilter.getDate()}/${dateFilter.getFullYear()}`;
+        let date = DateUtilities.getDateMMDDYYYY(dateFilter);
         var TimeSheetFilterQuery = "WeekStartDate ge '"+date+"'";
         let EmpMasterSelQuery = "Employee/ID,Employee/Title,ReportingManager/EMail,Reviewers/EMail,ReportingManager/ID,Reviewers/ID";
         let TimeSheetSelQuery = "Initiator/ID,Initiator/EMail,Reviewers/EMail,Reviewers/Id,ReportingManager/Id,ReportingManager/EMail,ReportingManager/Title,*";
@@ -95,14 +96,15 @@ class AllRequests extends React.Component<AllRequestsProps,AllRequestsState> {
                     }
                     // ExcelRm = ExcelRm.substring(0, ExcelRm.lastIndexOf("\n"));
                 }
-                let date = new Date(d.WeekStartDate.split('-')[1]+'/'+d.WeekStartDate.split('-')[2].split('T')[0]+'/'+d.WeekStartDate.split('-')[0]);
+                let date = new Date(DateUtilities.GetDateMMDDYYYYAsInList(d.WeekStartDate));
                 let isBillable = true;
                 if(d.ClientName.toLowerCase().includes('synergy')){
                     isBillable = false
                 }
                 Data.push({
                     Id : d.Id,
-                    Date : `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`,
+                    Date : DateUtilities.getDateMMDDYYYY(date),
+                    DateForGrid : `<span class='d-none'>${DateUtilities.getDateYYYYMMDDForSorting(date)}</span>${DateUtilities.getDateMMDDYYYY(date)}`,
                     EmployeName: d.Name,
                     // Status : d.Status == StatusType.Submit?'Pending With Reporting Manager':d.Status== StatusType.InProgress?'Pending With Reviewer':d.Status,
                     Status : this.getStatus(d.Status),
@@ -115,11 +117,12 @@ class AllRequests extends React.Component<AllRequestsProps,AllRequestsState> {
                     HolidayHrs:parseFloat(parseFloat(JSON.parse(d.ClientHolidayHrs)[0].Total).toFixed(2)),
                     PTOHrs:parseFloat(parseFloat(JSON.parse(d.PTOHrs)[0].Total).toFixed(2)),
                     TotalHours: parseFloat(parseFloat(d.GrandTotal).toFixed(2)),
-                    RM : Rm
+                    RM : ExcelRm,
+                    RMForGrid : Rm
                 })
                 ExcelData.push({
                     Id : d.Id,
-                    Date : `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`,
+                    Date : DateUtilities.getDateMMDDYYYY(date),
                     EmployeName: d.Name,
                     // Status : d.Status == StatusType.Submit?'Pending With Reporting Manager':d.Status== StatusType.InProgress?'Pending With Reviewer':d.Status,
                     Status : this.getStatus(d.Status),
@@ -209,14 +212,22 @@ class AllRequests extends React.Component<AllRequestsProps,AllRequestsState> {
         let Status=value
         if(value =="approved by Manager")
         {
-            Status = "Approved by Reporting Manager"
+            Status = "Approved by Reporting Manager";
         }
         else if(value == "rejected by Manager"){
-                Status = "Rejected by Reporting Manager"
+                Status = "Rejected by Reporting Manager";
+            }
+        else if(value =="approved by Synergy")
+            {
+                Status = "Approved by Reviewer";
             }
         else if(value =="rejected by Synergy")
             {
-                Status = "Rejected by Synergy"
+                Status = "Rejected by Synergy";
+            }
+        else if(value =="rejected by HR")
+            {
+                Status = "Rejected by HR";
             }
         return Status
     }
@@ -245,51 +256,52 @@ class AllRequests extends React.Component<AllRequestsProps,AllRequestsState> {
             },
             {
                 name: "Date",
-                selector: (row, i) => row.Date,
-                width: '120px',
+                selector: (row, i) => row.DateForGrid,
+                cell: row => <div className='' dangerouslySetInnerHTML={{ __html: row.DateForGrid }} onClick={(event)=>this.handleRowClicked(event,row.Id)}/>,
+                // width: '120px',
                 sortable: true
             },
             {
                 name: "Employee Name",
                 selector: (row, i) => row.EmployeName,
-                width: '250px',
+                // width: '250px',
                 sortable: true
             },
             {
                 name: "Client",
                 selector: (row, i) => row.Client,
-                width: '130px',
+                // width: '130px',
                 sortable: true
             },
             {
                 name: "Reporting Manager",
-                selector: (row, i) => row.RM,
-                cell: row => <div className='divManagers' dangerouslySetInnerHTML={{ __html: row.RM }} onClick={(event)=>this.handleRowClicked(event,row.Id)}/>,
-                width: '230px',
+                selector: (row, i) => row.RMForGrid,
+                cell: row => <div className='divManagers' dangerouslySetInnerHTML={{ __html: row.RMForGrid }} onClick={(event)=>this.handleRowClicked(event,row.Id)}/>,
+                // width: '230px',
                 sortable: true
             },
             {
                 name: "Status",
                 selector: (row, i) => row.Status,
-                width: '220px',
+                // width: '220px',
                 sortable: true
             },
             {
                 name: "Pending With",
                 selector: (row, i) => row.PendingWith,
-                width: '180px',
+                // width: '180px',
                 sortable: true
             },
             {
                 name: "Hours",
                 selector: (row, i) => row.BillableHours,
-                width: '100px',
+                // width: '100px',
                 sortable: true,
             },
             {
                 name: "OT",
                 selector: (row, i) => row.OTTotalHrs,
-                width: '100px',
+                // width: '100px',
                 sortable: true,
             },
             // {
@@ -301,19 +313,19 @@ class AllRequests extends React.Component<AllRequestsProps,AllRequestsState> {
             {
                 name: "Total Billable",
                 selector: (row, i) => row.TotalBillableHrs,
-                width: '150px',
+                // width: '150px',
                 sortable: true,
             },
             {
                 name: "Holiday",
                 selector: (row, i) =>row.HolidayHrs,
-                width: '100px',
+                // width: '100px',
                 sortable: true,
             },
             {
                 name: "Time Off",
                 selector: (row, i) =>row.PTOHrs,
-                width: '110px',
+                // width: '110px',
                 sortable: true,
             },
             // {
@@ -403,6 +415,8 @@ class AllRequests extends React.Component<AllRequestsProps,AllRequestsState> {
                 sortable: true
             }
         ];
+        const searchKeys=['Date','EmployeName','Client','RM','Status','PendingWith','BillableHours','OTTotalHrs','TotalBillableHrs','HolidayHrs','PTOHrs','TotalHours'];
+
         if(this.state.redirect){
             let url = `/WeeklyTimesheet/${this.state.TimesheetID}`;
         return (<Navigate to={url}/>);
@@ -417,7 +431,7 @@ class AllRequests extends React.Component<AllRequestsProps,AllRequestsState> {
                         </button></NavLink>
                 </div></div>
                 <div className='c-v-table'>
-                    <TableGenerator columns={columns} data={this.state.AllRequests} fileName={'All Timesheets'} showExportExcel={this.state.AllRequests.length?true:false} searchBoxLeft={true} ExportExcelCustomisedColumns={Exportcolumns} ExportExcelCustomisedData={this.state.ExportExcelData} wrapColumns={["RM","Client"]} LargeWidthColumns={["EmployeName","Client","RM"]} onRowClick={this.handleRowClicked}></TableGenerator>
+                    <TableGenerator columns={columns} searchKeys={searchKeys} data={this.state.AllRequests} fileName={'All Timesheets'} showExportExcel={this.state.AllRequests.length?true:false} searchBoxLeft={true} ExportExcelCustomisedColumns={Exportcolumns} ExportExcelCustomisedData={this.state.ExportExcelData} wrapColumns={["RM","Client"]} LargeWidthColumns={["EmployeName","Client","RM"]} onRowClick={this.handleRowClicked}></TableGenerator>
                 </div>
             </div>
             {this.state.loading && <Loader />}

@@ -28,6 +28,8 @@ import DatePicker from "../Shared/DatePickerField";
 import { addDays } from 'office-ui-fabric-react';
 import { PeoplePicker, PrincipalType } from "@pnp/spfx-controls-react/lib/PeoplePicker";
 import ModalPopUpConfirm from '../Shared/ModalPopUpConfirm';
+import DateUtilities from '../../Utilities/DateUtilities';
+
 
 interface EmployeeProps {
     match: any;
@@ -56,6 +58,8 @@ class Employee extends Component<EmployeeProps, EmployeeState> {
     public state = {
         formData: {
             EmployeeId: null,
+            SynergyManagerId: { results: [] },
+            SynergyManagerEmail: [],
             DateOfJoining: new Date(),
             EmployeeClassification: '',
             Policy: 'None',
@@ -119,6 +123,8 @@ class Employee extends Component<EmployeeProps, EmployeeState> {
             this.setState({
                 formData: {
                     EmployeeId: null,
+                    SynergyManagerId: { results: [] },
+                    SynergyManagerEmail: [],
                     DateOfJoining: new Date(),
                     EmployeeClassification: '',
                     Policy: 'None',
@@ -217,20 +223,20 @@ class Employee extends Component<EmployeeProps, EmployeeState> {
         if (items.length > 0) {
             if (['EmployeeId'].includes(name))
                 value = items[0].id;
-            // else if (['ReportingManagerId', 'ReviewerId', 'NotifierId'].includes(name)) {
-            //     let multiple = { results: [] }
-            //     for (const user of items) {
-            //         multiple.results.push(user.id)
-            //     }
-            //     values = multiple;
-            // }
+            else if (['SynergyManagerId'].includes(name)) {
+                let multiple = { results: [] }
+                for (const user of items) {
+                    multiple.results.push(user.id)
+                }
+                values = multiple;
+            }
         }
         else {
             value = null;
         }
         // name == 'EmployeeId' ? this.setState({ EmployeeId: value }) : name == 'ReportingManagerId' ? this.setState({ ReportingManagerId: values }) : name == 'ApproverId' ? this.setState({ ApproverId: values }) : name == 'ReviewerId' ? this.setState({ ReviewerId: values }) : ''
-        formdata['EmployeeId'] = value;
-        name == 'EmployeeId' ? this.setState({ formData: formdata }) : ''
+        name == 'EmployeeId' ? formdata['EmployeeId'] = value : name == 'SynergyManagerId' ? formdata['SynergyManagerId'] = values:'';
+         this.setState({ formData: formdata });
     }
     private checkDuplicates = async (formData, id) => {
         let EmployeeList = 'Employees';
@@ -272,7 +278,12 @@ class Employee extends Component<EmployeeProps, EmployeeState> {
             // }
             //event.preventDefault();
             //this.setState({ loading: true });
-            let data = {
+            let PreValidatedata = {  //Pre and Post Validate data are to validate in order
+                Employee: { val: this.state.formData.EmployeeId, required: true, Name: 'Employee', Type: ControlType.people, Focusid: 'divEmployee' },
+                //DateOfJoining: { val: this.state.formData.DateOfJoining, required: true, Name: 'Date Of Joining', Type: ControlType.date },
+                //EmployeeClassification: { val: this.state.formData.EmployeeClassification, required: true, Name: 'Employee Classification', Type: ControlType.reactSelect, Focusid: 'EmployeeClassification'},
+            };
+            let PostValidatedata = {
                 Employee: { val: this.state.formData.EmployeeId, required: true, Name: 'Employee', Type: ControlType.people, Focusid: 'divEmployee' },
                 DateOfJoining: { val: this.state.formData.DateOfJoining, required: true, Name: 'Date Of Joining', Type: ControlType.date },
                 EmployeeClassification: { val: this.state.formData.EmployeeClassification, required: true, Name: 'Employee Classification', Type: ControlType.reactSelect, Focusid: 'EmployeeClassification'},
@@ -280,8 +291,26 @@ class Employee extends Component<EmployeeProps, EmployeeState> {
             const formdata = { ...this.state.formData };
             const id = this.props.match.params.id ? this.props.match.params.id : 0;
     
-            let isValid = Formvalidator.checkValidations(data);
-            if (isValid.status) {
+            let isValid = Formvalidator.checkValidations(PreValidatedata);
+            let pdata = {
+                SynergyManager: { val: this.state.formData.SynergyManagerId, required: true, Name: 'Synergy Manager', Type: ControlType.people, Focusid: 'divSynergyManager'},
+            }
+            isValid = isValid.status ? Formvalidator.multiplePeoplePickerValidation(pdata) : isValid;
+            isValid = isValid.status? Formvalidator.checkValidations(PostValidatedata):isValid;
+            let Rm = []
+            for (let manager of this.state.formData.SynergyManagerId.results) {
+                Rm.push(manager);
+            }
+            if(!isValid.status)
+            {
+                this.setState({ loading: false });
+                customToaster('toster-error', ToasterTypes.Error, isValid.message, 4000)
+            }
+            else if (Rm.includes(this.state.formData.EmployeeId)) {
+                let errMsg = 'The selected Employee cannot be assigned as their own Manager.';
+                customToaster('toster-error', ToasterTypes.Error, errMsg, 4000);
+            }
+            else{
                 if (this.state.formData.EligibleforPTO && this.state.formData.Policy == 'None') {
                     let errMsg = 'Policy cannot be blank.';
                     customToaster('toster-error', ToasterTypes.Error, errMsg, 4000);
@@ -302,7 +331,7 @@ class Employee extends Component<EmployeeProps, EmployeeState> {
                    if(isDuplicated)
                    {
                      //this.setState({ loading: false });
-                     customToaster('toster-error', ToasterTypes.Error, 'Duplicate record is not accepted', 4000)
+                     customToaster('toster-error', ToasterTypes.Error, 'Duplicate record is not accepted', 4000);
                    }
                    else{
                      let PreviousPTOHours=this.state.PreviousPTOAfterDeduction;
@@ -341,10 +370,6 @@ class Employee extends Component<EmployeeProps, EmployeeState> {
                    }
                 }
             }
-            else {
-                this.setState({ loading: false });
-                customToaster('toster-error', ToasterTypes.Error, isValid.message, 4000)
-            }
     }
     private handleSubmitUpdate=()=>{
         this.state.formData.CommentsHistory.push({"User": this.props.spContext.userDisplayName,"Date": new Date().toISOString(),"Comments": this.state.Comments.trim()});
@@ -355,14 +380,15 @@ class Employee extends Component<EmployeeProps, EmployeeState> {
        let formdata=this.state.formData;
        let ItemId=this.props.match.params.id ? this.props.match.params.id : 0;
        let EmployeeList='Employees';
-       let  PTOfilterQuery='Employee/ID eq '+ formdata.EmployeeId+' and Year eq '+(new Date().getFullYear());
+       let  PTOfilterQuery=`Employee/ID eq '${formdata.EmployeeId}' and Year eq '${(new Date().getFullYear())}' and EmpMatrixID eq '${ItemId}'`;
         let [EmpPTORecord, EmpApprovalMatrixRecords] = await Promise.all([
-            sp.web.lists.getByTitle('EmployeePTO').items.filter(PTOfilterQuery).select('Employee/ID,Employee/Title,*').expand('Employee').get(),
-            sp.web.lists.getByTitle('EmployeeMaster').items.filter('Employee/ID eq ' + formdata.EmployeeId).select('Employee/ID,Employee/Title,*').expand('Employee').orderBy('Title').getAll()
+            sp.web.lists.getByTitle('EmployeePTO').items.filter(PTOfilterQuery).select('Employee/ID,Employee/Title,*').expand('Employee').getAll(),
+            sp.web.lists.getByTitle('EmployeeMaster').items.filter(`Employee/ID eq '${formdata.EmployeeId}' and EmpMatrixID eq '${ItemId}'`).select('Employee/ID,Employee/Title,*').expand('Employee').orderBy('Title').getAll()
         ])
-        let DOJ = `${this.state.formData.DateOfJoining.getMonth() + 1}/${this.state.formData.DateOfJoining.getDate()}/${this.state.formData.DateOfJoining.getFullYear()}`;
+        let DOJ = DateUtilities.getDateMMDDYYYY(this.state.formData.DateOfJoining);
       let  EmpPostData={
             EmployeeId: formdata.EmployeeId,
+            SynergyManagerId:formdata.SynergyManagerId,
             DateOfJoining: this.addBrowserwrtServer(new Date(DOJ)),
             EmployeeClassification: formdata.EmployeeClassification,
             Policy: formdata.Policy,
@@ -383,13 +409,13 @@ class Employee extends Component<EmployeeProps, EmployeeState> {
         }
         let EmpPTOData = {
             EmployeeId: this.state.formData.EmployeeId,
-            DateOfJoining: this.addBrowserwrtServer(new Date(new Date(DOJ).getMonth() + 1 + "/" + new Date(DOJ).getDate() + "/" + new Date(DOJ).getFullYear())),
+            DateOfJoining: this.addBrowserwrtServer(new Date(DOJ)),
             // this.addBrowserwrtServer(new Date(DOJ)),
             EmployeeClassification: this.state.formData.EmployeeClassification,
             Policy: this.state.formData.Policy,
             EligibleforPTO: this.state.formData.EligibleforPTO,
             IsActive: this.state.formData.IsActive,
-            Year:new Date().getFullYear().toString()
+            Year:new Date().getFullYear().toString(),
         }
         let PTOTransactionforHours={
             EmployeeId:this.state.formData.EmployeeId,
@@ -433,6 +459,7 @@ class Employee extends Component<EmployeeProps, EmployeeState> {
                 sp.web.lists.getByTitle('EmployeePTO').items.getById(EmpPTORecord[0].ID).update(EmpPTOData).then((res) => 
                 {
                     //console.log("EmployeePTO Record updated successfully");
+                    PTOTransactionforHours['EmpMatrixID']=ItemId.toString();
                     if(PreviousPTOHours!=UpdatedPTOHours)
                     {
                         sp.web.lists.getByTitle('PTOTransactions').items.add(PTOTransactionforHours).then((EmpPTOres) => 
@@ -442,7 +469,7 @@ class Employee extends Component<EmployeeProps, EmployeeState> {
                     (error) => 
                     {
                         console.log("Failed add PTOTransaction" ,error);
-                        customToaster('toster-error', ToasterTypes.Error, 'Sorry! something went wrong', 4000)
+                        customToaster('toster-error', ToasterTypes.Error, 'Sorry! something went wrong', 4000);
                     });
                     }
                     else{
@@ -452,7 +479,7 @@ class Employee extends Component<EmployeeProps, EmployeeState> {
                 {
                     console.log('Failed to update EmployeePTO');
                 console.log(error);
-                customToaster('toster-error', ToasterTypes.Error, 'Sorry! something went wrong', 4000)
+                customToaster('toster-error', ToasterTypes.Error, 'Sorry! something went wrong', 4000);
                 this.setState({ showHideModal: false, isRedirect: true, loading: false, addNewEmployee: false });
                 });
                 }
@@ -460,6 +487,8 @@ class Employee extends Component<EmployeeProps, EmployeeState> {
                 { 
                     if(this.state.formData.EligibleforPTO)
                     {
+                        EmpPTOData['EmpMatrixID']=ItemId.toString();
+                        PTOTransactionforHours['EmpMatrixID']=ItemId.toString();
                     sp.web.lists.getByTitle('EmployeePTO').items.add(EmpPTOData).then((res) => 
                     {
                         //console.log("EmployeePTO Record updated successfully");
@@ -472,7 +501,7 @@ class Employee extends Component<EmployeeProps, EmployeeState> {
                         (error) => 
                         {
                             console.log("Failed add PTOTransaction" ,error);
-                            customToaster('toster-error', ToasterTypes.Error, 'Sorry! something went wrong', 4000)
+                            customToaster('toster-error', ToasterTypes.Error, 'Sorry! something went wrong', 4000);
                         });
                         }
                         else{
@@ -482,7 +511,7 @@ class Employee extends Component<EmployeeProps, EmployeeState> {
                     {
                         console.log('Failed to add EmployeePTO');
                     console.log(error);
-                    customToaster('toster-error', ToasterTypes.Error, 'Sorry! something went wrong', 4000)
+                    customToaster('toster-error', ToasterTypes.Error, 'Sorry! something went wrong', 4000);
                     this.setState({ showHideModal: false, isRedirect: true, loading: false, addNewEmployee: false });
                     });
                     }
@@ -495,7 +524,7 @@ class Employee extends Component<EmployeeProps, EmployeeState> {
             {
                 console.log('Failed to update Employee');
                 console.log(error);
-                customToaster('toster-error', ToasterTypes.Error, 'Sorry! something went wrong', 4000)
+                customToaster('toster-error', ToasterTypes.Error, 'Sorry! something went wrong', 4000);
                 this.setState({ showHideModal: false, isRedirect: true, loading: false, addNewEmployee: false });
             });
         }
@@ -510,7 +539,7 @@ class Employee extends Component<EmployeeProps, EmployeeState> {
             let PTOTransaction={
                 EmployeeId:this.state.formData.EmployeeId,
                 TransactionType:UpdatedPTOHours-PreviousPTOHours>0?"Granted":"Deducted",
-                PostedOn: new Date(this.addBrowserwrtServer(new Date(new Date().getMonth() + 1 + "/" + new Date().getDate() + "/" + new Date().getFullYear()))),
+                PostedOn: new Date(this.addBrowserwrtServer(new Date(DateUtilities.getDateMMDDYYYY(new Date())))),
                 From:this.addBrowserwrtServer(this.ptoTransactionFromDate(DOJ)),
                 To:this.addBrowserwrtServer(currentMonthEndDate),
                 // Hours:EmpPTOData["PTOBalance"],
@@ -525,6 +554,8 @@ class Employee extends Component<EmployeeProps, EmployeeState> {
                 .then((res) => {
                     //add EmployeePTO Data
                     if (!EmpPTORecord.length && this.state.formData.EligibleforPTO) {
+                        EmpPTOData['EmpMatrixID']=res.data.Id.toString();
+                        PTOTransaction['EmpMatrixID']=res.data.Id.toString();
                         sp.web.lists.getByTitle('EmployeePTO').items.add(EmpPTOData).then((EmpPTOres) => {
                             //console.log("EmployeePTO Record added successfully");
                             //below is condition to add PTO Transaction only if PTO Hours to Grant is other than 0 or empty
@@ -534,7 +565,7 @@ class Employee extends Component<EmployeeProps, EmployeeState> {
                                 },
                                     (error) => {
                                         console.log("Failed add PTOTransaction", error);
-                                        customToaster('toster-error', ToasterTypes.Error, 'Sorry! something went wrong', 4000)
+                                        customToaster('toster-error', ToasterTypes.Error, 'Sorry! something went wrong', 4000);
                                     });
                             }
                             else {
@@ -542,7 +573,7 @@ class Employee extends Component<EmployeeProps, EmployeeState> {
                             }
                     },(error) => {
                         console.log("Failed add EmployeePTOData" ,error);
-                        customToaster('toster-error', ToasterTypes.Error, 'Sorry! something went wrong', 4000)
+                        customToaster('toster-error', ToasterTypes.Error, 'Sorry! something went wrong', 4000);
                     }); 
                     }
                     else{
@@ -551,7 +582,7 @@ class Employee extends Component<EmployeeProps, EmployeeState> {
                 })
                 .catch((err) => {
                     console.log('Failed to add Employee');
-                    customToaster('toster-error', ToasterTypes.Error, 'Sorry! something went wrong', 4000)
+                    customToaster('toster-error', ToasterTypes.Error, 'Sorry! something went wrong', 4000);
                     this.setState({ showHideModal: false, isRedirect: true, loading: false, addNewEmployee: false });
                 });
         }
@@ -559,10 +590,10 @@ class Employee extends Component<EmployeeProps, EmployeeState> {
     private ptoTransactionFromDate(dateOFJoining){
         const DOJ = new Date(dateOFJoining)
         if(DOJ.getMonth() === new Date().getMonth() && DOJ.getFullYear() === new Date().getFullYear()){
-            return DOJ
+            return DOJ;
         }
         else
-        return new Date()
+        return new Date();
     }
     // onAddCompletion() onUpdateCompletion() methods are for reduce code length , on different, add and update conditions
     private onAddCompletion = () => {
@@ -657,7 +688,7 @@ class Employee extends Component<EmployeeProps, EmployeeState> {
     private getExpInDays = (DOJ) => {
         let currDate=new Date();
             currDate.setHours(0,0,0,0);
-        let DOJoining=new Date(`${DOJ.getMonth() + 1}/${DOJ.getDate()}/${DOJ.getFullYear()}`);
+        let DOJoining=new Date(DateUtilities.getDateMMDDYYYY(DOJ));
             DOJoining.setHours(0,0,0,0);
         let ExpInDays=(currDate.getTime() - DOJoining.getTime()) / (24*60*60*1000);
        return ExpInDays;
@@ -711,7 +742,7 @@ class Employee extends Component<EmployeeProps, EmployeeState> {
         this.setState({ isRedirect: false })
         try {
             let [Employees, EmployeeClassification,Policy, groups] = await Promise.all([
-                sp.web.lists.getByTitle('Employees').items.top(5000).expand('Employee').select('Employee/Title,Employee/Id,*').filter(filterQuery).orderBy("Employee/Title", false).getAll(),
+                sp.web.lists.getByTitle('Employees').items.top(5000).expand('Employee,SynergyManager').select('Employee/Title,Employee/Id,SynergyManager/Title,SynergyManager/Id,SynergyManager/EMail,*').filter(filterQuery).orderBy("Employee/Title", false).getAll(),
                 sp.web.lists.getByTitle('EmployeeClassification').items.filter("IsActive eq 1").select('*').orderBy('Title').getAll(),
                 sp.web.lists.getByTitle('AllPolicies').items.filter("IsActive eq 1").select('*').orderBy('Title').getAll(),
                 sp.web.currentUser.groups(),
@@ -726,12 +757,20 @@ class Employee extends Component<EmployeeProps, EmployeeState> {
                 Employees.sort((a, b) => b.Id - a.Id);
 
                 for (const d of Employees) {
-                    let DOJ = new Date(d.DateOfJoining.split('-')[1] + '/' + d.DateOfJoining.split('-')[2].split('T')[0] + '/' + d.DateOfJoining.split('-')[0]);
+                    let DOJ = new Date(DateUtilities.GetDateMMDDYYYYAsInList(d.DateOfJoining));
+                    let SynergyManagerString = '',SynergyManagerExcelString = '';
+                        if(![null,undefined,''].includes(d.SynergyManager) && d.SynergyManager.length>0){
+                            for(let user of d.SynergyManager){
+                                SynergyManagerString+= "<div>"+user.Title+"</div>";
+                                SynergyManagerExcelString+= user.Title+"\n";
+                            }
+                        }
                     ExcelData.push({
                         Id: d.Id,
                         EmployeeId:d.Employee.Id,
                         Employee: d.Employee.Title,
-                        DateOfJoining: `${DOJ.getMonth() + 1}/${DOJ.getDate()}/${DOJ.getFullYear()}`,
+                        SynergyManager:SynergyManagerString,
+                        DateOfJoining: DateUtilities.getDateMMDDYYYY(DOJ),
                         EmployeeClassification: [null,undefined,''].includes(d.EmployeeClassification)?'':d.EmployeeClassification,
                         Policy: [null,undefined,''].includes(d.Policy)?'':"none"==d.Policy.toLowerCase()?'NA' : d.Policy,
                         EligibleforPTO: d.EligibleforPTO ? "Yes" : "No",
@@ -742,7 +781,10 @@ class Employee extends Component<EmployeeProps, EmployeeState> {
                         Id: d.Id,
                         EmployeeId:d.Employee.Id,
                         Employee: d.Employee.Title,
-                        DateOfJoining: `${DOJ.getMonth() + 1}/${DOJ.getDate()}/${DOJ.getFullYear()}`,
+                        SynergyManager:SynergyManagerExcelString,
+                        SynergyManagerForGrid:SynergyManagerString,
+                        DateOfJoining: DateUtilities.getDateMMDDYYYY(DOJ),
+                        DateOfJoiningForGrid : `<span class='d-none'>${DateUtilities.getDateYYYYMMDDForSorting(DOJ)}</span>${DateUtilities.getDateMMDDYYYY(DOJ)}`,
                         EmployeeClassification: [null,undefined,''].includes(d.EmployeeClassification)?'':d.EmployeeClassification,
                         Policy: [null,undefined,''].includes(d.Policy)?'':"none"==d.Policy.toLowerCase()?'NA' : d.Policy,
                         EligibleforPTO: d.EligibleforPTO ? "Yes" : "No",
@@ -788,20 +830,30 @@ class Employee extends Component<EmployeeProps, EmployeeState> {
     private async onEditClickHandler(id,EmployeeId) {
         try {
             let filterQuery = "ID eq '" + id + "'";
-            let selectQuery = "Employee/Title,Employee/Id,Employee/EMail,*";
-            let  PTOfilterQuery='Employee/ID eq '+ EmployeeId+' and Year eq '+(new Date().getFullYear());
+            let selectQuery = "Employee/Title,Employee/Id,Employee/EMail,SynergyManager/Title,SynergyManager/Id,SynergyManager/EMail,*";
+            let  PTOfilterQuery=`Employee/ID eq '${EmployeeId}' and Year eq '${(new Date().getFullYear())}' and EmpMatrixID eq '${id}'`;
             var [EmpData,EmpPTOData] =await Promise.all([
-                sp.web.lists.getByTitle('Employees').items.filter(filterQuery).expand('Employee').select(selectQuery).get(),
+                sp.web.lists.getByTitle('Employees').items.filter(filterQuery).expand('Employee,SynergyManager').select(selectQuery).get(),
                 sp.web.lists.getByTitle('EmployeePTO').items.filter(PTOfilterQuery).select('Employee/ID,Employee/Title,*').expand('Employee').get(),
             ]) 
             // var data = await sp.web.lists.getByTitle('Employees').items.filter(filterQuery).expand('Employee').select(selectQuery).get();
-            let DOJ = new Date(EmpData[0].DateOfJoining.split('-')[1] + '/' + EmpData[0].DateOfJoining.split('-')[2].split('T')[0] + '/' + EmpData[0].DateOfJoining.split('-')[0])
+            let SynergyManagerEmails = [];
+            let SynergyManagerIds = { results: [] };
+            if (![null,undefined,''].includes(EmpData[0].SynergyManager) && EmpData[0].SynergyManager.length > 0) {
+                for (const user of EmpData[0].SynergyManager) {
+                    SynergyManagerEmails.push(user.EMail);
+                    SynergyManagerIds.results.push(user.Id);
+                }
+            }
+            let DOJ = new Date(DateUtilities.GetDateMMDDYYYYAsInList(EmpData[0].DateOfJoining));
             let ExpInDays=this.getExpInDays(new Date(DOJ));
             let ExpInYearMonth=this.getExpYearMonthFormate(ExpInDays,new Date(DOJ));
             this.setState({
                 formData:
                 {
                     EmployeeId: EmpData[0].Employee.Id,
+                    SynergyManagerId:SynergyManagerIds,
+                    SynergyManagerEmail:SynergyManagerEmails,
                     DateOfJoining: DOJ,
                     EmployeeClassification: EmpData[0].EmployeeClassification,
                     Policy: EmpData[0].Policy,
@@ -832,6 +884,8 @@ class Employee extends Component<EmployeeProps, EmployeeState> {
         this.setState({
             formData: {
                 EmployeeId: null,
+                SynergyManagerId: { results: [] },
+                SynergyManagerEmail: [],
                 DateOfJoining: new Date(),
                 EmployeeClassification: '',
                 Policy: 'None',
@@ -843,11 +897,12 @@ class Employee extends Component<EmployeeProps, EmployeeState> {
             Comments:'',Experience:'', SaveUpdateText: 'Submit', addNewEmployee: false, EmployeeEmail: '', isRedirect: true,showToaster:false,PreviousPTOAfterDeduction:0,PreviousEligibleforPTO:false
         });
     }
-    private handleRowClicked = (row) => {
+    private handleRowClicked = (row,Id?,EmployeeId?) => {
         this.setState({loading:true});
-        window.location.hash = `#/EmployeeMaster/${row.Id}`;
-        this.props.match.params.id = row.Id;
-        this.onEditClickHandler(row.Id,row.EmployeeId);
+        let ID = row.Id?row.Id:Id;
+        window.location.hash = `#/EmployeeMaster/${ID}`;
+        this.props.match.params.id = ID;
+        this.onEditClickHandler(ID,row.EmployeeId?row.EmployeeId:EmployeeId);
     }
     private bindComments = () => {
         let body = [];
@@ -857,7 +912,7 @@ class Employee extends Component<EmployeeProps, EmployeeState> {
                 body.push(<tr>
                     {/* <td className="" >{History[i]["Role"]}</td> */}
                     <td className="" >{History[i]["User"]}</td>
-                    <td className="" >{(new Date(History[i]["Date"]).getMonth() < 9 ? "0" + (new Date(History[i]["Date"]).getMonth() + 1) : new Date(History[i]["Date"]).getMonth() + 1) + "/" + (new Date(History[i]["Date"]).getDate() <= 9 ? "0" + new Date(History[i]["Date"]).getDate() : new Date(History[i]["Date"]).getDate()) + "/" + new Date(History[i]["Date"]).getFullYear()}  {"  " + new Date(History[i]["Date"]).toLocaleString('en-US', { timeZone: 'America/New_York', hour12: false }).split(",")[1]}</td>
+                    <td className="" >{DateUtilities.getDateMMDDYYYY(History[i]["Date"])}  {"  " + new Date(History[i]["Date"]).toLocaleString('en-US', { timeZone: 'America/New_York', hour12: false }).split(",")[1]}</td>
                     <td className="" >{History[i]["Comments"]}</td>
                 </tr>)
             }
@@ -936,13 +991,22 @@ class Employee extends Component<EmployeeProps, EmployeeState> {
                 sortable: true,
             },
             {
+                name: "Synergy Manager",
+                selector: (row, i) => row.SynergyManagerForGrid,
+                cell: row => <div className='divManagers' dangerouslySetInnerHTML={{ __html: row.SynergyManagerForGrid }} onClick={(event)=>this.handleRowClicked(event,row.Id,row.EmployeeId)}/>,
+                width: '250px',
+                sortable: true
+            },
+            {
                 name: "Date Of Joining",
-                selector: (row, i) => row.DateOfJoining,
+                selector: (row, i) => row.DateOfJoiningForGrid,
+                cell: row => <div className='' dangerouslySetInnerHTML={{ __html: row.DateOfJoiningForGrid }} onClick={(event)=>this.handleRowClicked(event,row.Id,row.EmployeeId)}/>,
                 sortable: true,
             },
             {
                 name: "Employee Classification",
                 selector: (row, i) => row.EmployeeClassification,
+                width:'250px',
                 sortable: true,
             },
             {
@@ -993,6 +1057,8 @@ class Employee extends Component<EmployeeProps, EmployeeState> {
             //     sortable: true,
             // },
         ];
+        const searchKeys=['Employee','SynergyManager','DateOfJoining','EmployeeClassification','Policy'];
+
         if([1,0].includes(this.state.currentTab))
         {
             columns.push({
@@ -1005,6 +1071,7 @@ class Employee extends Component<EmployeeProps, EmployeeState> {
                 selector: 'EligibleforPTO',
                 sortable: true,
             })
+            searchKeys.push('EligibleforPTO');
         }
         if (this.state.isRedirect) {
             return (<Navigate to={'/EmployeeMaster'} />);
@@ -1067,6 +1134,25 @@ class Employee extends Component<EmployeeProps, EmployeeState> {
                                                             </div>
                                                         </div>
                                                         <div className="col-md-3">
+                                                            <div className="light-text">
+                                                                <label className='lblPeoplepicker'>Synergy Manager <span className="mandatoryhastrick">*</span></label>
+                                                                <div className="custom-peoplepicker" id="divSynergyManager">
+                                                                    <PeoplePicker
+                                                                        context={this.props.context}
+                                                                        titleText="Synergy Manager"
+                                                                        personSelectionLimit={10}
+                                                                        showtooltip={false}
+                                                                        disabled={false}
+                                                                        defaultSelectedUsers={this.state.formData.SynergyManagerEmail}
+                                                                        onChange={(e) => this._getPeoplePickerItems(e, 'SynergyManagerId')}
+                                                                        ensureUser={true}
+                                                                        required={true}
+                                                                        principalTypes={[PrincipalType.User]} placeholder=""
+                                                                        resolveDelay={1000} peoplePickerCntrlclassName={"input-peoplePicker-custom"} />
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <div className="col-md-3">
                                                             <div className="light-text div-readonly">
                                                                 <label className="z-in-9">Date of Joining <span className="mandatoryhastrick">*</span></label>
                                                                 <div className="custom-datepicker" id="divDateofJoining">
@@ -1082,6 +1168,7 @@ class Employee extends Component<EmployeeProps, EmployeeState> {
                                                                 />
                                                             </div>
                                                            </div>
+                                                        </div>
                                                         {/* <div className="col-md-3">
                                                             <div className="light-text">
                                                                 <label>Employee Classification<span className="mandatoryhastrick">*</span></label>
@@ -1093,20 +1180,23 @@ class Employee extends Component<EmployeeProps, EmployeeState> {
                                                                 </select>
                                                             </div>
                                                         </div> */}
+                                                         <div className="row pt-2 px-2">l
                                                         <div className="col-md-3">
                                                             <div className="custom-dropdown">
                                                                <SearchableDropdown label="Employee Classification" Title="Employee Classification"  name="EmployeeClassification" id="EmployeeClassification" placeholderText="Select Classification" className="" selectedValue={this.state.formData.EmployeeClassification} optionLabel={'Title'} optionValue={'Title'} OptionsList={this.state.EmployeeClassificationObject} onChange={(selectedOption,actionMeta)=>{this.handleChange(selectedOption,actionMeta)}} isRequired={true} refElement={this.EmployeeClassification} noOptionsMessage="No Employee Classification"></SearchableDropdown>
                                                             </div>
                                                         </div>
                                                         <div className="col-md-3">
-                                                                <div className="light-text" id='chkIsActive'>
+                                                                <div className="light-text" >
                                                                     <InputCheckBox
                                                                         label={"Is Employee Eligible for PTO?"}
                                                                         name={"EligibleforPTO"}
                                                                         checked={this.state.formData.EligibleforPTO}
                                                                         onChange={this.handleChange}
                                                                         isforMasters={false}
-                                                                        isdisable={this.props.match.params.id ? false : true}
+                                                                        //isdisable={this.props.match.params.id ? false : true}
+                                                                        isdisable={false}
+                                                                        id='chkEligibleforPTO'
                                                                     />
                                                                 </div>
                                                             </div>
@@ -1131,9 +1221,10 @@ class Employee extends Component<EmployeeProps, EmployeeState> {
                                                                 />
                                                             </div>
                                                            </div>
-                                                           
+                                                           </div>
+                                                           <div className="row pt-2 px-2">
                                                         <div className="col-md-3">
-                                                            <div className="light-text" id='chkIsActive'>
+                                                            <div className="light-text" >
                                                                 <InputCheckBox
                                                                     label={"Is Employee Active?"}
                                                                     name={"IsActive"}
@@ -1141,6 +1232,7 @@ class Employee extends Component<EmployeeProps, EmployeeState> {
                                                                     onChange={this.handleChange}
                                                                     isforMasters={false}
                                                                     isdisable={false}
+                                                                    id='chkIsActive'
                                                                 />
                                                             </div>
                                                         </div>
@@ -1183,7 +1275,7 @@ class Employee extends Component<EmployeeProps, EmployeeState> {
                                     </div>
                                     {this.state.showToaster && <Toaster />}
                                     {!this.state.addNewEmployee &&
-                                    <div>
+                                    <div className='border-box-shadow light-box table-responsive dataTables_wrapper-overflow p-2'>
                                              <div className="px-4 py-2"><ul className="nav nav-tabs nav-fill" id="myTab" role="tablist">
                                                 <li className="nav-item" role="presentation" onClick={() => { this.onHandleClick('Active') }} >
                                                     <a className="nav-link" id="Active-tab" data-toggle="tab" href="#/EmployeeMasterView" role="tab" aria-selected="false">Active Employees</a>
@@ -1204,7 +1296,7 @@ class Employee extends Component<EmployeeProps, EmployeeState> {
                                                 </div>
                                     </div>}
                                         <div className="c-v-table">
-                                        <TableGenerator columns={columns} data={this.state.EmployeesData} fileName={this.state.FileName} showExportExcel={this.state.EmployeesData.length ? true : false} searchBoxLeft={true} ExportExcelCustomisedColumns={ExcelColumns} ExportExcelCustomisedData={this.state.ExportExcelData} ExcelHeader={this.state.FileName} LargeWidthColumns={["Employee","EmployeeClassification"]} onRowClick={this.handleRowClicked}></TableGenerator>
+                                        <TableGenerator columns={columns} searchKeys={searchKeys} data={this.state.EmployeesData} fileName={this.state.FileName} showExportExcel={this.state.EmployeesData.length ? true : false} searchBoxLeft={true} ExportExcelCustomisedColumns={ExcelColumns} ExportExcelCustomisedData={this.state.ExportExcelData} ExcelHeader={this.state.FileName} LargeWidthColumns={["Employee","EmployeeClassification"]} onRowClick={this.handleRowClicked} paginationPerPage={25}></TableGenerator>
                                     </div>
                                     </div>}
                                 </div>
