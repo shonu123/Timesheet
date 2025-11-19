@@ -795,7 +795,7 @@ private getNotApprovedTimeOffTSs = async () => {
                      {
                          sp.web.lists.getByTitle('WeeklyTimeSheet').items.getById(row.Id).inBatch(batch).update(formData);
                          //COMMENTED TO STOP PTO CONSIDERATION FROM TIMESHEET FORM
-                         if(row.PTOHrs!=0 && TimeOffRec.length &&TimeOffRec[0].IsSubmittedFromTimesheetForm)
+                         if(row.PTOHrs!=0 && TimeOffRec.length && TimeOffRec[0].IsSubmittedFromTimesheetForm)
                          {
                              if(row.EligibleforPTO  && parseFloat(PTOHrs)>0)
                              {
@@ -981,18 +981,18 @@ private getNotApprovedTimeOffTSs = async () => {
                 // width: '250px',
                 sortable: true
             },
-            {
-                name: "Status",
-                selector: (row, i) => row.Status,
-                // width: '250px',
-                sortable: true
-            },
-            {
-                name: "Pending With",
-                selector: (row, i) => row.PendingWith,
-                // width: '250px',
-                sortable: true
-            },
+            // {
+            //     name: "Status",
+            //     selector: (row, i) => row.Status,
+            //     // width: '250px',
+            //     sortable: true
+            // },
+            // {
+            //     name: "Pending With",
+            //     selector: (row, i) => row.PendingWith,
+            //     // width: '250px',
+            //     sortable: true
+            // },
             {
                 name: "Hours",
                 selector: (row, i) => row.BillableTotalHrs,
@@ -1030,7 +1030,8 @@ private getNotApprovedTimeOffTSs = async () => {
                 sortable: true
             }
         ];
-        const searchKeys=['Date','EmployeName','Status','PendingWith','BillableTotalHrs','OTTotalHrs','TotalBillableHrs','HolidayHrs','PTOHrs','GrandTotal'];
+        // const searchKeys=['Date','EmployeName','Status','PendingWith','BillableTotalHrs','OTTotalHrs','TotalBillableHrs','HolidayHrs','PTOHrs','GrandTotal'];
+        const searchKeys=['Date','EmployeName','BillableTotalHrs','OTTotalHrs','TotalBillableHrs','HolidayHrs','PTOHrs','GrandTotal'];
         if(this.state.redirect){
             let url = `/WeeklyTimesheet/${this.state.TimesheetID}`;
         return (<Navigate to={url}/>);
@@ -1041,7 +1042,7 @@ private getNotApprovedTimeOffTSs = async () => {
                 {/* Popup for Multi Approve/Reject */}
                 <ModalApprovePopUp message={this.state.message} title={this.state.title} isVisible={this.state.showApproveRejectPopup} isSuccess={this.state.isSuccess} isManager={true} onConfirm={this.handleApproveReject} onCancel={this.closeApproveRejectPopup} comments={this.handleChangeEvents} errorMessage={this.state.errorMessage} commentsValue={this.state.comments} modalHeader={this.state.ModalHeader} IsClientApprovalNeed= {false}></ModalApprovePopUp>
                 <div>
-                    <div className=''>
+                    <div className='MultiRow-Select'>
                         <TableGenerator columns={columns} searchKeys={searchKeys} data={this.state.ReportingManager} fileName={''} showExportExcel={false}
                             showAddButton={false} customBtnClass='' btnDivID='' navigateOnBtnClick='' btnSpanID='' btnCaption='' btnTitle='Forward Approvals' searchBoxLeft={true} selectableRows={this.state.ReportingManager.length>0?true:false} clearSelectedRows={this.state.clearRows} handleSelectedRows={this.getSelectedRows} customButton={false} showMultiApproveOrReject={this.state.SelectedRows.length > 0 ? true : false} onClickApproveOrReject={this.showConfirmApproveRejectPopup}  customButtonClick={this.ShowPopUp} onRowClick={this.handleRowClicked}></TableGenerator>
                     </div>

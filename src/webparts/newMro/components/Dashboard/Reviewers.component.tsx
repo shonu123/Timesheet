@@ -304,16 +304,17 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
         if(name == 'Approve')
             {
             //   if(selRecord.EligibleforPTO || (TimeOffRec.length && TimeOffRec[0].TimeOffRows.toLowerCase().includes('bereavement'))) // restrict only if employee eligible for PTO or utilizing bereavement time off 
-              if(TimeOffRec.length && !TimeOffRec[0].IsSubmittedFromTimesheetForm) // restrict if timeoff utilized, for both PTO and Non PTO employees
+            let filteredTimeOff=TimeOffRec.find(i=>i.Status!=StatusType.Approved && !i.IsSubmittedFromTimesheetForm);
+              if(TimeOffRec.length && filteredTimeOff) // restrict if timeoff utilized, for both PTO and Non PTO employees
              {
                  let HoldMsg="'Time off request' pending with HR approval. Cannot approve";
                 // if(!selRecord.EligibleforPTO)
                 // HoldMsg="'Bereavement (BV)' time off request pending with HR approval. Cannot approve"; 
-                if(TimeOffRec[0].Status!=StatusType.Approved)
-                {
+                //if(TimeOffRec[0].Status!=StatusType.Approved)
+                //{
                     customToaster('toster-warning', ToasterTypes.Warning,HoldMsg, 4000); 
                     return false;
-                }
+                //}
              }
            }
         //HOLDING THE REVIEWER FROM APPROVING THE TIMESHEET IF CORRESPONDING TimeOffRec is not approved by HR:END
@@ -338,10 +339,11 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
         if (![null, "", undefined].includes(FromDate)) {
             let prevDate = addDays(new Date(FromDate), -1);
             let nextDate = addDays(new Date(FromDate), 1);
-            let prev = DateUtilities.getDateMMDDYYYY(prevDate);
+            let prev = DateUtilities.getDateMMDDYYYY(FromDate);
             let next = DateUtilities.getDateMMDDYYYY(nextDate);
+             let WeekEndDate = DateUtilities.getDateMMDDYYYY(addDays(new Date(FromDate), 6));
             let StatusfilterQuery=`(Status eq '${StatusType.Submit}' or Status eq '${StatusType.ManagerApprove}' or Status eq '${StatusType.ReviewerApprove}' or Status eq '${StatusType.Approved}')`;
-            let filterQuery = `(From gt '${prev}' and From lt '${next}' and Employee/ID eq '${EmployeeId}' and IsActive eq 1) and ${StatusfilterQuery}`;
+            let filterQuery = `(From le '${WeekEndDate}' and To ge '${prev}' and Employee/ID eq '${EmployeeId}' and IsActive eq 1) and ${StatusfilterQuery}`;
             let selectQuery = "Employee/ID,Employee/Title,Employee/EMail,SynergyManager/ID,SynergyManager/Title,SynergyManager/EMail,*";
             try {
                  TimeOff = await sp.web.lists.getByTitle('TimeOffEmployees').items.filter(filterQuery).select(selectQuery).expand('Employee,SynergyManager').getAll();
@@ -835,18 +837,18 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
                     selector: (row, i) => row.Client,
                     sortable: true
                 },
-                {
-                    name: "Status",
-                    selector: (row, i) => row.Status,
-                    // width: '220px',
-                    sortable: true
-                },
-                {
-                    name: "Pending With",
-                    selector: (row, i) => row.PendingWith,
-                    // width: '180px',
-                    sortable: true
-                },
+                // {
+                //     name: "Status",
+                //     selector: (row, i) => row.Status,
+                //     // width: '220px',
+                //     sortable: true
+                // },
+                // {
+                //     name: "Pending With",
+                //     selector: (row, i) => row.PendingWith,
+                //     // width: '180px',
+                //     sortable: true
+                // },
                 {
                     name: "Hours",
                     selector: (row, i) => row.BillableHrs,
@@ -921,7 +923,8 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
                     // width: '100px'
                 }
             ];
-            const searchKeys=['Date','EmployeName','Client','Status','PendingWith','BillableHrs','OTTotalHrs','TotalBillableHours','HolidayHrs','PTOHrs','GrandTotal'];
+            // const searchKeys=['Date','EmployeName','Client','Status','PendingWith','BillableHrs','OTTotalHrs','TotalBillableHours','HolidayHrs','PTOHrs','GrandTotal'];
+            const searchKeys=['Date','EmployeName','Client','BillableHrs','OTTotalHrs','TotalBillableHours','HolidayHrs','PTOHrs','GrandTotal'];
 
             if(this.state.redirect){
                 let url = `/WeeklyTimesheet/${this.state.TimesheetID}`;

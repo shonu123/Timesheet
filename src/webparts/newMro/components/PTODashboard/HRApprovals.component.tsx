@@ -102,6 +102,7 @@ class HRApproval extends React.Component<HRApprovalProps, HRApprovalState> {
                         // PendingWith: d.PendingWith == "Approver" ||d.PendingWith == "Manager" ?"Reporting Manager":d.PendingWith,
                         PendingWith: d.PendingWith == "Approver" ||d.PendingWith == "Manager" ?"Synergy Manager":d.PendingWith,
                         Status : CommonUtilities.getTOStatus(d.Status),
+                        StatusForGrid:`<span class='${CommonUtilities.getStatusClass(d.Status)}' title='${CommonUtilities.getTOStatus(d.Status)}'>${CommonUtilities.getTOStatusInShortForm(d.Status)}</span>`
                     })
                 }
                 this.setState({HRApprovals:Data,loading:false})
@@ -195,14 +196,16 @@ class HRApproval extends React.Component<HRApprovalProps, HRApprovalState> {
             //     width: '180px',
             //     sortable: true
             // },
-            {
-                name: "Status",
-                selector: (row, i) => row.Status,
-                // width: '220px',
-                sortable: true,
-            },
+            //  {
+            //     name: "Status",
+            //     selector: (row, i) => row.Status,
+            //     cell: row => <div className='' dangerouslySetInnerHTML={{ __html: row.StatusForGrid }} onClick={(event)=>this.handleRowClicked(event,row.Id)}/>,
+            //     width: '220px',
+            //     sortable: true,
+            // },
         ];
-        const searchKeys=['EmployeName','FromDate','ToDate','PTOAvailableBalance','PTOTotal','TOTotal','TotalHrs','Status'];
+        // const searchKeys=['EmployeName','FromDate','ToDate','PTOAvailableBalance','PTOTotal','TOTotal','TotalHrs','Status'];
+        const searchKeys=['EmployeName','FromDate','ToDate','PTOAvailableBalance','PTOTotal','TOTotal','TotalHrs'];
         if(this.state.redirect){
             let url = `/TimeOffRequestForm/${this.state.TimeOffID}`;
         return (<Navigate to={url}/>);

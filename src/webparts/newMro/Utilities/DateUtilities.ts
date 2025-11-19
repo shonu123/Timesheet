@@ -1,10 +1,16 @@
-import { addDays } from 'office-ui-fabric-react';
+import { addDays} from 'office-ui-fabric-react';
+import { format } from "date-fns";
+
 
 class DateUtilities {
     public static getDateMMDDYYYY(givenDate) //for Displaying
     {
         let date=new Date(givenDate);
           return (date.getMonth() < 9 ? "0" + (date.getMonth() + 1) : date.getMonth() + 1) + "/" + (date.getDate() <= 9 ? "0" + date.getDate() : date.getDate()) + "/" + date.getFullYear();
+    }
+    public static getDateDay(givenDate)
+    {
+          return format(givenDate,"EEE");
     }
     public static getDateYYYYMMDDForSorting(givenDate) //For Sorting
     {

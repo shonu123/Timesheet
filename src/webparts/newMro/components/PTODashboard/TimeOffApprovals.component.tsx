@@ -211,15 +211,16 @@ class TimeOffApprovals extends React.Component<TimeOffApprovalsProps, TimeOffApp
             //     width: '180px',
             //     sortable: true
             // },
-            {
-                name: "Status",
-                selector: (row, i) => row.Status,
-                cell: row => <div className='' dangerouslySetInnerHTML={{ __html: row.StatusForGrid }} onClick={(event)=>this.handleRowClicked(event,row.Id)}/>,
-                width: '220px',
-                sortable: true,
-            },
+            // {
+            //     name: "Status",
+            //     selector: (row, i) => row.Status,
+            //     cell: row => <div className='' dangerouslySetInnerHTML={{ __html: row.StatusForGrid }} onClick={(event)=>this.handleRowClicked(event,row.Id)}/>,
+            //     width: '220px',
+            //     sortable: true,
+            // },
         ];
-        const searchKeys=['EmployeName','FromDate','ToDate','PTOAvailableBalance','PTOTotal','TOTotal','TotalHrs','Status'];
+        // const searchKeys=['EmployeName','FromDate','ToDate','PTOAvailableBalance','PTOTotal','TOTotal','TotalHrs','Status'];
+        const searchKeys=['EmployeName','FromDate','ToDate','PTOAvailableBalance','PTOTotal','TOTotal','TotalHrs'];
 
         if(this.state.redirect){
             let url = `/TimeOffRequestForm/${this.state.TimeOffID}`;

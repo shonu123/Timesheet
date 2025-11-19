@@ -482,7 +482,7 @@ class WeeklyTimesheetReport extends React.Component<WeeklyTimesheetReportProps, 
                     <table className="tblWeeklyTimesheetReport" width="100%">
                         <thead id="theadWeeklyTimesheetReport">
                             <tr className='tr-brd'>
-                                <th colSpan={2}><div className='Wr-fz-16'>{this.state.ClientName}</div></th>
+                                <th colSpan={2}><div className='Wr-fz-16 text-center'>{this.state.ClientName}</div></th>
                                 {/* <th></th> */}
                                 {/* <th className='min-width210'>{dateArray[0]} - {dateArray[dateArray.length-1]}</th> */}
                                 {dateArray.map((date) => (

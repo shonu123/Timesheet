@@ -67,7 +67,7 @@ function validate(data){
             message =data[key].Name+" cannot be blank.";
             let prpData =data[key].Focusid;
             document.getElementById(prpData).getElementsByTagName('input')[0].focus();
-            document.getElementById(prpData).getElementsByTagName('input')[0].classList.add('mandatory-FormContent-focus');
+             setTimeout(()=>document.getElementById(prpData).getElementsByTagName('input')[0].classList.add('mandatory-FormContent-focus'),300);
             status = false;
             break;
         }

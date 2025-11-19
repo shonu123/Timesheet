@@ -464,7 +464,7 @@ class PTOSummaryReport extends React.Component<PTOSummaryReportProps,PTOSummaryR
                         </React.Fragment>
                     );
                 },
-                width: '100px'
+                width: '85px'
             },
             {
                 name: "Employee",
