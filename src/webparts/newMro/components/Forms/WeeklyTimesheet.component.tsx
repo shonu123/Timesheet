@@ -4,29 +4,24 @@ import Loader from '../Shared/Loader';
 import ModalPopUp from '../Shared/ModalPopUp';
 import Formvalidator from '../../Utilities/Formvalidator';
 import { ControlType, StatusType } from '../../Constants/Constants';
-import TableGenerator from '../Shared/TableGenerator';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faClose, faL, faPlus, faPrint, fas } from "@fortawesome/free-solid-svg-icons";
-import { faEdit } from '@fortawesome/free-solid-svg-icons';
-import { NavLink, Navigate } from 'react-router-dom';
+import { faClose, faPlus } from "@fortawesome/free-solid-svg-icons";
+import { Navigate } from 'react-router-dom';
 import { SPHttpClient } from '@microsoft/sp-http';
-import { WebPartContext } from '@microsoft/sp-webpart-base';
 import { sp } from '@pnp/sp';
 import { Web } from '@pnp/sp/webs';
 import "@pnp/sp/webs";
 import "@pnp/sp/lists";
 import "@pnp/sp/items";
-import InputText from '../Shared/InputText';
 import InputCheckBox from '../Shared/InputCheckBox';
 import SearchableDropdown from '../Shared/SearchableDropdown';
 import { highlightCurrentNav } from '../../Utilities/HighlightCurrentComponent';
 import "../Shared/Menuhandler";
-import DatePicker from "../Shared/DatePickerField";
 import CustomDatePicker from "../Shared/DatePicker";
-import { addDays, Dropdown } from 'office-ui-fabric-react';
+import { addDays } from 'office-ui-fabric-react';
 import '../../CSS/WeeklyTimesheet.css'
 import ModalPopUpConfirm from '../Shared/ModalPopUpConfirm';
-import toast, { Toaster } from 'react-hot-toast';
+import { Toaster } from 'react-hot-toast';
 import customToaster from '../Shared/Toaster.component';
 import { ToasterTypes } from '../../Constants/Constants';
 import ExportToPDF from '../Shared/ExportPDF';
@@ -157,7 +152,7 @@ export interface WeeklyTimesheetState {
     ptoFormData: any
     totalPTOFormData: any
     timeOffTypes: any
-    UPTOTypes:any
+    UPTOTypes: any
     isTimeOffEdit: boolean;
     showClickHereLink: boolean;
     TimeOffRec: any;
@@ -307,7 +302,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
             ptoFormData: [],
             totalPTOFormData: {},
             timeOffTypes: [],
-            UPTOTypes:[],
+            UPTOTypes: [],
             isTimeOffEdit: false,
             showClickHereLink: false,
             TimeOffRec: [],
@@ -323,7 +318,6 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
         trFormdata.SynergyHolidayHrs.push({ Description: '', ProjectCode: '', Mon: '', Tue: '', Wed: '', Thu: '', Fri: '', Sat: '', Sun: '', Total: '0.00', });
         trFormdata.ClientHolidayHrs.push({ Type: "Holiday", Description: '', ProjectCode: '', Mon: '', Tue: '', Wed: '', Thu: '', Fri: '', Sat: '', Sun: '', Total: '0.00', });
         trFormdata.PTOHrs.push({ Type: "Time Off", Description: '', ProjectCode: '', Mon: '', Tue: '', Wed: '', Thu: '', Fri: '', Sat: '', Sun: '', PTOBalance: '0.00', PTOAfterDeduction: '0.00', Total: '0.00', });
-        //trFormdata.PTONewHrs.push({ Type: "Paid Time Off", Description: '', ProjectCode: '', Mon: '', Tue: '', Wed: '', Thu: '', Fri: '', Sat: '', Sun: '',PTOBalance:'0.00',PTOAfterDeduction:'0.00',Total: '0.00', });
         trFormdata.NonBillableSubTotal.push({ Mon: '0.00', Tue: '0.00', Wed: '0.00', Thu: '0.00', Fri: '0.00', Sat: '0.00', Sun: '0.00', Total: '0.00', });
         trFormdata.WeeklySubTotalHrs.push({ Type: "Billable", Mon: '0.00', Tue: '0.00', Wed: '0.00', Thu: '0.00', Fri: '0.00', Sat: '0.00', Sun: '0.00', Total: '0.00', });
         trFormdata.OTSubTotalHrs.push({ Type: "OT", Mon: '0.00', Tue: '0.00', Wed: '0.00', Thu: '0.00', Fri: '0.00', Sat: '0.00', Sun: '0.00', Total: '0.00', });
@@ -378,12 +372,9 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
     }
     //functions related to  initial loading
     private async loadWeeklyTimeSheetData(currentUserId, IsCalledFromHApply_Func?) {
-        // this.state.PTOTransactions = []
         this.setState({ PTOTransactions: [] })
         var ClientNames: any;
-        //var Client = [];
         let userID = this.props.spContext.userId;
-        //let EmpMasterSelQuery = "Employee/ID,Employee/Title,ReportingManager/EMail,Reviewers/EMail,ReportingManager/ID,Reviewers/ID";
         let EmpfilterQuery = `Employee/Id eq '${currentUserId}' and  IsActive eq 1`;
         let EmpselectQuery = "Employee/Title,Employee/ID,Employee/EMail,SynergyManager/ID,SynergyManager/Title,SynergyManager/EMail,*";
         let [clientMaster, groups, AllSubmittedTimesheetsOfEmployee, Delegations, EmpMatrixRec] = await Promise.all([
@@ -394,8 +385,6 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
             this.oweb.lists.getByTitle('Employees').items.filter(EmpfilterQuery).expand("Employee,SynergyManager").select(EmpselectQuery).getAll()
 
         ]);
-        // console.log("current user deatils"
-        // console.log(this.props.context.pageContext)
         //------new-----
         let userGroups = []
         for (const grp of groups) {
@@ -435,7 +424,6 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
         ClientNames.length ? this.state.EmployeeEmail.push(ClientNames[0].Employee.EMail) : '';
 
         ClientNames.filter(item => {
-            //Client.push({ "ClientName": item.ClientName ,"IsActive":item.IsActive });
             this.state.EmployeeMasterData.push({ "ClientName": item.ClientName, "DOJ": DateUtilities.GetDateMMDDYYYYAsInList(item.DateOfJoining), "IsDescriptionMandatory": item.MandatoryDescription, "IsProjectCodeMandatory": item.MandatoryProjectCode, "WeekStartDay": item.WeekStartDay, "HolidayType": item.HolidayType, "EmployeeClassification": item.EmployeeClassification, "EligibleforPTO": item.EligibleforPTO, "EmployeeID": item.Employee.Id, "IsActive": item.IsActive })
             if (item.hasOwnProperty("ReportingManager"))
                 item.ReportingManager.map(i => (this.state.SuperviserNames.push({ "ClientName": item.ClientName, "ReportingManager": i.Title, "ReportingManagerId": i.Id, "ReportingManagerEmail": i.EMail, "IsActive": item.IsActive })));
@@ -461,8 +449,6 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                 let isActiveInClientMaster = clientMaster.some(ClientItem => ClientItem.Title == employeeItem.ClientName);
                 if (isActiveInClientMaster && employeeItem.IsActive) {
                     this.state.ClientNames.push(employeeItem.ClientName);
-                    // if(ClientItem.hasOwnProperty("DelegateTo"))
-                    // ClientItem.DelegateTo.map(i=>(this.state.DelegateTo.push({"ClientName":ClientItem.ClientName,"DelegateToId":i.Id,"DelegateToEmail":i.EMail})));
                 }
             });
             if (this.state.ClientNames < 1 && !this.state.isAdmin) {
@@ -482,17 +468,8 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                 trFormdata.IsProjectCodeMandatory = item.IsProjectCodeMandatory;
                 trFormdata.WeekStartDay = item.WeekStartDay;
                 trFormdata.HolidayType = item.HolidayType;
-                // trFormdata.PTOBalance = [null,undefined].includes(item.PTOBalance)?'0.00':parseFloat(item.PTOBalance).toFixed(2);
-                // trFormdata.CurrentAvailablePTO = [null,undefined].includes(item.CurrentAvailablePTO)?'0.00':parseFloat(item.CurrentAvailablePTO).toFixed(2);
                 if ([null, undefined, 0, ''].includes(this.state.ItemID) || ![StatusType.Submit, toString(), StatusType.ManagerApprove, StatusType.Approved].includes(trFormdata.Status)) //if Item exists and status is Submit/ManagerApprove/Approve,then hide PTO columns based on WeeklyTimesheet Data otherwise based on Employee Master Data
                     trFormdata.EligibleforPTO = item.EligibleforPTO;
-                //trFormdata.EmployeeID=item.EmployeeID;
-                // if(![StatusType.ManagerApprove,StatusType.Approved,StatusType.Submit.toString()].includes(trFormdata.Status))
-                // {
-                //     trFormdata.PTONewHrs[0].PTOBalance = [null,undefined].includes(item.CurrentAvailablePTO)?'0.00':parseFloat(item.CurrentAvailablePTO).toFixed(2);
-                //     trFormdata.PTONewHrs[0].PTOAfterDeduction = [null,undefined].includes(item.CurrentAvailablePTO)?'0.00':(parseFloat(item.CurrentAvailablePTO)-parseFloat(trFormdata.PTONewHrs[0].Total)).toFixed(2);
-                // }
-                // let currentEmployeePTO=EmployeePTOData.filter(pto=> pto.Employee.Id==item.EmployeeID);
                 currentEmployeePTO = await this.getLatestPTOData(item.EmployeeID, trFormdata.WeekStartDate);
                 if (currentEmployeePTO.length) {
                     trFormdata.EmployeeID = currentEmployeePTO[0].ID;
@@ -501,8 +478,6 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                     trFormdata.PTOBalanceAfterDeduction = [null, undefined].includes(currentEmployeePTO[0].PTOBalanceAfterDeduction) ? '0.00' : parseFloat(currentEmployeePTO[0].PTOBalanceAfterDeduction).toFixed(4);
                     trFormdata.PTOAvailed = [null, undefined].includes(currentEmployeePTO[0].PTOAvailed) ? '0.00' : parseFloat(currentEmployeePTO[0].PTOAvailed).toFixed(4);
                     if (trFormdata.EligibleforPTO && ![StatusType.ManagerApprove, StatusType.Approved, StatusType.Submit.toString()].includes(trFormdata.Status)) {
-                        //    trFormdata.PTONewHrs[0].PTOBalance=[null,undefined].includes(currentEmployeePTO[0].PTOBalanceAfterDeduction)?'0.00':parseFloat(currentEmployeePTO[0].PTOBalanceAfterDeduction).toFixed(2);
-                        //    trFormdata.PTONewHrs[0].PTOAfterDeduction = [null,undefined].includes(currentEmployeePTO[0].PTOBalanceAfterDeduction)?'0.00':(parseFloat(currentEmployeePTO[0].PTOBalanceAfterDeduction)-parseFloat(trFormdata.PTONewHrs[0].Total)).toFixed(2);
                         trFormdata.PTOHrs[0].PTOBalance = [null, undefined].includes(currentEmployeePTO[0].PTOBalanceAfterDeduction) ? '0.00' : parseFloat(parseFloat(currentEmployeePTO[0].PTOBalanceAfterDeduction).toFixed(4)).toString();
                         trFormdata.PTOHrs[0].PTOAfterDeduction = [null, undefined].includes(currentEmployeePTO[0].PTOBalanceAfterDeduction) ? '0.00' : parseFloat((parseFloat(currentEmployeePTO[0].PTOBalanceAfterDeduction) - parseFloat(trFormdata.PTOHrs[0].Total)).toFixed(4)).toString();
                     }
@@ -551,8 +526,6 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
             "IsDay7Holiday": this.IsHoliday(WeekStartDate, trFormdata.HolidayType),
             "IsDay7SynergyHoliday": this.IsHoliday(WeekStartDate, "synergy"),
         })
-        //this.showApproveAndRejectButton(trFormdata);
-        // this.userAccessableRecord(trFormdata);
 
         this.setState({ UserGoups: userGroups, AllSubmittedTimesheetsOfEmployee: AllSubmittedTimesheetsOfEmployee, Delegations: Delegations, EmployeePTO: currentEmployeePTO, trFormdata, ClientNames: this.state.ClientNames, ClientMasterData: clientMaster, EmployeeEmail: this.state.EmployeeEmail, currentUserId: ClientNames.length ? ClientNames[0].Employee.Id : this.props.spContext.userId, showToaster: true });
         let TimeOffRecData = await this.checkTimeOffRecIsExists(trFormdata); // for binding Time Off row data with TimeOffRequest data
@@ -605,9 +578,6 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
             sp.web.lists.getByTitle(this.listName).items.filter(filterQuery).select(selectQuery).expand("Initiator,Reviewers,ReportingManager,DelegateTo,Notifiers").get(),
             sp.web.lists.getByTitle('PTOTransactions').items.top(2000).filter("TimesheetID eq '" + TimesheetID + "' and IsActive eq '1'").select('*').getAll()
         ])
-        // console.log(PTOTranscationsData)
-        // let data = await sp.web.lists.getByTitle(this.listName).items.filter(filterQuery).select(selectQuery).expand("Initiator,Reviewers,ReportingManager,DelegateTo,Notifiers").get();
-        // console.log(data);
         if (data.length == 0) {   //for deleted or not founded record
             this.setState({ ActionToasterMessage: 'Success-Invalid', redirect: true });
             return false;
@@ -627,7 +597,6 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
         trFormdata.ClientHolidayHrs = JSON.parse(data[0].ClientHolidayHrs);
         trFormdata.PTOHrs = JSON.parse(data[0].PTOHrs);
         trFormdata.EligibleforPTO = [null, undefined].includes(data[0].EligibleforPTO) ? false : data[0].EligibleforPTO;
-        //trFormdata.PTONewHrs = [null,undefined,''].includes(data[0].PTONewHrs)?trFormdata.PTONewHrs:JSON.parse(data[0].PTONewHrs);
         trFormdata.WeeklyItemsTotalTime = data[0].WeeklyTotalHrs;
         trFormdata.OTItemsTotalTime = data[0].OTTotalHrs;
         trFormdata.WeeklySubTotalHrs = JSON.parse(data[0].WeeklySubTotalHrs)
@@ -643,7 +612,6 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
         trFormdata.IsClientApprovalNeededUI = false;//default value as false
         trFormdata.Revised = data[0].Revised;
         trFormdata.IsSubmitted = data[0].IsSubmitted;
-        //trFormdata.IsDelegated = data[0].IsDelegated;
         let EmpEmail = [];
         let RMEmail = [];
         let RMId = [];
@@ -744,15 +712,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
         let formatedFilename = 'Weekly Timesheet Report - ' + trFormdata.ClientName + ' (' + (DateUtilities.getDateMMDDYYYY(trFormdata.WeekStartDate)) + ')';
 
         let PTOTransactions = this.mapDatesToHours(trFormdata.PTOHrs, trFormdata.WeekStartDate)
-        // for (const row of PTOTranscationsData) {
-        //     let ddfrmt = row.PostedOn.split('T')[0].split('-')
-        //     ddfrmt = ddfrmt[1]+"/"+ddfrmt[2]+"/"+ddfrmt[0]
-        //     PTOTransactions.push({
-        //         [ddfrmt]: row.Hours
-        //     })
-        // }
 
-        // this.setState({ trFormdata: trFormdata,PTOTransactionsListData:PTOTranscationsData,PTOTransactions:PTOTransactions, currentWeeklyRowsCount: trFormdata.WeeklyItemsData.length, currentOTRowsCount: trFormdata.OTItemsData.length, EmployeeEmail: EmpEmail,currentUserId: EmpId, loading: false, showBillable: false, showNonBillable: false,PDFData:data,PDFFileName:formatedFilename});
         this.setState({ trFormdata: trFormdata, PTOTransactions: PTOTransactions, currentWeeklyRowsCount: trFormdata.WeeklyItemsData.length, currentOTRowsCount: trFormdata.OTItemsData.length, EmployeeEmail: EmpEmail, currentUserId: EmpId, loading: false, showBillable: false, showNonBillable: false, PDFData: data, PDFFileName: formatedFilename });
         if ([StatusType.Submit, StatusType.Approved, StatusType.ManagerApprove].includes(data[0].Status)) {
             this.setState({ isSubmitted: true });
@@ -835,8 +795,6 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
     }
     private handleApplyingfor = async (event, actionMeta?) => {
         this.setState({ loading: true });
-        // let value = e.target.value;
-        // const { name } = e.target;
         let name, inputvalue, value;
         //Below is condition for handle common change function for both react select dropdown  and normal controls
         if (![null, undefined].includes(event) && event.target != undefined) {
@@ -868,7 +826,6 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
 
         }
         else {
-            // this.currentUserId = parseInt(value)
             this.setState({ loading: true });
             if (value == '-1') {
                 trFormdata.ClientName = '';
@@ -880,8 +837,6 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                 let trFormdata = { ...this.state.trFormdata }
                 trFormdata['ClientName'] = '';
                 trFormdata.WeekStartDate = null;
-                // trFormdata['Name'] = e.target.selectedOptions[0].label
-                // this.currentUser = e.target.selectedOptions[0].label;
                 trFormdata['Name'] = event.label;
                 this.currentUser = event.label;
                 this.setState({ currentUserId: parseInt(value), ClientNames: [], trFormdata });
@@ -896,13 +851,11 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
         this.setState({ loading: true, PTOTransactions: [] })
         let date = new Date()
         if (dateprops == null) {
-            //date = this.GetCurrentWeekMonday(new Date())
             date = dateprops;
         }
         else {
             date = new Date(dateprops);
         }
-        //let WeekStartDate=new Date(date);
         const Formdata = { ...this.state.trFormdata };
         Formdata.SuperviserNames = [];
         for (var item of this.state.SuperviserNames) {
@@ -914,13 +867,10 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
         Formdata.WeekStartDate = date;
         this.GetHolidayMasterDataByClientName(date, Formdata.HolidayType, Formdata);
         this.validateDuplicateRecord(date, Formdata.ClientName, Formdata);
-        //this.setState({trFormdata:Formdata});
-        // console.log(this.state);
 
     }
     private handleClientChange = async (event, actionMeta?, isAlreadyCalledFromHCC_Func?) => {
         this.setState({ loading: true })
-        // let clientVal = event.target != undefined ? event.target.value : event;
         let clientVal = [null, undefined].includes(event) ? '' : event.value != undefined ? actionMeta != undefined && actionMeta.action == 'clear' ? '' : event.value : event;
         const Formdata = { ...this.state.trFormdata };
         Formdata.ClientName = clientVal;
@@ -928,7 +878,6 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
         Formdata.SuperviserIds = [];
         Formdata.ReviewerIds = [];
         Formdata.NotifierIds = [];
-        // console.log(this.state);
         if (clientVal == 'None') {
             this.setState({ showBillable: true, showNonBillable: true, showPTO: false, isTimeOffEdit: false, showClickHereLink: false, TimeOffRec: [] })
         }
@@ -949,15 +898,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                 Formdata.IsProjectCodeMandatory = item.IsProjectCodeMandatory;
                 Formdata.WeekStartDay = item.WeekStartDay;
                 Formdata.HolidayType = item.HolidayType;
-                //Formdata.PTOBalance = [null,undefined].includes(item.PTOBalance)?'0.00':parseFloat(item.PTOBalance).toFixed(2);
-                //Formdata.CurrentAvailablePTO = [null,undefined].includes(item.CurrentAvailablePTO)?'0.00':parseFloat(item.CurrentAvailablePTO).toFixed(2);
                 Formdata.EligibleforPTO = item.EligibleforPTO;
-                //Formdata.EmployeeID = item.EmployeeID;
-                // if(![StatusType.ManagerApprove,StatusType.Approved,StatusType.Submit.toString()].includes(Formdata.Status))
-                // {
-                // Formdata.PTONewHrs[0].PTOBalance = [null,undefined].includes(item.CurrentAvailablePTO)?'0.00':parseFloat(item.CurrentAvailablePTO).toFixed(2);
-                // Formdata.PTONewHrs[0].PTOAfterDeduction = [null,undefined].includes(item.CurrentAvailablePTO)?'0.00':(parseFloat(item.CurrentAvailablePTO)-parseFloat(Formdata.PTONewHrs[0].Total)).toFixed(2);
-                // }
                 let currentEmployeePTO = await this.getLatestPTOData(item.EmployeeID, Formdata.WeekStartDate);
                 if (currentEmployeePTO.length) {
                     Formdata.EmployeeID = currentEmployeePTO[0].ID;
@@ -966,8 +907,6 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                     Formdata.PTOBalanceAfterDeduction = [null, undefined].includes(currentEmployeePTO[0].PTOBalanceAfterDeduction) ? '0.00' : parseFloat(currentEmployeePTO[0].PTOBalanceAfterDeduction).toFixed(4);
                     Formdata.PTOAvailed = [null, undefined].includes(currentEmployeePTO[0].PTOAvailed) ? '0.00' : parseFloat(currentEmployeePTO[0].PTOAvailed).toFixed(4);
                     if (Formdata.EligibleforPTO && ![StatusType.ManagerApprove, StatusType.Approved, StatusType.Submit.toString()].includes(Formdata.Status)) {
-                        //    Formdata.PTONewHrs[0].PTOBalance=[null,undefined].includes(currentEmployeePTO[0].PTOBalanceAfterDeduction)?'0.00':parseFloat(currentEmployeePTO[0].PTOBalanceAfterDeduction).toFixed(2);
-                        //    Formdata.PTONewHrs[0].PTOAfterDeduction = [null,undefined].includes(currentEmployeePTO[0].PTOBalanceAfterDeduction)?'0.00':(parseFloat(currentEmployeePTO[0].PTOBalanceAfterDeduction)-parseFloat(Formdata.PTONewHrs[0].Total)).toFixed(2);
                         Formdata.PTOHrs[0].PTOBalance = [null, undefined].includes(currentEmployeePTO[0].PTOBalanceAfterDeduction) ? '0.00' : parseFloat(parseFloat(currentEmployeePTO[0].PTOBalanceAfterDeduction).toFixed(4)).toString();
                         Formdata.PTOHrs[0].PTOAfterDeduction = [null, undefined].includes(currentEmployeePTO[0].PTOBalanceAfterDeduction) ? '0.00' : parseFloat((parseFloat(currentEmployeePTO[0].PTOBalanceAfterDeduction) - parseFloat(Formdata.PTOHrs[0].Total)).toFixed(4)).toString();
                     }
@@ -1014,25 +953,6 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
 
         }
         if (ClientWiseSubmittedTimesheetsOfEmp.length > 0) {
-            //for intial submitted week
-            //       for(let i=EnabledWeekStartDates.length-1;i>=0;i--)
-            //       {
-            //         let isWeekStartDateExists=false;
-            //         for(let j in ClientWiseSubmittedTimesheetsOfEmp)
-            //         {
-            //             if(new Date(ClientWiseSubmittedTimesheetsOfEmp[j].WeekStartDate).toDateString()===EnabledWeekStartDates[i].toDateString())
-            //             {
-            //                 isWeekStartDateExists=true;
-            //                 break;
-            //             }
-
-            //         }
-            //         if(!isWeekStartDateExists)
-            //         {
-            //             Formdata.WeekStartDate=EnabledWeekStartDates[i];
-            //             break;
-            //         }
-            //       }
             //for latest submitted week
             let nextWeekOfLatestSubmitted = addDays(new Date(DateUtilities.GetDateMMDDYYYYAsInList(ClientWiseSubmittedTimesheetsOfEmp[0].WeekStartDate)), 7);
             if (EnabledWeekStartDates.includes(nextWeekOfLatestSubmitted.toDateString()))
@@ -1045,9 +965,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
         }
         //Condition for binding not submitted week of consecutive Submitted Week :end
 
-        // Formdata.WeekStartDate=this.getCurrentWeekStartDate(Formdata.WeekStartDay);
         //For restricting  of incorrect WeekstarDay binding in DatePicker
-        //this.setState({trFormdata:Formdata});
         this.GetHolidayMasterDataByClientName(Formdata.WeekStartDate, Formdata.HolidayType, Formdata);
         this.validateDuplicateRecord(Formdata.WeekStartDate, clientVal, Formdata, isAlreadyCalledFromHCC_Func);
 
@@ -1165,44 +1083,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                 // Push new object
                 this.state.PTOTransactions.push({ [dateKey]: value });
             }
-            // const hours = event.target.value;
-            // if(!["",undefined,null].includes(value))
-            // this.state.PTOTransactions.push({
-            //     [dateKey]: value
-            // });
-
-            // testing in console
-            // let exsistingData = []
-            //     for (let row of this.state.PTOTransactionsListData) {
-
-            //         let ddfrmt = row.PostedOn.split('T')[0]
-            //         ddfrmt = this.formatDate(new Date(ddfrmt))
-            //         exsistingData.push({
-            //             ID: row.ID,
-            //             DayDate: ddfrmt,
-            //             Hours: parseFloat(row.Hours),
-            //         })
-            //     }
-            //     console.log(exsistingData)
-            //     let calculated = this.calculatePTOTransactions(trFormdata.PTOHrs[index]["PTOAfterDeduction"],this.state.PTOTransactions)
-            // console.log("PTO hours utilized according to the Dates against available");
-            // console.log(calculated)
-            // console.log(this.getPTOTransactionsData(exsistingData,calculated))
         }
-        // else if (rowType == "PTONewHrs") {
-        //     trFormdata.PTONewHrs[index][prop] = value.toString();
-        //     this.setState({ trFormdata });
-        //     Object.keys(trFormdata.PTONewHrs[index]).forEach(key => {
-        //         let val = trFormdata.PTONewHrs[index][key].toString();
-        //         [undefined, null, "", "."].includes(val.trim()) ? val = "0" : val;
-        //         if (!["Description", "ProjectCode", "Total", "Type","PTOBalance","PTOAfterDeduction"].includes(key)) {
-        //             TotalRowMins = TotalRowMins + (parseFloat(val));
-        //         }
-        //     })
-        //     let PTOAfterDeduction=parseFloat(trFormdata.PTOBalanceAfterDeduction)-TotalRowMins;
-        //     trFormdata.PTONewHrs[index]["PTOAfterDeduction"] = PTOAfterDeduction.toFixed(2);
-        //     trFormdata.PTONewHrs[index]["Total"] = TotalRowMins.toFixed(2);
-        // }
         this.setState({ trFormdata });
         //FOR COLUMN WISE CALCULATION
         let WeeklyTotal = 0;
@@ -1235,16 +1116,6 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
             OTTotal = OTTotal + (parseFloat(TotalVal));
         }
         trFormdata.OTItemsTotalTime = OTTotal.toFixed(2).toString();
-
-        // //to iterate PTONew hrs
-        // //For weekly calculation
-        // let val = trFormdata.PTONewHrs[0][prop].toString();
-        // [undefined, null, "", "."].includes(val.trim()) ? val = "0" : val;
-        // WeeklyTotal = WeeklyTotal + (parseFloat(val));
-        // //For total calculation
-        // let TotalVal = trFormdata.PTONewHrs[0].Total.toString();
-        // [undefined, null, "", "."].includes(TotalVal.trim()) ? TotalVal = "0" : TotalVal;
-        // Total = Total + (parseFloat(TotalVal));
 
         if (!["Description", "ProjectCode"].includes(prop))
             trFormdata.BillableSubTotal[0][prop] = WeeklyTotal.toFixed(2).toString();
@@ -1376,7 +1247,6 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
         let RowType = this.state.RowType;
         let rowCount = parseInt(this.state.rowCount);
         let count;
-        // let ItemsAfterRemove=[];
         if (RowType.toLowerCase() == "weekrow") {
             let trFormdata = { ...this.state.trFormdata };
             let tempItemsData = trFormdata.WeeklyItemsData;
@@ -1385,10 +1255,8 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
             count = WeeklyRowsCount - 1;
             for (var i = 0; i < tempItemsData.length; i++) {
                 if (i != rowCount)
-                    // ItemsAfterRemove.push(tempItemsData[i]);
                     trFormdata.WeeklyItemsData.push(tempItemsData[i]);
             }
-            //trFormdata.WeeklyItemsData=ItemsAfterRemove;
             trFormdata = this.calculateTimeWhenRemoveRow(trFormdata, trFormdata.WeeklyItemsData, RowType);
             this.setState({ trFormdata, currentWeeklyRowsCount: count, showConfirmDeletePopup: false });
 
@@ -1401,10 +1269,8 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
             count = OTRowsCount - 1;
             for (var i = 0; i < tempItemsData.length; i++) {
                 if (i != rowCount)
-                    // ItemsAfterRemove.push(tempItemsData[i]);
                     trFormdata.OTItemsData.push(tempItemsData[i]);
             }
-            //trFormdata.OTItemsData=ItemsAfterRemove;
             trFormdata = this.calculateTimeWhenRemoveRow(trFormdata, trFormdata.OTItemsData, RowType);
             this.setState({ trFormdata, currentOTRowsCount: count, showConfirmDeletePopup: false });
         }
@@ -1517,7 +1383,6 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
         var itemStatus = await this.getItemStatusBeforeActionPerform(this.state.ItemID);
         //HOLDING THE REVIEWER FROM APPROVING THE TIMESHEET IF CORRESPONDING TimeOffRec is not approved by HR
         let IsReportingManagerReviewerSame = this.checkIsManagerReviewerSame(this.state.trFormdata);
-        // if(this.state.trFormdata.EligibleforPTO || (this.state.TimeOffRec.length && this.state.TimeOffRec[0].TimeOffRows.toLowerCase().includes('bereavement'))) // restrict only if employee eligible for PTO or utilizing bereavement time off 
         if (this.state.TimeOffRec.length && !this.state.TimeOffRec[0].IsSubmittedFromTimesheetForm) // restrict if timeoff utilized, for both PTO and Non PTO employees
         {
             let HoldMsg = "'Time off request' pending with HR approval. Cannot approve";
@@ -1549,20 +1414,6 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
     private showConfirmReject = async (event) => {
         //new condition for instance action without refreshing
         var itemStatus = await this.getItemStatusBeforeActionPerform(this.state.ItemID);
-        //HOLDING THE REVIEWER FROM APPROVING THE TIMESHEET IF CORRESPONDING TimeOffRec is not approved by HR
-        //  let IsReportingManagerReviewerSame = this.checkIsManagerReviewerSame(this.state.trFormdata);
-        //  if (this.state.trFormdata.Pendingwith == "Manager") {
-        //      if (IsReportingManagerReviewerSame && this.state.TimeOffRec.length && this.state.TimeOffRec[0].Status != StatusType.Approved) {
-        //          customToaster('toster-warning', ToasterTypes.Warning, "'Time off request' pending with HR approval. Cannot reject", 4000);
-        //          return false;
-        //      }
-        //  }
-        //  else {
-        //      if (this.state.trFormdata.Pendingwith == "Reviewer" && this.state.TimeOffRec.length && this.state.TimeOffRec[0].Status != StatusType.Approved) {
-        //          customToaster('toster-warning', ToasterTypes.Warning, "'Time off request' pending with HR approval. Cannot reject", 4000);
-        //          return false;
-        //      }
-        //  }
         if (itemStatus == this.state.trFormdata.Status) {
             if ([null, undefined, ""].includes(this.state.trFormdata.Comments.trim())) {
                 customToaster('toster-error', ToasterTypes.Error, 'Comments cannot be blank.', 4000)
@@ -1621,7 +1472,6 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
             }
         }
         if (isValid.status) {
-            // console.log(this.state);
             if ([undefined, 0, '0'].includes(this.state.ItemID)) //get Emails from EmployeeMaster if ItemID does not exists,if ItemID exists get emails from WeeklyTimesheet item
                 formdata = this.GetRequiredEmails(formdata.ClientName, formdata);
             formdata = this.ClearInvalidDots(formdata);
@@ -1632,7 +1482,6 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
             formdata.SynergyOfficeHrs.forEach(item => { item.ProjectCode = item.ProjectCode.trim(); item.Description = item.Description.trim() });
             formdata.ClientHolidayHrs.forEach(item => { item.ProjectCode = item.ProjectCode.trim(); item.Description = item.Description.trim() });
             formdata.PTOHrs.forEach(item => { item.ProjectCode = item.ProjectCode.trim(); item.Description = item.Description.trim() });
-            //formdata.PTONewHrs.forEach(item=>{item.ProjectCode=item.ProjectCode.trim();item.Description=item.Description.trim()});  
             formdata.Comments = formdata.Comments.trim();
             var postObject = {
                 Name: formdata.Name,
@@ -1645,7 +1494,6 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                 SynergyHolidayHrs: JSON.stringify(formdata.SynergyHolidayHrs),
                 ClientHolidayHrs: JSON.stringify(formdata.ClientHolidayHrs),
                 PTOHrs: JSON.stringify(formdata.PTOHrs),
-                //PTONewHrs: JSON.stringify(formdata.PTONewHrs),
                 EligibleforPTO: formdata.EligibleforPTO,
                 NonBillableSubTotalHrs: JSON.stringify(formdata.NonBillableSubTotal),
                 TotalHrs: JSON.stringify(formdata.Total),
@@ -1659,11 +1507,9 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                 WeeklySubTotalHrs: JSON.stringify(formdata.WeeklySubTotalHrs),
                 OTSubTotalHrs: JSON.stringify(formdata.OTSubTotalHrs),
                 ReportingManagerId: { "results": formdata.SuperviserIds },
-                //DelegateToId:{"results":formdata.DelegateToIds},
                 ReviewersId: { "results": formdata.ReviewerIds },
                 NotifiersId: { "results": formdata.NotifierIds },
                 Comments: formdata.Comments,
-                //IsClientApprovalNeed:formdata.IsClientApprovalNeededUI,
                 Revised: formdata.Revised,
                 //Below are required for accurate reports of Weekly and Bi-Weekly (post implementation of Time Off Request form)
                 PTOSubTotal: JSON.stringify(this.state.totalPTOFormData.PTOSubTotal),
@@ -1710,16 +1556,12 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                             //Condition for Reviewer reject / Manager reject scenarios changed to save
                             if (formdata.CommentsHistoryData.length > 2) {
                                 if (formdata.CommentsHistoryData[formdata.CommentsHistoryData.length - 2]['Role'] == "Reviewer") {
-                                    //postObject['Status']=StatusType.Approved;
-                                    //postObject['PendingWith']="NA";
                                     postObject['Status'] = StatusType.ManagerApprove;
                                     postObject['PendingWith'] = "Reviewer";
                                     postObject['DateSubmitted'] = this.addBrowserwrtServer(new Date(DateUtilities.getDateMMDDYYYY(new Date())));
                                     postObject['AssignedToId'] = { "results": formdata.ReviewerIds };
                                 }
                                 else if (formdata.CommentsHistoryData[formdata.CommentsHistoryData.length - 2]['Role'] == "HR") {
-                                    //postObject['Status']=StatusType.Approved;
-                                    //postObject['PendingWith']="NA";
                                     postObject['Status'] = StatusType.ReviewerApprove;
                                     postObject['PendingWith'] = "HR";
                                     postObject['DateSubmitted'] = this.addBrowserwrtServer(new Date(DateUtilities.getDateMMDDYYYY(new Date())));
@@ -1733,16 +1575,12 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                             }
                         }
                         else if (StatusType.ReviewerReject == formdata.Status) {
-                            // postObject['Status']=StatusType.Approved;
-                            // postObject['PendingWith']="NA";
                             postObject['Status'] = StatusType.ManagerApprove;
                             postObject['PendingWith'] = "Reviewer";
                             postObject['DateSubmitted'] = this.addBrowserwrtServer(new Date(DateUtilities.getDateMMDDYYYY(new Date())));
                             postObject['AssignedToId'] = { "results": formdata.ReviewerIds };
                         }
                         else if (StatusType.HRReject == formdata.Status) {
-                            // postObject['Status']=StatusType.Approved;
-                            // postObject['PendingWith']="NA";
                             postObject['Status'] = StatusType.ReviewerApprove;
                             postObject['PendingWith'] = "HR";
                             postObject['DateSubmitted'] = this.addBrowserwrtServer(new Date(DateUtilities.getDateMMDDYYYY(new Date())));
@@ -1770,7 +1608,6 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
         let RMEmail = [];
         let ReviewEmail = [];
         let NotifyEmail = [];
-        // console.log(this.state);
         for (var item of this.state.SuperviserNames) {
             if (item.IsActive && item.ClientName.toLowerCase() == clientVal.toLowerCase()) {
                 Formdata.SuperviserNames.push(item.ReportingManager);
@@ -1778,14 +1615,6 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                 RMEmail.push(item.ReportingManagerEmail)
             }
         }
-        // for( var item of this.state.DelegateTo)
-        // {
-        //     if(item.ClientName.toLowerCase()==clientVal.toLowerCase())
-        //     {
-        //         Formdata.DelegateToIds.push(item.DelegateToId);
-        //         Formdata.DelegateToEmails.push(item.DelegateToEmail);
-        //     }
-        // }
         for (var item of this.state.Reviewers) {
             if (item.IsActive && item.ClientName.toLowerCase() == clientVal.toLowerCase()) {
                 Formdata.ReviewerIds.push(item.ReviewerId);
@@ -1831,50 +1660,18 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
         this.setState({ showConfirmDeletePopup: false });
         var formdata = { ...this.state.trFormdata };
         formdata = this.Calculate_Indvidual_OT_Weekly_TotalTime(formdata);
-        //formdata = this.GetRequiredEmails(formdata.ClientName, formdata);
         var postObject = {};
         switch (formdata.Status) {
             case StatusType.Submit:
-                //postObject['Status']=StatusType.Approved;
-                //postObject['PendingWith']="NA";
                 let IsReportingManagerReviewerSame = this.checkIsManagerReviewerSame(formdata);
-                // let IsReportingManagerReviewerSame = false;
-                // //for (let RM of formdata.ReportingManagersEmail) { commented on 26/06/2024 bug if RM exists in Reviewer , but another RM perform action  but in email shown as action performed by reviewer
-                // let currentActioner = this.props.spContext.userEmail;
-                // for (let Rew of formdata.ReviewersEmail) {
-                //     if (currentActioner == Rew) {
-                //         IsReportingManagerReviewerSame = true;
-                //         break;
-                //     }
-
-                // }
                 // //condition for: if RM, Reviewer same, but Rm delegated ,if delegated manager approve status is directly approved. 27/06/2024
-                // if (!IsReportingManagerReviewerSame && formdata.IsDelegated) {
-                //     let DelegatedRM;
-                //     let Delegations = this.state.Delegations.filter(i => ![undefined, null, ''].includes(i.Authorizer));
-                //     for (let i in Delegations) {
-                //         if (Delegations[i].DelegateTo.EMail == currentActioner) {
-                //             DelegatedRM = Delegations[i].Authorizer.EMail;
-                //             break;
-                //         }
-                //     }
-                //     for (let Rew of formdata.ReviewersEmail) {
-                //         if (DelegatedRM == Rew && DelegatedRM == currentActioner) {
-                //             IsReportingManagerReviewerSame = true;
-                //             break;
-                //         }
-                //     }
-                // }
-                //}
                 if (IsReportingManagerReviewerSame) {
                     formdata.CommentsHistoryData.push({ "Action": StatusType.Approved, "Role": "Reviewer", "User": this.props.spContext.userDisplayName, "Comments": this.state.trFormdata.Comments.trim(), "Date": new Date().toISOString() });
-                    // postObject['Status'] =StatusType.Approved;
                     let [Status, PendingWith] = [StatusType.Approved, "NA"];
                     if (this.state.TimeOffRec.length && this.state.TimeOffRec[0].IsSubmittedFromTimesheetForm && !this.state.UserGoups.includes('Timesheet HR')) {
                         [Status, PendingWith] = [StatusType.ReviewerApprove, "HR"];
                     }
                     postObject['Status'] = Status;
-                    // postObject['PendingWith'] = "NA";
                     postObject['PendingWith'] = PendingWith;
                     postObject['AssignedToId'] = { "results": [] };
                     break;
@@ -1885,16 +1682,13 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                     postObject['AssignedToId'] = { "results": formdata.ReviewerIds };
                     break;
                 }
-            //case StatusType.InProgress:
             case StatusType.ManagerApprove:
                 formdata.CommentsHistoryData.push({ "Action": StatusType.Approved, "Role": "Reviewer", "User": this.props.spContext.userDisplayName, "Comments": this.state.trFormdata.Comments.trim(), "Date": new Date().toISOString() })
-                // postObject['Status'] =StatusType.Approved;
                 let [Status, PendingWith] = [StatusType.Approved, "NA"];
                 if (this.state.TimeOffRec.length && this.state.TimeOffRec[0].IsSubmittedFromTimesheetForm && !this.state.UserGoups.includes('Timesheet HR')) {
                     [Status, PendingWith] = [StatusType.ReviewerApprove, "HR"];
                 }
                 postObject['Status'] = Status;
-                // postObject['PendingWith'] = "NA";
                 postObject['PendingWith'] = PendingWith;
                 postObject['AssignedToId'] = { "results": [] };
                 break;
@@ -1922,7 +1716,6 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
         this.setState({ showConfirmDeletePopup: false })
         var formdata = { ...this.state.trFormdata };
         formdata = this.Calculate_Indvidual_OT_Weekly_TotalTime(formdata);
-        //formdata = this.GetRequiredEmails(formdata.ClientName, formdata);
         var postObject = {};
         let user = "Initiator";
         user = this.state.EmployeeEmail != this.props.spContext.userEmail ? "Administator" : user;
@@ -1931,7 +1724,6 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
         postObject['PendingWith'] = "Initiator";
         postObject['AssignedToId'] = { "results": [this.state.currentUserId] };
         postObject['IsClientApprovalNeed'] = false;
-        //if(formdata.Status==StatusType.Approved)
         if (formdata.Status == StatusType.ManagerApprove)
             postObject['Revised'] = true;
 
@@ -1952,13 +1744,11 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
         this.setState({ showConfirmDeletePopup: false })
         var formdata = { ...this.state.trFormdata };
         formdata = this.Calculate_Indvidual_OT_Weekly_TotalTime(formdata);
-        //formdata = this.GetRequiredEmails(formdata.ClientName, formdata);
         var postObject = {};
         if (formdata.Status == StatusType.Submit) {
             formdata.CommentsHistoryData.push({ "Action": StatusType.Reject, "Role": "Manager", "User": this.props.spContext.userDisplayName, "Comments": this.state.trFormdata.Comments.trim(), "Date": new Date().toISOString() })
             postObject['Status'] = StatusType.ManagerReject;
         }
-        // else if(formdata.Status==StatusType.Approved){
         else if (formdata.Status == StatusType.ManagerApprove) {
             formdata.CommentsHistoryData.push({ "Action": StatusType.Reject, "Role": "Reviewer", "User": this.props.spContext.userDisplayName, "Comments": this.state.trFormdata.Comments.trim(), "Date": new Date().toISOString() })
             postObject['Status'] = StatusType.ReviewerReject;
@@ -2012,16 +1802,6 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
         if ((parseFloat(formObject.PTOHrs[0].Total) != 0 || !this.state.totalPTOFormData.IsActive)) {
             TransactionsData = this.calculatePTOTransactions(formObject.PTOHrs[0].PTOAfterDeduction, this.state.PTOTransactions);
         }
-        // let PTOTransaction={
-        //     EmployeeId:this.state.currentUserId,
-        //     TransactionType:formdata.Status,
-        //     PostedOn:new Date(),
-        //     From:this.addBrowserwrtServer(new Date(formObject.WeekStartDate.getMonth() + 1 + "/" + formObject.WeekStartDate.getDate() + "/" + formObject.WeekStartDate.getFullYear())),
-        //     To:this.addBrowserwrtServer(addDays(new Date(formObject.WeekStartDate.getMonth() + 1 + "/" + formObject.WeekStartDate.getDate() + "/" + formObject.WeekStartDate.getFullYear()),6)),
-        //     Hours:parseFloat(PTOHrs).toFixed(4),
-        //     Reason:formObject.Comments,
-        //     Year:new Date(formObject.WeekStartDate).getFullYear().toString()
-        // }
         if (this.state.ItemID != 0) { //update existing record
             sp.web.lists.getByTitle(this.listName).items.getById(this.state.ItemID).update(formdata).then(async (res) => {
                 if (StatusType.Save == formdata.Status) {
@@ -2039,25 +1819,6 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                     this.setState({ loading: false });
                 }
                 else if (StatusType.Revoke == formdata.Status) {
-                    // if (formObject.IsDelegated) {
-                    //     for (const mail of formObject.DelegateToEmails) {
-                    //         To.push(mail);
-                    //     }
-                    // }
-                    // else {
-                    //     for (const mail of formObject.ReportingManagersEmail) {
-                    //         To.push(mail);
-                    //     }
-                    // }
-                    // for (const mail of formObject.ReviewersEmail) {
-                    //     To.push(mail);
-                    // }
-                    //sub = "Weekly Time Sheet has been " + formdata.Status + ".";
-                    //SubjectLabel = ('Timesheet ' + formdata.Status + ' | ' + formObject.Name + this.getWeekstartAndWeekEnd(formObject)) + (this.siteURL.toLowerCase().includes('/sites/billing.timesheet/dev') ? ' - HQ DEV Environment' : '');
-                    //emaildetails = { toemail: To, ccemail: this.state.EmployeeEmail, subject: SubjectLabel, bodyString: sub, body: '' };
-                    //var DashboardURl = this.siteURL + '/SitePages/TimeSheet.aspx';
-                    //emaildetails['body'] = this.emailBodyPreparation(this.siteURL + '/SitePages/TimeSheet.aspx#/WeeklyTimesheet/' + this.state.ItemID, tableContent, emaildetails['bodyString'], this.props.spContext.userDisplayName, DashboardURl);
-                    //this.sendemail(emaildetails,formdata.Status);
                     // Code for PTO Addition after Revoke start
                     if (formObject.EligibleforPTO && parseFloat(formObject.PTOHrs[0].Total) != 0 && parseFloat(PTOHrs) > 0) {
                         //Below is for : after revoke, postData to EmployeePTO
@@ -2089,7 +1850,6 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                             }
                             //COMMENTED TO STOP PTO CONSIDERATION FROM TIMESHEET FORM
                             await sp.web.lists.getByTitle('EmployeePTO').items.getById(formObject.EmployeeID).update(PTOData).then((PTODedcRes) => {
-                                //console.log("PTO updated successfully.");
                             }, (error) => {
                                 this.setState({ ActionToasterMessage: 'Error', loading: false, redirect: true })
                                 console.log(error);
@@ -2105,13 +1865,6 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                     this.getItemData(this.state.ItemID, this.state.Delegations);
                 }
                 else if (StatusType.Submit == formdata.Status) {
-                    //sub = "Weekly Time Sheet has been " + formdata.Status + ".";
-                    //SubjectLabel = ('Timesheet ' + formdata.Status + ' | ' + formObject.Name + this.getWeekstartAndWeekEnd(formObject)) + (this.siteURL.toLowerCase().includes('/sites/billing.timesheet/dev') ? ' - HQ DEV Environment' : '');
-                    //formObject.IsDelegated ? To = formObject.DelegateToEmails : To = formObject.ReportingManagersEmail;
-                    //emaildetails = { toemail: To, ccemail: this.state.EmployeeEmail, subject: SubjectLabel, bodyString: sub, body: '' };
-                    //var DashboardURl = this.siteURL + '/SitePages/TimeSheet.aspx';
-                    //emaildetails['body'] = this.emailBodyPreparation(this.siteURL + '/SitePages/TimeSheet.aspx#/WeeklyTimesheet/' + this.state.ItemID, tableContent, emaildetails['bodyString'], this.props.spContext.userDisplayName, DashboardURl);
-                    //this.sendemail(emaildetails,formdata.Status);
                     // Code for PTO Deduction after Submit start
                     if (formObject.EligibleforPTO && parseFloat(formObject.PTOHrs[0].Total) != 0 && parseFloat(PTOHrs) > 0) {
                         let PTOData = {
@@ -2121,7 +1874,6 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                         if (!this.state.TimeOffRec.length || [StatusType.Save, StatusType.ManagerReject, StatusType.ReviewerReject, StatusType.HRReject, StatusType.Revoke].includes(this.state.TimeOffRec[0].Status)) //if TimeOffRec not exists for week / TimeOffRequest stauts is save/Revoke/Reject ,then only deduct the PTO data
                         {
                             await sp.web.lists.getByTitle('EmployeePTO').items.getById(formObject.EmployeeID).update(PTOData).then((PTODedcRes) => {
-                                //console.log("PTO updated successfully.");
                             }, (error) => {
                                 this.setState({ ActionToasterMessage: 'Error', loading: false, redirect: true })
                                 console.log(error);
@@ -2164,44 +1916,16 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                 }
                 else if ([StatusType.ReviewerReject, StatusType.HRReject, StatusType.Save].includes(formObject.Status))  //submitted after Reviewer Reject or Reviewer reject->save but client Approval not needed or not depends on IsClientApprovalNeeded
                 {
-                    //sub = "Weekly Time Sheet has been " + StatusType.Submit + ".";
-                    //SubjectLabel = ('Timesheet ' + formdata.Status + ' | ' + formObject.Name + this.getWeekstartAndWeekEnd(formObject)) + (this.siteURL.toLowerCase().includes('/sites/billing.timesheet/dev') ? ' - HQ DEV Environment' : '');
-                    // if (formObject.IsClientApprovalNeeded) {
-                    //     if (formObject.IsDelegated) {
-                    //         for (const mail of formObject.DelegateToEmails) {
-                    //             CC.push(mail);
-                    //         }
-                    //     }
-                    //     else {
-                    //         for (const mail of formObject.ReportingManagersEmail) {
-                    //             CC.push(mail);
-                    //         }
-                    //     }
-                    // }
-                    // for (const mail of formObject.ReviewersEmail) {
-                    //     CC.push(mail);
-                    // }
-                    //emaildetails = { toemail: CC, ccemail: this.state.EmployeeEmail, subject: SubjectLabel, bodyString: sub, body: '' };
-                    //var DashboardURl = this.siteURL + '/SitePages/TimeSheet.aspx';
-                    //emaildetails['body'] = this.emailBodyPreparation(this.siteURL + '/SitePages/TimeSheet.aspx#/WeeklyTimesheet/' + this.state.ItemID, tableContent, emaildetails['bodyString'], this.props.spContext.userDisplayName, DashboardURl);
-                    //this.sendemail(emaildetails,StatusType.Submit);
                     // Code for PTO Deduction after Submit start
                     if (formObject.EligibleforPTO && parseFloat(formObject.PTOHrs[0].Total) != 0 && parseFloat(PTOHrs) > 0) {
                         let PTOData = {
                             PTOBalanceAfterDeduction: (parseFloat(formObject.PTOBalanceAfterDeduction) - parseFloat(PTOHrs)).toFixed(4),
                             PTOApplied: (parseFloat(formObject.PTOApplied) + parseFloat(PTOHrs)).toFixed(4)
                         }
-                        //PTOTransaction['TransactionType']=StatusType.Submit;
                         if (!this.state.TimeOffRec.length || [StatusType.Save, StatusType.ManagerReject, StatusType.ReviewerReject, StatusType.HRReject, StatusType.Revoke].includes(this.state.TimeOffRec[0].Status)) //if TimeOffRec not exists for week / TimeOffRequest stauts is save/Revoke/Reject ,then only deduct the PTO data
                         {
                             await sp.web.lists.getByTitle('EmployeePTO').items.getById(formObject.EmployeeID).update(PTOData).then((PTODedcRes) => {
-                                //console.log("PTO updated successfully.");
-                                //   sp.web.lists.getByTitle('PTOTransactions').items.add(PTOTransaction).then((PTOTranc) => {
-                                //     //console.log("PTO transaction added successfully.");
-                                // }, (error) => {
-                                //     this.setState({ ActionToasterMessage: 'Error', loading: false, redirect: true })
-                                //     console.log(error);
-                                // });
+
                             }, (error) => {
                                 this.setState({ ActionToasterMessage: 'Error', loading: false, redirect: true });
                                 console.log(error);
@@ -2243,25 +1967,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
 
                 }
                 else if ([StatusType.ManagerApprove, StatusType.ReviewerApprove, StatusType.Approved].includes(formdata.Status)) {
-                    //sub = formdata.Status == StatusType.Approved ? "Weekly Time Sheet has been " + StatusType.ReviewerApprove + "." : "Weekly Time Sheet has been " + formdata.Status + ".";
-                    //SubjectLabel = ('Timesheet ' + (formdata.Status == StatusType.Approved ? StatusType.ReviewerApprove : formdata.Status) + ' | ' + formObject.Name + this.getWeekstartAndWeekEnd(formObject)) + (this.siteURL.toLowerCase().includes('/sites/billing.timesheet/dev') ? ' - HQ DEV Environment' : '');
-                    if (formdata.Status == StatusType.ManagerApprove) {
-                        // To = this.state.EmployeeEmail;
-                        // if (formObject.IsDelegated) {
-                        //     for (const mail of formObject.DelegateToEmails) {
-                        //         CC.push(mail);
-                        //     }
-                        // }
-                        // else {
-                        //     for (const mail of formObject.ReportingManagersEmail) {
-                        //         CC.push(mail);
-                        //     }
-                        // }
-                        // for (const mail of formObject.ReviewersEmail) {
-                        //     To.push(mail);
-                        // }
-                    }
-                    else if (formdata.Status == StatusType.Approved) {
+                    if (formdata.Status == StatusType.Approved) {
                         // Code for PTO Deduction after approve start
                         if (formObject.EligibleforPTO && this.state.TimeOffRec.length && this.state.TimeOffRec[0].IsSubmittedFromTimesheetForm && parseFloat(formObject.PTOHrs[0].Total) != 0 && parseFloat(PTOHrs) > 0) {
                             let PTOData = {
@@ -2278,26 +1984,8 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                             });
                         }
                         //Code for PTO Deduction after approve end
-                        // To = this.state.EmployeeEmail;
-                        // if (formObject.IsDelegated) {
-                        //     for (const mail of formObject.DelegateToEmails) {
-                        //         CC.push(mail);
-                        //     }
-                        // }
-                        // else {
-                        //     for (const mail of formObject.ReportingManagersEmail) {
-                        //         CC.push(mail);
-                        //     }
-                        // }
-                        // for (const mail of formObject.ReviewersEmail) {
-                        //     CC.push(mail);
-                        // }
 
                     }
-                    //emaildetails = { toemail: To, ccemail: CC, subject: SubjectLabel, bodyString: sub, body: '' };
-                    //var DashboardURl = this.siteURL + '/SitePages/TimeSheet.aspx';
-                    //emaildetails['body'] = this.emailBodyPreparation(this.siteURL + '/SitePages/TimeSheet.aspx#/WeeklyTimesheet/' + this.state.ItemID, tableContent, emaildetails['bodyString'], this.props.spContext.userDisplayName, DashboardURl);
-                    //this.sendemail(emaildetails,StatusType.Approved);
                     if (parseFloat(formObject.PTOHrs[0].Total) != 0 && this.state.TimeOffRec.length && this.state.TimeOffRec[0].IsSubmittedFromTimesheetForm && [StatusType.ReviewerApprove, StatusType.Approved].includes(formdata.Status) && ![StatusType.Approved].includes(this.state.TimeOffRec[0].Stauts))//incase after final approval, admin revokedtimesheet ,corresponding timeoff rec is still approved, so last condition added, if not approved then only approve timeoff rec
                     {
                         await this.AddTimeOffRequestAndTransactions(TransactionsData, formdata, formObject);
@@ -2305,28 +1993,6 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                     this.setState({ ActionToasterMessage: 'Success-' + StatusType.Approved, loading: false, redirect: true });
                 }
                 else if ([StatusType.ManagerReject, StatusType.ReviewerReject, StatusType.HRReject].includes(formdata.Status)) {
-                    //sub = "Weekly Time Sheet has been " + formdata.Status + ". Please re-submit with necessary details.";
-                    //SubjectLabel = ('Timesheet ' + formdata.Status + ' | ' + formObject.Name + this.getWeekstartAndWeekEnd(formObject)) + (this.siteURL.toLowerCase().includes('/sites/billing.timesheet/dev') ? ' - HQ DEV Environment' : '');
-                    // if (formObject.IsClientApprovalNeeded) {
-                    //     if (formObject.IsDelegated) {
-                    //         for (const mail of formObject.DelegateToEmails) {
-                    //             CC.push(mail);
-                    //         }
-                    //     }
-                    //     else {
-                    //         for (const mail of formObject.ReportingManagersEmail) {
-                    //             CC.push(mail);
-                    //         }
-                    //     }
-                    // }
-
-                    // for (const mail of formObject.ReviewersEmail) {
-                    //     CC.push(mail);
-                    // }
-                    //emaildetails = { toemail: this.state.EmployeeEmail, ccemail: CC, subject: SubjectLabel, bodyString: sub, body: '' };
-                    //var DashboardURl = this.siteURL + '/SitePages/TimeSheet.aspx';
-                    //emaildetails['body'] = this.emailBodyPreparation(this.siteURL + '/SitePages/TimeSheet.aspx#/WeeklyTimesheet/' + this.state.ItemID, tableContent, emaildetails['bodyString'], this.props.spContext.userDisplayName, DashboardURl);
-                    //this.sendemail(emaildetails,formdata.Status);
                     // Code for PTO Addition after Reject start
                     if (formObject.EligibleforPTO && this.state.TimeOffRec.length && this.state.TimeOffRec[0].IsSubmittedFromTimesheetForm && parseFloat(formObject.PTOHrs[0].Total) != 0 && parseFloat(PTOHrs) > 0) {
                         let PTOData = {
@@ -2347,185 +2013,6 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                     //Code for PTO Addition after Reject end
                     this.setState({ ActionToasterMessage: 'Success-' + StatusType.Reject, loading: false, redirect: true });
                 }
-                // Code for adding PTO Transactions start
-                //COMMENTED TO STOP PTO CONSIDERATION FROM TIMESHEET FORM
-                //   if(formObject.EligibleforPTO && parseFloat(formObject.PTOHrs[0].Total)!=0 && parseFloat(PTOHrs)>0 && [StatusType.Revoke,StatusType.Submit,StatusType.Approved,StatusType.ManagerApprove,StatusType.ManagerReject, StatusType.ReviewerReject].includes(formdata.Status))
-                //   {
-                //     if(formdata.Status!=StatusType.Submit){
-                //         if(this.state.PTOTransactionsListData.length){
-                //             const PTOTransactionBatch = sp.web.createBatch(); // Regarding PTO Transactions
-                //             for (const row of this.state.PTOTransactionsListData) {
-                //                 let status = formdata.Status
-                //                 // if(status.toLowerCase().includes('approved'))
-                //                 //     status = StatusType.Approved;
-                //                 // if(status.toLowerCase().includes('rejected'))
-                //                 //     status = StatusType.Reject;
-                //                 if ([StatusType.ReviewerReject, StatusType.Save].includes(formObject.Status))
-                //                     status = StatusType.Submit;
-                //                 else if ([StatusType.Approved].includes(formdata.Status))
-                //                    status = StatusType.Approved;
-                //                 else if ([StatusType.ManagerReject, StatusType.ReviewerReject].includes(formdata.Status))
-                //                    status = StatusType.Reject;
-                //                 let Transaction = {
-                //                     TransactionType: status
-                //                 }
-                //                 sp.web.lists.getByTitle('PTOTransactions').items.getById(row.ID).inBatch(PTOTransactionBatch).update(Transaction);
-                //             }
-                //             Promise.all([ PTOTransactionBatch.execute()]).then((PTOTranc) => {
-                //                 //console.log("PTO transaction added successfully.");
-                //                 // alert('PTOTransaction Updated')
-                //             }, (error) => {
-                //                 this.setState({ ActionToasterMessage: 'Error', loading: false, redirect: true })
-                //                 console.log(error);
-                //             });
-                //         }
-                //     }
-                //     else{
-                //         let TransactionsData = this.calculatePTOTransactions(formObject.PTOHrs[0].PTOAfterDeduction,this.state.PTOTransactions);
-                //         const PTOTransactionBatch = sp.web.createBatch(); // Regarding PTO Transactions
-                //         if(this.state.PTOTransactionsListData.length){
-
-                //             let exsistingData = [],  EmployeeId = this.state.PTOTransactionsListData[0].EmployeeId ;
-                //             for (let row of this.state.PTOTransactionsListData) {
-
-                //                 let ddfrmt = row.PostedOn.split('T')[0];
-                //                 ddfrmt = DateUtilities.getDateMMDDYYYY(ddfrmt);
-                //                 exsistingData.push({
-                //                     ID: row.ID,
-                //                     DayDate: ddfrmt,
-                //                     Hours: parseFloat(row.Hours),
-                //                     PreviousPTOBalance:parseFloat(row.PreviousPTOBalance),
-                //                     CurrentPTOBalance:parseFloat(row.CurrentPTOBalance),
-                //                 })
-                //             }
-                //             // TransactionType:formdata.Status,
-                //             // PostedOn: this.addBrowserwrtServer(new Date(new Date(row['DayDate']).getMonth() + 1 + "/" + new Date(row['DayDate']).getDate() + "/" + new Date(row['DayDate']).getFullYear())),
-                //             // // new Date(row['DayDate']),
-                //             // From:this.addBrowserwrtServer(new Date(new Date(row['DayDate']).getMonth() + 1 + "/" + new Date(row['DayDate']).getDate() + "/" + new Date(row['DayDate']).getFullYear())),
-                //             // To: this.addBrowserwrtServer(new Date(new Date(row['DayDate']).getMonth() + 1 + "/" + new Date(row['DayDate']).getDate() + "/" + new Date(row['DayDate']).getFullYear())),
-                //             // // this.addBrowserwrtServer(addDays(new Date(new Date(row['DayDate']).getMonth() + 1 + "/" + new Date(row['DayDate']).getDate() + "/" + new Date(row['DayDate']).getFullYear()),6)),
-                //             // Hours:parseFloat(row['Hours']).toFixed(4),
-                //             // Reason: StatusType.Submit == formdata.Status?formObject.Comments:'',
-                //             // Year:new Date(row['DayDate']).getFullYear().toString(),
-                //             // IsActive: true
-
-                //             let postData = this.getPTOTransactionsData(exsistingData,TransactionsData)
-                //             console.log(postData)
-
-                //             for (const row of postData) {
-                //                 let Transaction = {
-                //                     ClientName:formObject.ClientName,
-                //                     TimesheetID: this.state.ItemID.toString(),
-                //                     EmployeeId:EmployeeId,
-                //                     TransactionType: formdata.Status,
-                //                     PostedOn: this.addBrowserwrtServer(new Date(DateUtilities.getDateMMDDYYYY(row['DayDate']))),
-                //                     From:this.addBrowserwrtServer(new Date(DateUtilities.getDateMMDDYYYY(row['DayDate']))),
-                //                     To: this.addBrowserwrtServer(new Date(DateUtilities.getDateMMDDYYYY(row['DayDate']))),
-                //                     Hours:parseFloat(row['Hours']).toFixed(4),
-                //                     PreviousPTOBalance:parseFloat(row['PreviousPTOBalance']).toFixed(4),
-                //                     CurrentPTOBalance:parseFloat(row['CurrentPTOBalance']).toFixed(4),
-                //                     Reason: StatusType.Submit == formdata.Status?formObject.Comments:'',
-                //                     Year:new Date(row['DayDate']).getFullYear().toString(),
-                //                     IsActive: row.IsActive
-                //                 }
-                //                 if(row.ID!=0)
-                //                     sp.web.lists.getByTitle('PTOTransactions').items.getById(row.ID).inBatch(PTOTransactionBatch).update(Transaction);
-                //                else
-                //                sp.web.lists.getByTitle('PTOTransactions').items.inBatch(PTOTransactionBatch).add(Transaction);
-                //             }
-                //             Promise.all([ PTOTransactionBatch.execute()]).then((PTOTranc) => {
-                //                 //console.log("PTO transaction added successfully.");
-                //                 // alert('PTOTransaction Updated')
-                //             }, (error) => {
-                //                 this.setState({ ActionToasterMessage: 'Error', loading: false, redirect: true })
-                //                 console.log(error);
-                //             });
-                //         }
-                //         else{
-                //             // now applied for pto previously did not apply
-                //             for (const row of TransactionsData) {
-                //                 let Transaction = {
-                //                     ClientName:formObject.ClientName,
-                //                     TimesheetID: this.state.ItemID.toString(),
-                //                     EmployeeId:this.state.currentUserId,
-                //                     TransactionType: formdata.Status,
-                //                     PostedOn: this.addBrowserwrtServer(new Date(DateUtilities.getDateMMDDYYYY(row['DayDate']))),
-                //                     From:this.addBrowserwrtServer(new Date(DateUtilities.getDateMMDDYYYY(row['DayDate']))),
-                //                     To: this.addBrowserwrtServer(new Date(DateUtilities.getDateMMDDYYYY(row['DayDate']))),
-                //                     Hours:parseFloat(row['Hours']).toFixed(4),
-                //                     PreviousPTOBalance:parseFloat(row['PreviousPTOBalance']).toFixed(4),
-                //                     CurrentPTOBalance:parseFloat(row['CurrentPTOBalance']).toFixed(4),
-                //                     Reason: StatusType.Submit == formdata.Status?formObject.Comments:'',
-                //                     Year:new Date(row['DayDate']).getFullYear().toString(),
-                //                     IsActive: row.IsActive
-                //                 }
-                //                sp.web.lists.getByTitle('PTOTransactions').items.inBatch(PTOTransactionBatch).add(Transaction);
-                //             }
-                //             Promise.all([ PTOTransactionBatch.execute()]).then((PTOTranc) => {
-                //                 //console.log("PTO transaction added successfully.");
-                //                 // alert('PTOTransaction Updated')
-                //             }, (error) => {
-                //                 this.setState({ ActionToasterMessage: 'Error', loading: false, redirect: true })
-                //                 console.log(error);
-                //             });
-                //         }
-                //     }
-                //     // sp.web.lists.getByTitle('PTOTransactions').items.add(PTOTransaction).then((PTOTranc) => {
-                //     //     //console.log("PTO transaction added successfully.");
-                //     // }, (error) => {
-                //     //     this.setState({ ActionToasterMessage: 'Error', loading: false, redirect: true })
-                //     //     console.log(error);
-                //     // });
-                //    }
-                //Added below condition, to consider TimeOffRequest form
-                //    if(formObject.EligibleforPTO && parseFloat(formObject.PTOHrs[0].Total)!=0 && [StatusType.Submit].includes(formdata.Status))
-                // || !this.state.totalPTOFormData.IsActive condition is added for to inactivate time off request if time off request for reset & close
-                //    if((parseFloat(formObject.PTOHrs[0].Total)!=0 || !this.state.totalPTOFormData.IsActive) && ([StatusType.Submit,StatusType.Save,StatusType.Revoke,StatusType.ManagerReject,StatusType.ReviewerApprove,StatusType.ReviewerReject,StatusType.Approved].includes(formdata.Status) || [StatusType.ReviewerReject, StatusType.Save].includes(formObject.Status)))
-                //     {
-                //         let TransactionsData = this.calculatePTOTransactions(formObject.PTOHrs[0].PTOAfterDeduction,this.state.PTOTransactions);
-                //       if(formdata.Status==StatusType.Submit || [StatusType.ReviewerReject, StatusType.Save].includes(formObject.Status)){
-                //           //const PTOTransactionBatch = sp.web.createBatch(); // Regarding PTO Transactions
-                //           if(this.state.PTOTransactionsListData.length){
-
-                //               let exsistingData = [],  EmployeeId = this.state.PTOTransactionsListData[0].EmployeeId ;
-                //               for (let row of this.state.PTOTransactionsListData) {
-
-                //                   let ddfrmt = row.PostedOn.split('T')[0];
-                //                   ddfrmt = DateUtilities.getDateMMDDYYYY(ddfrmt);
-                //                   exsistingData.push({
-                //                       ID: row.ID,
-                //                       DayDate: ddfrmt,
-                //                       Hours: parseFloat(row.Hours),
-                //                       TimeOffTypes:[null,undefined,''].includes(row.TimeOffTypes)?[]:JSON.parse(row.TimeOffTypes),
-                //                       PreviousPTOBalance:parseFloat(row.PreviousPTOBalance),
-                //                       CurrentPTOBalance:parseFloat(row.CurrentPTOBalance),
-                //                   })
-                //               }
-
-                //               let postData = this.getPTOTransactionsData(exsistingData,TransactionsData)
-                //              // TimeOffFormRequest post Object: START
-                //              this.AddTimeOffRequestAndTransactions(postData,formdata,formObject);
-                //              // TimeOffFormRequest post Object: END
-                //           }
-                //           else{
-                //               // now applied for pto previously did not apply
-                //                 // TimeOffFormRequest post Object: START
-                //                 this.AddTimeOffRequestAndTransactions(TransactionsData,formdata,formObject);
-                //                 // TimeOffFormRequest post Object: END
-                //           }
-                //       } 
-                //       else if([StatusType.Save].includes(formdata.Status) || ([StatusType.Revoke].includes(formdata.Status) && this.state.TimeOffRec.length && [StatusType.Submit].includes(this.state.TimeOffRec[0].Status)) || ([StatusType.ManagerReject,StatusType.ReviewerApprove,StatusType.ReviewerReject,StatusType.Approved].includes(formdata.Status) && this.state.TimeOffRec.length && this.state.TimeOffRec[0].IsSubmittedFromTimesheetForm))//update either 1.save or 2.(revoke and TimeOffRequest status is in submit state) 3.ManagerReject/ReviewerApprove/ReviewerReject/HRApprove only if tiemoff submitted from timeshet form.
-                //         {
-                //         this.AddTimeOffRequestAndTransactions(TransactionsData,formdata,formObject);
-                //       }
-                //       // sp.web.lists.getByTitle('PTOTransactions').items.add(PTOTransaction).then((PTOTranc) => {
-                //       //     //console.log("PTO transaction added successfully.");
-                //       // }, (error) => {
-                //       //     this.setState({ ActionToasterMessage: 'Error', loading: false, redirect: true })
-                //       //     console.log(error);
-                //       // });
-                //      }
-                // Code for adding PTO Transactions end
             }, (error) => {
                 this.setState({ ActionToasterMessage: 'Error', loading: false, redirect: true });
                 console.log(error);
@@ -2538,7 +2025,6 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                 sp.web.lists.getByTitle(this.listName).items.add(formdata).then(async (res) => {
                     let ItemID = res.data.Id;
                     if (StatusType.Save == formdata.Status) {
-                        //this.setState({ ItemID: ItemID });
                         if (parseFloat(formObject.PTOHrs[0].Total) != 0) {
                             await this.AddTimeOffRequestAndTransactions(TransactionsData, formdata, formObject);
                             // to avoid duplicate timeoffrec while without leaving timesheet form
@@ -2548,16 +2034,9 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                             }
                         }
                         customToaster('toster-success', ToasterTypes.Success, 'Weekly timesheet saved successfully', 2000)
-                        // this.getItemData(ItemID, this.state.Delegations);
                         this.setState({ ItemID: ItemID, loading: false });
                     }
                     else if (StatusType.Submit == formdata.Status) {
-                        //sub = "Weekly Time Sheet has been " + formdata.Status + ".";
-                        //SubjectLabel = ('Timesheet ' + formdata.Status + ' | ' + formObject.Name + this.getWeekstartAndWeekEnd(formObject)) + (this.siteURL.toLowerCase().includes('/sites/billing.timesheet/dev') ? ' - HQ DEV Environment' : '');
-                        //emaildetails = { toemail: formObject.ReportingManagersEmail, ccemail: this.state.EmployeeEmail, subject: SubjectLabel, bodyString: sub, body: '' };
-                        //var DashboardURl = this.siteURL + '/SitePages/TimeSheet.aspx';
-                        //emaildetails['body'] = this.emailBodyPreparation(this.siteURL + '/SitePages/TimeSheet.aspx#/WeeklyTimesheet/' + ItemID, tableContent, emaildetails['bodyString'], this.props.spContext.userDisplayName, DashboardURl);
-                        //this.sendemail(emaildetails,formdata.Status);
                         // Code for PTO Deduction after Submit start
                         if (formObject.EligibleforPTO && parseFloat(formObject.PTOHrs[0].Total) != 0 && parseFloat(PTOHrs) > 0) {
                             let PTOData = {
@@ -2568,7 +2047,6 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                             if (!this.state.TimeOffRec.length || [StatusType.Save, StatusType.ManagerReject, StatusType.HRReject, StatusType.Revoke].includes(this.state.TimeOffRec[0].Status)) //if TimeOffRec not exists for week / TimeOffRequest stauts is save/Revoke/Reject ,then only deduct the PTO data
                             {
                                 await sp.web.lists.getByTitle('EmployeePTO').items.getById(formObject.EmployeeID).update(PTOData).then((PTODedcRes) => {
-                                    //console.log("PTO updated successfully.");
                                 }, (error) => {
                                     this.setState({ ActionToasterMessage: 'Error', loading: false, redirect: true })
                                     console.log(error);
@@ -2581,45 +2059,6 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                         //Code for PTO Deduction after Submit end
                         this.setState({ ActionToasterMessage: 'Success-' + StatusType.Submit, loading: false, redirect: true });
                     }
-                    // Code for adding PTO Transactions start
-                    //   if(formObject.EligibleforPTO && parseFloat(formObject.PTOHrs[0].Total)!=0 &&  [StatusType.Submit].includes(formdata.Status))
-                    //   if(parseFloat(formObject.PTOHrs[0].Total)!=0 &&  [StatusType.Submit,StatusType.Save].includes(formdata.Status))
-                    //   {
-                    //COMMENTED TO STOP PTO CONSIDERATION FROM TIMESHEET FORM
-                    // const PTOTransactionBatch = sp.web.createBatch(); // Regarding PTO
-                    // for (const row of TransactionsData) {
-                    //     let PTOTransaction={
-                    //         ClientName:formObject.ClientName,
-                    //         TimesheetID: ItemID.toString(),
-                    //         EmployeeId:this.state.currentUserId,
-                    //         TransactionType:formdata.Status,
-                    //         PostedOn: this.addBrowserwrtServer(new Date(DateUtilities.getDateMMDDYYYY(row['DayDate']))),
-                    //         // new Date(row['DayDate']),
-                    //         From:this.addBrowserwrtServer(new Date(DateUtilities.getDateMMDDYYYY(row['DayDate']))),
-                    //         To: this.addBrowserwrtServer(new Date(DateUtilities.getDateMMDDYYYY(row['DayDate']))),
-                    //         // this.addBrowserwrtServer(addDays(new Date(new Date(row['DayDate']).getMonth() + 1 + "/" + new Date(row['DayDate']).getDate() + "/" + new Date(row['DayDate']).getFullYear()),6)),
-                    //         Hours:parseFloat(row['Hours']).toFixed(4),
-                    //         PreviousPTOBalance:parseFloat(row['PreviousPTOBalance']).toFixed(4),
-                    //         CurrentPTOBalance:parseFloat(row['CurrentPTOBalance']).toFixed(4),
-                    //         Reason: StatusType.Submit == formdata.Status?formObject.Comments:'',
-                    //         Year:new Date(row['DayDate']).getFullYear().toString(),
-                    //         IsActive: true
-                    //     }
-                    //     sp.web.lists.getByTitle('PTOTransactions').items.inBatch(PTOTransactionBatch).add(PTOTransaction);
-                    // }
-                    //     Promise.all([ PTOTransactionBatch.execute()]).then((PTOTranc) => {
-                    //       //console.log("PTO transaction added successfully.");
-                    //     //   alert('PTOTransaction Added')
-                    //   }, (error) => {
-                    //       this.setState({ ActionToasterMessage: 'Error', loading: false, redirect: true })
-                    //       console.log(error);
-                    //   });
-
-                    // TimeOffFormRequest post Object: START
-                    //this.AddTimeOffRequestAndTransactions(TransactionsData,formdata,formObject);
-                    // TimeOffFormRequest post Object: END
-                    //}
-                    // Code for adding PTO Transactions end
                 }, (error) => {
                     console.log(error);
                     this.setState({ ActionToasterMessage: 'Error', loading: false, redirect: true });
@@ -2686,15 +2125,13 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                             TransactionType: Status,
                             PostedOn: this.addBrowserwrtServer(new Date(DateUtilities.getDateMMDDYYYY(row['DayDate']))),
                             SubmittedDate: this.addBrowserwrtServer(new Date()),
-                            // new Date(row['DayDate']),
                             From: this.addBrowserwrtServer(new Date(DateUtilities.getDateMMDDYYYY(row['DayDate']))),
                             To: this.addBrowserwrtServer(new Date(DateUtilities.getDateMMDDYYYY(row['DayDate']))),
-                            // this.addBrowserwrtServer(addDays(new Date(new Date(row['DayDate']).getMonth() + 1 + "/" + new Date(row['DayDate']).getDate() + "/" + new Date(row['DayDate']).getFullYear()),6)),
                             Hours: parseFloat(row['Hours']).toFixed(4),
                             TimeOffTypes: JSON.stringify(row['TimeOffTypes']),
                             PreviousPTOBalance: parseFloat(row['PreviousPTOBalance']).toFixed(4),
                             CurrentPTOBalance: parseFloat(row['CurrentPTOBalance']).toFixed(4),
-                            Reason: [StatusType.Submit,StatusType.Save].includes(Status)  ? this.state.totalPTOFormData.TOComments : '',
+                            Reason: [StatusType.Submit, StatusType.Save].includes(Status) ? this.state.totalPTOFormData.TOComments : '',
                             Year: new Date(row['DayDate']).getFullYear().toString(),
                             IsActive: true,
                             EmpMatrixID: this.state.EmpMatrixRec.length ? this.state.EmpMatrixRec[0].Id.toString() : '0'
@@ -2719,17 +2156,10 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                 const PTOTransactionBatch = await this.getTimeOffAndtransactionBatchCalls(TimeOffFormRequestPostObj, Status, formObject, TransactionsData);
 
                 Promise.all([PTOTransactionBatch.execute()]).then((PTOTranc) => {
-                    //console.log("PTO transaction added successfully.");
-                    //   alert('PTOTransaction Added')
                 }, (error) => {
                     this.setState({ ActionToasterMessage: 'Error', loading: false, redirect: true });
                     console.log(error);
                 });
-
-                //  },(error)=>
-                //  {
-                // console.log('Error while adding time Off Record'+error);
-                //  });
             }
         }
     }
@@ -2737,7 +2167,6 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
     private getTimeOffAndtransactionBatchCalls = (TimeOffFormRequestPostObj, Status, formObject, TransactionsData) => {
         const PTOTransactionBatch = sp.web.createBatch(); // Regarding PTO
         sp.web.lists.getByTitle('TimeOffEmployees').items.getById(this.state.TimeOffRec[0].Id).inBatch(PTOTransactionBatch).update(TimeOffFormRequestPostObj);
-        // sp.web.lists.getByTitle('TimeOffEmployees').items.getById(this.state.TimeOffRec[0].Id).update(TimeOffFormRequestPostObj).then(TimeOffRecResp=>{
         if ([StatusType.Submit].includes(Status)) {
             for (const row of TransactionsData) {
                 let PTOTransaction = {
@@ -2747,15 +2176,13 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                     TransactionType: Status,
                     PostedOn: this.addBrowserwrtServer(new Date(DateUtilities.getDateMMDDYYYY(row['DayDate']))),
                     SubmittedDate: this.addBrowserwrtServer(new Date()),
-                    // new Date(row['DayDate']),
                     From: this.addBrowserwrtServer(new Date(DateUtilities.getDateMMDDYYYY(row['DayDate']))),
                     To: this.addBrowserwrtServer(new Date(DateUtilities.getDateMMDDYYYY(row['DayDate']))),
-                    // this.addBrowserwrtServer(addDays(new Date(new Date(row['DayDate']).getMonth() + 1 + "/" + new Date(row['DayDate']).getDate() + "/" + new Date(row['DayDate']).getFullYear()),6)),
                     Hours: parseFloat(row['Hours']).toFixed(4),
                     TimeOffTypes: JSON.stringify(row['TimeOffTypes']),
                     PreviousPTOBalance: parseFloat(row['PreviousPTOBalance']).toFixed(4),
                     CurrentPTOBalance: parseFloat(row['CurrentPTOBalance']).toFixed(4),
-                    Reason: [StatusType.Submit,StatusType.Save].includes(Status)  ? this.state.totalPTOFormData.TOComments : '',
+                    Reason: [StatusType.Submit, StatusType.Save].includes(Status) ? this.state.totalPTOFormData.TOComments : '',
                     Year: new Date(row['DayDate']).getFullYear().toString(),
                     IsActive: row['IsActive'],
                     EmpMatrixID: this.state.EmpMatrixRec.length ? this.state.EmpMatrixRec[0].Id.toString() : '0'
@@ -2786,7 +2213,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
         let HistoryStatus = [StatusType.ManagerReject, StatusType.ReviewerReject, StatusType.HRReject].includes(Status) ? StatusType.Reject : [StatusType.ReviewerApprove, StatusType.Approved].includes(Status) ? StatusType.Approved : Status;
         let HistoryRole = [StatusType.ManagerReject].includes(Status) ? 'Manager' : [StatusType.ReviewerReject, StatusType.ReviewerApprove].includes(Status) ? 'Reviewer' : [StatusType.HRReject, StatusType.Approved].includes(Status) ? 'HR' : 'Initiator';
         if (![StatusType.Save].includes(Status))
-            commentsObj.push({ Action: HistoryStatus, Role: HistoryRole, User: this.props.spContext.userDisplayName, Comments: [StatusType.Submit,StatusType.Save].includes(Status)  ? this.state.totalPTOFormData.TOComments : '', Date: new Date().toISOString() });
+            commentsObj.push({ Action: HistoryStatus, Role: HistoryRole, User: this.props.spContext.userDisplayName, Comments: [StatusType.Submit, StatusType.Save].includes(Status) ? this.state.totalPTOFormData.TOComments : '', Date: new Date().toISOString() });
         postObj = {
             EmployeeId: this.state.currentUserId,
             From: this.addBrowserwrtServer(new Date(DateUtilities.getDateMMDDYYYY(this.state.trFormdata.WeekStartDate))),
@@ -2815,7 +2242,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
             IsActive: this.state.totalPTOFormData.IsActive,
             EmpMatrixID: this.state.EmpMatrixRec.length ? this.state.EmpMatrixRec[0].Id.toString() : '0',
             IsSubmittedFromTimesheetForm: true,
-            Comments:[StatusType.Submit,StatusType.Save].includes(Status)  ? this.state.totalPTOFormData.TOComments : '',
+            Comments: [StatusType.Submit, StatusType.Save].includes(Status) ? this.state.totalPTOFormData.TOComments : '',
         }
         // If Timesheet Revoked, update the TimeOffRequest also only if TimeOffRequest status is in submit state
         if ([StatusType.Revoke].includes(Status)) {
@@ -3008,102 +2435,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
 
         return combinedArray;
     };
-    private getPTOTransactionHistoryData = (existingArray, newArray) => {
-        const newDataArray = [];
-        const existingArrayMap = new Map();
-
-        // Create a map for existing array for quick lookup
-        existingArray.forEach(item => {
-            existingArrayMap.set(item.DayDate, { ...item, IsActive: true }); // Initialize with IsActive true
-        });
-
-        // Update existing entries and add new entries
-        newArray.forEach(item => {
-            const formattedDate = new Date(item.DayDate).toLocaleDateString('en-US'); // Format date to match existing array
-            if (existingArrayMap.has(formattedDate)) {
-                // Update existing entry
-                existingArrayMap.get(formattedDate).Hours = item.Hours; // Update hours
-            } else {
-                // Add new entry
-                newDataArray.push({
-                    DayDate: item.DayDate,
-                    Hours: item.Hours,
-                    IsActive: true
-                });
-            }
-        });
-
-        // Mark entries in existing array as inactive if not present in new array
-        existingArrayMap.forEach((value, key) => {
-            if (!newArray.some(item => new Date(item.DayDate).toLocaleDateString('en-US') === key)) {
-                value.IsActive = false; // Mark as inactive
-            }
-        });
-
-        // Convert the map back to an array
-        const updatedExistingArray = Array.from(existingArrayMap.values());
-
-        return {
-            NewDataArray: newDataArray,
-            ExistingArray: updatedExistingArray
-        };
-    };
     // PTO Transaction data functions ENDS
-    private emailBodyPreparation(redirectURL, tableContent, bodyString, userName, DashboardURL) {
-        var emailLink1 = "Please <a href=" + redirectURL + ">click here</a> to view <strong>Timesheet</strong>.";
-        var emailLink2 = "To view <strong>All Timesheets</strong>, please go to <a href=" + DashboardURL + ">Dashboard</a>.";
-        var emailBody = '<table id="email-container" border="0"  cellpadding="0" cellspacing="0" style="margin: 0; padding: 0; text-align: left;border-collapse:collapse;" width="600px">' +
-            '<tr valign="top"><td colspan="9"><div id="email-to">Dear Sir/Madam,</br></div></td></tr>';
-        emailBody += '<tr valign="top"><td colspan="9" style="padding-top: 10px;">' + bodyString + ' with below details.</td></tr>';
-        emailBody += '<tr valign="top"  style="font-weight:bold;text-align: center;border: 1px solid black;"><td style="width: 80px;text-align: left;">Type</td><td>Mon</td><td>Tue</td><td>Wed</td><td>Thu</td><td>Fri</td><td>Sat</td><td>Sun</td><td>Total</td></tr>';
-        for (var index in tableContent) {
-            emailBody += '<tr  valign="top" style="border: 1px solid black;">';
-            for (var key in tableContent[index][0]) {
-                var tdValue = tableContent[index][0][key];
-                if (!["Description", "ProjectCode"].includes(key)) {
-                    if (key == "Type")
-                        emailBody += '<td style="width: 50px;text-align:left;">' + tdValue + '</td>';
-                    else if (key == "Total" && Number(index) == tableContent.length - 1)
-                        emailBody += '<td style="width: 50px;text-align:center;font-weight:bold;">' + tdValue + '</td>';
-                    else
-                        emailBody += '<td style="width: 50px;text-align: center;">' + tdValue + '</td>';
-                }
-            }
-            emailBody += '</tr>';
-        }
-        emailBody += '<tr valign="top"> <td colspan="9" style="padding-top: 10px;"></br>' + emailLink1 + '</td></tr>';
-        emailBody += '<tr valign="top"> <td colspan="9" style="padding-top: 10px;">' + emailLink2 + '</td></tr>';
-        emailBody += '<tr valign="top"><td colspan="9"></br><p style="margin-bottom: 0;">Regards,</p><div style="margin-top: 5px;" id="email-from">' + userName + '</div>';
-        emailBody += '</td></tr></table>';
-        return emailBody;
-    }
-    private sendemail(emaildetails, ActionStatus) {
-        sp.utility.sendEmail({
-            //Body of Email  
-            Body: emaildetails.body,
-            //Subject of Email  
-            Subject: emaildetails.subject,
-            //Array of string for To of Email  
-            To: emaildetails.toemail,
-            CC: emaildetails.ccemail
-        }).then((i) => {
-            if (ActionStatus == StatusType.Submit)
-                this.setState({ ActionToasterMessage: 'Success-' + StatusType.Submit, loading: false, redirect: true })
-            else if (ActionStatus == StatusType.Approved)
-                this.setState({ ActionToasterMessage: 'Success-' + StatusType.Approved, loading: false, redirect: true })
-            else if ([StatusType.ManagerReject, StatusType.ReviewerReject].includes(ActionStatus))
-                this.setState({ ActionToasterMessage: 'Success-' + StatusType.Reject, loading: false, redirect: true })
-            else if (ActionStatus == StatusType.Revoke) {
-                this.setState({ loading: false })
-                customToaster('toster-success', ToasterTypes.Success, 'Weekly timesheet ' + StatusType.Revoke.toLowerCase() + ' successfully', 2000)
-                this.getItemData(this.state.ItemID, this.state.Delegations);
-            }
-
-        }).catch((i) => {
-            this.setState({ ActionToasterMessage: 'Error', loading: false, redirect: true });
-            console.log(i);
-        });
-    }
     private async validateDuplicateRecord(date, ClientName, trFormdata, isAlreadyCalledFromHCC_Func?) {
         let filterQuery = '';
         let ExistRecordData = [];
@@ -3135,7 +2467,6 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
             trFormdata.ClientHolidayHrs = JSON.parse(ExistRecordData[0].ClientHolidayHrs);
             trFormdata.PTOHrs = JSON.parse(ExistRecordData[0].PTOHrs);
             trFormdata.EligibleforPTO = [null, undefined].includes(ExistRecordData[0].EligibleforPTO) ? false : ExistRecordData[0].EligibleforPTO;
-            //trFormdata.PTONewHrs =[null,undefined,''].includes(ExistRecordData[0].PTONewHrs)?trFormdata.PTONewHrs: JSON.parse(ExistRecordData[0].PTONewHrs);
             trFormdata.WeeklyItemsTotalTime = ExistRecordData[0].WeeklyTotalHrs;
             trFormdata.OTItemsTotalTime = ExistRecordData[0].OTTotalHrs;
             trFormdata.WeeklySubTotalHrs = JSON.parse(ExistRecordData[0].WeeklySubTotalHrs)
@@ -3151,7 +2482,6 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
             trFormdata.IsClientApprovalNeededUI = false;
             trFormdata.Revised = ExistRecordData[0].Revised;
             trFormdata.IsSubmitted = ExistRecordData[0].IsSubmitted;
-            //trFormdata.IsDelegated = ExistRecordData[0].IsDelegated;
             let EmpEmail = [];
             let RMEmail = [];
             let RMId = [];
@@ -3248,26 +2578,13 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                     let isActiveInClientMaster = this.state.ClientMasterData.some(ClientItem => ClientItem.Title == employeeItem.ClientName);
                     if (isActiveInClientMaster && employeeItem.IsActive) {
                         ClientNames.push(employeeItem.ClientName);
-                        // if(ClientItem.hasOwnProperty("DelegateTo"))
-                        // ClientItem.DelegateTo.map(i=>(this.state.DelegateTo.push({"ClientName":ClientItem.ClientName,"DelegateToId":i.Id,"DelegateToEmail":i.EMail})));
                     }
                 });
             }
             this.state.ClientNames.sort();
-            // this.state.PTOTransactions = PTOTranscationsData
 
-            // console.log(PTOTranscationsData)
-            // this.state.PTOTransactionsListData = PTOTranscationsData
-            // let PTOTransactions = [];
+
             let PTOTransactions = this.mapDatesToHours(trFormdata.PTOHrs, trFormdata.WeekStartDate)
-            // for (const row of PTOTranscationsData) {
-            //     let ddfrmt = row.PostedOn.split('T')[0].split('-')
-            //     ddfrmt = ddfrmt[1]+"/"+ddfrmt[2]+"/"+ddfrmt[0]
-            //     PTOTransactions.push({
-            //         [ddfrmt]: row.Hours
-            //     })
-            // }
-            // this.setState({ trFormdata: trFormdata,PTOTransactionsListData:PTOTranscationsData,PTOTransactions:PTOTransactions, currentWeeklyRowsCount: trFormdata.WeeklyItemsData.length, currentOTRowsCount: trFormdata.OTItemsData.length, ItemID: ExistRecordData[0].ID, EmployeeEmail: EmpEmail,currentUserId: EmpId, errorMessage: '', loading: false, showBillable: false, showNonBillable: false,PDFData:ExistRecordData,PDFFileName:formatedFilename,showPDFButton:showPDF ,ClientNames:ClientNames });
             this.setState({ trFormdata: trFormdata, PTOTransactions: PTOTransactions, currentWeeklyRowsCount: trFormdata.WeeklyItemsData.length, currentOTRowsCount: trFormdata.OTItemsData.length, ItemID: ExistRecordData[0].ID, EmployeeEmail: EmpEmail, currentUserId: EmpId, errorMessage: '', loading: false, showBillable: false, showNonBillable: false, PDFData: ExistRecordData, PDFFileName: formatedFilename, showPDFButton: showPDF, ClientNames: ClientNames });
             if ([StatusType.Submit, StatusType.Approved, StatusType.ManagerApprove].includes(ExistRecordData[0].Status)) {
                 this.setState({ isSubmitted: true });
@@ -3301,16 +2618,8 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                     trFormdata.IsProjectCodeMandatory = item.IsProjectCodeMandatory;
                     trFormdata.WeekStartDay = item.WeekStartDay;
                     trFormdata.HolidayType = item.HolidayType;
-                    //trFormdata.PTOBalance = [null,undefined].includes(item.PTOBalance)?'0.00':parseFloat(item.PTOBalance).toFixed(2);
-                    //trFormdata.CurrentAvailablePTO = [null,undefined].includes(item.CurrentAvailablePTO)?'0.00':parseFloat(item.CurrentAvailablePTO).toFixed(2);
                     if ([null, undefined, 0, ''].includes(this.state.ItemID) || ![StatusType.Submit, StatusType.ManagerApprove, StatusType.Approved].includes(trFormdata.Status)) //if Item exists and status is Submit/ManagerApprove/Approve,then hide PTO columns based on WeeklyTimesheet Data otherwise based on Employee Master Data
                         trFormdata.EligibleforPTO = item.EligibleforPTO;
-                    //trFormdata.EmployeeID = item.EmployeeID;
-                    // if(![StatusType.ManagerApprove,StatusType.Approved,StatusType.Submit.toString()].includes(trFormdata.Status))
-                    // {
-                    // trFormdata.PTONewHrs[0].PTOBalance = [null,undefined].includes(item.CurrentAvailablePTO)?'0.00':parseFloat(item.CurrentAvailablePTO).toFixed(2);
-                    // trFormdata.PTONewHrs[0].PTOAfterDeduction = [null,undefined].includes(item.CurrentAvailablePTO)?'0.00':(parseFloat(item.CurrentAvailablePTO)-parseFloat(trFormdata.PTONewHrs[0].Total)).toFixed(2);
-                    // }
                     let currentEmployeePTO = await this.getLatestPTOData(item.EmployeeID, trFormdata.WeekStartDate);
                     if (currentEmployeePTO.length) {
                         trFormdata.EmployeeID = currentEmployeePTO[0].ID;
@@ -3319,8 +2628,6 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                         trFormdata.PTOBalanceAfterDeduction = [null, undefined].includes(currentEmployeePTO[0].PTOBalanceAfterDeduction) ? '0.00' : parseFloat(currentEmployeePTO[0].PTOBalanceAfterDeduction).toFixed(4);
                         trFormdata.PTOAvailed = [null, undefined].includes(currentEmployeePTO[0].PTOAvailed) ? '0.00' : parseFloat(currentEmployeePTO[0].PTOAvailed).toFixed(4);
                         if (trFormdata.EligibleforPTO && ![StatusType.ManagerApprove, StatusType.Approved, StatusType.Submit.toString()].includes(trFormdata.Status)) {
-                            //    trFormdata.PTONewHrs[0].PTOBalance=[null,undefined].includes(currentEmployeePTO[0].PTOBalanceAfterDeduction)?'0.00':parseFloat(currentEmployeePTO[0].PTOBalanceAfterDeduction).toFixed(2);
-                            //    trFormdata.PTONewHrs[0].PTOAfterDeduction = [null,undefined].includes(currentEmployeePTO[0].PTOBalanceAfterDeduction)?'0.00':(parseFloat(currentEmployeePTO[0].PTOBalanceAfterDeduction)-parseFloat(trFormdata.PTONewHrs[0].Total)).toFixed(2);
                             trFormdata.PTOHrs[0].PTOBalance = [null, undefined].includes(currentEmployeePTO[0].PTOBalanceAfterDeduction) ? '0.00' : parseFloat(parseFloat(currentEmployeePTO[0].PTOBalanceAfterDeduction).toFixed(4)).toString();
                             trFormdata.PTOHrs[0].PTOAfterDeduction = [null, undefined].includes(currentEmployeePTO[0].PTOBalanceAfterDeduction) ? '0.00' : parseFloat((parseFloat(currentEmployeePTO[0].PTOBalanceAfterDeduction) - parseFloat(trFormdata.PTOHrs[0].Total)).toFixed(4)).toString();
                         }
@@ -3402,9 +2709,6 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
             trFormdata.SynergyHolidayHrs.push({ Description: '', ProjectCode: '', Mon: '', Tue: '', Wed: '', Thu: '', Fri: '', Sat: '', Sun: '', Total: '0', });
             trFormdata.ClientHolidayHrs.push({ Type: "Holiday", Description: '', ProjectCode: '', Mon: '', Tue: '', Wed: '', Thu: '', Fri: '', Sat: '', Sun: '', Total: '0.00', });
             trFormdata.PTOHrs.push({ Type: "Time Off", Description: '', ProjectCode: '', Mon: '', Tue: '', Wed: '', Thu: '', Fri: '', Sat: '', Sun: '', PTOBalance: '0.00', PTOAfterDeduction: '0.00', Total: '0.00', });
-            //trFormdata.PTONewHrs.push({ Type: "Paid Time Off", Description: '', ProjectCode: '', Mon: '', Tue: '', Wed: '', Thu: '', Fri: '', Sat: '', Sun: '',PTOBalance:'0.00',PTOAfterDeduction:'0.00', Total: '0.00', });
-            //trFormdata.PTONewHrs[0].PTOBalance=trFormdata.PTOBalance;
-            //trFormdata.PTONewHrs[0].PTOAfterDeduction=trFormdata.PTOBalance;
             trFormdata.PTOHrs[0].PTOBalance = trFormdata.PTOBalanceAfterDeduction;
             trFormdata.PTOHrs[0].PTOAfterDeduction = trFormdata.PTOBalanceAfterDeduction;
             trFormdata.NonBillableSubTotal.push({ Mon: '0.00', Tue: '0.00', Wed: '0.00', Thu: '0.00', Fri: '0.00', Sat: '0.00', Sun: '0.00', Total: '0.00', });
@@ -3429,15 +2733,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                     trFormdata.IsProjectCodeMandatory = item.IsProjectCodeMandatory;
                     trFormdata.WeekStartDay = item.WeekStartDay;
                     trFormdata.HolidayType = item.HolidayType;
-                    //trFormdata.PTOBalance = [null,undefined].includes(item.CurrentAvailablePTO)?'0.00':parseFloat(item.CurrentAvailablePTO).toFixed(2);
-                    //trFormdata.CurrentAvailablePTO = [null,undefined].includes(item.CurrentAvailablePTO)?'0.00':parseFloat(item.CurrentAvailablePTO).toFixed(2);
                     trFormdata.EligibleforPTO = item.EligibleforPTO;
-                    //trFormdata.EmployeeID = item.EmployeeID;
-                    // if(![StatusType.ManagerApprove,StatusType.Approved,StatusType.Submit.toString()].includes(trFormdata.Status))
-                    // {
-                    // trFormdata.PTONewHrs[0].PTOBalance = [null,undefined].includes(item.CurrentAvailablePTO)?'0.00':parseFloat(item.CurrentAvailablePTO).toFixed(2);
-                    // trFormdata.PTONewHrs[0].PTOAfterDeduction = [null,undefined].includes(item.CurrentAvailablePTO)?'0.00':(parseFloat(item.CurrentAvailablePTO)-parseFloat(trFormdata.PTONewHrs[0].Total)).toFixed(2);
-                    // }
                     let currentEmployeePTO = await this.getLatestPTOData(item.EmployeeID, trFormdata.WeekStartDate);
                     if (currentEmployeePTO.length) {
                         trFormdata.EmployeeID = currentEmployeePTO[0].ID;
@@ -3447,8 +2743,6 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                         trFormdata.PTOAvailed = [null, undefined].includes(currentEmployeePTO[0].PTOAvailed) ? '0.00' : parseFloat(currentEmployeePTO[0].PTOAvailed).toFixed(4);
 
                         if (trFormdata.EligibleforPTO && ![StatusType.ManagerApprove, StatusType.Approved, StatusType.Submit.toString()].includes(trFormdata.Status)) {
-                            //    trFormdata.PTONewHrs[0].PTOBalance=[null,undefined].includes(currentEmployeePTO[0].PTOBalanceAfterDeduction)?'0.00':parseFloat(currentEmployeePTO[0].PTOBalanceAfterDeduction).toFixed(2);
-                            //    trFormdata.PTONewHrs[0].PTOAfterDeduction = [null,undefined].includes(currentEmployeePTO[0].PTOBalanceAfterDeduction)?'0.00':(parseFloat(currentEmployeePTO[0].PTOBalanceAfterDeduction)-parseFloat(trFormdata.PTONewHrs[0].Total)).toFixed(2);
                             trFormdata.PTOHrs[0].PTOBalance = [null, undefined].includes(currentEmployeePTO[0].PTOBalanceAfterDeduction) ? '0.00' : parseFloat(parseFloat(currentEmployeePTO[0].PTOBalanceAfterDeduction).toFixed(4)).toString();
                             trFormdata.PTOHrs[0].PTOAfterDeduction = [null, undefined].includes(currentEmployeePTO[0].PTOBalanceAfterDeduction) ? '0.00' : parseFloat((parseFloat(currentEmployeePTO[0].PTOBalanceAfterDeduction) - parseFloat(trFormdata.PTOHrs[0].Total)).toFixed(4)).toString();
                         }
@@ -3541,8 +2835,6 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                 let isActiveInClientMaster = this.state.ClientMasterData.some(ClientItem => ClientItem.Title == employeeItem.ClientName);
                 if (isActiveInClientMaster && employeeItem.IsActive) {
                     ClientNames.push(employeeItem.ClientName);
-                    // if(ClientItem.hasOwnProperty("DelegateTo"))
-                    // ClientItem.DelegateTo.map(i=>(this.state.DelegateTo.push({"ClientName":ClientItem.ClientName,"DelegateToId":i.Id,"DelegateToEmail":i.EMail})));
                 }
             });
             ClientNames.sort();
@@ -3574,7 +2866,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                     PTOTotal: [null, undefined, ''].includes(TimeOff[0].PTOTotal) ? 0 : parseFloat(TimeOff[0].PTOTotal),
                     TOTotal: [null, undefined, ''].includes(TimeOff[0].TOTotal) ? 0 : parseFloat(TimeOff[0].TOTotal),
                     IsActive: TimeOff[0].IsActive,
-                    TOComments:TimeOff[0].Comments
+                    TOComments: TimeOff[0].Comments
                 }
                 TimeOffRecPTOBalance = [null, undefined, ''].includes(TimeOff[0].PTOAvailableBalance) ? this.state.trFormdata.PTOBalanceAfterDeduction : parseFloat(TimeOff[0].PTOAvailableBalance).toFixed(4);
             }
@@ -3589,9 +2881,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
             let nextDate = addDays(new Date(FromDate), 1);
             let prev = DateUtilities.getDateMMDDYYYY(prevDate);
             let next = DateUtilities.getDateMMDDYYYY(nextDate);
-            // let StatusfilterQuery=`(Status eq '${StatusType.Save}' or Status eq '${StatusType.HRReject}' or Status eq '${StatusType.ManagerReject}' or Status eq '${StatusType.ReviewerReject}' or Status eq '${StatusType.Revoke}' or Status eq '${StatusType.Submit}' or Status eq '${StatusType.ManagerApprove}'  or Status eq '${StatusType.ReviewerApprove}' or Status eq '${StatusType.Approved}')`;
             let StatusfilterQuery = `(Status ne '${StatusType.Withdraw}')`;
-            // let filterQuery = `(From gt '${prev}' and From lt '${next}' and Employee/ID eq '${this.state.currentUserId}' and EmpMatrixID eq '${this.state.EmpMatrixRec.length ? this.state.EmpMatrixRec[0].Id : 0}' and IsActive eq 1) and ${StatusfilterQuery}`;
             let WeekEndDate = DateUtilities.getDateMMDDYYYY(addDays(new Date(FromDate), 6));
             let filterQuery = `(From le '${WeekEndDate}' and To ge '${prev}' and Employee/ID eq '${this.state.currentUserId}' and EmpMatrixID eq '${this.state.EmpMatrixRec.length ? this.state.EmpMatrixRec[0].Id : 0}' and IsActive eq 1) and ${StatusfilterQuery}`;
             let selectQuery = "Employee/ID,Employee/Title,Employee/EMail,SynergyManager/ID,SynergyManager/Title,SynergyManager/EMail,*";
@@ -3637,89 +2927,6 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                 if (fiteredTO)
                     Status = fiteredTO.Status;
             }
-
-            // const result = matchedRequests.map(req => {
-            //     const timeOffRows = JSON.parse(req.TimeOffRows || []);
-
-            //     // Filter each day to include only current week days
-            //     const filteredTimeOffRows = timeOffRows.map(row => {
-            //         const filteredRow: any = {
-            //             TimeOffType: row.TimeOffType,
-            //             IsPTOEligible: row.IsPTOEligible,
-            //             Total: 0
-            //         };
-
-            //         weekDays.forEach(dayKey => {
-            //             // handle date key in TOR like "10/06/2025"
-            //             const value = row[dayKey] || "";
-            //             if (value && !isNaN(Number(value))) {
-            //                 filteredRow[dayKey] = Number(value);
-            //                 filteredRow.Total += Number(value);
-            //             }
-            //         });
-
-            //         return filteredRow;
-            //     });
-
-            //     // --- After computing filteredTimeOffRows ---
-            //     const PTORows = filteredTimeOffRows.filter(r => r.IsPTOEligible);
-            //     const TORows = filteredTimeOffRows.filter(r => !r.IsPTOEligible);
-
-            //     // Sum values by date key for each category
-            //     const sumByDate = (rows: any[]) => {
-            //         const totals: Record<string, number> = {};
-            //         rows.forEach(r => {
-            //             weekDays.forEach(day => {
-            //                 if (r[day]) totals[day] = (totals[day] || 0) + r[day];
-            //             });
-            //         });
-            //         return totals;
-            //     };
-
-            //     const ptoByDate = sumByDate(PTORows);
-            //     const toByDate = sumByDate(TORows);
-            //     const totalByDate: Record<string, number> = {};
-            //     weekDays.forEach(day => {
-            //         totalByDate[day] = (ptoByDate[day] || 0) + (toByDate[day] || 0);
-            //     });
-
-            //     // --- Recalculate weekly totals ---
-            //     const usedPTOThisWeek = Object.values(ptoByDate).reduce((a, b) => a + b, 0);
-            //     const usedTOThisWeek = Object.values(toByDate).reduce((a, b) => a + b, 0);
-            //     const prevBalance = parseFloat(req.PreviousPTOBalance);
-            //     const currentBalance = prevBalance - usedPTOThisWeek;
-
-            //     return {
-            //         ...req,
-            //         From: weekStart.toISOString(),
-            //         To: new Date(addDays(weekStart, 6)).toISOString(),
-            //         TimeOffRows: JSON.stringify(filteredTimeOffRows),
-            //         PTOSubTotal: JSON.stringify([{
-            //             Type: "Paid Time Off",
-            //             Total: usedPTOThisWeek.toString(),
-            //             ...ptoByDate
-            //         }]),
-
-            //         TOSubTotal: JSON.stringify([{
-            //             Type: "Time Off",
-            //             Total: usedTOThisWeek.toString(),
-            //             ...toByDate
-            //         }]),
-
-            //         Total: JSON.stringify([{
-            //             Type: "Total",
-            //             Total: (usedPTOThisWeek + usedTOThisWeek).toString(),
-            //             ...totalByDate
-            //         }]),
-
-            //         PTOTotal: usedPTOThisWeek.toString(),
-            //         TOTotal: usedTOThisWeek.toString(),
-            //         TotalHours: (usedPTOThisWeek + usedTOThisWeek).toFixed(4),
-            //         PreviousPTOBalance: prevBalance.toFixed(4),
-            //         CurrentPTOBalance: currentBalance.toFixed(4),
-            //         PTOAvailableBalance: currentBalance.toFixed(4),
-            //     };
-            // });
 
             // --- NEW LOGIC: merge all TimeOffRows into one combined weekly record ---
             const allTimeOffRows = matchedRequests.flatMap(req => {
@@ -3843,7 +3050,6 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
         trFormdata.PTOBalance = '0.00';
         trFormdata.PTOBalanceAfterDeduction = '0.00';
         trFormdata.PTOHrs = [];
-        //trFormdata.PTONewHrs = [];
         trFormdata.EligibleforPTO = false;
         trFormdata.EmployeeID = 0;
         trFormdata.WeeklyItemsTotalTime = "0";
@@ -3866,7 +3072,6 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
         trFormdata.SynergyHolidayHrs.push({ Description: '', ProjectCode: '', Mon: '', Tue: '', Wed: '', Thu: '', Fri: '', Sat: '', Sun: '', Total: '0.00', });
         trFormdata.ClientHolidayHrs.push({ Type: "Holiday", Description: '', ProjectCode: '', Mon: '', Tue: '', Wed: '', Thu: '', Fri: '', Sat: '', Sun: '', Total: '0.00', });
         trFormdata.PTOHrs.push({ Type: "Time Off", Description: '', ProjectCode: '', Mon: '', Tue: '', Wed: '', Thu: '', Fri: '', Sat: '', Sun: '', PTOBalance: '0.00', PTOAfterDeduction: '0.00', Total: '0.00', });
-        //trFormdata.PTONewHrs.push({ Type: "Paid Time Off", Description: '', ProjectCode: '', Mon: '', Tue: '', Wed: '', Thu: '', Fri: '', Sat: '', Sun: '',PTOBalance:'0.00',PTOAfterDeduction:'0.00',Total: '0.00', });
         trFormdata.NonBillableSubTotal.push({ Mon: '0.00', Tue: '0.00', Wed: '0.00', Thu: '0.00', Fri: '0.00', Sat: '0.00', Sun: '0.00', Total: '0.00', });
         trFormdata.WeeklySubTotalHrs.push({ Type: "Billable", Mon: '0.00', Tue: '0.00', Wed: '0.00', Thu: '0.00', Fri: '0.00', Sat: '0.00', Sun: '0.00', Total: '0.00', });
         trFormdata.OTSubTotalHrs.push({ Type: "OT", Mon: '0.00', Tue: '0.00', Wed: '0.00', Thu: '0.00', Fri: '0.00', Sat: '0.00', Sun: '0.00', Total: '0.00', });
@@ -3943,180 +3148,6 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
             return newDate;
         }
     }
-    //this function is used to hide and show Approve/Reject/Submit/Save/Revoke buttons based on logged in user and current record respective users
-    // private showApproveAndRejectButton(trFormdata) {
-    //     //let value = trFormdata.Status != StatusType.Save ? true : false;
-    //     this.setState({showPTO:false});
-    //     let value = ![StatusType.Save, StatusType.Revoke, StatusType.ManagerReject, StatusType.ReviewerReject].includes(trFormdata.Status) ? true : false;
-    //     let userGroups = this.state.UserGoups;
-    //     let userEmail = this.props.spContext.userEmail;
-    //     let isAdmin = false;
-    //     if (userGroups.includes('Timesheet Administrators') || userGroups.includes('Dashboard Admins')) {
-    //         isAdmin = true;
-    //         document.getElementById('Applying')?document.getElementById('Applying').focus():'';
-    //     }
-    //     else{
-    //         if(this.state.ClientNames.length>1)
-    //             {
-    //                 document.getElementById('Client').getElementsByTagName('input')[0].focus();
-    //             }
-    //             else
-    //             {
-    //                 document.getElementById('divWeekStartDate').getElementsByTagName('input')[0].focus();
-    //             }
-    //     }
-    //     //for show/hide of SubmitSave Revoke buttons
-    //     if (userEmail == this.state.EmployeeEmail || isAdmin) {
-    //         let managerApprove = StatusType.ManagerApprove.toString()
-    //         let Approve = StatusType.Approved.toString()
-    //         let submit = StatusType.Submit.toString()
-    //         if(trFormdata.EligibleforPTO) //to show PTO columns only for current employee/Admin/Reviewer
-    //          this.setState({showPTO:true});
-    //         // if (![Approve, submit].includes(trFormdata.Status)) 
-    //         //     this.setState({ showSubmitSavebtn: true})
-    //         // else
-    //         //     this.setState({ showSubmitSavebtn: false})
-
-    //         // if ([Approve,submit].includes(trFormdata.Status))
-    //         //     this.setState({showRevokebtn: true })
-    //         // else
-    //         //     this.setState({showRevokebtn:false })
-    //         if (![managerApprove, Approve, submit].includes(trFormdata.Status))
-    //             this.setState({ showSubmitSavebtn: true })
-    //         else
-    //             this.setState({ showSubmitSavebtn: false })
-
-    //         let daysBetweenSubmitted_CurrDate = Math.ceil(Math.abs((new Date(new Date().getMonth() + 1 + "/" + new Date().getDate() + "/" + new Date().getFullYear()).getTime() - new Date(trFormdata.DateSubmitted.getMonth() + 1 + "/" + trFormdata.DateSubmitted.getDate() + "/" + trFormdata.DateSubmitted.getFullYear()).getTime())) / (24 * 60 * 60 * 1000))
-
-    //         if ([submit].includes(trFormdata.Status) && daysBetweenSubmitted_CurrDate <= 30)
-    //             this.setState({ showRevokebtn: true })
-    //         else
-    //             this.setState({ showRevokebtn: false })
-
-    //         if (isAdmin)  //to show revoke button only for admin or Dashboard admin if status is Submit/Approved
-    //         {
-    //             if ([Approve, submit].includes(trFormdata.Status))
-    //                 this.setState({ showRevokebtn: true })
-    //             else
-    //                 this.setState({ showRevokebtn: false })
-    //         }
-    //     }
-    //     else {
-    //         this.setState({ showSubmitSavebtn: false, showRevokebtn: false })
-    //     }
-    //     if (value) {
-    //         let RMEmails = trFormdata.ReportingManagersEmail;
-    //         let DelToEmails = trFormdata.DelegateToEmails;
-    //         let RevEmails = trFormdata.ReviewersEmail;
-    //         let NotDlgRM = [];
-    //         let showPTO=false;
-    //         // To filter not delegated reporting managers :this loop can be uncomment to show Approve/reject btns only to RM/reviewers who are not delegated ,i.e delegated RM/Reviewer not able to see Approve/Reject
-    //         // for (let i in trFormdata.ReportingManagersEmail) {
-    //         //     let isNotDlg=true;
-    //         //     for (let j in trFormdata.DelegatedRMEmails) {
-    //         //         if(trFormdata.ReportingManagersEmail[i]==trFormdata.DelegatedRMEmails[j])
-    //         //         {
-    //         //             isNotDlg=false;
-    //         //             break;
-    //         //         }
-    //         //     }
-    //         //     if(isNotDlg)
-    //         //     {
-    //         //         NotDlgRM.push(trFormdata.ReportingManagersEmail[i]);
-    //         //     }
-    //         // }
-    //         if (userEmail == this.state.EmployeeEmail) {
-    //             value = false;
-    //         }
-    //         if (trFormdata.IsDelegated) {
-    //             if (DelToEmails.includes(userEmail)) {
-    //                 if (trFormdata.Pendingwith == "Manager") {
-    //                     value = true;
-    //                     this.setState({ showApproveRejectbtn: value, IsReviewer: false })
-    //                     return false;
-    //                 }
-    //                 else value = false;
-    //                 //added on 26/06/2024 delegation applicable for Reviewer also
-    //                 if (trFormdata.Pendingwith == "Reviewer") {
-    //                     value = true;
-    //                     showPTO=trFormdata.EligibleforPTO;
-    //                     this.setState({ showApproveRejectbtn: value,showPTO:showPTO, IsReviewer: true })
-    //                     return false;
-    //                 }
-    //                 else value = false;
-    //             }
-    //             else {
-    //                 //if (NotDlgRM.includes(userEmail)) { this condition is for to show approve/reject buttons only those RM are not delegated
-    //                 if (RMEmails.includes(userEmail)) {   //this condition is for to show approve/reject buttons to All RM irrespective of delegation
-    //                     if (trFormdata.Pendingwith == "Manager") {
-    //                         value = true;
-    //                         this.setState({ showApproveRejectbtn: value, IsReviewer: false })
-    //                         return false;
-    //                     }
-    //                     else value = false;
-    //                 } else value = false;
-    //                 //added on 26/06/2024 delegation applicable for Reviewer also
-    //                 if (RevEmails.includes(userEmail)) {
-    //                     // if (this.state.trFormdata.Pendingwith == "NA") {
-    //                     if (trFormdata.Pendingwith == "Reviewer") {
-    //                         value = true;
-    //                         showPTO=trFormdata.EligibleforPTO;
-    //                         this.setState({ showApproveRejectbtn: value,showPTO:showPTO, IsReviewer: true })
-    //                         return false;
-    //                     }
-    //                     else value = false;
-    //                 } else value = false;
-    //             }
-    //         }
-    //         else {
-    //             if (RMEmails.includes(userEmail)) {
-    //                 if (trFormdata.Pendingwith == "Manager") {
-    //                     value = true;
-    //                     this.setState({ showApproveRejectbtn: value, IsReviewer: false })
-    //                     return false;
-    //                 }
-    //                 else {
-    //                     value = false
-    //                 }
-    //             }
-    //             //added on 26/06/2024 delegation applicable for Reviewer also
-    //             if (RevEmails.includes(userEmail)) {
-    //                 // if (this.state.trFormdata.Pendingwith == "NA") {
-    //                 if (trFormdata.Pendingwith == "Reviewer") {
-    //                     value = true;
-    //                     showPTO=trFormdata.EligibleforPTO;
-    //                     this.setState({ showApproveRejectbtn: value,showPTO:showPTO, IsReviewer: true })
-    //                     return false;
-    //                 }
-    //                 else {
-    //                     value = false
-    //                 }
-    //             }
-    //         }
-    //         //commented on 26/06/2024 delegation applicable for Reviewer also
-    //         // if (RevEmails.includes(userEmail)) {
-    //         //     // if (this.state.trFormdata.Pendingwith == "NA") {
-    //         //     if (trFormdata.Pendingwith == "Reviewer") {
-    //         //         value = true;
-    //         //         this.setState({ showApproveRejectbtn: value, IsReviewer: true })
-    //         //         return false;
-    //         //     }
-    //         //     else {
-    //         //         value = false
-    //         //     }
-    //         // }
-    //         if (!RMEmails.includes(userEmail)) {
-    //             if (!RevEmails.includes(userEmail)) {
-    //                 if (!DelToEmails.includes(userEmail))
-    //                     value = false;
-    //             }
-    //         }
-    //         this.setState({ showApproveRejectbtn: value, IsReviewer: false })
-    //     }
-    //     else {
-    //         this.setState({ showApproveRejectbtn: value, IsReviewer: false })
-    //     }
-    // }
     private showApproveAndRejectButton(trFormdata) {
         //let value = trFormdata.Status != StatusType.Save ? true : false;
         this.setState({ showPTO: false });
@@ -4345,39 +3376,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
             }
         }
     }
-    // private userAccessableRecord(trFormdata) {
-    //     let currentUserEmail = this.props.spContext.userEmail;
-    //     let userEmail = this.state.EmployeeEmail;
-    //     let NotifiersEmail = trFormdata.NotifiersEmail;
-    //     let ReviewerEmails = trFormdata.ReviewersEmail;
-    //     let ApproverEmails = trFormdata.ReportingManagersEmail;
-    //     let DelegateToEmails = trFormdata.DelegateToEmails;
-    //     let userGroups = this.state.UserGoups;
-    //     let isAccessable = false;
-    //     if (userEmail.includes(currentUserEmail)) {
-    //         isAccessable = true
-    //     }
-    //     else if (ApproverEmails.includes(currentUserEmail)) {
-    //         isAccessable = true
-    //     }
-    //     else if (DelegateToEmails.includes(currentUserEmail)) {
-    //         isAccessable = true
-    //     }
-    //     else if (ReviewerEmails.includes(currentUserEmail)) {
-    //         isAccessable = true
-    //     }
-    //     else if (NotifiersEmail.includes(currentUserEmail)) {
-    //         isAccessable = true
-    //     }
-    //     else if (userGroups.includes('Timesheet Administrators')) {
-    //         isAccessable = true;
-    //         //this.setState({isSubmitted:true})
-    //     }
-    //     else if (userGroups.includes('Dashboard Admins')) {
-    //         isAccessable = true
-    //     }
-    //     this.setState({ isRecordAcessable: isAccessable })
-    // }
+
     private userAccessableRecord(trFormdata) {  // commented old function and same impleted with comparing IDs , bug arised in PROD on 2/May/2025
         let currentUserId = this.props.spContext.userId;
         let userId = this.state.currentUserId;
@@ -4497,21 +3496,6 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                 }
             }
         }
-        // for (let key in formdata.PTONewHrs[0]) //validation for invalid dots of PTO New Hrs 
-        // {
-        //     if (!["Description", "ProjectCode", "Total", "Type","PTOBalance","PTOAfterDeduction"].includes(key)) {
-        //         if (formdata.PTONewHrs[0][key] == ".") {
-        //             isValid.message = "Please enter valid hours.";
-        //             isValid.status = false;
-        //             let control = document.getElementById(0 + "_" + key + "_PTONewHrs") as HTMLInputElement;
-        //             if (!control.disabled) {
-        //                 document.getElementById(0 + "_" + key + "_PTONewHrs").focus();
-        //                 document.getElementById(0 + "_" + key + "_PTONewHrs").classList.add('mandatory-FormContent-focus');
-        //                 return isValid;
-        //             }
-        //         }
-        //     }
-        // }
 
         if (Action == "Submit") {
             isAllDaysTimeOff = true;
@@ -4780,48 +3764,8 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                             return isValid;
                         }
                     }
-                    // if (parseFloat(formdata.PTONewHrs[0].Total) != 0) {
-                    //     if (formdata.PTONewHrs[0].Description.trim() == "" && formdata.IsDescriptionMandatory) {
-                    //         isValid.message = "Description cannot be blank.";
-                    //         isValid.status = false;
-                    //         document.getElementById("0_Description_PTONewHrs").focus();
-                    //         document.getElementById("0_Description_PTONewHrs").classList.add('mandatory-FormContent-focus');
-                    //         return isValid;
-                    //     }
-                    //     else if (formdata.PTONewHrs[0].ProjectCode.trim() == "" && formdata.IsProjectCodeMandatory) {
-                    //         isValid.message = "Project Code cannot be blank.";
-                    //         isValid.status = false;
-                    //         document.getElementById("0_ProjectCode_PTONewHrs").focus();
-                    //         document.getElementById("0_ProjectCode_PTONewHrs").classList.add('mandatory-FormContent-focus');
-                    //         return isValid;
-                    //     }
-                    // }
                 }
             }
-            // if(parseFloat(formdata.PTONewHrs[0].PTOAfterDeduction)<0)
-            // {
-            //     isValid.message = "You have entered more 'PTO hours' than available 'PTO Balance'. Please revise your entry.";
-            //     isValid.status = false;
-            //     document.getElementById("0_Total_PTONewHrs").focus();
-            //     document.getElementById("0_Total_PTONewHrs").classList.add('mandatory-FormContent-focus');
-            //     return isValid;
-            // }
-            // for (let key in formdata.Total[0])  //validation if Entire Week day is empty
-            // {
-            //     val = formdata.Total[0][key];
-            //     let DayTime = 0;
-
-            //     if (!["Total", "Type", "Sat", "Sun"].includes(key) && !this.WeekHeadings[0]['IsDay'+(weeks.indexOf(key)+1)+'Holiday'].isHoliday ) {
-            //         DayTime = parseFloat(val);
-            //         if (DayTime == 0) {
-            //             isValid.message = "Total hours in a day cannot be 0.";
-            //             isValid.status = false;
-            //             document.getElementById("Total" + key).focus();
-            //             document.getElementById("Total" + key).classList.add('mandatory-FormContent-focus');
-            //             return isValid;
-            //         }
-            //     }
-            // }
             val = formdata.Total[0].Total;
             Time = parseFloat(val);  //0 hours allow commented and  minimum 40 hours validation updated after TimeOffRequest form demo on 16th May 2025
             // if (Time == 0 && formdata.Comments.trim() == "") {
@@ -4881,15 +3825,6 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                     return isValid;
                 }
             }
-            // if (formdata.EligibleforPTO && this.state.totalPTOFormData && (formdata.PTOHrs[0].PTOAfterDeduction) > 0 && this.state.totalPTOFormData.TOTotal > 0 && formdata.Comments.trim() == '') // Comments are mandatory if PTOBalance is avialable, but employee applied for UPTO
-            // {
-            //     isValid.status = false;
-            //     isValid.message = `'${formdata.PTOHrs[0].PTOAfterDeduction}' PTO hours are available. Please provide a reason for choosing Unpaid Time Off.`;
-            //     let elm = document.getElementById('txtComments');
-            //     elm.focus();
-            //     setTimeout(() => elm.classList.add('mandatory-FormContent-focus'), 300);
-            //     return isValid;
-            // }
             //if isValid true remove all 'mandatory-FormContent-focus' classes
             this.RemoveAll_mandatory_FormContent_focus(formdata);
             return isValid;
@@ -4921,9 +3856,6 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
             //PTOHrs row
             val = parseFloat(formdata.PTOHrs[0][prop].toString());
             formdata.PTOHrs[0][prop] = Number.isNaN(val) ? '' : parseFloat(formdata.PTOHrs[0][prop].toString()).toString();
-            //PTONewHrs row
-            // val = parseFloat(formdata.PTONewHrs[0][prop].toString());
-            // formdata.PTONewHrs[0][prop] = Number.isNaN(val) ? '' : parseFloat(formdata.PTONewHrs[0][prop].toString()).toString();
         }
         return formdata;
     }
@@ -4959,14 +3891,6 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                 document.getElementById(0 + "_" + key + "_PTOHrs").classList.remove('mandatory-FormContent-focus');
             }
         }
-        //    if(this.state.trFormdata.EligibleforPTO)
-        //    {
-        //        for (let key in formdata.PTONewHrs[0]) {
-        //            if (!["Total", "Type","PTOBalance","PTOAfterDeduction"].includes(key)) {
-        //                document.getElementById(0 + "_" + key + "_PTONewHrs").classList.remove('mandatory-FormContent-focus');
-        //            }
-        //        }
-        //    }
         Object.keys(formdata.Total[0]).forEach(key => {
             if (!["Total", "Description", "ProjectCode", "Type"].includes(key))
                 document.getElementById("Total" + key).classList.remove('mandatory-FormContent-focus', 'mandatory-8hourstotal');
@@ -5167,34 +4091,24 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
         }
     };
     private bindPTOFormData = (data, TimeOffRecPTOBalance, TimeOff) => { //This function is used to bind the TimeOffRequest submitted data to TimeOff row
-        //if(Object.keys(data).length)
-        //{
         this.setState({ ptoFormData: data.TimeOffData ?? [], totalPTOFormData: data });
         this.bindTimeOffHoursOnPTOFormSubmit(data, TimeOffRecPTOBalance, true, TimeOff);
-        //}
     };
     private bindTimeOffHoursOnPTOFormSubmit = (totalPTOFormData, PTOBalance, IsTimeOffRecData?, TimeOff?) => {
         const WeekKeys = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Total'];
         const trFormdata = this.state.trFormdata;
         let PTOTransactionsDayWise = [];
         if (Object.keys(totalPTOFormData).length) {
-            //if(parseFloat(totalPTOFormData.Total[0].Total)>0)
-            //{
+           
             WeekKeys.forEach(day => {
                 trFormdata.PTOHrs[0][day] = totalPTOFormData.Total[0][day]; //for Time Off row binding
                 // for getting daywise PTO
                 if (!['Total'].includes(day)) {
                     let dateKey = this.WeekHeadings[0][day + 'Date'];
                     let Hours = parseFloat(totalPTOFormData.PTOSubTotal[0][day]);
-                    if (Hours > 0) {
-                        // const existingTransaction = this.state.PTOTransactions.find(transaction => transaction[dateKey] !== undefined);
-                        // if (existingTransaction) {
-                        //     // Update the existing value
-                        //     existingTransaction[dateKey] = Hours;
-                        // } else {
-                        //     // Push new object
+                    if (Hours > 0) {  
+                        // Push new object
                         PTOTransactionsDayWise.push({ [dateKey]: Hours });
-                        //}
                     }
                 }
                 //FOR COLUMN WISE CALCULATION
@@ -5226,7 +4140,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                 trFormdata.Total[0][day] = parseFloat(WeeklyTotal.toFixed(4)).toString();
             })
             //}
-            if (IsTimeOffRecData && TimeOff.length && ![StatusType.Submit, StatusType.Approved, StatusType.ManagerApprove, StatusType.ReviewerApprove,StatusType.Updated].includes(TimeOff[0].Status)) // if TimeOff Rec status is save/Revoke/Rejected PreviousPTOBalance is inaccurate, in this case display the accurate balance from current available balance
+            if (IsTimeOffRecData && TimeOff.length && ![StatusType.Submit, StatusType.Approved, StatusType.ManagerApprove, StatusType.ReviewerApprove, StatusType.Updated].includes(TimeOff[0].Status)) // if TimeOff Rec status is save/Revoke/Rejected PreviousPTOBalance is inaccurate, in this case display the accurate balance from current available balance
             {
                 PTOBalance = this.state.trFormdata.PTOBalanceAfterDeduction;
             }
@@ -5238,23 +4152,6 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
             //to handle Previously TimeOffRequest submitted, but with drawn from TimeOffDashboard , in this case have to display empty time off row and corresponding calculations
             WeekKeys.forEach(day => {
                 trFormdata.PTOHrs[0][day] = ['Total'].includes(day) ? '0.00' : ''; //for Time Off row binding
-                // // for getting daywise PTO
-                // if(!['Total'].includes(day))
-                // {
-                //     let dateKey =this.WeekHeadings[0][day+'Date'];
-                //     let Hours=parseFloat(totalPTOFormData.PTOSubTotal[0][day]);
-                //     if(Hours>0)
-                //     {
-                //         const existingTransaction = this.state.PTOTransactions.find(transaction => transaction[dateKey] !== undefined);
-                //         if (existingTransaction) {
-                //             // Update the existing value
-                //             existingTransaction[dateKey] = Hours;
-                //         } else {
-                //             // Push new object
-                //             this.state.PTOTransactions.push({ [dateKey]: Hours });
-                //         }
-                //     }
-                // }
                 //FOR COLUMN WISE CALCULATION
                 // NON BILLABLE SUBTOTAL COLUMN WISE
                 let WeeklyTotal = 0;
@@ -5283,37 +4180,28 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
 
                 trFormdata.Total[0][day] = parseFloat(WeeklyTotal.toFixed(4)).toString();
             })
-
-            //trFormdata.PTOHrs[0]["PTOBalance"] = parseFloat(PTOBalance).toString();
-            //trFormdata.PTOHrs[0]["PTOAfterDeduction"] = parseFloat(PTOBalance).toString();
         }
 
         this.setState({ trFormdata, PTOTransactions: PTOTransactionsDayWise });
 
     }
     private openPToFormModal = async () => {
-        //if(!this.state.timeOffTypes.length){
         let filQuery = 'IsActive eq 1';
         if (!this.state.trFormdata.EligibleforPTO) {
             filQuery += ' and IsVisibleToPTONotEligibleEmp eq 1';
         }
         const PTOTimeOffTypes = await sp.web.lists.getByTitle('TimeOffTypes').items.select('*').filter(filQuery).getAll();
         const sortedArray = PTOTimeOffTypes.sort((a, b) => a.Title.localeCompare(b.Title));
-         let UPTOTypes = sortedArray.map(i => {
-                if (i.IsUPTO == true)
-                    return i.Title;
-            })
-        this.setState({ timeOffTypes: sortedArray,UPTOTypes, isPTOFormModalVisible: true });
-        // }
-        // else{
-        //     this.setState({isPTOFormModalVisible: true});
-        // }
+        let UPTOTypes = sortedArray.map(i => {
+            if (i.IsUPTO == true)
+                return i.Title;
+        })
+        this.setState({ timeOffTypes: sortedArray, UPTOTypes, isPTOFormModalVisible: true });
     }
     private handlePtoClose = () => {
         this.setState({ isPTOFormModalVisible: false });
     }
     private handlePTOCancel = () => {
-        // this.setState({ isPTOFormModalVisible: false });
         let totalPTOFormData = {
             TimeOffData: [{ TimeOffType: '', IsPTOEligible: false, Mon: '', Tue: '', Wed: '', Thu: '', Fri: '', Total: '0.00' }],
             PTOSubTotal: [{ Type: "Paid Time Off", Mon: '0.00', Tue: '0.00', Wed: '0.00', Thu: '0.00', Fri: '0.00', Total: '0.00' }],
@@ -5323,7 +4211,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
             PTOTotal: 0,
             TOTotal: 0,
             IsActive: false,
-            TOComments:''
+            TOComments: ''
         }
         this.bindTimeOffHoursOnPTOFormSubmit(totalPTOFormData, this.state.trFormdata.PTOBalanceAfterDeduction);
         this.setState({ totalPTOFormData: totalPTOFormData, ptoFormData: totalPTOFormData.TimeOffData });
@@ -5384,9 +4272,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
 
         if (!this.state.isRecordAcessable) {
 
-            // let url = `https://synergycomcom.sharepoint.com/sites/Billing.Timesheet/SitePages/AccessDenied.aspx?`
             let url = this.siteURL + "/SitePages/AccessDenied.aspx";
-            //return (<Navigate to={url} />);
             window.location.href = url;
         }
         if (this.state.redirect) {
@@ -5425,69 +4311,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                                         <label className='headerClient'>{this.state.trFormdata.ClientName}</label><span id='weekstartAndweekEnd'>{this.getWeekstartAndWeekEnd(this.state.trFormdata)}</span>
                                         {this.state.showPDFButton && <ExportToPDF AllTimesheetsData={this.state.PDFData} LogoImgUrl={this.siteURL + '/PublishingImages/SynergyLogo.png'} filename={this.state.PDFFileName} btnTitle='Export to PDF' className='a-export-pdf-icon'></ExportToPDF>}
                                     </div>
-                                    {/* <div className="row pt-2 px-4 weeklysection1"> */}
                                     <div className="row justify-content-center my-3">
-                                        {/* {this.state.isAdmin && this.props.match.params.id == undefined ?
-                                            <div className="col-md-2">
-                                                <div className="light-text clientName">
-                                                    <label>Applying for<span className="mandatoryhastrick">*</span></label>
-                                                    <select className="ddlApplying" name="Applying" title="Applying for" onChange={this.handleApplyingfor}>
-                                                        <option value='Self'>Self</option>
-                                                        <option value='onBehalf'>On Behalf</option>
-                                                    </select>
-                                                </div>
-                                            </div> : ''}
-                                        {this.state.onBehalf ?
-                                            <div className={this.state.isAdmin ? "col-md-3" : "col-md-4"}>
-                                                <div className="light-text ">
-                                                    <label>Employee<span className="mandatoryhastrick">*</span></label>
-                                                    <select className="ddlEmployee ddlClient" required={true} name="Employee" title="Employee" onChange={this.handleApplyingfor} ref={this.EmployeeDropdown}>
-                                                        <option value='-1'>None</option>
-                                                        {this.state.EmployeesObj.map((option) => (
-                                                            <option value={option.ID} selected={this.state.currentUserId == option.ID}>{option.Title}</option>
-                                                        ))}
-                                                    </select>
-                                                </div>
-                                            </div> :
-                                            <div className={this.state.isAdmin ? "col-md-3" : "col-md-3"}>
-                                                <div className="light-text">
-                                                    <label>Name</label>
-                                                    <input className="txtEmployeeName" required={true} name="Name" title="Name" value={this.state.trFormdata.Name} readOnly />
-                                                </div>
-                                            </div>
-                                        }
-                                        <div className={this.state.isAdmin ? "col-md-2" : "col-md-3"}>
-                                            <div className="light-text clientName">
-                                                <label className='lblClient'>Client Name <span className="mandatoryhastrick">*</span></label>
-                                                <select className="ddlClient" required={true} id='Client' name="ClientName" title="Client Name" onChange={this.handleClientChange} ref={this.Client} disabled={(this.state.ClientNames.length == 1 ? true : this.currentUser == this.state.trFormdata.Name || this.state.isAdmin ? false : true)}>
-                                                    <option value=''>None</option>
-                                                    {this.state.ClientNames.map((option) => <option value={option} selected={option == this.state.trFormdata.ClientName}>{option}</option>)}
-                                                   {this.getClientNames()} 
-                                                </select>
-                                            </div>
-                                        </div>
-                                        <div className={this.state.isAdmin ? "col-md-3" : "col-md-3"}>
-                                                <div className="light-text">
-                                                    <label>{"Reporting Manager(s)"}</label>
-                                                    <input className="txtReportingManager" required={true} name="ReportingManager" title="Reporting Manager(s)" value={this.state.AllReportingManagerNames} readOnly />
-                                                </div>
-                                        </div>
-                                        <div className={this.state.isAdmin ? "col-md-2 divWeeklyStartDate" : "col-md-3 divWeeklyStartDate"}>
-                                            <div className="light-text div-readonly">
-
-                                                <div className="custom-datepicker-disabled-dates" id="divWeekStartDate">
-                                                    <CustomDatePicker
-                                                        handleChange={this.WeekStartDateChange}
-                                                        selectedDate={this.state.trFormdata.WeekStartDate}
-                                                        className='dateWeeklyTimesheet'
-                                                        labelName='Weekly Start Date'
-                                                        isDisabled={(this.currentUser == this.state.trFormdata.Name || this.state.isAdmin ? false : true)}
-                                                        ref={this.weekStartDate}
-                                                        Day={this.WeekNames[0].dayCode}
-                                                    />
-                                                </div>
-                                            </div>
-                                        </div> */}
                                         {/* new alignment changes start*/}
                                         {(this.state.isAdmin || this.state.IsCurrUserReviewer) && this.props.match.params.id == undefined ?
                                             <div className="col-md-2">
@@ -5502,15 +4326,6 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
 
                                         {this.state.onBehalf ?
                                             <div className={this.state.isAdmin ? "col-md-2" : "col-md-3"}>
-                                                {/* <div className="light-text ">
-                                                    <label>Employee<span className="mandatoryhastrick">*</span></label>
-                                                    <select className="form-control" required={true} name="Employee" title="Employee" onChange={this.handleApplyingfor} ref={this.EmployeeDropdown}>
-                                                        <option value='-1'>None</option>
-                                                        {this.state.EmployeesObj.map((option) => (
-                                                            <option value={option.ID} selected={this.state.currentUserId == option.ID}>{option.Title}</option>
-                                                        ))}
-                                                    </select>
-                                                </div> */}
                                                 <div className="custom-dropdown">
                                                     <SearchableDropdown label="Employee" Title="Employee" name="Employee" id="Employee" placeholderText="Select Employee" className="" selectedValue={this.state.currentUserId} optionLabel={'Title'} optionValue={'ID'} OptionsList={this.state.EmployeesObj} onChange={(selectedOption, actionMeta) => { this.handleApplyingfor(selectedOption, actionMeta) }} isRequired={true} refElement={this.EmployeeDropdown} noOptionsMessage="No Employee"></SearchableDropdown>
                                                 </div>
@@ -5523,13 +4338,6 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                                             </div>
                                         }
                                         <div className={this.state.isAdmin ? "col-md-2" : "col-md-3"}>
-                                            {/* <div className="light-text">
-                                                <label >Client Name <span className="mandatoryhastrick">*</span></label>
-                                                <select className="form-control" required={true} id='Client' name="ClientName" title="Client Name" onChange={this.handleClientChange} ref={this.Client} disabled={(this.state.ClientNames.length == 1 ? true : this.currentUser == this.state.trFormdata.Name || this.state.isAdmin ? false : true)}>
-                                                    <option value=''>None</option>
-                                                    {this.state.ClientNames.map((option) => <option value={option} selected={option == this.state.trFormdata.ClientName}>{option}</option>)}
-                                                </select>
-                                            </div> */}
                                             <div className="custom-dropdown">
                                                 <SearchableDropdown label="Client" Title="Client" name="ClientName" id="Client" placeholderText="Select Client" className="" selectedValue={this.state.trFormdata.ClientName} optionLabel={'Title'} optionValue={'Title'} OptionsList={this.state.ClientNames} onChange={(selectedOption, actionMeta) => { this.handleClientChange(selectedOption, actionMeta) }} isRequired={true} refElement={this.Client} disabled={(this.state.ClientNames.length == 1 ? true : this.currentUser == this.state.trFormdata.Name || this.state.isAdmin ? false : true)} noOptionsMessage="No Client"></SearchableDropdown>
                                             </div>
@@ -5751,7 +4559,6 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                                                     <td></td>
                                                 </tr>
                                                 <tr id="PTOHrs">
-                                                    {/* <td className="text-start"><div className="p-1">PTO (Paid Time Off)</div></td> */}
                                                     <td className="text-start"><div className="p-1">Time Off</div></td>
                                                     <td colSpan={2} className='text-center'>
                                                         {this.state.showClickHereLink && <div className='divClickHere'>
@@ -5760,8 +4567,6 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                                                         </div>}
                                                     </td>
 
-                                                    {/* <td><textarea className="form-control textareaBorder" rows={1} value={this.state.trFormdata.PTOHrs[0].Description} title={this.state.trFormdata.PTOHrs[0].Description} onChange={this.changeTime} id="0_Description_PTOHrs" disabled={this.state.isSubmitted || this.state.showNonBillable}></textarea></td>
-                                                    <td><input className="form-control" value={this.state.trFormdata.PTOHrs[0].ProjectCode} title={this.state.trFormdata.PTOHrs[0].ProjectCode} onChange={this.changeTime} id="0_ProjectCode_PTOHrs" disabled={this.state.isSubmitted || this.state.showNonBillable} ></input></td> */}
                                                     {/* By defalult passing true in condition else block for disable prop : before integrating TimeOffRequest form it is false */}
                                                     <td>
                                                         <input className={"time " + (this.WeekNames[0].day1) + ' ' + ((this.state.totalPTOFormData.PTOSubTotal && this.state.showPTO) ? parseFloat(this.state.totalPTOFormData.PTOSubTotal[0][this.WeekNames[0].day1]) > 0 && parseFloat(this.state.totalPTOFormData.TOSubTotal[0][this.WeekNames[0].day1]) > 0 ? 'PTO_TOCell' : parseFloat(this.state.totalPTOFormData.PTOSubTotal[0][this.WeekNames[0].day1]) > 0 ? 'PTOCell' : 'form-control' : 'form-control')} value={this.state.trFormdata.PTOHrs[0][this.WeekNames[0].day1]} onChange={this.changeTime} data-date={this.WeekHeadings[0][this.WeekNames[0].day1 + 'Date']} id={"0_" + this.WeekNames[0].day1 + "_PTOHrs"} disabled={this.state.isSubmitted || this.state.showNonBillable || this.WeekHeadings[0].IsMonJoined || ['Sat', 'Sun'].includes(this.WeekNames[0].day1) ? true : true} ></input>
@@ -5793,41 +4598,6 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                                                     <td><input className="form-control time WeekTotal" value={this.state.trFormdata.PTOHrs[0].Total} onChange={this.changeTime} id="0_Total_PTOHrs" type="text" maxLength={5} tabIndex={-1} readOnly></input></td>
                                                     <td></td>
                                                 </tr>
-                                                {/* {this.state.showPTO && <tr id="PTONewHrs">
-                                                    <td className="text-start"><div className="p-1">Paid Time Off</div></td>
-                                                    <td><textarea className="form-control textareaBorder" rows={1} value={this.state.trFormdata.PTONewHrs[0].Description} title={this.state.trFormdata.PTONewHrs[0].Description} onChange={this.changeTime} id="0_Description_PTONewHrs" disabled={this.state.isSubmitted || this.state.showNonBillable}></textarea></td>
-                                                    <td><input className="form-control" value={this.state.trFormdata.PTONewHrs[0].ProjectCode} title={this.state.trFormdata.PTONewHrs[0].ProjectCode} onChange={this.changeTime} id="0_ProjectCode_PTONewHrs" disabled={this.state.isSubmitted || this.state.showNonBillable} ></input></td>
-                                                    <td>
-                                                        <input className={"form-control time " + (this.WeekNames[0].day1)} value={this.state.trFormdata.PTONewHrs[0][this.WeekNames[0].day1]} onChange={this.changeTime} id={"0_" + this.WeekNames[0].day1 + "_PTONewHrs"} disabled={this.state.isSubmitted || this.state.showNonBillable || this.WeekHeadings[0].IsMonJoined} ></input>
-                                                    </td>
-                                                    <td>
-                                                        <input className={"form-control time " + (this.WeekNames[0].day2)} value={this.state.trFormdata.PTONewHrs[0][this.WeekNames[0].day2]} onChange={this.changeTime} id={"0_" + this.WeekNames[0].day2 + "_PTONewHrs"} disabled={this.state.isSubmitted || this.state.showNonBillable || this.WeekHeadings[0].IsTueJoined} ></input>
-                                                    </td>
-                                                    <td>
-                                                        <input className={"form-control time " + (this.WeekNames[0].day3)} value={this.state.trFormdata.PTONewHrs[0][this.WeekNames[0].day3]} onChange={this.changeTime} id={"0_" + this.WeekNames[0].day3 + "_PTONewHrs"} disabled={this.state.isSubmitted || this.state.showNonBillable || this.WeekHeadings[0].IsWedJoined} ></input>
-                                                    </td>
-                                                    <td>
-                                                        <input className={"form-control time " + (this.WeekNames[0].day4)} value={this.state.trFormdata.PTONewHrs[0][this.WeekNames[0].day4]} onChange={this.changeTime} id={"0_" + this.WeekNames[0].day4 + "_PTONewHrs"} disabled={this.state.isSubmitted || this.state.showNonBillable || this.WeekHeadings[0].IsThuJoined} ></input>
-                                                    </td>
-                                                    <td>
-                                                        <input className={"form-control time " + (this.WeekNames[0].day5)} value={this.state.trFormdata.PTONewHrs[0][this.WeekNames[0].day5]} onChange={this.changeTime} id={"0_" + this.WeekNames[0].day5 + "_PTONewHrs"} disabled={this.state.isSubmitted || this.state.showNonBillable || this.WeekHeadings[0].IsFriJoined} ></input>
-                                                    </td>
-                                                    <td>
-                                                        <input className={"form-control time " + (this.WeekNames[0].day6)} value={this.state.trFormdata.PTONewHrs[0][this.WeekNames[0].day6]} onChange={this.changeTime} id={"0_" + this.WeekNames[0].day6 + "_PTONewHrs"} disabled={this.state.isSubmitted || this.state.showNonBillable || this.WeekHeadings[0].IsSatJoined} ></input>
-                                                    </td>
-                                                    <td>
-                                                        <input className={"form-control time " + (this.WeekNames[0].day7)} value={this.state.trFormdata.PTONewHrs[0][this.WeekNames[0].day7]} onChange={this.changeTime} id={"0_" + this.WeekNames[0].day7 + "_PTONewHrs"} disabled={this.state.isSubmitted || this.state.showNonBillable || this.WeekHeadings[0].IsSunJoined} ></input>
-                                                    </td>
-                                                    <td><span className="c-badge">PTO</span></td>
-                                                    <td>
-                                                    <input className="form-control time WeekTotal" value={this.state.trFormdata.PTONewHrs[0].PTOBalance} onChange={this.changeTime} id="PTObalance" type="text" maxLength={5} readOnly></input>
-                                                    </td>
-                                                    <td>
-                                                    <input className="form-control time WeekTotal" value={this.state.trFormdata.PTONewHrs[0].PTOAfterDeduction} onChange={this.changeTime} id="PTOAfterDeduction" type="text" maxLength={5} readOnly></input>
-                                                    </td>
-                                                    <td><input className="form-control time WeekTotal" value={this.state.trFormdata.PTONewHrs[0].Total} onChange={this.changeTime} id="0_Total_PTONewHrs" type="text" maxLength={5} readOnly></input></td>
-                                                    <td></td>
-                                                </tr>} */}
                                                 {this.state.trFormdata.ClientName.toLowerCase().includes("synergy") || this.state.trFormdata.ClientName.toLowerCase() == "" ? "" :
                                                     <tr className="">
                                                         <td className="fw-bold text-start">
@@ -5940,7 +4710,6 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                                 </div>
                                 <div className="row">
                                     <div className="col-md-12 text-center my-2">
-                                        {/* {this.state.showApproveRejectbtn&&!this.state.IsReviewer?<button type="button" id="btnApprove" onClick={this.showConfirmApprove} className="SubmitButtons btn">Approve</button>:''} */}
                                         {this.state.showApproveRejectbtn ? <button type="button" id="btnApprove" onClick={this.showConfirmApprove} className="SubmitButtons btn" title="Approve" >Approve</button> : ''}
                                         {this.state.showApproveRejectbtn ? <button type="button" id="btnReject" onClick={this.showConfirmReject} className="RejectButtons btn" title="Reject" >Reject</button> : ''}
                                         {this.state.showRevokebtn ? <button type="button" id="btnRevoke" onClick={this.showConfirmRevoke} className="txt-white CancelButtons bc-burgundy btn" title="Revoke">Revoke</button> : ''}
@@ -5957,7 +4726,6 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                                         <table className="table table-bordered m-0 timetable">
                                             <thead className='ActionHistoryHead'>
                                                 <tr>
-                                                    {/* <th className="">Action By</th> */}
                                                     <th className="" style={{ width: '250px' }}>Action By</th>
                                                     <th className="" style={{ width: '150px' }}>Action</th>
                                                     <th className="" style={{ width: '250px' }}>Date & Time (EST)</th>

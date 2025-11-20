@@ -1,6 +1,5 @@
 import * as React from 'react';
 import { SPHttpClient } from '@microsoft/sp-http';
-import { PeoplePicker, PrincipalType } from "@pnp/spfx-controls-react/lib/PeoplePicker";
 import Formvalidator from '../../Utilities/Formvalidator';
 import { ControlType, StatusType } from '../../Constants/Constants';
 import ModalPopUp from '../Shared/ModalPopUp';
@@ -18,15 +17,12 @@ import "@pnp/sp/files";
 import "@pnp/sp/folders";
 import "@pnp/sp/site-users/web";
 import "@pnp/sp/site-groups";
-import { highlightCurrentNav, highlightCurrentNav2 } from '../../Utilities/HighlightCurrentComponent';
+import { highlightCurrentNav } from '../../Utilities/HighlightCurrentComponent';
 import DatePicker from "../Shared/DatePickerField";
-import CustomDatePicker from "../Shared/DatePicker";
 import { Navigate } from 'react-router-dom';
-import InputCheckBox from '../Shared/InputCheckBox';
 import { Toaster } from 'react-hot-toast';
 import customToaster from '../Shared/Toaster.component';
 import { ToasterTypes } from '../../Constants/Constants';
-import InputText from '../Shared/InputText';
 import { addDays } from 'office-ui-fabric-react';
 import DateUtilities from '../../Utilities/DateUtilities';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -430,7 +426,6 @@ class TimeOffRequestForm extends React.Component<TimeOffRequestFormProps, TimeOf
             TimeOffTableData.TOTotal = [null, undefined, ''].includes(data[0].TOTotal) ? 0 : parseFloat(data[0].TOTotal);
             TimeOffTableData.dayKeys = this.getDynamicDayKeys(FormDate, ToDate);
 
-            //let PTOTransactionsDayWise = this.mapDatesToHours(TimeOffTableData.PTOSubTotal, new Date(DateUtilities.GetDateMMDDYYYYAsInList(data[0].From)));
             let result = this.buttonsVisibility(data[0].Status, FormDate, EmployeeId, SynergyManagerIds, userGroups, data[0].IsSubmittedFromTimesheetForm);
             //to hold the withdraw/Revoke/Submit of TimeOffRequest ,if Timesheet status is not in [Save,Revoke,Reject]
             let WeekStartLowerBound = DateUtilities.getDateMMDDYYYY(addDays(new Date(FormDate), -7));
@@ -797,16 +792,12 @@ class TimeOffRequestForm extends React.Component<TimeOffRequestFormProps, TimeOf
         }
         let isDatesValid = Formvalidator.checkValidations(data);
         if (!isDatesValid.status) {
-            //this.setState({ loading: false });
-            //customToaster('toster-error', ToasterTypes.Error, isDatesValid.message, 4000);
             return isDatesValid;
         }
         if (new Date(this.state.FromDate) > new Date(this.state.ToDate)) {
             let elm = document.getElementById('txtFromDate');
             elm.focus();
             setTimeout(() => elm.classList.add('mandatory-FormContent-focus'), 300);
-            //this.setState({ loading: false });
-            //customToaster('toster-error', ToasterTypes.Error, 'From Date cannot be greater than To Date', 4000);
             isValid.status = false;
             isValid.message = 'From Date cannot be greater than To Date';
             return isValid;
@@ -814,36 +805,26 @@ class TimeOffRequestForm extends React.Component<TimeOffRequestFormProps, TimeOf
         let doj = new Date(this.state.DateOfJoining);
         let from = new Date(this.state.FromDate);
         if (new Date(doj) > new Date(from)) {
-            // this.setState({ loading: false });
-            // customToaster('toster-error', ToasterTypes.Error, "TimeOff cannot be applied for days preceding your date of joining.", 4000);
             isValid.status = false;
             isValid.message = 'TimeOff cannot be applied for days preceding your date of joining.';
             return isValid;
         }
         isValid = isDatesValid.status ? this.validateTimeOffControls(ActionID) : isDatesValid;
         if (!isValid.status) {
-            //this.setState({ loading: false });
-            //customToaster('toster-error', ToasterTypes.Error, isValid.message, 4000);
             return isValid;
         }
         isValid = this.checkIsValidDateRange(this.state.FromDate, this.state.ToDate);
         if (!isValid.status) {
-            //this.setState({ loading: false });
-            //customToaster('toster-error', ToasterTypes.Error, isValid.message, 4000)
             return isValid;
         }
         isValid = ActionID == 'btnSubmit' ? await this.validateDuplicateRecord() : isValid;
         if (!isValid.status) {
-            //this.setState({ loading: false });
-            //customToaster('toster-error', ToasterTypes.Error, isValid.message, 4000)
             return isValid;
         }
         //to hold the submit of TimeOffRequest ,if Timesheet status is not in [Save,Revoke,Reject]
         if (this.state.TimesheetRec.length) {
             isValid = this.validateTimesheetStatus(ActionID);
             if (!isValid.status) {
-                //customToaster('toster-warning', ToasterTypes.Warning, isValid.message, 4000);
-                //this.setState({ loading: false });
                 return isValid;
             }
         }
@@ -852,7 +833,7 @@ class TimeOffRequestForm extends React.Component<TimeOffRequestFormProps, TimeOf
             elm.focus();
             setTimeout(() => elm.classList.add('mandatory-FormContent-focus'), 300);
             isValid.status = false;
-            isValid.message = 'Please provide reason for updating hours.';
+            isValid.message = 'Please provide comments for updating hours.';
             return isValid;
         }
         if (ActionID == 'btnUpdate' && this.state.isHRView && this.state.existingTimeOffRowsData.toLocaleLowerCase() == JSON.stringify(this.state.TimeOffTableData.TimeOffRowsData).toLocaleLowerCase()) {
@@ -1060,17 +1041,6 @@ class TimeOffRequestForm extends React.Component<TimeOffRequestFormProps, TimeOf
 
         let AppliedTOHours = this.state.TimeOffTableData.PTOTotal;
         let PTOPostData = {};
-        // let PTOTransactionData = {
-        //     EmployeeId: this.state.EmployeeId,
-        //     TransactionType: ActionStatus,
-        //     PostedOn: this.addBrowserwrtServer(new Date(DateUtilities.getDateMMDDYYYY(new Date()))),
-        //     From: this.addBrowserwrtServer(new Date(new Date(DateUtilities.getDateMMDDYYYY(this.state.FromDate)))),
-        //     To: this.addBrowserwrtServer(new Date(new Date(DateUtilities.getDateMMDDYYYY(this.state.ToDate)))),
-        //     Hours: AppliedTOHours.toFixed(4),
-        //     Reason: this.state.Comments,
-        //     Year: new Date().getFullYear().toString(),
-        //     IsActive: true
-        // }
         switch (ActionStatus) {
             case StatusType.Submit:
                 PTOPostData =
@@ -1080,8 +1050,6 @@ class TimeOffRequestForm extends React.Component<TimeOffRequestFormProps, TimeOf
                 }
                 if (IsPTOEligibleTOSelected) {
                     postObject['PreviousPTOBalance'] = this.state.PTOData.PTOBalanceAfterDeduction;
-                    //PTOTransactionData['PreviousPTOBalance'] = parseFloat(this.state.PTOData.PTOBalanceAfterDeduction).toFixed(4);
-                    //PTOTransactionData['CurrentPTOBalance'] = PTOPostData['PTOBalanceAfterDeduction'];
                     postObject['CurrentPTOBalance'] = parseFloat(PTOPostData['PTOBalanceAfterDeduction']).toString();
                 }
                 break;
@@ -1093,8 +1061,6 @@ class TimeOffRequestForm extends React.Component<TimeOffRequestFormProps, TimeOf
                 }
                 if (IsPTOEligibleTOSelected) {
                     postObject['PreviousPTOBalance'] = this.state.PTOData.PTOBalanceAfterDeduction;
-                    //PTOTransactionData['PreviousPTOBalance'] = parseFloat(this.state.PTOData.PTOBalanceAfterDeduction).toFixed(4);
-                    //PTOTransactionData['CurrentPTOBalance'] = PTOPostData['PTOBalanceAfterDeduction'];
                     postObject['CurrentPTOBalance'] = parseFloat(PTOPostData['PTOBalanceAfterDeduction']).toString();
                 }
 
@@ -1109,8 +1075,6 @@ class TimeOffRequestForm extends React.Component<TimeOffRequestFormProps, TimeOf
                 }
                 if (IsPTOEligibleTOSelected) {
                     postObject['PreviousPTOBalance'] = this.state.PTOData.PTOBalanceAfterDeduction;
-                    //PTOTransactionData['PreviousPTOBalance'] = parseFloat(this.state.PTOData.PTOBalanceAfterDeduction).toFixed(4);
-                    //PTOTransactionData['CurrentPTOBalance'] = PTOPostData['PTOBalanceAfterDeduction'];
                     postObject['CurrentPTOBalance'] = parseFloat(PTOPostData['PTOBalanceAfterDeduction']).toString();
                 }
 
@@ -1129,8 +1093,6 @@ class TimeOffRequestForm extends React.Component<TimeOffRequestFormProps, TimeOf
                 }
                 if (IsPTOEligibleTOSelected) {
                     postObject['PreviousPTOBalance'] = this.state.PTOData.PTOBalanceAfterDeduction;
-                    //PTOTransactionData['PreviousPTOBalance'] = parseFloat(this.state.PTOData.PTOBalanceAfterDeduction).toFixed(4);
-                    //PTOTransactionData['CurrentPTOBalance'] = PTOPostData['PTOBalanceAfterDeduction'];
                     postObject['CurrentPTOBalance'] = parseFloat(PTOPostData['PTOBalanceAfterDeduction']).toString();
                 }
 
@@ -1143,8 +1105,6 @@ class TimeOffRequestForm extends React.Component<TimeOffRequestFormProps, TimeOf
                 }
                 if (IsPTOEligibleTOSelected) {
                     postObject['PreviousPTOBalance'] = this.state.PTOData.PTOBalanceAfterDeduction;
-                    //PTOTransactionData['PreviousPTOBalance'] = parseFloat(this.state.PTOData.PTOBalanceAfterDeduction).toFixed(4);
-                    //PTOTransactionData['CurrentPTOBalance'] = PTOPostData['PTOBalanceAfterDeduction'];
                     postObject['CurrentPTOBalance'] = parseFloat(PTOPostData['PTOBalanceAfterDeduction']).toString();
                 }
 
@@ -1159,8 +1119,6 @@ class TimeOffRequestForm extends React.Component<TimeOffRequestFormProps, TimeOf
                     }
                     if (IsPTOEligibleTOSelected) {
                         postObject['PreviousPTOBalance'] = this.state.PTOData.PTOAvailableBalance;
-                        //PTOTransactionData['PreviousPTOBalance'] = parseFloat(this.state.PTOData.PTOBalanceAfterDeduction).toFixed(4);
-                        //PTOTransactionData['CurrentPTOBalance'] = PTOPostData['PTOBalanceAfterDeduction'];
                         postObject['CurrentPTOBalance'] = parseFloat(PTOPostData['PTOBalanceAfterDeduction']).toString();
                     }
 
@@ -1215,8 +1173,6 @@ class TimeOffRequestForm extends React.Component<TimeOffRequestFormProps, TimeOf
                 }
                 if (IsPTOEligibleTOSelected) {
                     postObject['PreviousPTOBalance'] = this.state.PTOData.PTOBalanceAfterDeduction;
-                    //PTOTransactionData['PreviousPTOBalance'] = parseFloat(this.state.PTOData.PTOBalanceAfterDeduction).toFixed(4);
-                    //PTOTransactionData['CurrentPTOBalance'] = PTOPostData['PTOBalanceAfterDeduction'];
                     postObject['CurrentPTOBalance'] = parseFloat(PTOPostData['PTOBalanceAfterDeduction']).toString();
                 }
 
@@ -1229,7 +1185,6 @@ class TimeOffRequestForm extends React.Component<TimeOffRequestFormProps, TimeOf
             postObject['PreviousPTOBalance'] = this.state.PTOData.PTOBalanceAfterDeduction;
             postObject['CurrentPTOBalance'] = this.state.PTOData.PTOAvailableBalance;
         }
-        // this.InsertorUpdatedata(postObject, PTOPostData, PTOTransactionData, IsPTOEligibleTOSelected, isHRModifyData);
         this.InsertorUpdatedata(postObject, PTOPostData, IsPTOEligibleTOSelected, isHRModifyData,isHRModifyPTOData);
     }
     // this function is used save data in the list
@@ -1251,7 +1206,6 @@ class TimeOffRequestForm extends React.Component<TimeOffRequestFormProps, TimeOf
             else {                  //Add New record
                 this.setState({ loading: true });
                 sp.web.lists.getByTitle('TimeOffEmployees').items.add(formdata).then((res) => {
-                    //PTOTransactionData['TimeOffID'] = res.data.Id.toString();
                     if (IsPTOEligibleTOSelected) {
                         this.updatePTOAndPTOTransactionsDayWise(PTOPostData, formdata, res.data.Id, isHRModifyPTOData);
                     }
@@ -1412,7 +1366,6 @@ class TimeOffRequestForm extends React.Component<TimeOffRequestFormProps, TimeOf
             }
 
             Promise.all([PTOBatch.execute()]).then(PTORes => {
-                //console.log("PTO updated successfullly");
                 this.showSuccessToaster(formdata.Status);
             }).catch(PTOError => {
                 console.log(PTOError);
@@ -2105,52 +2058,6 @@ class TimeOffRequestForm extends React.Component<TimeOffRequestFormProps, TimeOf
 
         return adjustedTransactions; // Return the adjusted transactions
     }
-    // private mapDatesToHours = (data, date) => {
-    //     // Parse the input date
-    //     const startDate = new Date(date);
-
-    //     // Get the day of the week for the start date (0 = Sunday, 1 = Monday, ..., 6 = Saturday)
-    //     const startDay = startDate.getDay(); // This gives you the day of the week for the start date
-
-    //     // Create an array to hold the results
-    //     const result = [];
-
-    //     // Define the mapping of days to the object properties
-    //     const daysMapping = {
-    //         0: 'Sun', // Sunday
-    //         1: 'Mon', // Monday
-    //         2: 'Tue', // Tuesday
-    //         3: 'Wed', // Wednesday
-    //         4: 'Thu', // Thursday
-    //         5: 'Fri', // Friday
-    //         6: 'Sat'  // Saturday
-    //     };
-
-    //     // Loop through the days of the week starting from the given date
-    //     for (let i = 0; i < 7; i++) {
-    //         // Calculate the current date
-    //         const currentDate = new Date(startDate);
-    //         currentDate.setDate(startDate.getDate() + i); // Increment the date
-
-    //         // Get the day of the week for the current date
-    //         const dayOfWeek = currentDate.getDay();
-    //         // (startDay + i) % 7; // Wrap around the week
-
-    //         // Get the corresponding property name
-    //         const dayKey = daysMapping[dayOfWeek];
-
-    //         // Get the value from the data object
-    //         const value = [null, undefined, ''].includes(data[0][dayKey]) ? 0 : parseFloat(data[0][dayKey]); // Assuming data is an array with one object
-
-    //         // If there is a value, add it to the result
-    //         if (value > 0) {
-    //             result.push({
-    //                 [DateUtilities.getDateMMDDYYYY(currentDate)]: value
-    //             });
-    //         }
-    //     }
-    //     return result;
-    // };
     private getPTOTransactionsData = (existingArray, newArray) => {
         const combinedArray = [];
 
