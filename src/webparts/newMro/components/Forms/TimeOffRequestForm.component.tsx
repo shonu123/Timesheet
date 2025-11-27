@@ -813,10 +813,10 @@ class TimeOffRequestForm extends React.Component<TimeOffRequestFormProps, TimeOf
         if (!isValid.status) {
             return isValid;
         }
-        isValid = this.checkIsValidDateRange(this.state.FromDate, this.state.ToDate);
-        if (!isValid.status) {
-            return isValid;
-        }
+        // isValid = this.checkIsValidDateRange(this.state.FromDate, this.state.ToDate); // removed validation of current year restriction
+        // if (!isValid.status) {
+        //     return isValid;
+        // }
         isValid = ActionID == 'btnSubmit' ? await this.validateDuplicateRecord() : isValid;
         if (!isValid.status) {
             return isValid;
