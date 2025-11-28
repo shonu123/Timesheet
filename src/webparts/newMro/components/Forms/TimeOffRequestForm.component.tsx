@@ -176,7 +176,7 @@ class TimeOffRequestForm extends React.Component<TimeOffRequestFormProps, TimeOf
         isDisabled: false,
         isHRView: false,
         existingTimeOffRowsData: '',
-        existingPTOSubTotal:'',
+        existingPTOSubTotal: '',
         existingPTOTotal: 0,
         ButtonsVisibility: {
             Submit: true,
@@ -391,7 +391,7 @@ class TimeOffRequestForm extends React.Component<TimeOffRequestFormProps, TimeOf
             isDisabled: false,
             isHRView: false,
             existingTimeOffRowsData: '',
-            existingPTOSubTotal:'',
+            existingPTOSubTotal: '',
             existingPTOTotal: 0,
             loading: false,
             //PTOTransactionsDayWise: [],
@@ -1028,7 +1028,7 @@ class TimeOffRequestForm extends React.Component<TimeOffRequestFormProps, TimeOf
             }
             ActionStatus = this.state.IsSubmitted ? "Re-" + StatusType.Submit : StatusType.Submit
         }
-        return { postObject: postObject, ActionStatus: ActionStatus, isHRModifyData: isHRModifyData,isHRModifyPTOData:isHRModifyPTOData };
+        return { postObject: postObject, ActionStatus: ActionStatus, isHRModifyData: isHRModifyData, isHRModifyPTOData: isHRModifyPTOData };
     }
     private generateEmailData = () => {
         this.setState({ showConfirmPopup: false, ConfirmPopupMessage: '' });
@@ -1153,7 +1153,7 @@ class TimeOffRequestForm extends React.Component<TimeOffRequestFormProps, TimeOf
                         postObject['PreviousPTOBalance'] = this.state.PTOData.PTOAvailableBalance;
                         postObject['CurrentPTOBalance'] = parseFloat(PTOPostData['PTOBalanceAfterDeduction']).toString();
                     }
-                     if (this.state.existingPTOTotal < AppliedTOHours) {
+                    if (this.state.existingPTOTotal < AppliedTOHours) {
                         PTOPostData['PTOAvailed'] = (parseFloat(this.state.PTOData.PTOAvailed) + (AppliedTOHours - this.state.existingPTOTotal)).toFixed(4);
                         PTOPostData['PTOBalance'] = (parseFloat(this.state.PTOData.PTOBalance) - (AppliedTOHours - this.state.existingPTOTotal)).toFixed(4);
                         PTOPostData['PTOBalanceAfterDeduction'] = (parseFloat(this.state.PTOData.PTOBalanceAfterDeduction) - (AppliedTOHours - this.state.existingPTOTotal)).toFixed(4);
@@ -1185,10 +1185,10 @@ class TimeOffRequestForm extends React.Component<TimeOffRequestFormProps, TimeOf
             postObject['PreviousPTOBalance'] = this.state.PTOData.PTOBalanceAfterDeduction;
             postObject['CurrentPTOBalance'] = this.state.PTOData.PTOAvailableBalance;
         }
-        this.InsertorUpdatedata(postObject, PTOPostData, IsPTOEligibleTOSelected, isHRModifyData,isHRModifyPTOData);
+        this.InsertorUpdatedata(postObject, PTOPostData, IsPTOEligibleTOSelected, isHRModifyData, isHRModifyPTOData);
     }
     // this function is used save data in the list
-    private async InsertorUpdatedata(formdata, PTOPostData, IsPTOEligibleTOSelected, isHRModifyData,isHRModifyPTOData) {
+    private async InsertorUpdatedata(formdata, PTOPostData, IsPTOEligibleTOSelected, isHRModifyData, isHRModifyPTOData) {
         try {
             if (this.state.ItemID > 0) {   //update existing recordl
                 this.setState({ loading: true });
@@ -1479,6 +1479,36 @@ class TimeOffRequestForm extends React.Component<TimeOffRequestFormProps, TimeOf
                     document.getElementById(i + "_Total_TimeOffRow").classList.add('mandatory-FormContent-focus');
                     break;
                 }
+            }
+            return isValid;
+        }
+        // Year End Time Off Submission validation
+        let currYear = new Date().getFullYear();
+        let isApplyingforDiffYearDateRange = TimeOffTableData.dayKeys.some(i => i.includes((currYear + 1).toString()));
+        if (ActionID === 'btnSubmit' && this.state.isPTOEligible && isApplyingforDiffYearDateRange) {
+            let currentYearHours = 0;
+            let nextYearHours = 0;
+            const PTO_Balance = parseFloat(this.state.PTOData.PTOAvailableBalance || "0");
+            const PTOSubTotalObj = TimeOffTableData.PTOSubTotal[0];
+
+            // Loop through each PTO row
+            for (const dayKey in PTOSubTotalObj) {
+                let hrs = parseFloat(PTOSubTotalObj[dayKey] || '0');
+                if (dayKey.includes(currYear.toString())) currentYearHours += hrs;
+                else if (dayKey.includes((currYear + 1).toString())) nextYearHours += hrs;
+            }
+            // Compute carry forward
+            let carryForward = PTO_Balance - currentYearHours;
+            if (carryForward > 80) {
+                carryForward = 80;
+            }
+
+            // If applying PTO in next year greater than carryForward
+            if (nextYearHours > carryForward) {
+
+                isValid.status = false;
+                isValid.message = `Only ${Number(Number(carryForward).toFixed(4))} hours can be carried forward to next year. Cannot submit ${Number(Number(nextYearHours).toFixed(4))} PTO hours.`;
+                return isValid;
             }
         }
         if (ActionID == 'btnSubmit' && this.state.isPTOEligible && (parseFloat(this.state.PTOData.PTOAvailableBalance) - this.state.TimeOffTableData.PTOTotal) > 0 && this.state.TimeOffTableData.TOTotal > 0 && this.state.Comments.trim() == '' && TimeOffTableData.TimeOffRowsData.some(t => this.state.UPTOTypes.includes(t.TimeOffType))) // Comments are mandatory if PTOBalance is avialable, but employee applied for UPTO
@@ -2164,7 +2194,7 @@ class TimeOffRequestForm extends React.Component<TimeOffRequestFormProps, TimeOf
                                             <div className="light-text div-readonly">
                                                 <label className="z-in-9">From Date<span className="mandatoryhastrick">*</span></label>
                                                 <div className="custom-datepicker" id="divFromDate">
-                                                    <DatePicker onDatechange={this.handleFromorToDate} selectedDate={this.state.FromDate} isDisabled={this.state.isDisabled || this.state.ItemID > 0} startDate={new Date(addDays(new Date(), -31))} endDate={null} id="txtFromDate" title="From Date" disabledDayIndexes={[0,6]}/>
+                                                    <DatePicker onDatechange={this.handleFromorToDate} selectedDate={this.state.FromDate} isDisabled={this.state.isDisabled || this.state.ItemID > 0} startDate={new Date(addDays(new Date(), -31))} endDate={new Date(`12/31/${new Date().getFullYear()+1}`)} id="txtFromDate" title="From Date" disabledDayIndexes={[0, 6]} />
                                                 </div>
                                             </div>
                                         </div>
@@ -2173,7 +2203,7 @@ class TimeOffRequestForm extends React.Component<TimeOffRequestFormProps, TimeOf
                                             <div className="light-text div-readonly">
                                                 <label className="z-in-9">To Date<span className="mandatoryhastrick">*</span></label>
                                                 <div className="custom-datepicker" id="divToDate">
-                                                    <DatePicker onDatechange={this.handleFromorToDate} selectedDate={this.state.ToDate} isDisabled={this.state.isDisabled || this.state.ItemID > 0} startDate={new Date(addDays(new Date(), -31))} endDate={null} id="txtToData" title="To Date" disabledDayIndexes={[0,6]}/>
+                                                    <DatePicker onDatechange={this.handleFromorToDate} selectedDate={this.state.ToDate} isDisabled={this.state.isDisabled || this.state.ItemID > 0} startDate={new Date(addDays(new Date(), -31))} endDate={new Date(`12/31/${new Date().getFullYear()+1}`)} id="txtToData" title="To Date" disabledDayIndexes={[0, 6]} />
                                                 </div>
                                             </div>
                                         </div>
