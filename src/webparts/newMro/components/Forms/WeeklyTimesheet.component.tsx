@@ -2028,10 +2028,10 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                         if (parseFloat(formObject.PTOHrs[0].Total) != 0) {
                             await this.AddTimeOffRequestAndTransactions(TransactionsData, formdata, formObject);
                             // to avoid duplicate timeoffrec while without leaving timesheet form
-                            if (!this.state.TimeOffRec.length) {
+                           setTimeout(async ()=>{ if (!this.state.TimeOffRec.length) {
                                 let TimeOffRecData = await this.checkTimeOffRecIsExists(formObject); // for binding Time Off row data with TimeOffRequest data
                                 this.setState({ TimeOffRec: TimeOffRecData.TimeOff, PTOTransactionsListData: TimeOffRecData.PTOTransactions });
-                            }
+                            }},1000);
                         }
                         customToaster('toster-success', ToasterTypes.Success, 'Weekly timesheet saved successfully', 2000)
                         this.setState({ ItemID: ItemID, loading: false });
@@ -3775,56 +3775,57 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
             //     document.getElementById("txtComments").classList.add('mandatory-FormContent-focus');
             //     return isValid;
             // }
-            if (Time < 40) {
-                if (formdata.WeekStartDate < formdata.DateOfJoining)   //If Date of joining falls in the week range , Before DOJ hours have to exclude for validation.
-                {
-                    let daysBetweenDOJ_WeekStartDate = Math.ceil(Math.abs((new Date(formdata.DateOfJoining).getTime() - new Date(formdata.WeekStartDate).getTime())) / (24 * 60 * 60 * 1000));
-                    let hours = (5 - daysBetweenDOJ_WeekStartDate) * 8;
-                    if (Time < hours) {
-                        isValid.message = "Total hours in a day cannot be less than 8.";
-                        isValid.status = false;
-                        // to highlight days , which total hours are less than 8 and days above or equals to DOJ
-                        let isFirstControlFocussed = true;
-                        let weekIndexes = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-                        for (let Inkey in formdata.Total[0]) {
-                            let [DayTotal] = [formdata.Total[0][Inkey]];
-                            if ((DayTotal) < 8 && weekIndexes.indexOf(Inkey) >= new Date(formdata.DateOfJoining).getDay()) {
-                                if (!["Total", "Sat", "Sun"].includes(Inkey)) {
-                                    document.getElementById("Total" + Inkey).classList.add('mandatory-8hourstotal');
-                                    if (isFirstControlFocussed) {
-                                        // if Holiday , focus to holiday control, other wise if Synergy client focus to office hours row, else focus to weekrow
-                                        let rowTypeClass = this.WeekHeadings[0]['IsDay' + (weeks.indexOf(Inkey) + 1) + 'Holiday']['isHoliday'] ? '_ClientHldHrs' : formdata.ClientName.toLowerCase().includes("synergy") ? '_SynOffcHrs' : '_weekrow';
-                                        document.getElementById("0_" + Inkey + rowTypeClass).focus();
-                                        isFirstControlFocussed = false;
-                                    }
-                                }
-                            }
-                        }
-                        return isValid;
-                    }
-                }
-                else { //If Date of joining does not falls in the week range , consider 5 days hours 5*8=40 for validation.
-                    isValid.message = "Total hours in a day cannot be less than 8.";
-                    isValid.status = false;
-                    // to highlight days , which total hours are less than 8
-                    let isFirstControlFocussed = true;
-                    for (let Inkey in formdata.Total[0]) {
-                        let [DayTotal] = [formdata.Total[0][Inkey]];
-                        if ((DayTotal) < 8) {
-                            if (!["Total", "Sat", "Sun"].includes(Inkey)) {
-                                document.getElementById("Total" + Inkey).classList.add('mandatory-8hourstotal');
-                                if (isFirstControlFocussed) {
-                                    // if Holiday , focus to holiday control, other wise if Synergy client focus to office hours row, else focus to weekrow
-                                    let rowTypeClass = this.WeekHeadings[0]['IsDay' + (weeks.indexOf(Inkey) + 1) + 'Holiday']['isHoliday'] ? '_ClientHldHrs' : formdata.ClientName.toLowerCase().includes("synergy") ? '_SynOffcHrs' : '_weekrow';
-                                    document.getElementById("0_" + Inkey + rowTypeClass).focus();
-                                    isFirstControlFocussed = false;
-                                }
-                            }
-                        }
-                    }
-                    return isValid;
-                }
-            }
+            // Below 40 hours validation is commented on Dec/05/2025
+            // if (Time < 40) {
+            //     if (formdata.WeekStartDate < formdata.DateOfJoining)   //If Date of joining falls in the week range , Before DOJ hours have to exclude for validation.
+            //     {
+            //         let daysBetweenDOJ_WeekStartDate = Math.ceil(Math.abs((new Date(formdata.DateOfJoining).getTime() - new Date(formdata.WeekStartDate).getTime())) / (24 * 60 * 60 * 1000));
+            //         let hours = (5 - daysBetweenDOJ_WeekStartDate) * 8;
+            //         if (Time < hours) {
+            //             isValid.message = "Total hours in a day cannot be less than 8.";
+            //             isValid.status = false;
+            //             // to highlight days , which total hours are less than 8 and days above or equals to DOJ
+            //             let isFirstControlFocussed = true;
+            //             let weekIndexes = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+            //             for (let Inkey in formdata.Total[0]) {
+            //                 let [DayTotal] = [formdata.Total[0][Inkey]];
+            //                 if ((DayTotal) < 8 && weekIndexes.indexOf(Inkey) >= new Date(formdata.DateOfJoining).getDay()) {
+            //                     if (!["Total", "Sat", "Sun"].includes(Inkey)) {
+            //                         document.getElementById("Total" + Inkey).classList.add('mandatory-8hourstotal');
+            //                         if (isFirstControlFocussed) {
+            //                             // if Holiday , focus to holiday control, other wise if Synergy client focus to office hours row, else focus to weekrow
+            //                             let rowTypeClass = this.WeekHeadings[0]['IsDay' + (weeks.indexOf(Inkey) + 1) + 'Holiday']['isHoliday'] ? '_ClientHldHrs' : formdata.ClientName.toLowerCase().includes("synergy") ? '_SynOffcHrs' : '_weekrow';
+            //                             document.getElementById("0_" + Inkey + rowTypeClass).focus();
+            //                             isFirstControlFocussed = false;
+            //                         }
+            //                     }
+            //                 }
+            //             }
+            //             return isValid;
+            //         }
+            //     }
+            //     else { //If Date of joining does not falls in the week range , consider 5 days hours 5*8=40 for validation.
+            //         isValid.message = "Total hours in a day cannot be less than 8.";
+            //         isValid.status = false;
+            //         // to highlight days , which total hours are less than 8
+            //         let isFirstControlFocussed = true;
+            //         for (let Inkey in formdata.Total[0]) {
+            //             let [DayTotal] = [formdata.Total[0][Inkey]];
+            //             if ((DayTotal) < 8) {
+            //                 if (!["Total", "Sat", "Sun"].includes(Inkey)) {
+            //                     document.getElementById("Total" + Inkey).classList.add('mandatory-8hourstotal');
+            //                     if (isFirstControlFocussed) {
+            //                         // if Holiday , focus to holiday control, other wise if Synergy client focus to office hours row, else focus to weekrow
+            //                         let rowTypeClass = this.WeekHeadings[0]['IsDay' + (weeks.indexOf(Inkey) + 1) + 'Holiday']['isHoliday'] ? '_ClientHldHrs' : formdata.ClientName.toLowerCase().includes("synergy") ? '_SynOffcHrs' : '_weekrow';
+            //                         document.getElementById("0_" + Inkey + rowTypeClass).focus();
+            //                         isFirstControlFocussed = false;
+            //                     }
+            //                 }
+            //             }
+            //         }
+            //         return isValid;
+            //     }
+            // }
             //if isValid true remove all 'mandatory-FormContent-focus' classes
             this.RemoveAll_mandatory_FormContent_focus(formdata);
             return isValid;
@@ -4150,36 +4151,39 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
         }
         else {
             //to handle Previously TimeOffRequest submitted, but with drawn from TimeOffDashboard , in this case have to display empty time off row and corresponding calculations
-            WeekKeys.forEach(day => {
-                trFormdata.PTOHrs[0][day] = ['Total'].includes(day) ? '0.00' : ''; //for Time Off row binding
-                //FOR COLUMN WISE CALCULATION
-                // NON BILLABLE SUBTOTAL COLUMN WISE
-                let WeeklyTotal = 0;
-                let NonBillableColValue = trFormdata.SynergyOfficeHrs[0][day].toString();
-                [undefined, null, "", "."].includes(NonBillableColValue.trim()) ? NonBillableColValue = "0" : NonBillableColValue;
-                WeeklyTotal = WeeklyTotal + (parseFloat(NonBillableColValue));
-
-                NonBillableColValue = trFormdata.ClientHolidayHrs[0][day].toString();
-                [undefined, null, "", "."].includes(NonBillableColValue.trim()) ? NonBillableColValue = "0" : NonBillableColValue;
-                WeeklyTotal = WeeklyTotal + (parseFloat(NonBillableColValue));
-
-                NonBillableColValue = trFormdata.PTOHrs[0][day].toString();
-                [undefined, null, "", "."].includes(NonBillableColValue.trim()) ? NonBillableColValue = "0" : NonBillableColValue;
-                WeeklyTotal = WeeklyTotal + (parseFloat(NonBillableColValue));
-
-                trFormdata.NonBillableSubTotal[0][day] = WeeklyTotal.toFixed(4).toString();
-                //GRAND TOTAL COLUMN WISE
-                WeeklyTotal = 0;
-                let TotalColVal = trFormdata.BillableSubTotal[0][day].toString();
-                [undefined, null, "", "."].includes(TotalColVal.trim()) ? TotalColVal = "0" : TotalColVal;
-                WeeklyTotal = WeeklyTotal + (parseFloat(TotalColVal));
-
-                TotalColVal = trFormdata.NonBillableSubTotal[0][day].toString();
-                [undefined, null, "", "."].includes(TotalColVal.trim()) ? TotalColVal = "0" : TotalColVal;
-                WeeklyTotal = WeeklyTotal + (parseFloat(TotalColVal));
-
-                trFormdata.Total[0][day] = parseFloat(WeeklyTotal.toFixed(4)).toString();
-            })
+            if([StatusType.Save,StatusType.Revoke.toString()].includes(trFormdata.Status))
+            {
+                WeekKeys.forEach(day => {
+                    trFormdata.PTOHrs[0][day] = ['Total'].includes(day) ? '0.00' : ''; //for Time Off row binding
+                    //FOR COLUMN WISE CALCULATION
+                    // NON BILLABLE SUBTOTAL COLUMN WISE
+                    let WeeklyTotal = 0;
+                    let NonBillableColValue = trFormdata.SynergyOfficeHrs[0][day].toString();
+                    [undefined, null, "", "."].includes(NonBillableColValue.trim()) ? NonBillableColValue = "0" : NonBillableColValue;
+                    WeeklyTotal = WeeklyTotal + (parseFloat(NonBillableColValue));
+    
+                    NonBillableColValue = trFormdata.ClientHolidayHrs[0][day].toString();
+                    [undefined, null, "", "."].includes(NonBillableColValue.trim()) ? NonBillableColValue = "0" : NonBillableColValue;
+                    WeeklyTotal = WeeklyTotal + (parseFloat(NonBillableColValue));
+    
+                    NonBillableColValue = trFormdata.PTOHrs[0][day].toString();
+                    [undefined, null, "", "."].includes(NonBillableColValue.trim()) ? NonBillableColValue = "0" : NonBillableColValue;
+                    WeeklyTotal = WeeklyTotal + (parseFloat(NonBillableColValue));
+    
+                    trFormdata.NonBillableSubTotal[0][day] = WeeklyTotal.toFixed(4).toString();
+                    //GRAND TOTAL COLUMN WISE
+                    WeeklyTotal = 0;
+                    let TotalColVal = trFormdata.BillableSubTotal[0][day].toString();
+                    [undefined, null, "", "."].includes(TotalColVal.trim()) ? TotalColVal = "0" : TotalColVal;
+                    WeeklyTotal = WeeklyTotal + (parseFloat(TotalColVal));
+    
+                    TotalColVal = trFormdata.NonBillableSubTotal[0][day].toString();
+                    [undefined, null, "", "."].includes(TotalColVal.trim()) ? TotalColVal = "0" : TotalColVal;
+                    WeeklyTotal = WeeklyTotal + (parseFloat(TotalColVal));
+    
+                    trFormdata.Total[0][day] = parseFloat(WeeklyTotal.toFixed(4)).toString();
+                })
+            }
         }
 
         this.setState({ trFormdata, PTOTransactions: PTOTransactionsDayWise });

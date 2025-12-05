@@ -26,28 +26,28 @@ const PTOTransactionHistoryPopup = ({ isVisible, EmployeeTitle,Year, Data, Excel
     {
       name: "Transaction Status",
       selector: (row, i) => row.TransactionType,
-      width: '280px',
+      // width: '280px',
       sortable: true
     },
     {
       name: "Time Off Type",
       selector: (row, i) => row.TimeOffTypesForGrid,
       cell: row => <div className='' dangerouslySetInnerHTML={{ __html: row.TimeOffTypesForGrid }}/>,
-      width: '200px',
+      // width: '200px',
       sortable: true
     },
     {
       name: "Time Off Date",
       selector: (row, i) => row.PostedOnForGrid,
       cell: row => <div className='' dangerouslySetInnerHTML={{ __html: row.PostedOnForGrid }}/>,
-      width: '200px',
+      // width: '200px',
       sortable: true
     },
     {
     name: "Submitted Date",
     selector: (row, i) => row.SubmittedDateForGrid,
     cell: row => <div className='' dangerouslySetInnerHTML={{ __html: row.SubmittedDateForGrid }}/>,
-    width: '200px',
+    // width: '200px',
     sortable: true
     },
     // {
@@ -65,7 +65,7 @@ const PTOTransactionHistoryPopup = ({ isVisible, EmployeeTitle,Year, Data, Excel
     {
       name: "Hours",
       selector: (row, i) => row.Hours,
-      width: '70px',
+      // width: '70px',
       sortable: true
     },
     {
@@ -137,14 +137,14 @@ const PTOTransactionHistoryPopup = ({ isVisible, EmployeeTitle,Year, Data, Excel
          name: "From",
          selector: (row, i) => row.FromForGrid,
          cell: row => <div className='' dangerouslySetInnerHTML={{ __html: row.FromForGrid }}/>,
-         width: '150px',
+        //  width: '150px',
         sortable: true
        },
        {
            name: "To",
            selector: (row, i) => row.ToForGrid,
            cell: row => <div className='' dangerouslySetInnerHTML={{ __html: row.ToForGrid }}/>,
-          width: '150px',
+          // width: '150px',
            sortable: true
     })
     searchKeys.splice(1,0,'From','To');

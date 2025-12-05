@@ -2946,7 +2946,7 @@ li {
 
 .table-head-1st-td .rdt_TableHeadRow .rdt_TableCol:nth-child(1) {
   min-width: 200px;
-  max-width: 200px;
+  /* max-width: 200px; */
 }
 
 .table-head-1st-td .rdt_TableBody .rdt_TableRow .rdt_TableCell:nth-child(1) {

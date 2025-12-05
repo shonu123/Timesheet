@@ -35,7 +35,7 @@ interface RowData {
   TimeOffType: string | null;
   IsPTOEligible?: boolean;
   hours: string[];
-  total: number;
+  Total: number;
 }
 
 const PTOFormModal = ({
@@ -66,7 +66,7 @@ const PTOFormModal = ({
     TimeOffType: '',
     IsPTOEligible: false,
     hours: Array(days.length).fill(''),
-    total: 0,
+    Total: 0,
   });
 
   const mapPtoFormDataToRows = (
@@ -83,10 +83,10 @@ const PTOFormModal = ({
         TimeOffType: item.TimeOffType,
         // item.TimeOffType,
         IsPTOEligible: foundType?.IsEligibleforPTO,
-        hours: days.map((day) =>
-          item[day] !== undefined ? String(item[day]) : ''
+        hours: days.map((day,i) =>
+          item[day] !== undefined ? String(item[day]) : item.hours?item.hours[i]:''
         ),
-        total: Number(item.Total) || 0,
+        Total: Number(item.Total) || 0,
       };
     });
   };
@@ -208,7 +208,7 @@ const PTOFormModal = ({
         setselectOptions(mappedTOTypes);
         setRows(mappedRows);
 
-        const totalSum = mappedRows.reduce((acc, row) => acc + row.total, 0);
+        const totalSum = mappedRows.reduce((acc, row) => acc + row.Total, 0);
         const totalSumDisplay = totalSum === 0 ? '0.00' : totalSum.toString();
 
         const dayTotals = filteredDays.map((_, dayIndex) =>
@@ -216,7 +216,7 @@ const PTOFormModal = ({
             const num = parseFloat(row.hours[dayIndex]);
             return sum + (isNaN(num) ? 0 : num);
           }, 0)
-        ).map(total => total === 0 ? '0.00' : total.toString());
+        ).map(Total => Total === 0 ? '0.00' : Total.toString());
 
         setColumnTotals(dayTotals);
         setGrandTotal(totalSumDisplay);
@@ -297,7 +297,7 @@ const PTOFormModal = ({
         const num = parseFloat(h);
         return acc + (isNaN(num) ? 0 : num);
       }, 0);
-      row.total = parseFloat(rowTotal.toFixed(4)); // keep row.total as number, optional
+      row.Total = parseFloat(rowTotal.toFixed(4)); // keep row.total as number, optional
     });
 
     const dayTotals = filteredDays.map((_, dayIndex) =>
@@ -305,9 +305,9 @@ const PTOFormModal = ({
         const num = parseFloat(row.hours[dayIndex]);
         return sum + (isNaN(num) ? 0 : num);
       }, 0)
-    ).map(total => total === 0 ? '0.00' : total.toString());
+    ).map(Total => Total === 0 ? '0.00' : Total.toString());
 
-    const totalSum = updatedRows.reduce((acc, row) => acc + row.total, 0);
+    const totalSum = updatedRows.reduce((acc, row) => acc + row.Total, 0);
     const grandTotalDisplay = totalSum === 0 ? '0.00' : totalSum.toString();
     const mappedTOTypes = mapUniqueTimeOffTypes([...updatedRows], timeOffTypes);
     setselectOptions(mappedTOTypes);
@@ -320,7 +320,7 @@ const PTOFormModal = ({
   const addRow = () => {
     for (let i = 0; i < rows.length; i++) {
       const row = rows[i];
-      if (row.total === 0) {
+      if (row.Total === 0) {
         const firstNonDisabledInput = inputRefs.current[i]?.find(
           (input, index) => !disabledDays[index]
         );
@@ -389,8 +389,8 @@ const PTOFormModal = ({
     //   }
     // }
     for (let i = 0; i < columnTotals.length; i++) {
-      const total = parseFloat(columnTotals[i]);
-      if (total > 8) {
+      const Total = parseFloat(columnTotals[i]);
+      if (Total > 8) {
         customToaster(
           'toster-error',
           ToasterTypes.Error,
@@ -415,7 +415,7 @@ const PTOFormModal = ({
         return false;
       }
 
-      if (row.total === 0) {
+      if (row.Total === 0) {
         const firstNonDisabledInput = inputRefs.current[i]?.find(
           (input, index) => !disabledDays[index]
         );
@@ -446,7 +446,7 @@ const PTOFormModal = ({
 
     if (EligibleforPTO && (ptoBalance - getPTOTotal()) > 0 && (getTOTotal() > 0) && Comments.trim() == '' && rows.some(t => UPTOTypes.includes(t.TimeOffType))) // Comments are mandatory if PTOBalance is avialable, but employee applied for UPTO
     {
-      let message = `${(ptoBalance - getPTOTotal()).toFixed(4)} PTO hours are available. Please provide comments for selecting 'Unpaid Time Off.'`;
+      let message = `${Number((ptoBalance - getPTOTotal()).toFixed(4))} PTO hours are available. Please provide comments for selecting 'Unpaid Time Off.'`;
       let elm = document.getElementById('txtTOComments');
       elm.focus();
       setTimeout(() => elm.classList.add('mandatory-FormContent-focus'), 300);
@@ -493,7 +493,7 @@ const PTOFormModal = ({
     const TimeOffData = rows.map((row) => {
       const rowObj: any = {
         TimeOffType: row.TimeOffType,
-        Total: row.total,
+        Total: row.Total,
         IsPTOEligible: row.IsPTOEligible
       };
       filteredDays.forEach((day, index) => {
@@ -619,7 +619,7 @@ const PTOFormModal = ({
                           />
                         </td>
                       ))}
-                      <td>{row.total}</td>
+                      <td>{row.Total}</td>
                       <td className=' text-start'>
                         {isEditForm && (rows.length === 1 ? (
                           <button type="button" className='span-fa-plus' onClick={addRow} id='addnewRow'><span title='Add new time off row' ><FontAwesomeIcon icon={faPlus}></FontAwesomeIcon></span></button>

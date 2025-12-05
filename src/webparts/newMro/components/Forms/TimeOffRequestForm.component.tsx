@@ -1514,7 +1514,7 @@ class TimeOffRequestForm extends React.Component<TimeOffRequestFormProps, TimeOf
         if (ActionID == 'btnSubmit' && this.state.isPTOEligible && (parseFloat(this.state.PTOData.PTOAvailableBalance) - this.state.TimeOffTableData.PTOTotal) > 0 && this.state.TimeOffTableData.TOTotal > 0 && this.state.Comments.trim() == '' && TimeOffTableData.TimeOffRowsData.some(t => this.state.UPTOTypes.includes(t.TimeOffType))) // Comments are mandatory if PTOBalance is avialable, but employee applied for UPTO
         {
             isValid.status = false;
-            isValid.message = `${(parseFloat(this.state.PTOData.PTOAvailableBalance) - this.state.TimeOffTableData.PTOTotal).toFixed(4)} PTO hours are available. Please provide comments for selecting 'Unpaid Time Off.'`;
+            isValid.message = `${Number((parseFloat(this.state.PTOData.PTOAvailableBalance) - this.state.TimeOffTableData.PTOTotal).toFixed(4))} PTO hours are available. Please provide comments for selecting 'Unpaid Time Off.'`;
             let elm = document.getElementById('txtComments');
             elm.focus();
             setTimeout(() => elm.classList.add('mandatory-FormContent-focus'), 300);
