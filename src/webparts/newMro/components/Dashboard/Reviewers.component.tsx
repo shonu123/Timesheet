@@ -398,7 +398,7 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
             Revised: true,
             AssignedToId : { "results": [] },
         }
-         if(this.state.TimeOffRecord.length && this.state.TimeOffRecord[0].IsSubmittedFromTimesheetForm && !this.state.userGroups.includes('Timesheet HR'))
+         if(this.state.TimeOffRecord.length && this.state.TimeOffRecord[0].IsSubmittedFromTimesheetForm && InitialRecord[0].EligibleforPTO  && !this.state.userGroups.includes('Timesheet HR'))
         {
             postObject.Status=StatusType.ReviewerApprove;
             postObject.PendingWith='HR';
@@ -420,7 +420,7 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
                  Status: StatusType.Approved,
                  PendingWith:"NA"
             }
-             if(this.state.TimeOffRecord[0].IsSubmittedFromTimesheetForm && !this.state.userGroups.includes('Timesheet HR'))
+             if(this.state.TimeOffRecord[0].IsSubmittedFromTimesheetForm && InitialRecord[0].EligibleforPTO && !this.state.userGroups.includes('Timesheet HR'))
             {
                 TimeOffPostData['Status']=StatusType.ReviewerApprove;
                 TimeOffPostData['PendingWith']='HR';
@@ -450,7 +450,7 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
         let Transaction = {
             TransactionType: StatusType.Approved
         };
-         if(this.state.TimeOffRecord.length && this.state.TimeOffRecord[0].IsSubmittedFromTimesheetForm && !this.state.userGroups.includes('Timesheet HR'))
+         if(this.state.TimeOffRecord.length && this.state.TimeOffRecord[0].IsSubmittedFromTimesheetForm && InitialRecord[0].EligibleforPTO && !this.state.userGroups.includes('Timesheet HR'))
             {
                 Transaction['TransactionType']=StatusType.ReviewerApprove;
             }

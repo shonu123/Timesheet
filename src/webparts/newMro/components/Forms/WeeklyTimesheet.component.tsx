@@ -1561,7 +1561,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                                     postObject['DateSubmitted'] = this.addBrowserwrtServer(new Date(DateUtilities.getDateMMDDYYYY(new Date())));
                                     postObject['AssignedToId'] = { "results": formdata.ReviewerIds };
                                 }
-                                else if (formdata.CommentsHistoryData[formdata.CommentsHistoryData.length - 2]['Role'] == "HR") {
+                                else if (formdata.CommentsHistoryData[formdata.CommentsHistoryData.length - 2]['Role'] == "HR" && formdata.EligibleforPTO) {
                                     postObject['Status'] = StatusType.ReviewerApprove;
                                     postObject['PendingWith'] = "HR";
                                     postObject['DateSubmitted'] = this.addBrowserwrtServer(new Date(DateUtilities.getDateMMDDYYYY(new Date())));
@@ -1580,7 +1580,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                             postObject['DateSubmitted'] = this.addBrowserwrtServer(new Date(DateUtilities.getDateMMDDYYYY(new Date())));
                             postObject['AssignedToId'] = { "results": formdata.ReviewerIds };
                         }
-                        else if (StatusType.HRReject == formdata.Status) {
+                        else if (StatusType.HRReject == formdata.Status && formdata.EligibleforPTO) {
                             postObject['Status'] = StatusType.ReviewerApprove;
                             postObject['PendingWith'] = "HR";
                             postObject['DateSubmitted'] = this.addBrowserwrtServer(new Date(DateUtilities.getDateMMDDYYYY(new Date())));
@@ -1668,7 +1668,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                 if (IsReportingManagerReviewerSame) {
                     formdata.CommentsHistoryData.push({ "Action": StatusType.Approved, "Role": "Reviewer", "User": this.props.spContext.userDisplayName, "Comments": this.state.trFormdata.Comments.trim(), "Date": new Date().toISOString() });
                     let [Status, PendingWith] = [StatusType.Approved, "NA"];
-                    if (this.state.TimeOffRec.length && this.state.TimeOffRec[0].IsSubmittedFromTimesheetForm && !this.state.UserGoups.includes('Timesheet HR')) {
+                    if (this.state.TimeOffRec.length && this.state.TimeOffRec[0].IsSubmittedFromTimesheetForm && formdata.EligibleforPTO && !this.state.UserGoups.includes('Timesheet HR')) {
                         [Status, PendingWith] = [StatusType.ReviewerApprove, "HR"];
                     }
                     postObject['Status'] = Status;
@@ -1685,7 +1685,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
             case StatusType.ManagerApprove:
                 formdata.CommentsHistoryData.push({ "Action": StatusType.Approved, "Role": "Reviewer", "User": this.props.spContext.userDisplayName, "Comments": this.state.trFormdata.Comments.trim(), "Date": new Date().toISOString() })
                 let [Status, PendingWith] = [StatusType.Approved, "NA"];
-                if (this.state.TimeOffRec.length && this.state.TimeOffRec[0].IsSubmittedFromTimesheetForm && !this.state.UserGoups.includes('Timesheet HR')) {
+                if (this.state.TimeOffRec.length && this.state.TimeOffRec[0].IsSubmittedFromTimesheetForm && formdata.EligibleforPTO && !this.state.UserGoups.includes('Timesheet HR')) {
                     [Status, PendingWith] = [StatusType.ReviewerApprove, "HR"];
                 }
                 postObject['Status'] = Status;
@@ -3768,14 +3768,14 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
             }
             val = formdata.Total[0].Total;
             Time = parseFloat(val);  //0 hours allow commented and  minimum 40 hours validation updated after TimeOffRequest form demo on 16th May 2025
-            // if (Time == 0 && formdata.Comments.trim() == "") {
-            //     isValid.message = "'Comments' required for '0' hours.";
-            //     isValid.status = false;
-            //     document.getElementById("txtComments").focus();
-            //     document.getElementById("txtComments").classList.add('mandatory-FormContent-focus');
-            //     return isValid;
-            // }
-            // Below 40 hours validation is commented on Dec/05/2025
+            if (Time == 0 && formdata.Comments.trim() == "") {
+                isValid.message = "'Comments' required for '0' hours.";
+                isValid.status = false;
+                document.getElementById("txtComments").focus();
+                document.getElementById("txtComments").classList.add('mandatory-FormContent-focus');
+                return isValid;
+            }
+            // Below 40 hours validation is commented on Dec/05/2025 after Time Off Release
             // if (Time < 40) {
             //     if (formdata.WeekStartDate < formdata.DateOfJoining)   //If Date of joining falls in the week range , Before DOJ hours have to exclude for validation.
             //     {

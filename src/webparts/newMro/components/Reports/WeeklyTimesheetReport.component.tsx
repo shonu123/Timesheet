@@ -238,7 +238,8 @@ class WeeklyTimesheetReport extends React.Component<WeeklyTimesheetReportProps, 
             Status = "Approved by Reporting Manager";
         }
         if (value == "approved by Synergy") {
-            Status = "Approved by Reviewer";
+            // Status = "Approved by Reviewer";
+            Status = "Approved";
         }
         else if (value == "rejected by Manager") {
             Status = "Rejected by Reporting Manager";
@@ -568,7 +569,8 @@ class WeeklyTimesheetReport extends React.Component<WeeklyTimesheetReportProps, 
             return 'RM Approved';
         }
         else if(status == 'Approved by Reviewer'){
-            return 'Reviewer Approved';
+            // return 'Reviewer Approved';
+            return 'Approved';
         }
         else if(status == 'Rejected by Reporting Manager'){
             return "RM Rejected";
@@ -592,7 +594,8 @@ class WeeklyTimesheetReport extends React.Component<WeeklyTimesheetReportProps, 
             return "span-manager-approve";
         }
         else if (Status == "Approved by Reviewer") {
-            return "span-reviewer-approve";
+            // return "span-reviewer-approve";
+              return "span-green";
         }
         else if (Status == "Rejected by Reporting Manager" || Status == "Rejected by Synergy" || Status == "Rejected by HR") {
             return "span-rejected";

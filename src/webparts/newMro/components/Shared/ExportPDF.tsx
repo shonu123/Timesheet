@@ -40,8 +40,10 @@ const ExportToPDF = ({ AllTimesheetsData, filename,LogoImgUrl,btnTitle='Export t
             Status = 'Waiting for Reviewer Approval';
         }
         else if(value == StatusType.ReviewerApprove.toString()){
-            styles.Status_cell= { padding:[5,7],fillColor:'#c6e69f',border:[true, true, true, true],lineWidth: 2,lineColor: '#95ce54'};
-            Status = 'Waiting for HR Approval';
+            // styles.Status_cell= { padding:[5,7],fillColor:'#c6e69f',border:[true, true, true, true],lineWidth: 2,lineColor: '#95ce54'};
+            // Status = 'Waiting for HR Approval';
+             styles.Status_cell= { padding:[5,7],fillColor:'#91d392',border:[true, true, true, true],lineWidth: 2,lineColor: '#6ad36c'};
+            Status = 'Approved';
         }
         else if(value == StatusType.Approved.toString()){
             styles.Status_cell= { padding:[5,7],fillColor:'#91d392',border:[true, true, true, true],lineWidth: 2,lineColor: '#6ad36c'};
