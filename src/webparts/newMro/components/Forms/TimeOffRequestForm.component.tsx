@@ -426,7 +426,7 @@ class TimeOffRequestForm extends React.Component<TimeOffRequestFormProps, TimeOf
             TimeOffTableData.TOTotal = [null, undefined, ''].includes(data[0].TOTotal) ? 0 : parseFloat(data[0].TOTotal);
             TimeOffTableData.dayKeys = this.getDynamicDayKeys(FormDate, ToDate);
 
-            let result = this.buttonsVisibility(data[0].Status, FormDate, EmployeeId, SynergyManagerIds, userGroups, data[0].IsSubmittedFromTimesheetForm);
+            let result = this.buttonsVisibility(data[0].Status, FormDate, EmployeeId, SynergyManagerIds, userGroups, data[0].IsSubmittedFromTimesheetForm, data[0].EligibleforPTO);
             //to hold the withdraw/Revoke/Submit of TimeOffRequest ,if Timesheet status is not in [Save,Revoke,Reject]
             let WeekStartLowerBound = DateUtilities.getDateMMDDYYYY(addDays(new Date(FormDate), -7));
             let To = DateUtilities.getDateMMDDYYYY(addDays(new Date(ToDate), 1));
@@ -476,15 +476,19 @@ class TimeOffRequestForm extends React.Component<TimeOffRequestFormProps, TimeOf
         }
     }
     // Below functions are used to check permissions and authentication
-    private buttonsVisibility(Status, FormDate, EmployeeID, SynergyManagerIds, userGroups, IsSubmittedFromTimesheetForm) {
+    private buttonsVisibility(Status, FormDate, EmployeeID, SynergyManagerIds, userGroups, IsSubmittedFromTimesheetForm, EligibleforPTO) {
         let result = { visibility: {}, isDisabled: false, isHRView: false };
         let loginUserID = this.props.spContext.userId;
         let isHR = userGroups.includes('Timesheet HR');
         let ButtonsVisibility = { Submit: true, Withdraw: false, Approve: false, Reject: false, Revoke: false, Update: false };
 
-        if (Status == StatusType.Withdraw) {
-            result.isDisabled = false;
-            ButtonsVisibility.Submit = true;
+        if (Status == StatusType.Withdraw || Status == StatusType.Save) {
+            result.isDisabled = true;
+            ButtonsVisibility.Submit = false;
+             if (loginUserID == EmployeeID) {
+                 result.isDisabled = false;
+                ButtonsVisibility.Submit = true;
+             }
         }
         else if (Status == StatusType.Submit) {
             result.isDisabled = true;
@@ -498,6 +502,11 @@ class TimeOffRequestForm extends React.Component<TimeOffRequestFormProps, TimeOf
                 if (isHR) {
                     result.isHRView = true;
                 }
+            }
+            if (isHR && (IsSubmittedFromTimesheetForm && EligibleforPTO)) {
+                ButtonsVisibility.Approve = true;
+                ButtonsVisibility.Reject = true;
+                result.isHRView = true;
             }
         }
         else if ([StatusType.ManagerApprove, StatusType.ReviewerApprove].includes(Status)) {
@@ -2194,7 +2203,7 @@ class TimeOffRequestForm extends React.Component<TimeOffRequestFormProps, TimeOf
                                             <div className="light-text div-readonly">
                                                 <label className="z-in-9">From Date<span className="mandatoryhastrick">*</span></label>
                                                 <div className="custom-datepicker" id="divFromDate">
-                                                    <DatePicker onDatechange={this.handleFromorToDate} selectedDate={this.state.FromDate} isDisabled={this.state.isDisabled || this.state.ItemID > 0} startDate={new Date(addDays(new Date(), -31))} endDate={new Date(`12/31/${new Date().getFullYear()+1}`)} id="txtFromDate" title="From Date" disabledDayIndexes={[0, 6]} />
+                                                    <DatePicker onDatechange={this.handleFromorToDate} selectedDate={this.state.FromDate} isDisabled={this.state.isDisabled || this.state.ItemID > 0} startDate={new Date(addDays(new Date(), -31))} endDate={new Date(`12/31/${new Date().getFullYear() + 1}`)} id="txtFromDate" title="From Date" disabledDayIndexes={[0, 6]} />
                                                 </div>
                                             </div>
                                         </div>
@@ -2203,7 +2212,7 @@ class TimeOffRequestForm extends React.Component<TimeOffRequestFormProps, TimeOf
                                             <div className="light-text div-readonly">
                                                 <label className="z-in-9">To Date<span className="mandatoryhastrick">*</span></label>
                                                 <div className="custom-datepicker" id="divToDate">
-                                                    <DatePicker onDatechange={this.handleFromorToDate} selectedDate={this.state.ToDate} isDisabled={this.state.isDisabled || this.state.ItemID > 0} startDate={new Date(addDays(new Date(), -31))} endDate={new Date(`12/31/${new Date().getFullYear()+1}`)} id="txtToData" title="To Date" disabledDayIndexes={[0, 6]} />
+                                                    <DatePicker onDatechange={this.handleFromorToDate} selectedDate={this.state.ToDate} isDisabled={this.state.isDisabled || this.state.ItemID > 0} startDate={new Date(addDays(new Date(), -31))} endDate={new Date(`12/31/${new Date().getFullYear() + 1}`)} id="txtToData" title="To Date" disabledDayIndexes={[0, 6]} />
                                                 </div>
                                             </div>
                                         </div>

@@ -1383,7 +1383,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
         var itemStatus = await this.getItemStatusBeforeActionPerform(this.state.ItemID);
         //HOLDING THE REVIEWER FROM APPROVING THE TIMESHEET IF CORRESPONDING TimeOffRec is not approved by HR
         let IsReportingManagerReviewerSame = this.checkIsManagerReviewerSame(this.state.trFormdata);
-        if (this.state.TimeOffRec.length && !this.state.TimeOffRec[0].IsSubmittedFromTimesheetForm) // restrict if timeoff utilized, for both PTO and Non PTO employees
+        if (this.state.TimeOffRec.length && (!this.state.TimeOffRec[0].IsSubmittedFromTimesheetForm || (this.state.TimeOffRec[0].IsSubmittedFromTimesheetForm &&  this.state.trFormdata.EligibleforPTO && !this.state.UserGoups.includes('Timesheet HR')))) // restrict if timeoff utilized, for both PTO and Non PTO employees
         {
             let HoldMsg = "'Time off request' pending with HR approval. Cannot approve";
             // if(!this.state.trFormdata.EligibleforPTO)
@@ -1666,11 +1666,12 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                 let IsReportingManagerReviewerSame = this.checkIsManagerReviewerSame(formdata);
                 // //condition for: if RM, Reviewer same, but Rm delegated ,if delegated manager approve status is directly approved. 27/06/2024
                 if (IsReportingManagerReviewerSame) {
-                    formdata.CommentsHistoryData.push({ "Action": StatusType.Approved, "Role": "Reviewer", "User": this.props.spContext.userDisplayName, "Comments": this.state.trFormdata.Comments.trim(), "Date": new Date().toISOString() });
+                    formdata.CommentsHistoryData.push({ "Action": StatusType.Approved, "Role": "Manager", "User": this.props.spContext.userDisplayName, "Comments": this.state.trFormdata.Comments.trim(), "Date": new Date().toISOString() });
                     let [Status, PendingWith] = [StatusType.Approved, "NA"];
-                    if (this.state.TimeOffRec.length && this.state.TimeOffRec[0].IsSubmittedFromTimesheetForm && formdata.EligibleforPTO && !this.state.UserGoups.includes('Timesheet HR')) {
-                        [Status, PendingWith] = [StatusType.ReviewerApprove, "HR"];
-                    }
+                    //Below is commented as per new requirement on 09/Dec/2025: Timesheet approval for HR is not required, instead it goes to Approved directly after Manager approval if RM and Reviewer are same. after complete approval of TimeOff Rec from Time Off Dashboard otherwise holds with toaster message.
+                    // if (this.state.TimeOffRec.length && this.state.TimeOffRec[0].IsSubmittedFromTimesheetForm && formdata.EligibleforPTO && !this.state.UserGoups.includes('Timesheet HR')) {
+                    //     [Status, PendingWith] = [StatusType.ReviewerApprove, "HR"];
+                    // }
                     postObject['Status'] = Status;
                     postObject['PendingWith'] = PendingWith;
                     postObject['AssignedToId'] = { "results": [] };
@@ -1685,9 +1686,10 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
             case StatusType.ManagerApprove:
                 formdata.CommentsHistoryData.push({ "Action": StatusType.Approved, "Role": "Reviewer", "User": this.props.spContext.userDisplayName, "Comments": this.state.trFormdata.Comments.trim(), "Date": new Date().toISOString() })
                 let [Status, PendingWith] = [StatusType.Approved, "NA"];
-                if (this.state.TimeOffRec.length && this.state.TimeOffRec[0].IsSubmittedFromTimesheetForm && formdata.EligibleforPTO && !this.state.UserGoups.includes('Timesheet HR')) {
-                    [Status, PendingWith] = [StatusType.ReviewerApprove, "HR"];
-                }
+                //Below is commented as per new requirement on 09/Dec/2025: Timesheet approval for HR is not required, instead it goes to Approved directly after Manager approval if RM and Reviewer are same. after complete approval of TimeOff Rec from Time Off Dashboard otherwise holds with toaster message.
+                // if (this.state.TimeOffRec.length && this.state.TimeOffRec[0].IsSubmittedFromTimesheetForm && formdata.EligibleforPTO && !this.state.UserGoups.includes('Timesheet HR')) {
+                //     [Status, PendingWith] = [StatusType.ReviewerApprove, "HR"];
+                // }
                 postObject['Status'] = Status;
                 postObject['PendingWith'] = PendingWith;
                 postObject['AssignedToId'] = { "results": [] };
@@ -1969,7 +1971,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                 else if ([StatusType.ManagerApprove, StatusType.ReviewerApprove, StatusType.Approved].includes(formdata.Status)) {
                     if (formdata.Status == StatusType.Approved) {
                         // Code for PTO Deduction after approve start
-                        if (formObject.EligibleforPTO && this.state.TimeOffRec.length && this.state.TimeOffRec[0].IsSubmittedFromTimesheetForm && parseFloat(formObject.PTOHrs[0].Total) != 0 && parseFloat(PTOHrs) > 0) {
+                        if (formObject.EligibleforPTO && this.state.TimeOffRec.length && this.state.TimeOffRec[0].IsSubmittedFromTimesheetForm && this.state.UserGoups.includes('Timesheet HR')  && parseFloat(formObject.PTOHrs[0].Total) != 0 && parseFloat(PTOHrs) > 0) {
                             let PTOData = {
                                 PTOBalance: (parseFloat(formObject.PTOBalance) - parseFloat(PTOHrs)).toFixed(4),
                                 PTOApplied: (parseFloat(formObject.PTOApplied) - parseFloat(PTOHrs)).toFixed(4),
@@ -1986,7 +1988,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                         //Code for PTO Deduction after approve end
 
                     }
-                    if (parseFloat(formObject.PTOHrs[0].Total) != 0 && this.state.TimeOffRec.length && this.state.TimeOffRec[0].IsSubmittedFromTimesheetForm && [StatusType.ReviewerApprove, StatusType.Approved].includes(formdata.Status) && ![StatusType.Approved].includes(this.state.TimeOffRec[0].Stauts))//incase after final approval, admin revokedtimesheet ,corresponding timeoff rec is still approved, so last condition added, if not approved then only approve timeoff rec
+                    if (parseFloat(formObject.PTOHrs[0].Total) != 0 && this.state.TimeOffRec.length && this.state.TimeOffRec[0].IsSubmittedFromTimesheetForm  && [StatusType.ReviewerApprove, StatusType.Approved].includes(formdata.Status) && ![StatusType.Approved].includes(this.state.TimeOffRec[0].Stauts))//incase after final approval, admin revokedtimesheet ,corresponding timeoff rec is still approved, so last condition added, if not approved then only approve timeoff rec
                     {
                         await this.AddTimeOffRequestAndTransactions(TransactionsData, formdata, formObject);
                     }
@@ -1994,7 +1996,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                 }
                 else if ([StatusType.ManagerReject, StatusType.ReviewerReject, StatusType.HRReject].includes(formdata.Status)) {
                     // Code for PTO Addition after Reject start
-                    if (formObject.EligibleforPTO && this.state.TimeOffRec.length && this.state.TimeOffRec[0].IsSubmittedFromTimesheetForm && parseFloat(formObject.PTOHrs[0].Total) != 0 && parseFloat(PTOHrs) > 0) {
+                    if (formObject.EligibleforPTO && this.state.TimeOffRec.length && this.state.TimeOffRec[0].IsSubmittedFromTimesheetForm && parseFloat(formObject.PTOHrs[0].Total) != 0 && parseFloat(PTOHrs) > 0 && [StatusType.Submit].includes(this.state.TimeOffRec[0].Status)) {
                         let PTOData = {
                             PTOBalanceAfterDeduction: (parseFloat(formObject.PTOBalanceAfterDeduction) + parseFloat(PTOHrs)).toFixed(4),
                             PTOApplied: (parseFloat(formObject.PTOApplied) - parseFloat(PTOHrs)).toFixed(4)
@@ -2007,7 +2009,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                             console.log(error);
                         });
                     }
-                    if (parseFloat(formObject.PTOHrs[0].Total) != 0 && this.state.TimeOffRec.length && this.state.TimeOffRec[0].IsSubmittedFromTimesheetForm) {
+                    if (parseFloat(formObject.PTOHrs[0].Total) != 0 && this.state.TimeOffRec.length && this.state.TimeOffRec[0].IsSubmittedFromTimesheetForm && [StatusType.Submit].includes(this.state.TimeOffRec[0].Status)) {
                         await this.AddTimeOffRequestAndTransactions(TransactionsData, formdata, formObject);
                     }
                     //Code for PTO Addition after Reject end

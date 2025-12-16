@@ -304,7 +304,7 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
         if(name == 'Approve')
             {
             //   if(selRecord.EligibleforPTO || (TimeOffRec.length && TimeOffRec[0].TimeOffRows.toLowerCase().includes('bereavement'))) // restrict only if employee eligible for PTO or utilizing bereavement time off 
-            let filteredTimeOff=TimeOffRec.find(i=>i.Status!=StatusType.Approved && !i.IsSubmittedFromTimesheetForm);
+            let filteredTimeOff=TimeOffRec.find(i=>i.Status!=StatusType.Approved && (!i.IsSubmittedFromTimesheetForm || (i.IsSubmittedFromTimesheetForm && selRecord.EligibleforPTO && !this.state.userGroups.includes('Timesheet HR'))));
               if(TimeOffRec.length && filteredTimeOff) // restrict if timeoff utilized, for both PTO and Non PTO employees
              {
                  let HoldMsg="'Time off request' pending with HR approval. Cannot approve";
@@ -398,11 +398,12 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
             Revised: true,
             AssignedToId : { "results": [] },
         }
-         if(this.state.TimeOffRecord.length && this.state.TimeOffRecord[0].IsSubmittedFromTimesheetForm && InitialRecord[0].EligibleforPTO  && !this.state.userGroups.includes('Timesheet HR'))
-        {
-            postObject.Status=StatusType.ReviewerApprove;
-            postObject.PendingWith='HR';
-        }
+        //Below is commented as per new requirement on 09/Dec/2025: Timesheet approval for HR is not required, instead it goes to Approved directly after Manager approval if RM and Reviewer are same. after complete approval of TimeOff Rec from Time Off Dashboard otherwise holds with toaster message.
+        //  if(this.state.TimeOffRecord.length && this.state.TimeOffRecord[0].IsSubmittedFromTimesheetForm && InitialRecord[0].EligibleforPTO  && !this.state.userGroups.includes('Timesheet HR'))
+        // {
+        //     postObject.Status=StatusType.ReviewerApprove;
+        //     postObject.PendingWith='HR';
+        // }
         let PTOData={};
         // let PTOTransaction={};
         let TimeOffPostData={};
@@ -420,11 +421,12 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
                  Status: StatusType.Approved,
                  PendingWith:"NA"
             }
-             if(this.state.TimeOffRecord[0].IsSubmittedFromTimesheetForm && InitialRecord[0].EligibleforPTO && !this.state.userGroups.includes('Timesheet HR'))
-            {
-                TimeOffPostData['Status']=StatusType.ReviewerApprove;
-                TimeOffPostData['PendingWith']='HR';
-            }
+            //Below is commented as per new requirement on 09/Dec/2025: Timesheet approval for HR is not required, instead it goes to Approved directly after Manager approval if RM and Reviewer are same. after complete approval of TimeOff Rec from Time Off Dashboard otherwise holds with toaster message.
+            //  if(this.state.TimeOffRecord[0].IsSubmittedFromTimesheetForm && InitialRecord[0].EligibleforPTO && !this.state.userGroups.includes('Timesheet HR'))
+            // {
+            //     TimeOffPostData['Status']=StatusType.ReviewerApprove;
+            //     TimeOffPostData['PendingWith']='HR';
+            // }
         }
        let currentEmployeePTO= await sp.web.lists.getByTitle('EmployeePTO').items.filter("Employee/Id eq "+InitialRecord[0].EmployeeId+" and Year eq "+new Date(InitialRecord[0].Date).getFullYear()+" and IsActive eq 1").select('Employee/Id,Employee/EMail,*').expand("Employee").getAll(); // Regarding PTO
         if(currentEmployeePTO.length && InitialRecord[0].EligibleforPTO && InitialRecord[0].PTOHrs!=0 && parseFloat(PTOHrs)>0)
@@ -450,23 +452,25 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
         let Transaction = {
             TransactionType: StatusType.Approved
         };
-         if(this.state.TimeOffRecord.length && this.state.TimeOffRecord[0].IsSubmittedFromTimesheetForm && InitialRecord[0].EligibleforPTO && !this.state.userGroups.includes('Timesheet HR'))
-            {
-                Transaction['TransactionType']=StatusType.ReviewerApprove;
-            }
+        //Below is commented as per new requirement on 09/Dec/2025: Timesheet approval for HR is not required, instead it goes to Approved directly after Manager approval if RM and Reviewer are same. after complete approval of TimeOff Rec from Time Off Dashboard otherwise holds with toaster message.
+        //  if(this.state.TimeOffRecord.length && this.state.TimeOffRecord[0].IsSubmittedFromTimesheetForm && InitialRecord[0].EligibleforPTO && !this.state.userGroups.includes('Timesheet HR'))
+        //     {
+        //         Transaction['TransactionType']=StatusType.ReviewerApprove;
+        //     }
         
               sp.web.lists.getByTitle('WeeklyTimeSheet').items.getById(data[0].Id).update(postObject).then( async (res) => {
                 // to update Employee PTO
                 //COMMENTED TO STOP PTO CONSIDERATION FROM TIMESHEET FORM
                 if(InitialRecord[0].PTOHrs!=0 && this.state.TimeOffRecord.length && this.state.TimeOffRecord[0].IsSubmittedFromTimesheetForm)
                 {
-                    if(currentEmployeePTO.length && InitialRecord[0].EligibleforPTO && parseFloat(PTOHrs)>0 && [StatusType.Approved].includes(postObject.Status))
+                    if(currentEmployeePTO.length && InitialRecord[0].EligibleforPTO && parseFloat(PTOHrs)>0 && [StatusType.Approved].includes(postObject.Status) && this.state.userGroups.includes('Timesheet HR'))
                     {
                         sp.web.lists.getByTitle('EmployeePTO').items.getById(currentEmployeePTO[0].Id).inBatch(PTOTransactionBatch).update(PTOData);//PTO update
-                    }
-                     PTOTransactionRecords.forEach(pto => {
+                      PTOTransactionRecords.forEach(pto => {
                     sp.web.lists.getByTitle('PTOTransactions').items.getById(pto.ID).inBatch(PTOTransactionBatch).update(Transaction);//Transactions update
                      });
+                    }
+                   
                     sp.web.lists.getByTitle('TimeOffEmployees').items.getById(TimeOffRecordID).inBatch(PTOTransactionBatch).update(TimeOffPostData);//TimeOff update
 
                     Promise.all([PTOTransactionBatch.execute()]).then((resPTOTranc) => {
@@ -643,15 +647,15 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
             sp.web.lists.getByTitle('WeeklyTimeSheet').items.getById(data[0].Id).update(postObject).then( async (res) => {
                     // to update Employee PTO
                     //COMMENTED TO STOP PTO CONSIDERATION FROM TIMESHEET FORM
-                if(InitialRecord[0].PTOHrs!=0 && this.state.TimeOffRecord.length && this.state.TimeOffRecord[0].IsSubmittedFromTimesheetForm)
+                if(InitialRecord[0].PTOHrs!=0 && this.state.TimeOffRecord.length && this.state.TimeOffRecord[0].IsSubmittedFromTimesheetForm && [StatusType.Submit].includes(this.state.TimeOffRecord[0].Status))
                 {
                     if(currentEmployeePTO.length && InitialRecord[0].EligibleforPTO && parseFloat(PTOHrs)>0)
                     {
                         sp.web.lists.getByTitle('EmployeePTO').items.getById(currentEmployeePTO[0].Id).inBatch(PTOTransactionBatch).update(PTOData);//PTO update
+                        PTOTransactionRecords.forEach(pto => {
+                                   sp.web.lists.getByTitle('PTOTransactions').items.getById(pto.ID).inBatch(PTOTransactionBatch).update(Transaction);//Transactions update
+                        });
                     }
-                      PTOTransactionRecords.forEach(pto => {
-                                 sp.web.lists.getByTitle('PTOTransactions').items.getById(pto.ID).inBatch(PTOTransactionBatch).update(Transaction);//Transactions update
-                      });
                    sp.web.lists.getByTitle('TimeOffEmployees').items.getById(TimeOffRecordID).inBatch(PTOTransactionBatch).update(TimeOffPostData);//TimeOff update
 
                      Promise.all([PTOTransactionBatch.execute()]).then((resPTOTranc) => {

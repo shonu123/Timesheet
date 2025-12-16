@@ -446,7 +446,7 @@ class ApproversApprovals extends React.Component<ApproversProps, ApproversState>
 
             const timeOffRec = await this.getTimeOffItemDataByFromDate(item.Date, item.EmployeeId);
 
-            if (isReviewer && timeOffRec.length && !timeOffRec[0].IsSubmittedFromTimesheetForm && ![StatusType.Approved].includes(timeOffRec[0].Status)) {
+            if (isReviewer && timeOffRec.length && (!timeOffRec[0].IsSubmittedFromTimesheetForm || (timeOffRec[0].IsSubmittedFromTimesheetForm && item.EligibleforPTO)) && ![StatusType.Approved].includes(timeOffRec[0].Status)) {
                 return item;
             }
             return null;
@@ -463,7 +463,6 @@ class ApproversApprovals extends React.Component<ApproversProps, ApproversState>
             let TimeOffNotApprovedTSs = [];
             if (!this.state.userGroups.includes('Timesheet HR')) {
                 TimeOffNotApprovedTSs = await this.getNotApprovedTimeOffTSs();
-
             }
             if (TimeOffNotApprovedTSs.length == this.state.SelectedRows.length) {
                 customToaster('toster-warning', ToasterTypes.Warning, `Selected Timesheet ${TimeOffNotApprovedTSs.length > 1 ? '(s)' : ''} of time off request ${TimeOffNotApprovedTSs.length > 1 ? 'have' : 'has'} been pending with HR approval. Cannot approve`, 4000);
@@ -561,19 +560,20 @@ class ApproversApprovals extends React.Component<ApproversProps, ApproversState>
                             //Transaction data
                             Transaction['TransactionType'] = StatusType.Approved;
                         }
-                        else if (IsReportingManagerReviewerSame && row.EligibleforPTO) // ReportingManager/Reviewer same
-                        {
-                            //Timesheet data
-                            formData.Status = StatusType.ReviewerApprove;
-                            formData.PendingWith = "HR";
-                            formData.AssignedToId = { "results": [] };
-                            //TimeOff data
-                            TimeOffPostData['Status'] = StatusType.ReviewerApprove;
-                            TimeOffPostData['PendingWith'] = 'HR';
-                            TimeOffPostData['CommentsHistory'] = JSON.stringify(timeOffCommentsObj);
-                            //Transaction data
-                            Transaction['TransactionType'] = StatusType.ReviewerApprove;
-                        }
+                        //Below is commented as per new requirement on 09/Dec/2025: Timesheet approval for HR is not required, instead it goes to Approved directly after Manager approval if RM and Reviewer are same. after complete approval of TimeOff Rec from Time Off Dashboard otherwise holds with toaster message.
+                        // else if (IsReportingManagerReviewerSame && row.EligibleforPTO) // ReportingManager/Reviewer same
+                        // {
+                        //     //Timesheet data
+                        //     formData.Status = StatusType.ReviewerApprove;
+                        //     formData.PendingWith = "HR";
+                        //     formData.AssignedToId = { "results": [] };
+                        //     //TimeOff data
+                        //     TimeOffPostData['Status'] = StatusType.ReviewerApprove;
+                        //     TimeOffPostData['PendingWith'] = 'HR';
+                        //     TimeOffPostData['CommentsHistory'] = JSON.stringify(timeOffCommentsObj);
+                        //     //Transaction data
+                        //     Transaction['TransactionType'] = StatusType.ReviewerApprove;
+                        // }
 
                     }
                 }
@@ -622,10 +622,9 @@ class ApproversApprovals extends React.Component<ApproversProps, ApproversState>
 
                 for (let T in ItemsJustBeforeActionPerform) {
                     if (row.Id == ItemsJustBeforeActionPerform[T].Id && row.StatusInList == ItemsJustBeforeActionPerform[T].Status) {
-                        //COMMENTED TO STOP PTO CONSIDERATION FROM TIMESHEET FORM
                         if (row.PTOHrs != 0 && TimeOffRec.length && TimeOffRec[0].IsSubmittedFromTimesheetForm) {
                             sp.web.lists.getByTitle('WeeklyTimeSheet').items.getById(row.Id).inBatch(batch).update(formData);
-                            if (row.EligibleforPTO && row.PTOHrs != 0 && parseFloat(PTOHrs) > 0 && [StatusType.Approved].includes(formData.Status)) {
+                            if (row.EligibleforPTO && row.PTOHrs != 0 && parseFloat(PTOHrs) > 0 && [StatusType.Approved].includes(formData.Status) && this.state.userGroups.includes('Timesheet HR')) {
                                 sp.web.lists.getByTitle('EmployeePTO').items.getById(currentEmployeePTO[0].Id).inBatch(EmployeePTOBatch).update(PTOData);
                                 PTOTransactionRecords
                                     .filter(item => item.IsActive && parseInt(item.TimeOffID) === parseInt(TimeOffRec[0].Id))
@@ -635,7 +634,7 @@ class ApproversApprovals extends React.Component<ApproversProps, ApproversState>
                             }
                             sp.web.lists.getByTitle('TimeOffEmployees').items.getById(TimeOffRec[0].Id).inBatch(PTOTransactionBatch).update(TimeOffPostData);//TimeOff update
                         }
-                        else if (row.PTOHrs != 0 && TimeOffRec.length && !TimeOffRec[0].IsSubmittedFromTimesheetForm) {
+                        if (row.PTOHrs != 0 && TimeOffRec.length && (!TimeOffRec[0].IsSubmittedFromTimesheetForm || (TimeOffRec[0].IsSubmittedFromTimesheetForm && row.EligibleforPTO))) {
                             if (!IsReportingManagerReviewerSame || (IsReportingManagerReviewerSame && [StatusType.Approved].includes(TimeOffRec[0].Status)))//condition1: if manager&reviewer not same, directly approve timesheet. condition2: if Manager&reviewer  and TimeOffRec is alredy approved by HR then approve timesheet otherwise holding the timesheet
                             {
                                 sp.web.lists.getByTitle('WeeklyTimeSheet').items.getById(row.Id).inBatch(batch).update(formData);
@@ -769,7 +768,7 @@ class ApproversApprovals extends React.Component<ApproversProps, ApproversState>
                         if (row.Id == ItemsJustBeforeActionPerform[T].Id && row.StatusInList == ItemsJustBeforeActionPerform[T].Status) {
                             sp.web.lists.getByTitle('WeeklyTimeSheet').items.getById(row.Id).inBatch(batch).update(formData);
                             //COMMENTED TO STOP PTO CONSIDERATION FROM TIMESHEET FORM
-                            if (row.PTOHrs != 0 && TimeOffRec.length && TimeOffRec[0].IsSubmittedFromTimesheetForm) {
+                            if (row.PTOHrs != 0 && TimeOffRec.length && TimeOffRec[0].IsSubmittedFromTimesheetForm && [StatusType.Submit].includes(TimeOffRec[0].Status)) {
                                 if (row.EligibleforPTO && parseFloat(PTOHrs) > 0) {
                                     sp.web.lists.getByTitle('EmployeePTO').items.getById(currentEmployeePTO[0].Id).inBatch(EmployeePTOBatch).update(PTOData);
                                     PTOTransactionRecords

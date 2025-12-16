@@ -89,7 +89,7 @@ class TimeOffApprovals extends React.Component<TimeOffApprovalsProps, TimeOffApp
         let groups= await sp.web.currentUser.groups();
         if(groups.some(grp=>grp.Title=="Timesheet HR"))
         {
-            filterString+= " or (PendingWith eq 'HR' and IsActive eq 1 and IsSubmittedFromTimesheetForm ne 1)";
+            filterString+= " or (IsActive eq 1 and ((PendingWith eq 'HR' and (IsSubmittedFromTimesheetForm ne 1)) or ( PendingWith eq 'Manager' and IsSubmittedFromTimesheetForm eq 1 and EligibleforPTO eq 1)))";
         }
         sp.web.lists.getByTitle('TimeOffEmployees').items.top(5000).filter(filterString).expand("SynergyManager,Employee").select('SynergyManager/Title,SynergyManager/EMail,Employee/Title,Employee/EMail,*').orderBy('Modified', false).getAll()
             .then((response) => {

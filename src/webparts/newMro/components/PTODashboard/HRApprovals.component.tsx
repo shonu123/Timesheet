@@ -77,7 +77,7 @@ class HRApproval extends React.Component<HRApprovalProps, HRApprovalState> {
     private getHRApprovals = async () => {
         this.setState({ loading: true });
         const userId = this.props.spContext.userId;
-        var filterString = "PendingWith eq 'HR' and IsActive eq 1 and IsSubmittedFromTimesheetForm ne 1";
+        var filterString = "IsActive eq 1 and ((PendingWith eq 'HR' and (IsSubmittedFromTimesheetForm ne 1)) or (PendingWith eq 'Manager' and IsSubmittedFromTimesheetForm eq 1 and EligibleforPTO eq 1))";
         sp.web.lists.getByTitle('TimeOffEmployees').items.top(5000).filter(filterString).expand("SynergyManager,Employee").select('SynergyManager/Title,SynergyManager/EMail,Employee/Title,Employee/EMail,*').orderBy('Modified', false).getAll()
             .then((response) => {
                 let Data = [];
