@@ -1382,26 +1382,26 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
         //new condition for instance action without refreshing
         var itemStatus = await this.getItemStatusBeforeActionPerform(this.state.ItemID);
         //HOLDING THE REVIEWER FROM APPROVING THE TIMESHEET IF CORRESPONDING TimeOffRec is not approved by HR
-        let IsReportingManagerReviewerSame = this.checkIsManagerReviewerSame(this.state.trFormdata);
-        if (this.state.TimeOffRec.length && (!this.state.TimeOffRec[0].IsSubmittedFromTimesheetForm || (this.state.TimeOffRec[0].IsSubmittedFromTimesheetForm &&  this.state.trFormdata.EligibleforPTO && !this.state.UserGoups.includes('Timesheet HR')))) // restrict if timeoff utilized, for both PTO and Non PTO employees
-        {
-            let HoldMsg = "'Time off request' pending with HR approval. Cannot approve";
-            // if(!this.state.trFormdata.EligibleforPTO)
-            //   HoldMsg="'Bereavement (BV)' time off request pending with HR approval. Cannot approve"; 
+        // let IsReportingManagerReviewerSame = this.checkIsManagerReviewerSame(this.state.trFormdata);
+        // if (this.state.TimeOffRec.length && (!this.state.TimeOffRec[0].IsSubmittedFromTimesheetForm || (this.state.TimeOffRec[0].IsSubmittedFromTimesheetForm &&  this.state.trFormdata.EligibleforPTO && !this.state.UserGoups.includes('Timesheet HR'))) &&  (JSON.stringify(this.state.ptoFormData).toLowerCase().includes('bereavement') || JSON.stringify(this.state.ptoFormData).toLowerCase().includes('jury duty'))) // restrict if timeoff utilized, for both PTO and Non PTO employees
+        // {
+        //     let HoldMsg = "'Time off request' pending with approval. Cannot approve";
+        //     // if(!this.state.trFormdata.EligibleforPTO)
+        //     //   HoldMsg="'Bereavement (BV)' time off request pending with HR approval. Cannot approve"; 
 
-            if (this.state.trFormdata.Pendingwith == "Manager") {
-                if (IsReportingManagerReviewerSame && this.state.TimeOffRec[0].Status != StatusType.Approved) {
-                    customToaster('toster-warning', ToasterTypes.Warning, HoldMsg, 4000);
-                    return false;
-                }
-            }
-            else {
-                if (this.state.trFormdata.Pendingwith == "Reviewer" && this.state.TimeOffRec[0].Status != StatusType.Approved) {
-                    customToaster('toster-warning', ToasterTypes.Warning, HoldMsg, 4000);
-                    return false;
-                }
-            }
-        }
+        //     if (this.state.trFormdata.Pendingwith == "Manager") {
+        //         if (IsReportingManagerReviewerSame && this.state.TimeOffRec[0].Status != StatusType.Approved) {
+        //             customToaster('toster-warning', ToasterTypes.Warning, HoldMsg, 4000);
+        //             return false;
+        //         }
+        //     }
+        //     else {
+        //         if (this.state.trFormdata.Pendingwith == "Reviewer" && this.state.TimeOffRec[0].Status != StatusType.Approved) {
+        //             customToaster('toster-warning', ToasterTypes.Warning, HoldMsg, 4000);
+        //             return false;
+        //         }
+        //     }
+        // }
 
         if (itemStatus == this.state.trFormdata.Status) {
             this.setState({ showConfirmDeletePopup: true, ConfirmPopupMessage: 'Are you sure you want to approve?', ActionButtonId: event.target.id });
@@ -1672,6 +1672,9 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                     // if (this.state.TimeOffRec.length && this.state.TimeOffRec[0].IsSubmittedFromTimesheetForm && formdata.EligibleforPTO && !this.state.UserGoups.includes('Timesheet HR')) {
                     //     [Status, PendingWith] = [StatusType.ReviewerApprove, "HR"];
                     // }
+                    if (this.state.TimeOffRec.length && this.state.TimeOffRec[0].IsSubmittedFromTimesheetForm && !this.state.UserGoups.includes('Timesheet HR') && JSON.stringify(this.state.ptoFormData).toLowerCase().includes('bereavement') || JSON.stringify(this.state.ptoFormData).toLowerCase().includes('jury duty')) {
+                        [Status, PendingWith] = [StatusType.ReviewerApprove, "HR"];
+                    }
                     postObject['Status'] = Status;
                     postObject['PendingWith'] = PendingWith;
                     postObject['AssignedToId'] = { "results": [] };
@@ -1690,6 +1693,9 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                 // if (this.state.TimeOffRec.length && this.state.TimeOffRec[0].IsSubmittedFromTimesheetForm && formdata.EligibleforPTO && !this.state.UserGoups.includes('Timesheet HR')) {
                 //     [Status, PendingWith] = [StatusType.ReviewerApprove, "HR"];
                 // }
+                if (this.state.TimeOffRec.length && this.state.TimeOffRec[0].IsSubmittedFromTimesheetForm && !this.state.UserGoups.includes('Timesheet HR') && JSON.stringify(this.state.ptoFormData).toLowerCase().includes('bereavement') || JSON.stringify(this.state.ptoFormData).toLowerCase().includes('jury duty')) {
+                    [Status, PendingWith] = [StatusType.ReviewerApprove, "HR"];
+                }
                 postObject['Status'] = Status;
                 postObject['PendingWith'] = PendingWith;
                 postObject['AssignedToId'] = { "results": [] };
@@ -1969,9 +1975,10 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
 
                 }
                 else if ([StatusType.ManagerApprove, StatusType.ReviewerApprove, StatusType.Approved].includes(formdata.Status)) {
-                    if (formdata.Status == StatusType.Approved) {
+                    if ([StatusType.ReviewerApprove, StatusType.Approved].includes(formdata.Status)) {
                         // Code for PTO Deduction after approve start
-                        if (formObject.EligibleforPTO && this.state.TimeOffRec.length && this.state.TimeOffRec[0].IsSubmittedFromTimesheetForm && this.state.UserGoups.includes('Timesheet HR')  && parseFloat(formObject.PTOHrs[0].Total) != 0 && parseFloat(PTOHrs) > 0) {
+                        // if (formObject.EligibleforPTO && this.state.TimeOffRec.length && this.state.TimeOffRec[0].IsSubmittedFromTimesheetForm && this.state.UserGoups.includes('Timesheet HR')  && parseFloat(formObject.PTOHrs[0].Total) != 0 && parseFloat(PTOHrs) > 0) {
+                        if (formObject.EligibleforPTO && this.state.TimeOffRec.length && this.state.TimeOffRec[0].IsSubmittedFromTimesheetForm && parseFloat(formObject.PTOHrs[0].Total) != 0 && parseFloat(PTOHrs) > 0 && ![StatusType.Approved].includes(this.state.TimeOffRec[0].Stauts)) {
                             let PTOData = {
                                 PTOBalance: (parseFloat(formObject.PTOBalance) - parseFloat(PTOHrs)).toFixed(4),
                                 PTOApplied: (parseFloat(formObject.PTOApplied) - parseFloat(PTOHrs)).toFixed(4),
@@ -1988,7 +1995,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                         //Code for PTO Deduction after approve end
 
                     }
-                    if (parseFloat(formObject.PTOHrs[0].Total) != 0 && this.state.TimeOffRec.length && this.state.TimeOffRec[0].IsSubmittedFromTimesheetForm  && [StatusType.ReviewerApprove, StatusType.Approved].includes(formdata.Status) && ![StatusType.Approved].includes(this.state.TimeOffRec[0].Stauts))//incase after final approval, admin revokedtimesheet ,corresponding timeoff rec is still approved, so last condition added, if not approved then only approve timeoff rec
+                    if (parseFloat(formObject.PTOHrs[0].Total) != 0 && this.state.TimeOffRec.length && this.state.TimeOffRec[0].IsSubmittedFromTimesheetForm && [StatusType.ReviewerApprove, StatusType.Approved].includes(formdata.Status) && ![StatusType.Approved].includes(this.state.TimeOffRec[0].Stauts))//incase after final approval, admin revokedtimesheet ,corresponding timeoff rec is still approved, so last condition added, if not approved then only approve timeoff rec
                     {
                         await this.AddTimeOffRequestAndTransactions(TransactionsData, formdata, formObject);
                     }
@@ -2030,10 +2037,12 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                         if (parseFloat(formObject.PTOHrs[0].Total) != 0) {
                             await this.AddTimeOffRequestAndTransactions(TransactionsData, formdata, formObject);
                             // to avoid duplicate timeoffrec while without leaving timesheet form
-                           setTimeout(async ()=>{ if (!this.state.TimeOffRec.length) {
-                                let TimeOffRecData = await this.checkTimeOffRecIsExists(formObject); // for binding Time Off row data with TimeOffRequest data
-                                this.setState({ TimeOffRec: TimeOffRecData.TimeOff, PTOTransactionsListData: TimeOffRecData.PTOTransactions });
-                            }},1000);
+                            setTimeout(async () => {
+                                if (!this.state.TimeOffRec.length) {
+                                    let TimeOffRecData = await this.checkTimeOffRecIsExists(formObject); // for binding Time Off row data with TimeOffRequest data
+                                    this.setState({ TimeOffRec: TimeOffRecData.TimeOff, PTOTransactionsListData: TimeOffRecData.PTOTransactions });
+                                }
+                            }, 1000);
                         }
                         customToaster('toster-success', ToasterTypes.Success, 'Weekly timesheet saved successfully', 2000)
                         this.setState({ ItemID: ItemID, loading: false });
@@ -4102,14 +4111,14 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
         const trFormdata = this.state.trFormdata;
         let PTOTransactionsDayWise = [];
         if (Object.keys(totalPTOFormData).length) {
-           
+
             WeekKeys.forEach(day => {
                 trFormdata.PTOHrs[0][day] = totalPTOFormData.Total[0][day]; //for Time Off row binding
                 // for getting daywise PTO
                 if (!['Total'].includes(day)) {
                     let dateKey = this.WeekHeadings[0][day + 'Date'];
                     let Hours = parseFloat(totalPTOFormData.PTOSubTotal[0][day]);
-                    if (Hours > 0) {  
+                    if (Hours > 0) {
                         // Push new object
                         PTOTransactionsDayWise.push({ [dateKey]: Hours });
                     }
@@ -4153,8 +4162,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
         }
         else {
             //to handle Previously TimeOffRequest submitted, but with drawn from TimeOffDashboard , in this case have to display empty time off row and corresponding calculations
-            if([StatusType.Save,StatusType.Revoke.toString()].includes(trFormdata.Status))
-            {
+            if ([StatusType.Save, StatusType.Revoke.toString()].includes(trFormdata.Status)) {
                 WeekKeys.forEach(day => {
                     trFormdata.PTOHrs[0][day] = ['Total'].includes(day) ? '0.00' : ''; //for Time Off row binding
                     //FOR COLUMN WISE CALCULATION
@@ -4163,26 +4171,26 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                     let NonBillableColValue = trFormdata.SynergyOfficeHrs[0][day].toString();
                     [undefined, null, "", "."].includes(NonBillableColValue.trim()) ? NonBillableColValue = "0" : NonBillableColValue;
                     WeeklyTotal = WeeklyTotal + (parseFloat(NonBillableColValue));
-    
+
                     NonBillableColValue = trFormdata.ClientHolidayHrs[0][day].toString();
                     [undefined, null, "", "."].includes(NonBillableColValue.trim()) ? NonBillableColValue = "0" : NonBillableColValue;
                     WeeklyTotal = WeeklyTotal + (parseFloat(NonBillableColValue));
-    
+
                     NonBillableColValue = trFormdata.PTOHrs[0][day].toString();
                     [undefined, null, "", "."].includes(NonBillableColValue.trim()) ? NonBillableColValue = "0" : NonBillableColValue;
                     WeeklyTotal = WeeklyTotal + (parseFloat(NonBillableColValue));
-    
+
                     trFormdata.NonBillableSubTotal[0][day] = WeeklyTotal.toFixed(4).toString();
                     //GRAND TOTAL COLUMN WISE
                     WeeklyTotal = 0;
                     let TotalColVal = trFormdata.BillableSubTotal[0][day].toString();
                     [undefined, null, "", "."].includes(TotalColVal.trim()) ? TotalColVal = "0" : TotalColVal;
                     WeeklyTotal = WeeklyTotal + (parseFloat(TotalColVal));
-    
+
                     TotalColVal = trFormdata.NonBillableSubTotal[0][day].toString();
                     [undefined, null, "", "."].includes(TotalColVal.trim()) ? TotalColVal = "0" : TotalColVal;
                     WeeklyTotal = WeeklyTotal + (parseFloat(TotalColVal));
-    
+
                     trFormdata.Total[0][day] = parseFloat(WeeklyTotal.toFixed(4)).toString();
                 })
             }

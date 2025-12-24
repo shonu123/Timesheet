@@ -208,35 +208,38 @@ class ApproversApprovals extends React.Component<ApproversProps, ApproversState>
                     // To handle: in case of  Manager and Reviewer same: manager delegated to another user , if another user approved, instead of Status=Approved, Status= apprved by Manager updated
                     let RMEmails = d.ReportingManager.map(e => e.EMail);
                     var DelegatedMngrObj = ManagerDelegations.find(MngrD => this.showDelegatedRecords(MngrD.From, MngrD.To) && RMEmails.includes(MngrD.Authorizer.EMail));
-                    Data.push({
-                        Id: d.Id,
-                        Date: DateUtilities.getDateMMDDYYYY(date),
-                        DateForGrid: `<span class='d-none'>${DateUtilities.getDateYYYYMMDDForSorting(date)}</span>${DateUtilities.getDateMMDDYYYY(date)}`,
-                        EmployeName: d.Name,
-                        PendingWith: d.PendingWith == "Approver" || d.PendingWith == "Manager" ? "Reporting Manager" : d.PendingWith,
-                        Status: this.getStatus(d.Status),
-                        BillableTotalHrs: isBillable ? parseFloat(parseFloat(d.WeeklyTotalHrs).toFixed(2)) : parseFloat(parseFloat(JSON.parse(d.SynergyOfficeHrs)[0].Total).toFixed(2)),
-                        OTTotalHrs: parseFloat(parseFloat(d.OTTotalHrs).toFixed(2)),
-                        TotalBillable: parseFloat(parseFloat(d.BillableTotalHrs).toFixed(2)),
-                        // NonBillableTotalHrs: d.NonBillableTotalHrs,
-                        HolidayHrs: parseFloat(parseFloat(JSON.parse(d.ClientHolidayHrs)[0].Total).toFixed(2)),
-                        PTOHrs: parseFloat(parseFloat(JSON.parse(d.PTOHrs)[0].Total).toFixed(4)),
-                        PTORow: JSON.parse(d.PTOHrs),
-                        GrandTotal: parseFloat(parseFloat(d.GrandTotal).toFixed(2)),
-                        Client: d.ClientName,
-                        EmployeeEmail: d.Initiator.EMail,
-                        ReportingManagerEmails: d.ReportingManager.map(e => e.EMail),
-                        ReviewerEmails: d.Reviewers.map(e => e.EMail),
-                        ReviewerIds: d.Reviewers.map(e => e.Id),
-                        EmployeeId: d.Initiator.Id,
-                        StatusInList: d.Status,
-                        commentsObj: JSON.parse(d.CommentsHistory),
-                        SynergyOfficeHrs: d.SynergyOfficeHrs,
-                        ClientHolidayHrs: d.ClientHolidayHrs,
-                        EligibleforPTO: d.EligibleforPTO,
-                        DelegatedMngrObj: DelegatedMngrObj     // To handle: in case of  Manager and Reviewer same: manager delegated to another user , if another user approved, instead of Status=Approved, Status= apprved by Manager updated
-                        // PTONewHrs:d.EligibleforPTO?parseFloat(parseFloat(JSON.parse(d.PTONewHrs)[0].Total).toFixed(2)):'NA',
-                    })
+                    if(Data.findIndex(item=>item.Id==d.Id)===-1)
+                    {
+                        Data.push({
+                            Id: d.Id,
+                            Date: DateUtilities.getDateMMDDYYYY(date),
+                            DateForGrid: `<span class='d-none'>${DateUtilities.getDateYYYYMMDDForSorting(date)}</span>${DateUtilities.getDateMMDDYYYY(date)}`,
+                            EmployeName: d.Name,
+                            PendingWith: d.PendingWith == "Approver" || d.PendingWith == "Manager" ? "Reporting Manager" : d.PendingWith,
+                            Status: this.getStatus(d.Status),
+                            BillableTotalHrs: isBillable ? parseFloat(parseFloat(d.WeeklyTotalHrs).toFixed(2)) : parseFloat(parseFloat(JSON.parse(d.SynergyOfficeHrs)[0].Total).toFixed(2)),
+                            OTTotalHrs: parseFloat(parseFloat(d.OTTotalHrs).toFixed(2)),
+                            TotalBillable: parseFloat(parseFloat(d.BillableTotalHrs).toFixed(2)),
+                            // NonBillableTotalHrs: d.NonBillableTotalHrs,
+                            HolidayHrs: parseFloat(parseFloat(JSON.parse(d.ClientHolidayHrs)[0].Total).toFixed(2)),
+                            PTOHrs: parseFloat(parseFloat(JSON.parse(d.PTOHrs)[0].Total).toFixed(4)),
+                            PTORow: JSON.parse(d.PTOHrs),
+                            GrandTotal: parseFloat(parseFloat(d.GrandTotal).toFixed(2)),
+                            Client: d.ClientName,
+                            EmployeeEmail: d.Initiator.EMail,
+                            ReportingManagerEmails: d.ReportingManager.map(e => e.EMail),
+                            ReviewerEmails: d.Reviewers.map(e => e.EMail),
+                            ReviewerIds: d.Reviewers.map(e => e.Id),
+                            EmployeeId: d.Initiator.Id,
+                            StatusInList: d.Status,
+                            commentsObj: JSON.parse(d.CommentsHistory),
+                            SynergyOfficeHrs: d.SynergyOfficeHrs,
+                            ClientHolidayHrs: d.ClientHolidayHrs,
+                            EligibleforPTO: d.EligibleforPTO,
+                            DelegatedMngrObj: DelegatedMngrObj     // To handle: in case of  Manager and Reviewer same: manager delegated to another user , if another user approved, instead of Status=Approved, Status= apprved by Manager updated
+                            // PTONewHrs:d.EligibleforPTO?parseFloat(parseFloat(JSON.parse(d.PTONewHrs)[0].Total).toFixed(2)):'NA',
+                        })
+                    }
                 }
             }
             // console.log(Data);
@@ -446,7 +449,7 @@ class ApproversApprovals extends React.Component<ApproversProps, ApproversState>
 
             const timeOffRec = await this.getTimeOffItemDataByFromDate(item.Date, item.EmployeeId);
 
-            if (isReviewer && timeOffRec.length && (!timeOffRec[0].IsSubmittedFromTimesheetForm || (timeOffRec[0].IsSubmittedFromTimesheetForm && item.EligibleforPTO)) && ![StatusType.Approved].includes(timeOffRec[0].Status)) {
+            if (isReviewer && timeOffRec.length && (!timeOffRec[0].IsSubmittedFromTimesheetForm || (timeOffRec[0].IsSubmittedFromTimesheetForm && item.EligibleforPTO)) && ![StatusType.Approved].includes(timeOffRec[0].Status) && (JSON.stringify(timeOffRec[0].TimeOffRows).toLowerCase().includes('bereavement') || JSON.stringify(timeOffRec[0].TimeOffRows).toLowerCase().includes('jury duty'))) {
                 return item;
             }
             return null;
@@ -460,16 +463,16 @@ class ApproversApprovals extends React.Component<ApproversProps, ApproversState>
         let name = e.target.name;
         if (name == 'Approve') {
             // for holding timesheets if all time off requests are pending with HR
-            let TimeOffNotApprovedTSs = [];
-            if (!this.state.userGroups.includes('Timesheet HR')) {
-                TimeOffNotApprovedTSs = await this.getNotApprovedTimeOffTSs();
-            }
-            if (TimeOffNotApprovedTSs.length == this.state.SelectedRows.length) {
-                customToaster('toster-warning', ToasterTypes.Warning, `Selected Timesheet ${TimeOffNotApprovedTSs.length > 1 ? '(s)' : ''} of time off request ${TimeOffNotApprovedTSs.length > 1 ? 'have' : 'has'} been pending with HR approval. Cannot approve`, 4000);
-            }
-            else {
-                this.setState({ message: 'Are you sure you want to approve timesheet(s)?', title: 'Approve', Action: 'Approve', showApproveRejectPopup: true, isSuccess: true, ModalHeader: 'modal-header-Approve' });
-            }
+            // let TimeOffNotApprovedTSs = [];
+            // if (!this.state.userGroups.includes('Timesheet HR')) {
+            //     TimeOffNotApprovedTSs = await this.getNotApprovedTimeOffTSs();
+            // }
+            // if (TimeOffNotApprovedTSs.length == this.state.SelectedRows.length) {
+            //     customToaster('toster-warning', ToasterTypes.Warning, `Selected Timesheet ${TimeOffNotApprovedTSs.length > 1 ? '(s)' : ''} of time off request ${TimeOffNotApprovedTSs.length > 1 ? 'have' : 'has'} been pending with approval. Cannot approve`, 4000);
+            // }
+            // else {
+            this.setState({ message: 'Are you sure you want to approve timesheet(s)?', title: 'Approve', Action: 'Approve', showApproveRejectPopup: true, isSuccess: true, ModalHeader: 'modal-header-Approve' });
+            //}
         }
         else
             if (name == 'Reject') {
@@ -547,7 +550,20 @@ class ApproversApprovals extends React.Component<ApproversProps, ApproversState>
                     let timeOffCommentsObj = JSON.parse(TimeOffRec[0].CommentsHistory);
                     timeOffCommentsObj.push({ Action: StatusType.Approved, Role: "Manager", User: this.props.spContext.userDisplayName, Comments: this.state.comments, Date: new Date().toISOString() });
                     if (TimeOffRec[0].IsSubmittedFromTimesheetForm) {
-                        if (IsReportingManagerReviewerSame && (this.state.userGroups.includes('Timesheet HR') || !row.EligibleforPTO)) // ReportingManager/Reviewer/HR same or PTO not eligible
+                        // if (IsReportingManagerReviewerSame && (this.state.userGroups.includes('Timesheet HR') || !row.EligibleforPTO)) // ReportingManager/Reviewer/HR same or PTO not eligible
+                        if (IsReportingManagerReviewerSame && TimeOffRec[0].IsSubmittedFromTimesheetForm && !this.state.userGroups.includes('Timesheet HR') && JSON.stringify(TimeOffRec[0].TimeOffRows).toLowerCase().includes('bereavement') || JSON.stringify(TimeOffRec[0].TimeOffRows).toLowerCase().includes('jury duty')) {
+                            //Timesheet data
+                            formData.Status = StatusType.ReviewerApprove;
+                            formData.PendingWith = "HR";
+                            formData.AssignedToId = { "results": [] };
+                            //TimeOff data
+                            TimeOffPostData['Status'] = StatusType.ReviewerApprove;
+                            TimeOffPostData['PendingWith'] = 'HR';
+                            TimeOffPostData['CommentsHistory'] = JSON.stringify(timeOffCommentsObj);
+                            //Transaction data
+                            Transaction['TransactionType'] = StatusType.ReviewerApprove;
+                        }
+                        else if (IsReportingManagerReviewerSame) // ReportingManager/Reviewer/HR same or PTO not eligible
                         {
                             //Timesheet data
                             formData.Status = StatusType.Approved;
@@ -624,7 +640,8 @@ class ApproversApprovals extends React.Component<ApproversProps, ApproversState>
                     if (row.Id == ItemsJustBeforeActionPerform[T].Id && row.StatusInList == ItemsJustBeforeActionPerform[T].Status) {
                         if (row.PTOHrs != 0 && TimeOffRec.length && TimeOffRec[0].IsSubmittedFromTimesheetForm) {
                             sp.web.lists.getByTitle('WeeklyTimeSheet').items.getById(row.Id).inBatch(batch).update(formData);
-                            if (row.EligibleforPTO && row.PTOHrs != 0 && parseFloat(PTOHrs) > 0 && [StatusType.Approved].includes(formData.Status) && this.state.userGroups.includes('Timesheet HR')) {
+                            // if (row.EligibleforPTO && row.PTOHrs != 0 && parseFloat(PTOHrs) > 0 && [StatusType.Approved].includes(formData.Status) && this.state.userGroups.includes('Timesheet HR')) {
+                            if (row.EligibleforPTO && row.PTOHrs != 0 && parseFloat(PTOHrs) > 0 && [StatusType.ReviewerApprove,StatusType.Approved].includes(formData.Status)) {
                                 sp.web.lists.getByTitle('EmployeePTO').items.getById(currentEmployeePTO[0].Id).inBatch(EmployeePTOBatch).update(PTOData);
                                 PTOTransactionRecords
                                     .filter(item => item.IsActive && parseInt(item.TimeOffID) === parseInt(TimeOffRec[0].Id))
@@ -655,7 +672,7 @@ class ApproversApprovals extends React.Component<ApproversProps, ApproversState>
             await Promise.all([batch.execute(), EmployeePTOBatch.execute(), PTOTransactionBatch.execute()]);
             customToaster('toster-success', ToasterTypes.Success, NotModifiedTimesheets.length + ' Timesheet(s) Approved Successfully.' + (selectedRows.length - NotModifiedTimesheets.length != 0 ? ' Attention: ' + (selectedRows.length - NotModifiedTimesheets.length) + ' Timesheet(s) has been modified. Please review the changes.' : ''), 4000);
             if (TimeOffNotApprovedTSs.length)
-                customToaster('toster-warning', ToasterTypes.Warning, `Selected Timesheet ${TimeOffNotApprovedTSs.length > 1 ? '(s)' : ''} of time off request ${TimeOffNotApprovedTSs.length > 1 ? 'have' : 'has'} been pending with HR approval. Cannot approve`, 4000);
+                customToaster('toster-warning', ToasterTypes.Warning, `Selected Timesheet ${TimeOffNotApprovedTSs.length > 1 ? '(s)' : ''} of time off request ${TimeOffNotApprovedTSs.length > 1 ? 'have' : 'has'} been pending with approval. Cannot approve`, 4000);
             this.setState({ comments: '', showApproveRejectPopup: false, SelectedRows: [], loading: false, clearRows: true, isRedirect: true });
             // this.ReportingManagerApproval();
         } catch (error) {

@@ -186,6 +186,7 @@ class TimeOffRequestForm extends React.Component<TimeOffRequestFormProps, TimeOf
             Revoke: false,
             Update: false,
         },
+        IsSubmittedFromTimesheetForm: false,
         TimesheetRec: []
     }
 
@@ -388,6 +389,7 @@ class TimeOffRequestForm extends React.Component<TimeOffRequestFormProps, TimeOf
                 Revoke: false,
                 Update: false
             },
+            IsSubmittedFromTimesheetForm: false,
             isDisabled: false,
             isHRView: false,
             existingTimeOffRowsData: '',
@@ -449,6 +451,7 @@ class TimeOffRequestForm extends React.Component<TimeOffRequestFormProps, TimeOf
                 // loading: false,
                 Status: data[0].Status,
                 ButtonsVisibility: result.visibility,
+                IsSubmittedFromTimesheetForm: data[0].IsSubmittedFromTimesheetForm,
                 isDisabled: result.isDisabled,
                 isHRView: result.isHRView,
                 existingTimeOffRowsData: data[0].TimeOffRows,
@@ -467,7 +470,19 @@ class TimeOffRequestForm extends React.Component<TimeOffRequestFormProps, TimeOf
             })
             //if this call is above the setState() async loading issue white screen, to avoid this shifted to below setState()
             let TimesheetRec = await sp.web.lists.getByTitle('WeeklyTimeSheet').items.filter(TSfilterQuery).select(TSselectQuery).expand('Initiator,Reviewers,ReportingManager').getAll();
-            this.setState({ TimesheetRec: TimesheetRec });
+            // instead dispaly warn message, hide the withdraw button if user has no access to withdraw the record
+            let ButtonsVisibility = this.state.ButtonsVisibility;
+            if (data[0].Status == StatusType.Submit && TimesheetRec.length && this.state.ButtonsVisibility.Withdraw) {
+                let filteredTS = TimesheetRec.find((item) => [StatusType.Submit, StatusType.ManagerApprove, StatusType.ReviewerApprove, StatusType.Approved].includes(item.Status));
+                if (filteredTS) {
+                    let TSWeekStartDate = new Date(DateUtilities.GetDateMMDDYYYYAsInList(filteredTS.WeekStartDate))
+                    let isOverlap = this.isOverlap(new Date(TSWeekStartDate), new Date(addDays(TSWeekStartDate, 6)), this.state.FromDate, this.state.ToDate);
+                    if (isOverlap) {
+                        ButtonsVisibility.Withdraw = false;
+                    }
+                }
+            }
+            this.setState({ TimesheetRec: TimesheetRec, ButtonsVisibility: ButtonsVisibility});
             this.userAccessableRecord(userGroups, EmployeeId, SynergyManagerIds);
         }
         catch (error) {
@@ -485,10 +500,10 @@ class TimeOffRequestForm extends React.Component<TimeOffRequestFormProps, TimeOf
         if (Status == StatusType.Withdraw || Status == StatusType.Save) {
             result.isDisabled = true;
             ButtonsVisibility.Submit = false;
-             if (loginUserID == EmployeeID) {
-                 result.isDisabled = false;
+            if (loginUserID == EmployeeID) {
+                result.isDisabled = false;
                 ButtonsVisibility.Submit = true;
-             }
+            }
         }
         else if (Status == StatusType.Submit) {
             result.isDisabled = true;
@@ -503,7 +518,7 @@ class TimeOffRequestForm extends React.Component<TimeOffRequestFormProps, TimeOf
                     result.isHRView = true;
                 }
             }
-            if (isHR && (IsSubmittedFromTimesheetForm && EligibleforPTO)) {
+            if (isHR && (IsSubmittedFromTimesheetForm && JSON.stringify(this.state.TimeOffTableData.TimeOffRowsData).toLowerCase().includes('bereavement') || JSON.stringify(this.state.TimeOffTableData.TimeOffRowsData).toLowerCase().includes('jury duty'))) {
                 ButtonsVisibility.Approve = true;
                 ButtonsVisibility.Reject = true;
                 result.isHRView = true;
@@ -514,13 +529,15 @@ class TimeOffRequestForm extends React.Component<TimeOffRequestFormProps, TimeOf
             ButtonsVisibility.Submit = false;
             if (loginUserID == EmployeeID) {
                 ButtonsVisibility.Revoke = true;
-                if (isHR && !IsSubmittedFromTimesheetForm) {
+                // if (isHR && !IsSubmittedFromTimesheetForm) {
+                if (isHR) {
                     ButtonsVisibility.Approve = true;
                     ButtonsVisibility.Reject = true;
                     result.isHRView = true;
                 }
             }
-            else if (isHR && !IsSubmittedFromTimesheetForm) {
+            // else if (isHR && !IsSubmittedFromTimesheetForm) {
+            else if (isHR) {
                 ButtonsVisibility.Approve = true;
                 ButtonsVisibility.Reject = true;
                 result.isHRView = true;
@@ -779,7 +796,7 @@ class TimeOffRequestForm extends React.Component<TimeOffRequestFormProps, TimeOf
                         isValid.status = false;
                         break;
                     case "btnSubmit":
-                        isValid.message = `Timesheet ${[StatusType.Approved].includes(this.state.TimesheetRec[0].Status) ? '' : 'approval'} for the week starting ${DateUtilities.GetDateMMDDYYYYAsInList(this.state.TimesheetRec[0].WeekStartDate)} (${this.state.TimesheetRec[0].ClientName}) is ${[StatusType.Submit, StatusType.ManagerApprove, StatusType.ReviewerApprove].includes(this.state.TimesheetRec[0].Status) ? 'in progress' : 'approved'}. Submit not possible.`;
+                        isValid.message = `Timesheet ${[StatusType.Approved].includes(filteredTS.Status) ? '' : 'approval'} for the week starting ${DateUtilities.GetDateMMDDYYYYAsInList(filteredTS.WeekStartDate)} (${filteredTS.ClientName}) is ${[StatusType.Submit, StatusType.ManagerApprove, StatusType.ReviewerApprove].includes(filteredTS.Status) ? 'in progress' : 'approved'}. Submit not possible.`;
                         isValid.status = false;
                         break;
                     case "btnRevoke":
@@ -837,7 +854,7 @@ class TimeOffRequestForm extends React.Component<TimeOffRequestFormProps, TimeOf
                 return isValid;
             }
         }
-        if ((ActionID == 'btnApprove' || ActionID == 'btnUpdate') && this.state.isHRView && this.state.existingTimeOffRowsData.toLocaleLowerCase() != JSON.stringify(this.state.TimeOffTableData.TimeOffRowsData).toLocaleLowerCase() && this.state.Comments.trim() == '') {
+        if ((ActionID == 'btnApprove' || ActionID == 'btnUpdate') && this.state.isHRView && this.state.existingTimeOffRowsData.toLowerCase() != JSON.stringify(this.state.TimeOffTableData.TimeOffRowsData).toLowerCase() && this.state.Comments.trim() == '') {
             let elm = document.getElementById('txtComments');
             elm.focus();
             setTimeout(() => elm.classList.add('mandatory-FormContent-focus'), 300);
@@ -845,7 +862,7 @@ class TimeOffRequestForm extends React.Component<TimeOffRequestFormProps, TimeOf
             isValid.message = 'Please provide comments for updating hours.';
             return isValid;
         }
-        if (ActionID == 'btnUpdate' && this.state.isHRView && this.state.existingTimeOffRowsData.toLocaleLowerCase() == JSON.stringify(this.state.TimeOffTableData.TimeOffRowsData).toLocaleLowerCase()) {
+        if (ActionID == 'btnUpdate' && this.state.isHRView && this.state.existingTimeOffRowsData.toLowerCase() == JSON.stringify(this.state.TimeOffTableData.TimeOffRowsData).toLowerCase()) {
             isValid.status = false;
             isValid.message = 'Nothing has been modified to update.';
             return isValid;
@@ -855,8 +872,8 @@ class TimeOffRequestForm extends React.Component<TimeOffRequestFormProps, TimeOf
     private getActionDetails = (ActionID) => {
         let postObject, ActionStatus = '';
         let isHR = this.state.userGroups.includes('Timesheet HR');
-        let isHRModifyData = (ActionID == 'btnApprove' || ActionID == 'btnUpdate') && this.state.isHRView && this.state.existingTimeOffRowsData.toLocaleLowerCase() != JSON.stringify(this.state.TimeOffTableData.TimeOffRowsData).toLocaleLowerCase();
-        let isHRModifyPTOData = (ActionID == 'btnApprove' || ActionID == 'btnUpdate') && this.state.isHRView && this.state.existingPTOSubTotal.toLocaleLowerCase() != JSON.stringify(this.state.TimeOffTableData.PTOSubTotal).toLocaleLowerCase();
+        let isHRModifyData = (ActionID == 'btnApprove' || ActionID == 'btnUpdate') && this.state.isHRView && this.state.existingTimeOffRowsData.toLowerCase() != JSON.stringify(this.state.TimeOffTableData.TimeOffRowsData).toLowerCase();
+        let isHRModifyPTOData = (ActionID == 'btnApprove' || ActionID == 'btnUpdate') && this.state.isHRView && this.state.existingPTOSubTotal.toLowerCase() != JSON.stringify(this.state.TimeOffTableData.PTOSubTotal).toLowerCase();
 
         let commentsObj = this.state.CommentsHistory, Comments = this.state.Comments;
         if (ActionID == "btnApprove") {
@@ -880,11 +897,20 @@ class TimeOffRequestForm extends React.Component<TimeOffRequestFormProps, TimeOf
                 else {
                     postObject = {
                         CommentsHistory: JSON.stringify(commentsObj),
-                        Status: StatusType.ManagerApprove,
-                        PendingWith: "HR",
+                        Status: StatusType.Approved,
+                        PendingWith: "NA",
                         Revised: true
                     }
-                    ActionStatus = StatusType.ManagerApprove;
+                    ActionStatus = StatusType.Approved;
+                    if (JSON.stringify(this.state.TimeOffTableData.TimeOffRowsData).toLowerCase().includes('bereavement') || JSON.stringify(this.state.TimeOffTableData.TimeOffRowsData).toLowerCase().includes('jury duty')) {
+                        postObject = {
+                            CommentsHistory: JSON.stringify(commentsObj),
+                            Status: StatusType.ManagerApprove,
+                            PendingWith: "HR",
+                            Revised: true
+                        }
+                        ActionStatus = StatusType.ManagerApprove;
+                    }
                 }
             }
             else {
@@ -1132,9 +1158,12 @@ class TimeOffRequestForm extends React.Component<TimeOffRequestFormProps, TimeOf
                     }
 
                 }
-                PTOPostData['PTOAvailed'] = (parseFloat(this.state.PTOData.PTOAvailed) + AppliedTOHours).toFixed(4);
-                PTOPostData['PTOApplied'] = (parseFloat(this.state.PTOData.PTOApplied) - AppliedTOHours).toFixed(4);
-                PTOPostData['PTOBalance'] = (parseFloat(this.state.PTOData.PTOBalance) - AppliedTOHours).toFixed(4);
+                //Below is for Bereavement and Jury Duty cases handling where PTOAvailed should not be updated
+                if (!this.state.IsSubmittedFromTimesheetForm) {
+                    PTOPostData['PTOAvailed'] = (parseFloat(this.state.PTOData.PTOAvailed) + AppliedTOHours).toFixed(4);
+                    PTOPostData['PTOApplied'] = (parseFloat(this.state.PTOData.PTOApplied) - AppliedTOHours).toFixed(4);
+                    PTOPostData['PTOBalance'] = (parseFloat(this.state.PTOData.PTOBalance) - AppliedTOHours).toFixed(4);
+                }
                 //Below is for two cases handling for HR Modifying the data ,example cases
                 //Case 1 : PTOApplied=18,existingPTOTotal=10,AppliedTOHours=12 :now updated  PTOApplied= 18 - 12 + (12-10)=8
                 //Case 2 : PTOApplied=20,existingPTOTotal=10,AppliedTOHours=8 :now updated  PTOApplied= 20 - 8 -(10-8)=10
@@ -1184,8 +1213,6 @@ class TimeOffRequestForm extends React.Component<TimeOffRequestFormProps, TimeOf
                     postObject['PreviousPTOBalance'] = this.state.PTOData.PTOBalanceAfterDeduction;
                     postObject['CurrentPTOBalance'] = parseFloat(PTOPostData['PTOBalanceAfterDeduction']).toString();
                 }
-
-
                 break;
             default:
                 break;
@@ -1201,6 +1228,17 @@ class TimeOffRequestForm extends React.Component<TimeOffRequestFormProps, TimeOf
         try {
             if (this.state.ItemID > 0) {   //update existing recordl
                 this.setState({ loading: true });
+                //Update timesheet record after HR Approve/Update
+                if ([StatusType.Approved, StatusType.Updated].includes(formdata.Status) && this.state.IsSubmittedFromTimesheetForm && this.state.TimesheetRec.length && [StatusType.ReviewerApprove].includes(this.state.TimesheetRec[0].Status)) {
+                    let TSId = this.state.TimesheetRec[0].ID;
+                    let TSData = {
+                        PTOSubTotal: formdata.PTOSubTotal,
+                        TOSubTotal: formdata.TOSubTotal,
+                        Status: StatusType.Approved,
+                        PendingWith: "NA",
+                    }
+                    await this.updateTimesheetRecordsAfterHRModify(TSId, TSData);
+                }
                 sp.web.lists.getByTitle('TimeOffEmployees').items.getById(this.state.ItemID).update(formdata).then((res) => {
                     if (IsPTOEligibleTOSelected) {
                         this.updatePTOAndPTOTransactionsDayWise(PTOPostData, formdata, this.state.ItemID, isHRModifyPTOData);
@@ -1251,6 +1289,15 @@ class TimeOffRequestForm extends React.Component<TimeOffRequestFormProps, TimeOf
             }
         }
         return EmployeePTO;
+    }
+    private updateTimesheetRecordsAfterHRModify(TSId, TSData) {
+        try {
+            sp.web.lists.getByTitle('WeeklyTimesheet').items.getById(TSId).update(TSData);
+        }
+        catch (e) {
+            console.log('Failed to update Timesheet Records after HR Modify');
+            this.setState({ message: 'Error' });
+        }
     }
     //This function is used when PTO Transaction is updated with multiple reocords day wise
     private async updatePTOAndPTOTransactionsDayWise(PTOPostData, formdata, TimeOffID, isHRModifyPTOData) {
