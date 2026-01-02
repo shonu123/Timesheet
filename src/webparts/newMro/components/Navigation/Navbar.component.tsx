@@ -3,6 +3,8 @@ import { NavLink } from 'react-router-dom';
 // const sitePermissions: any = require('./Routing.module');
 import sitePermissions from './Routing.module';
 import { sp } from '@pnp/sp';
+import '../../CSS/Help.css';
+import Help from '../Shared/Help';
 export interface NavBarProps {
     currentUserGroups: any;
     spContext: any;
@@ -134,8 +136,6 @@ class NavBar extends React.Component<NavBarProps, NavBarState> {
                     {/* <div className="main-title">Timesheet</div> */}
                     <div className="main-title"><NavLink className="redirect" to="/Dashboard"><span className=""><span className="" onClick={(event) => this.onNavItemClick2(event)}>Timesheet</span></span></NavLink></div>
                     <div className='container-fluid'>
-
-
                         <ul className="list-unstyled ul-leftnav components mb-0 mt-2">
 
 
@@ -308,6 +308,7 @@ class NavBar extends React.Component<NavBarProps, NavBarState> {
                             } */}
                         </ul>
                     </div>
+                    {(this.state.isEmployee || this.state.isSynergyManager || this.props.currentUserGroups.includes('Timesheet Administrators') || this.props.currentUserGroups.includes('Dashboard Admins') || this.props.currentUserGroups.includes('Timesheet HR')) && <div className='divBHelpButton'><Help isEmployee={this.state.isEmployee} isManager={this.state.isSynergyManager} isHR={this.props.currentUserGroups.includes('Timesheet HR')} isAdmin={this.props.currentUserGroups.includes('Timesheet Administrators') || this.props.currentUserGroups.includes('Dashboard Admins')} webAbsoluteUrl={this.props.spContext.webAbsoluteUrl}/></div>}
                 </div>
                 {/* <nav id="" className="sidebar">
                     <div className="">

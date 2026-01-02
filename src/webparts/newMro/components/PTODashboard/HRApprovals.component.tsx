@@ -77,9 +77,18 @@ class HRApproval extends React.Component<HRApprovalProps, HRApprovalState> {
     private getHRApprovals = async () => {
         this.setState({ loading: true });
         const userId = this.props.spContext.userId;
-        var filterString = "PendingWith eq 'HR' and IsActive eq 1 and IsSubmittedFromTimesheetForm ne 1";
+        // var filterString = "IsActive eq 1 and ((PendingWith eq 'HR' and (IsSubmittedFromTimesheetForm ne 1)) or (PendingWith eq 'Manager' and IsSubmittedFromTimesheetForm eq 1 and EligibleforPTO eq 1))";
+        var filterString = "IsActive eq 1 and PendingWith eq 'HR'";
         sp.web.lists.getByTitle('TimeOffEmployees').items.top(5000).filter(filterString).expand("SynergyManager,Employee").select('SynergyManager/Title,SynergyManager/EMail,Employee/Title,Employee/EMail,*').orderBy('Modified', false).getAll()
             .then((response) => {
+                // response = response.filter((item) => {
+                //     if(item.PendingWith == "HR"){
+                //         return (JSON.stringify(item.TimeOffRows).toLowerCase().includes('bereavement') || JSON.stringify(item.TimeOffRows).toLowerCase().includes('jury duty'))
+                //     }
+                //     else{
+                //         return true;
+                //     }
+                // });
                 let Data = [];
                 for (const d of response) {
                     let fromDate = new Date(DateUtilities.GetDateMMDDYYYYAsInList(d.From));
@@ -102,6 +111,7 @@ class HRApproval extends React.Component<HRApprovalProps, HRApprovalState> {
                         // PendingWith: d.PendingWith == "Approver" ||d.PendingWith == "Manager" ?"Reporting Manager":d.PendingWith,
                         PendingWith: d.PendingWith == "Approver" ||d.PendingWith == "Manager" ?"Synergy Manager":d.PendingWith,
                         Status : CommonUtilities.getTOStatus(d.Status),
+                        StatusForGrid:`<span class='${CommonUtilities.getStatusClass(d.Status)}' title='${CommonUtilities.getTOStatus(d.Status)}'>${CommonUtilities.getTOStatusInShortForm(d.Status)}</span>`
                     })
                 }
                 this.setState({HRApprovals:Data,loading:false})
@@ -195,14 +205,16 @@ class HRApproval extends React.Component<HRApprovalProps, HRApprovalState> {
             //     width: '180px',
             //     sortable: true
             // },
-            {
-                name: "Status",
-                selector: (row, i) => row.Status,
-                // width: '220px',
-                sortable: true,
-            },
+            //  {
+            //     name: "Status",
+            //     selector: (row, i) => row.Status,
+            //     cell: row => <div className='' dangerouslySetInnerHTML={{ __html: row.StatusForGrid }} onClick={(event)=>this.handleRowClicked(event,row.Id)}/>,
+            //     width: '220px',
+            //     sortable: true,
+            // },
         ];
-        const searchKeys=['EmployeName','FromDate','ToDate','PTOAvailableBalance','PTOTotal','TOTotal','TotalHrs','Status'];
+        // const searchKeys=['EmployeName','FromDate','ToDate','PTOAvailableBalance','PTOTotal','TOTotal','TotalHrs','Status'];
+        const searchKeys=['EmployeName','FromDate','ToDate','PTOAvailableBalance','PTOTotal','TOTotal','TotalHrs'];
         if(this.state.redirect){
             let url = `/TimeOffRequestForm/${this.state.TimeOffID}`;
         return (<Navigate to={url}/>);

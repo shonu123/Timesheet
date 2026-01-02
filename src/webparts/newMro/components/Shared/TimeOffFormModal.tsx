@@ -3,7 +3,7 @@ import { Toaster } from 'react-hot-toast';
 import Select from 'react-select';
 import Loader from './Loader';
 import customToaster from './Toaster.component';
-import { ToasterTypes,StatusType } from '../../Constants/Constants';
+import { ToasterTypes, StatusType } from '../../Constants/Constants';
 import SearchableDropdown from './SearchableDropdown';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faClose, faPlus } from '@fortawesome/free-solid-svg-icons';
@@ -22,17 +22,20 @@ interface PTOFormModalProps {
   dates: string[];
   days: string[];
   timeOffTypes: TimeOffTypeOption[];
-  EligibleforPTO:boolean;
+  EligibleforPTO: boolean;
   ptoFormData: any;
   weekDetails?: any;
-  showResetBtn:boolean;
+  showResetBtn: boolean;
+  isEditForm: boolean;
+  UPTOTypes: any;
+  TOComments: string
 }
 
 interface RowData {
   TimeOffType: string | null;
   IsPTOEligible?: boolean;
   hours: string[];
-  total: number;
+  Total: number;
 }
 
 const PTOFormModal = ({
@@ -48,18 +51,22 @@ const PTOFormModal = ({
   ptoFormData,
   weekDetails,
   showResetBtn,
+  isEditForm,
+  UPTOTypes,
+  TOComments
 }: PTOFormModalProps) => {
   const inputRefs = useRef<(HTMLInputElement | null)[][]>([]);
   const selectRefs = useRef<(HTMLDivElement | null)[]>([]);
   const [showToaster, setshowToaster] = useState(false);
   const [ptoFormDataRows, setPTOFormDataRows] = useState(ptoFormData);
+  const [Comments, setComments] = useState(TOComments || '');
   const [loading, setLoading] = useState(false);
 
   const createEmptyRow = (): RowData => ({
-    TimeOffType: null,
-    IsPTOEligible: undefined,
+    TimeOffType: '',
+    IsPTOEligible: false,
     hours: Array(days.length).fill(''),
-    total: 0,
+    Total: 0,
   });
 
   const mapPtoFormDataToRows = (
@@ -76,29 +83,28 @@ const PTOFormModal = ({
         TimeOffType: item.TimeOffType,
         // item.TimeOffType,
         IsPTOEligible: foundType?.IsEligibleforPTO,
-        hours: days.map((day) =>
-          item[day] !== undefined ? String(item[day]) : ''
+        hours: days.map((day,i) =>
+          item[day] !== undefined ? String(item[day]) : item.hours?item.hours[i]:''
         ),
-        total: Number(item.Total) || 0,
+        Total: Number(item.Total) || 0,
       };
     });
   };
   // To avoid duplicated time Off Type selection
-  const mapUniqueTimeOffTypes = ( data: any[],timeOffTypes: TimeOffTypeOption[] )=> {
-    let UniqueTimeOffTypesArr=[];
-     data.map((item) => {
-       let currRow=timeOffTypes.find(t=>item.TimeOffType!=null && t.Title.toLowerCase()==item.TimeOffType.toLowerCase());
-       let TOTArr=[];
-      if(currRow!=undefined)
-      {
-         TOTArr.push({label: currRow.Title,value: currRow.Title, IsPTOEligible: currRow.IsEligibleforPTO});
+  const mapUniqueTimeOffTypes = (data: any[], timeOffTypes: TimeOffTypeOption[]) => {
+    let UniqueTimeOffTypesArr = [];
+    data.map((item) => {
+      let currRow = timeOffTypes.find(t => item.TimeOffType != null && t.Title.toLowerCase() == item.TimeOffType.toLowerCase());
+      let TOTArr = [];
+      if (currRow != undefined) {
+        TOTArr.push({ label: currRow.Title, value: currRow.Title, IsPTOEligible: currRow.IsEligibleforPTO });
       }
-       let filteredTimeOffTypes=timeOffTypes.filter(t=>!(data.some(Sel=>Sel.TimeOffType==t.Title)));
-          filteredTimeOffTypes.map((t) => (
-            TOTArr.push({label: t.Title,value: t.Title,IsPTOEligible: t.IsEligibleforPTO})
-          ));
-     TOTArr.sort((a,b)=>a.value.localeCompare(b.value));
-     UniqueTimeOffTypesArr.push(TOTArr);
+      let filteredTimeOffTypes = timeOffTypes.filter(t => !(data.some(Sel => Sel.TimeOffType == t.Title)));
+      filteredTimeOffTypes.map((t) => (
+        TOTArr.push({ label: t.Title, value: t.Title, IsPTOEligible: t.IsEligibleforPTO })
+      ));
+      TOTArr.sort((a, b) => a.value.localeCompare(b.value));
+      UniqueTimeOffTypesArr.push(TOTArr);
     });
     return UniqueTimeOffTypesArr;
   };
@@ -168,7 +174,7 @@ const PTOFormModal = ({
       setDisabledDays(days.map(() => false));
       setIsHolidayDay(days.map(() => false));
     }
-  }, [isVisible, weekDetails, days, dates]);
+  }, [isVisible, weekDetails, days, dates, ptoFormDataRows]);
 
   // useEffect(() => {
   //   if (isVisible) {
@@ -202,7 +208,7 @@ const PTOFormModal = ({
         setselectOptions(mappedTOTypes);
         setRows(mappedRows);
 
-        const totalSum = mappedRows.reduce((acc, row) => acc + row.total, 0);
+        const totalSum = mappedRows.reduce((acc, row) => acc + row.Total, 0);
         const totalSumDisplay = totalSum === 0 ? '0.00' : totalSum.toString();
 
         const dayTotals = filteredDays.map((_, dayIndex) =>
@@ -210,7 +216,7 @@ const PTOFormModal = ({
             const num = parseFloat(row.hours[dayIndex]);
             return sum + (isNaN(num) ? 0 : num);
           }, 0)
-        ).map(total => total === 0 ? '0.00' : total.toString());
+        ).map(Total => Total === 0 ? '0.00' : Total.toString());
 
         setColumnTotals(dayTotals);
         setGrandTotal(totalSumDisplay);
@@ -224,7 +230,7 @@ const PTOFormModal = ({
       setLoading(false);
 
     }
-  }, [isVisible,timeOffTypes,filteredDays]);
+  }, [isVisible, timeOffTypes, filteredDays, ptoFormDataRows]);
 
 
   const handleHourChange = (rowIndex: number, dayIndex: number, value: string) => {
@@ -240,11 +246,11 @@ const PTOFormModal = ({
       setRows([...rows]);
     }
   };
-// var selectOptions = timeOffTypes.map((t) => ({
-//     label: t.Title,
-//     value: t.Title,
-//     IsPTOEligible: t.IsEligibleforPTO,
-//   }));
+  // var selectOptions = timeOffTypes.map((t) => ({
+  //     label: t.Title,
+  //     value: t.Title,
+  //     IsPTOEligible: t.IsEligibleforPTO,
+  //   }));
 
   const handleTypeChange = (rowIndex: number, selectedOption: any) => {
     const updatedRows = [...rows];
@@ -253,10 +259,13 @@ const PTOFormModal = ({
     updatedRows[rowIndex].IsPTOEligible = filteredTimeOff.length ? filteredTimeOff[0].IsEligibleforPTO : false;
     // updatedRows[rowIndex].IsPTOEligible = selectedOption?.IsPTOEligible ?? undefined;
     // To avoid duplicated time Off Type selection
-     const mappedTOTypes = mapUniqueTimeOffTypes(updatedRows, timeOffTypes);
-      setselectOptions(mappedTOTypes);
-      setRows(updatedRows);
+    const mappedTOTypes = mapUniqueTimeOffTypes(updatedRows, timeOffTypes);
+    setselectOptions(mappedTOTypes);
+    setRows(updatedRows);
   };
+  const handleCommentsChange = (e) => {
+    setComments(e.target.value);
+  }
 
   // const calculateTotals = (updatedRows: RowData[]) => {
   //   updatedRows.forEach((row) => {
@@ -288,7 +297,7 @@ const PTOFormModal = ({
         const num = parseFloat(h);
         return acc + (isNaN(num) ? 0 : num);
       }, 0);
-      row.total = parseFloat(rowTotal.toFixed(4)); // keep row.total as number, optional
+      row.Total = parseFloat(rowTotal.toFixed(4)); // keep row.total as number, optional
     });
 
     const dayTotals = filteredDays.map((_, dayIndex) =>
@@ -296,11 +305,11 @@ const PTOFormModal = ({
         const num = parseFloat(row.hours[dayIndex]);
         return sum + (isNaN(num) ? 0 : num);
       }, 0)
-    ).map(total => total === 0 ? '0.00' : total.toString());
+    ).map(Total => Total === 0 ? '0.00' : Total.toString());
 
-    const totalSum = updatedRows.reduce((acc, row) => acc + row.total, 0);
+    const totalSum = updatedRows.reduce((acc, row) => acc + row.Total, 0);
     const grandTotalDisplay = totalSum === 0 ? '0.00' : totalSum.toString();
-     const mappedTOTypes = mapUniqueTimeOffTypes([...updatedRows], timeOffTypes);
+    const mappedTOTypes = mapUniqueTimeOffTypes([...updatedRows], timeOffTypes);
     setselectOptions(mappedTOTypes);
     setRows([...updatedRows]);
     setColumnTotals(dayTotals);
@@ -311,7 +320,7 @@ const PTOFormModal = ({
   const addRow = () => {
     for (let i = 0; i < rows.length; i++) {
       const row = rows[i];
-      if (row.total === 0) {
+      if (row.Total === 0) {
         const firstNonDisabledInput = inputRefs.current[i]?.find(
           (input, index) => !disabledDays[index]
         );
@@ -335,6 +344,7 @@ const PTOFormModal = ({
     setPTOFormDataRows(newRows);
     calculateTotals(newRows);
   };
+
 
   const validateForm = () => {
     // Clear previous mandatory focus classes
@@ -379,8 +389,8 @@ const PTOFormModal = ({
     //   }
     // }
     for (let i = 0; i < columnTotals.length; i++) {
-      const total = parseFloat(columnTotals[i]);
-      if (total > 8) {
+      const Total = parseFloat(columnTotals[i]);
+      if (Total > 8) {
         customToaster(
           'toster-error',
           ToasterTypes.Error,
@@ -405,7 +415,7 @@ const PTOFormModal = ({
         return false;
       }
 
-      if (row.total === 0) {
+      if (row.Total === 0) {
         const firstNonDisabledInput = inputRefs.current[i]?.find(
           (input, index) => !disabledDays[index]
         );
@@ -434,9 +444,38 @@ const PTOFormModal = ({
       return false;
     }
 
+    if (EligibleforPTO && (ptoBalance - getPTOTotal()) > 0 && (getTOTotal() > 0) && Comments.trim() == '' && rows.some(t => UPTOTypes.includes(t.TimeOffType))) // Comments are mandatory if PTOBalance is avialable, but employee applied for UPTO
+    {
+      let message = `${Number((ptoBalance - getPTOTotal()).toFixed(4))} PTO hours are available. Please provide comments for selecting 'Unpaid Time Off.'`;
+      let elm = document.getElementById('txtTOComments');
+      elm.focus();
+      setTimeout(() => elm.classList.add('mandatory-FormContent-focus'), 300);
+      customToaster('toster-error', ToasterTypes.Error, message, 4000);
+      return false;
+    }
+
     // setErrorMessage('');
     return true;
   };
+
+  const getPTOTotal = () => {
+    const ptoRows = rows.filter((r) => r.IsPTOEligible);
+    const PTOSubTotal = getSubTotal(ptoRows, 'Paid Time Off');
+    const PTOTotal = Object.keys(PTOSubTotal).reduce((acc, key) => {
+      const val = parseFloat((PTOSubTotal as any)[key]);
+      return acc + (isNaN(val) ? 0 : val);
+    }, 0);
+    return PTOTotal;
+  }
+  const getTOTotal = () => {
+    const toRows = rows.filter((r) => !r.IsPTOEligible);
+    const TOSubTotal = getSubTotal(toRows, 'Paid Time Off');
+    const TOTotal = Object.keys(TOSubTotal).reduce((acc, key) => {
+      const val = parseFloat((TOSubTotal as any)[key]);
+      return acc + (isNaN(val) ? 0 : val);
+    }, 0);
+    return TOTotal;
+  }
 
   const getSubTotal = (rows: RowData[], label: string) => {
     const subtotal: any = { Type: label };
@@ -454,7 +493,7 @@ const PTOFormModal = ({
     const TimeOffData = rows.map((row) => {
       const rowObj: any = {
         TimeOffType: row.TimeOffType,
-        Total: row.total,
+        Total: row.Total,
         IsPTOEligible: row.IsPTOEligible
       };
       filteredDays.forEach((day, index) => {
@@ -476,7 +515,7 @@ const PTOFormModal = ({
       return acc + (isNaN(val) ? 0 : val);
     }, 0);
     PTOSubTotal['Total'] = PTOTotal;
-    
+
 
     const TOTotal = Object.keys(TOSubTotal).reduce((acc, key) => {
       const val = parseFloat((TOSubTotal as any)[key]);
@@ -487,7 +526,7 @@ const PTOFormModal = ({
     const finalOutput = {
       TimeOffData,
       Total: [{
-        Type:"Total",
+        Type: "Total",
         Total: grandTotal,
         ...filteredDays.reduce((acc, d, i) => {
           // acc[d] = columnTotals[i] > 0 ? columnTotals[i] : '';
@@ -499,13 +538,20 @@ const PTOFormModal = ({
       TOSubTotal,
       PTOTotal,
       TOTotal,
-      IsActive:true
+      IsActive: true,
+      TOComments: Comments
     };
     finalOutput.PTOSubTotal = [finalOutput.PTOSubTotal]
     finalOutput.TOSubTotal = [finalOutput.TOSubTotal]
     onSubmit(finalOutput);
     onClose();
   };
+  const handleReset = () => {
+    const newRows = [createEmptyRow()];
+    setPTOFormDataRows(newRows);
+    setComments('');
+    onReset();
+  }
 
   useEffect(() => {
     calculateTotals(rows);
@@ -531,7 +577,7 @@ const PTOFormModal = ({
             className="modal-header rounded-t-lg"
             style={{ fontWeight: 700, fontSize: '1.5rem' }}
           >
-            <h5 className="modal-title">Time Off Request Form</h5>
+            <h5 className="modal-title">{`${isEditForm ? '' : 'View'} Time Off Request Form`}</h5>
             <button type="button" className='btn-fa-close' onClick={onClose} id={'btnClose'}><span title='Close' ><FontAwesomeIcon icon={faClose} id={'iconClose'}></FontAwesomeIcon></span></button>
           </div>
           <div className="modal-body p-6" style={{ color: '#6b7280', fontSize: '16px' }}>
@@ -555,7 +601,7 @@ const PTOFormModal = ({
                   {rows.map((row, rowIndex) => (
                     <tr key={rowIndex}>
                       <td style={{ width: 220 }}>
-                        <SearchableDropdown label="Time Off Type" Title="Time Off Type" isLabelRequired={false} name="TimeOffType" id={`TimeOffType_${rowIndex}`} placeholderText="Time Off Type" className="ddlTimeOffType form-control text-left" selectedValue={row.TimeOffType} optionLabel="label" optionValue="value" OptionsList={selectOptions[rowIndex]} onChange={(selectedOption, actionMeta) => handleTypeChange(rowIndex, selectedOption)} isRequired={false} refElement={selectRefs.current[rowIndex]} disabled={false} noOptionsMessage="No Time Off Type"/>
+                        <SearchableDropdown label="Time Off Type" Title="Time Off Type" isLabelRequired={false} name="TimeOffType" id={`TimeOffType_${rowIndex}`} placeholderText="Time Off Type" className="ddlTimeOffType form-control text-left" selectedValue={row.TimeOffType} optionLabel="label" optionValue="value" OptionsList={selectOptions[rowIndex]} onChange={(selectedOption, actionMeta) => handleTypeChange(rowIndex, selectedOption)} isRequired={false} refElement={selectRefs.current[rowIndex]} disabled={!isEditForm} noOptionsMessage="No Time Off Type" />
                       </td>
                       {filteredDays.map((_, dayIndex) => (
                         <td key={dayIndex}>
@@ -568,14 +614,14 @@ const PTOFormModal = ({
                             className={`form-control text-center  ${isHolidayDay[dayIndex] ? 'ClientHoliday' : ''}`}
                             value={row.hours[dayIndex]}
                             onChange={(e) => handleHourChange(rowIndex, dayIndex, e.target.value)}
-                            disabled={disabledDays[dayIndex]}
+                            disabled={disabledDays[dayIndex] || !isEditForm}
                             aria-disabled={disabledDays[dayIndex]}
                           />
                         </td>
                       ))}
-                      <td>{row.total}</td>
+                      <td>{row.Total}</td>
                       <td className=' text-start'>
-                        {rows.length === 1 ? (
+                        {isEditForm && (rows.length === 1 ? (
                           <button type="button" className='span-fa-plus' onClick={addRow} id='addnewRow'><span title='Add new time off row' ><FontAwesomeIcon icon={faPlus}></FontAwesomeIcon></span></button>
 
                         ) : rowIndex === rows.length - 1 ? (
@@ -588,16 +634,16 @@ const PTOFormModal = ({
                         ) : (
                           <button type="button" className='span-fa-close' onClick={() => deleteRow(rowIndex)}><span title='Delete row' ><FontAwesomeIcon icon={faClose}></FontAwesomeIcon></span></button>
 
-                        )}
+                        ))}
                       </td>
                     </tr>
                   ))}
                   <tr>
-                  <td className="fw-bold text-start">
-                            <div className="p-2 fw-bold">
-                                <i className="fas fa-business-time color-gray"></i> Grand Total
-                            </div>
-                  </td>
+                    <td className="fw-bold text-start">
+                      <div className="p-2 fw-bold">
+                        <i className="fas fa-business-time color-gray"></i> Grand Total
+                      </div>
+                    </td>
                     {columnTotals.map((total, index) => (
                       <td key={index}>
                         {total}
@@ -610,17 +656,23 @@ const PTOFormModal = ({
                   </tr>
                 </tbody>
               </table>
-              <div className="light-box my-2 ml-2 p-2 text-center divInfo"><b>Note : </b><div>Submitting or Removing this form does not permanently store you request. Please save or submit your timesheet to finalize your time off request.</div></div>
+              {/* {isEditForm &&<div className="light-box my-2 ml-2 p-2 text-center divInfo"><b>Note : </b><div>Submitting or Removing this form does not permanently store you request. Please save or submit your timesheet to finalize your time off request.</div></div>} */}
+              <div className="col-md-12">
+                <div className="light-text height-auto">
+                  <label className="floatingTextarea2 top-11">Comments</label>
+                  <textarea className="position-static form-control" onChange={handleCommentsChange} value={Comments} id="txtTOComments" name="Comments" disabled={!isEditForm}></textarea>
+                </div>
+              </div>
               <div className="">
                 <div className="text-center my-2">
-                  <button type="button" onClick={handleSubmit} className="SubmitButtons btn" title="Submit">
+                  {isEditForm && <button type="button" onClick={handleSubmit} className="SubmitButtons btn" title="Submit">
                     Submit
-                  </button>
-                   {showResetBtn && <button type="button" onClick={onReset} className="txt-white CancelButtons bc-burgundy btn" title="Reset">Remove</button>}
+                  </button>}
+                  {isEditForm && showResetBtn && <button type="button" onClick={handleReset} className="txt-white CancelButtons bc-burgundy btn" title="Reset">Reset</button>}
                   <button type="button" onClick={onClose} className="CancelButtons btn" title="Close">
                     Close
                   </button>
-                 
+
                 </div>
               </div>
             </div>

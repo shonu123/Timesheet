@@ -54,8 +54,8 @@ class MyTimeOffs extends React.Component<MyTimeOffsProps,MyTimeOffsState> {
         //let dateFilter = new Date()
         //dateFilter.setDate(new Date().getDate()-60);
         //let date = DateUtilities.getDateMMDDYYYY(dateFilter);
-        let YearStart = `01/01/${new Date().getFullYear()}`;
-        let YearEnd = `12/31/${new Date().getFullYear()}`;
+        let YearStart = `06/01/${new Date().getFullYear()-1}`;
+        let YearEnd = `05/31/${new Date().getFullYear()+1}`;
        // var filterString = "From ge '"+YearStart+"' and From le '"+YearEnd+"'";
        try{
         let EmpFilterQuery=`Employee/Id eq '${userId}' and IsActive eq 1`;

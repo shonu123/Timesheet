@@ -1180,7 +1180,7 @@ class Employee extends Component<EmployeeProps, EmployeeState> {
                                                                 </select>
                                                             </div>
                                                         </div> */}
-                                                         <div className="row pt-2 px-2">l
+                                                         <div className="row pt-2 px-2">
                                                         <div className="col-md-3">
                                                             <div className="custom-dropdown">
                                                                <SearchableDropdown label="Employee Classification" Title="Employee Classification"  name="EmployeeClassification" id="EmployeeClassification" placeholderText="Select Classification" className="" selectedValue={this.state.formData.EmployeeClassification} optionLabel={'Title'} optionValue={'Title'} OptionsList={this.state.EmployeeClassificationObject} onChange={(selectedOption,actionMeta)=>{this.handleChange(selectedOption,actionMeta)}} isRequired={true} refElement={this.EmployeeClassification} noOptionsMessage="No Employee Classification"></SearchableDropdown>

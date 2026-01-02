@@ -52,8 +52,8 @@ class AllTimeOffs extends React.Component<AllTimeOffsProps,AllTimeOffsState> {
 // this function is used to get 1 month records of weeklytime data of all employees from weeklytimesheet list
     private GetCurrYearAllTimeOffs = async () => {
         const userId = this.props.spContext.userId;
-        let YearStart = `01/01/${new Date().getFullYear()}`;
-        let YearEnd = `12/31/${new Date().getFullYear()}`;
+        let YearStart = `06/01/${new Date().getFullYear()-1}`;
+        let YearEnd = `05/31/${new Date().getFullYear()+1}`;
         var filterString = "From ge '"+YearStart+"' and From le '"+YearEnd+"' and IsActive eq 1";
         sp.web.lists.getByTitle('TimeOffEmployees').items.top(5000).filter(filterString).expand("Employee,SynergyManager").select('SynergyManager/Title,Employee/Title','*').orderBy('From', false).get()
             .then((response) => {

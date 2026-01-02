@@ -15,6 +15,7 @@ export enum StatusType {
   HRApprove = "approved by HR",
   HRReject = "rejected by HR",
   RecordModified="Record Modified",
+  Updated="Updated"
 }
 
 export enum ToasterTypes {
