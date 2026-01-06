@@ -573,7 +573,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
     private async getItemData(TimesheetID, DelegationsData) {
         var ClientNames: any;
         let filterQuery = "ID eq '" + TimesheetID + "'";
-        let selectQuery = "Initiator/EMail,Initiator/Id,Reviewers/EMail,Reviewers/Id,ReportingManager/EMail,ReportingManager/Id,DelegateTo/EMail,Notifiers/EMail,*";
+        let selectQuery = "Initiator/EMail,Initiator/Title,Initiator/Id,Reviewers/EMail,Reviewers/Id,ReportingManager/EMail,ReportingManager/Id,DelegateTo/EMail,Notifiers/EMail,*";
         let [data, PTOTranscationsData] = await Promise.all([
             sp.web.lists.getByTitle(this.listName).items.filter(filterQuery).select(selectQuery).expand("Initiator,Reviewers,ReportingManager,DelegateTo,Notifiers").get(),
             sp.web.lists.getByTitle('PTOTransactions').items.top(2000).filter("TimesheetID eq '" + TimesheetID + "' and IsActive eq '1'").select('*').getAll()
@@ -584,7 +584,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
         }
         const trFormdata = this.state.trFormdata;
         trFormdata.ClientName = data[0].ClientName;
-        trFormdata.Name = data[0].Name;
+        trFormdata.Name = data[0].Initiator.Title;
         let WS = DateUtilities.GetDateMMDDYYYYAsInList(data[0].WeekStartDate);
         let DS = DateUtilities.GetDateMMDDYYYYAsInList(data[0].DateSubmitted);
         trFormdata.WeekStartDate = new Date(WS);
@@ -1807,20 +1807,22 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
         // PTOHrs=parseFloat(formObject.PTOHrs[0].Total)+parseFloat(formObject.PTOHrs[0].PTOAfterDeduction);// Code for PTO:Calculating PTOHrs considering from Timeoff Hrs 
         let TransactionsData = [];
         let PTOHrs = this.state.totalPTOFormData.PTOTotal;
-        if ((parseFloat(formObject.PTOHrs[0].Total) != 0 || !this.state.totalPTOFormData.IsActive)) {
+        if ((parseFloat(formObject.PTOHrs[0].Total) != 0 || (this.state.TimeOffRec.length && this.state.totalPTOFormData && !this.state.totalPTOFormData.IsActive))) {
             TransactionsData = this.calculatePTOTransactions(formObject.PTOHrs[0].PTOAfterDeduction, this.state.PTOTransactions);
         }
         if (this.state.ItemID != 0) { //update existing record
             sp.web.lists.getByTitle(this.listName).items.getById(this.state.ItemID).update(formdata).then(async (res) => {
                 if (StatusType.Save == formdata.Status) {
-                    if (parseFloat(formObject.PTOHrs[0].Total) != 0) //update Time and transactions only if timeoff entered
+                    if ((parseFloat(formObject.PTOHrs[0].Total) != 0 || (this.state.TimeOffRec.length && this.state.totalPTOFormData && !this.state.totalPTOFormData.IsActive))) //update Time and transactions only if timeoff entered or timeoff reset
                     {
                         await this.AddTimeOffRequestAndTransactions(TransactionsData, formdata, formObject);
                         // to avoid duplicate timeoffrec while without leaving timesheet form
+                        setTimeout(async () => {
                         if (!this.state.TimeOffRec.length) {
                             let TimeOffRecData = await this.checkTimeOffRecIsExists(formObject); // for binding Time Off row data with TimeOffRequest data
                             this.setState({ TimeOffRec: TimeOffRecData.TimeOff, PTOTransactionsListData: TimeOffRecData.PTOTransactions });
                         }
+                        }, 1000);
                     }
                     customToaster('toster-success', ToasterTypes.Success, 'Weekly timesheet saved successfully', 2000);
                     //this.getItemData(this.state.ItemID, this.state.Delegations);
@@ -1888,7 +1890,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                             });
                         }
                     }
-                    if (parseFloat(formObject.PTOHrs[0].Total) != 0) //update Time and transactions only if timeoff entered
+                    if ((parseFloat(formObject.PTOHrs[0].Total) != 0 || (this.state.TimeOffRec.length && this.state.totalPTOFormData && !this.state.totalPTOFormData.IsActive))) //update Time and transactions only if timeoff entered or timeoff reset
                     {
                         if (this.state.PTOTransactionsListData.length) {
                             let exsistingData = [];
@@ -1940,7 +1942,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                             });
                         }
                     }
-                    if (parseFloat(formObject.PTOHrs[0].Total) != 0) //update Time and transactions only if timeoff entered
+                    if ((parseFloat(formObject.PTOHrs[0].Total) != 0 || (this.state.TimeOffRec.length && this.state.totalPTOFormData && !this.state.totalPTOFormData.IsActive))) //update Time and transactions only if timeoff entered or timeoff reset
                     {
                         if (this.state.PTOTransactionsListData.length) {
                             let exsistingData = [];
@@ -2016,7 +2018,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                             console.log(error);
                         });
                     }
-                    if (parseFloat(formObject.PTOHrs[0].Total) != 0 && this.state.TimeOffRec.length && this.state.TimeOffRec[0].IsSubmittedFromTimesheetForm && [StatusType.Submit].includes(this.state.TimeOffRec[0].Status)) {
+                    if (parseFloat(formObject.PTOHrs[0].Total) != 0 && this.state.TimeOffRec.length && this.state.TimeOffRec[0].IsSubmittedFromTimesheetForm && [StatusType.Submit,StatusType.ReviewerApprove].includes(this.state.TimeOffRec[0].Status)) {
                         await this.AddTimeOffRequestAndTransactions(TransactionsData, formdata, formObject);
                     }
                     //Code for PTO Addition after Reject end
@@ -2034,7 +2036,8 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                 sp.web.lists.getByTitle(this.listName).items.add(formdata).then(async (res) => {
                     let ItemID = res.data.Id;
                     if (StatusType.Save == formdata.Status) {
-                        if (parseFloat(formObject.PTOHrs[0].Total) != 0) {
+                        if ((parseFloat(formObject.PTOHrs[0].Total) != 0 || (this.state.TimeOffRec.length && this.state.totalPTOFormData && !this.state.totalPTOFormData.IsActive))) //update Time and transactions only if timeoff entered or timeoff reset
+                        {
                             await this.AddTimeOffRequestAndTransactions(TransactionsData, formdata, formObject);
                             // to avoid duplicate timeoffrec while without leaving timesheet form
                             setTimeout(async () => {
@@ -2064,7 +2067,8 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                                 });
                             }
                         }
-                        if (parseFloat(formObject.PTOHrs[0].Total) != 0) {
+                        if ((parseFloat(formObject.PTOHrs[0].Total) != 0 || (this.state.TimeOffRec.length && this.state.totalPTOFormData && !this.state.totalPTOFormData.IsActive))) //update Time and transactions only if timeoff entered or timeoff reset
+                            {
                             await this.AddTimeOffRequestAndTransactions(TransactionsData, formdata, formObject);
                         }
                         //Code for PTO Deduction after Submit end
@@ -2457,7 +2461,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
             let prev = DateUtilities.getDateMMDDYYYY(prevDate);
             let next = DateUtilities.getDateMMDDYYYY(nextDate);
             filterQuery = `WeekStartDate gt '${prev}' and WeekStartDate lt '${next}' and ClientName eq '${ClientName}' and Initiator/ID eq '${this.state.currentUserId}' and EmpMatrixID eq '${this.state.EmpMatrixRec.length ? this.state.EmpMatrixRec[0].Id : 0}'`;
-            let selectQuery = "Initiator/ID,Initiator/EMail,Reviewers/EMail,Reviewers/Id,ReportingManager/Id,ReportingManager/EMail,DelegateTo/EMail,Notifiers/EMail,*";
+            let selectQuery = "Initiator/EMail,Initiator/Title,Initiator/ID,Reviewers/EMail,Reviewers/Id,ReportingManager/Id,ReportingManager/EMail,DelegateTo/EMail,Notifiers/EMail,*";
             ExistRecordData = await sp.web.lists.getByTitle('WeeklyTimeSheet').items.filter(filterQuery).select(selectQuery).expand('Initiator,Reviewers,ReportingManager,DelegateTo,Notifiers').get();
             //  console.log(ExistRecordData);
         }
@@ -2465,7 +2469,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
             let PTOTranscationsData = await sp.web.lists.getByTitle('PTOTransactions').items.filter("TimesheetID eq '" + ExistRecordData[0].ID + "' and IsActive eq '1'").select('*').get()
 
             trFormdata.ClientName = ExistRecordData[0].ClientName;
-            trFormdata.Name = ExistRecordData[0].Name;
+            trFormdata.Name = ExistRecordData[0].Initiator.Title;
             let WS = DateUtilities.GetDateMMDDYYYYAsInList(ExistRecordData[0].WeekStartDate);
             let DS = DateUtilities.GetDateMMDDYYYYAsInList(ExistRecordData[0].DateSubmitted);
             trFormdata.WeekStartDate = new Date(WS);

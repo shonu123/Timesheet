@@ -549,6 +549,7 @@ const PTOFormModal = ({
   const handleReset = () => {
     const newRows = [createEmptyRow()];
     setPTOFormDataRows(newRows);
+    setRows(newRows);
     setComments('');
     onReset();
   }
@@ -612,7 +613,7 @@ const PTOFormModal = ({
                             }}
                             type="text"
                             className={`form-control text-center  ${isHolidayDay[dayIndex] ? 'ClientHoliday' : ''}`}
-                            value={row.hours[dayIndex]}
+                            value={row.hours[dayIndex] || ''}
                             onChange={(e) => handleHourChange(rowIndex, dayIndex, e.target.value)}
                             disabled={disabledDays[dayIndex] || !isEditForm}
                             aria-disabled={disabledDays[dayIndex]}
