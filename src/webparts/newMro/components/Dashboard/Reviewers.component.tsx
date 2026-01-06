@@ -93,7 +93,7 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
         try {
             let [groups, responseData, ManagerDelegations] = await Promise.all([
                 sp.web.currentUser.groups(),
-                sp.web.lists.getByTitle('WeeklyTimeSheet').items.top(5000).filter(filterString).expand("Reviewers,Initiator").select('Reviewers/Title,Initiator/Id,Initiator/EMail,*').orderBy('WeekStartDate,Modified', false).get(),
+                sp.web.lists.getByTitle('WeeklyTimeSheet').items.top(5000).filter(filterString).expand("Reviewers,Initiator").select('Reviewers/Title,Initiator/Id,Initiator/Title,Initiator/EMail,*').orderBy('WeekStartDate,Modified', false).get(),
                 sp.web.lists.getByTitle('Delegations').items.filter(delegationQuery).expand("Authorizer,DelegateTo").select('Authorizer/Title,Authorizer/ID,DelegateTo/ID,*').orderBy('Authorizer/ID', false).get(),
             ]);
             let userGroups = [];
@@ -127,7 +127,7 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
             }
             let delRmData = [];
             if (managers.length)
-                delRmData = await sp.web.lists.getByTitle('WeeklyTimeSheet').items.top(2000).filter(getDelTSQry).expand("ReportingManager,Initiator").select('ReportingManager/Title,ReportingManager/EMail,Initiator/Id,Initiator/EMail,*').orderBy('WeekStartDate,DateSubmitted', false).get()
+                delRmData = await sp.web.lists.getByTitle('WeeklyTimeSheet').items.top(2000).filter(getDelTSQry).expand("ReportingManager,Initiator").select('ReportingManager/Title,ReportingManager/EMail,Initiator/Id,Initiator/Title,Initiator/EMail,*').orderBy('WeekStartDate,DateSubmitted', false).get()
 
             let Data = [];
             for (const d of responseData) {
@@ -140,7 +140,7 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
                     Id: d.Id,
                     Date: DateUtilities.getDateMMDDYYYY(date),
                     DateForGrid: `<span class='d-none'>${DateUtilities.getDateYYYYMMDDForSorting(date)}</span>${DateUtilities.getDateMMDDYYYY(date)}`,
-                    EmployeName: d.Name,
+                    EmployeName: d.Initiator.Title,
                     PendingWith: d.PendingWith,
                     Status: this.getStatus(d.Status),
                     BillableHrs: isBillable ? parseFloat(parseFloat(d.WeeklyTotalHrs).toFixed(2)) : parseFloat(parseFloat(JSON.parse(d.SynergyOfficeHrs)[0].Total).toFixed(2)),
@@ -181,7 +181,7 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
                             Id: d.Id,
                             Date: DateUtilities.getDateMMDDYYYY(date),
                             DateForGrid: `<span class='d-none'>${DateUtilities.getDateYYYYMMDDForSorting(date)}</span>${DateUtilities.getDateMMDDYYYY(date)}`,
-                            EmployeName: d.Name,
+                            EmployeName: d.Initiator.Title,
                             PendingWith: d.PendingWith == "Approver" || d.PendingWith == "Manager" ? "Reporting Manager" : d.PendingWith,
                             Status: d.Status == StatusType.ReviewerReject ? 'Rejected by Synergy' : d.Status == StatusType.ManagerReject ? 'Rejected by Reporting Manager' : d.Status,
                             BillableHrs: isBillable ? parseFloat(parseFloat(d.WeeklyTotalHrs).toFixed(2)) : parseFloat(parseFloat(JSON.parse(d.SynergyOfficeHrs)[0].Total).toFixed(2)),
@@ -645,7 +645,7 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
             sp.web.lists.getByTitle('WeeklyTimeSheet').items.getById(data[0].Id).update(postObject).then(async (res) => {
                 // to update Employee PTO
                 //COMMENTED TO STOP PTO CONSIDERATION FROM TIMESHEET FORM
-                if (InitialRecord[0].PTOHrs != 0 && this.state.TimeOffRecord.length && this.state.TimeOffRecord[0].IsSubmittedFromTimesheetForm && [StatusType.Submit].includes(this.state.TimeOffRecord[0].Status)) {
+                if (InitialRecord[0].PTOHrs != 0 && this.state.TimeOffRecord.length && this.state.TimeOffRecord[0].IsSubmittedFromTimesheetForm && [StatusType.Submit,StatusType.ReviewerApprove].includes(this.state.TimeOffRecord[0].Status)) {
                     if (currentEmployeePTO.length && InitialRecord[0].EligibleforPTO && parseFloat(PTOHrs) > 0) {
                         sp.web.lists.getByTitle('EmployeePTO').items.getById(currentEmployeePTO[0].Id).inBatch(PTOTransactionBatch).update(PTOData);//PTO update
                         PTOTransactionRecords.forEach(pto => {

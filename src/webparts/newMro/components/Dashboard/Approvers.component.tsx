@@ -126,7 +126,7 @@ class ApproversApprovals extends React.Component<ApproversProps, ApproversState>
         try {
             let [groups, responseData, ManagerDelegations] = await Promise.all([
                 sp.web.currentUser.groups(),
-                sp.web.lists.getByTitle('WeeklyTimeSheet').items.top(2000).filter(filterString).expand("ReportingManager,Reviewers,Initiator").select('ReportingManager/Title,ReportingManager/EMail,Reviewers/EMail,Reviewers/Id,Initiator/EMail,Initiator/Id,*').orderBy('WeekStartDate,DateSubmitted', false).get(),
+                sp.web.lists.getByTitle('WeeklyTimeSheet').items.top(2000).filter(filterString).expand("ReportingManager,Reviewers,Initiator").select('ReportingManager/Title,ReportingManager/EMail,Reviewers/EMail,Reviewers/Id,Initiator/EMail,Initiator/Title,Initiator/Id,*').orderBy('WeekStartDate,DateSubmitted', false).get(),
                 sp.web.lists.getByTitle('Delegations').items.filter(delegationQuery).expand("Authorizer,DelegateTo").select('Authorizer/Title,Authorizer/ID,Authorizer/EMail,DelegateTo/ID,DelegateTo/EMail,*').orderBy('Authorizer/ID', false).get(),
             ])
             let userGroups = [];
@@ -156,7 +156,7 @@ class ApproversApprovals extends React.Component<ApproversProps, ApproversState>
             }
             let delRmData = [];
             if (managers.length)
-                delRmData = await sp.web.lists.getByTitle('WeeklyTimeSheet').items.top(2000).filter(getDelTSQry).expand("ReportingManager,Reviewers,Initiator").select('ReportingManager/Title,ReportingManager/EMail,Reviewers/EMail,Reviewers/Id,Initiator/EMail,Initiator/Id,*').orderBy('WeekStartDate,DateSubmitted', false).get()
+                delRmData = await sp.web.lists.getByTitle('WeeklyTimeSheet').items.top(2000).filter(getDelTSQry).expand("ReportingManager,Reviewers,Initiator").select('ReportingManager/Title,ReportingManager/EMail,Reviewers/EMail,Reviewers/Id,Initiator/EMail,Initiator/Title,Initiator/Id,*').orderBy('WeekStartDate,DateSubmitted', false).get()
 
             let Data = [];
             for (const d of responseData) {
@@ -173,7 +173,7 @@ class ApproversApprovals extends React.Component<ApproversProps, ApproversState>
                     Id: d.Id,
                     Date: DateUtilities.getDateMMDDYYYY(date),
                     DateForGrid: `<span class='d-none'>${DateUtilities.getDateYYYYMMDDForSorting(date)}</span>${DateUtilities.getDateMMDDYYYY(date)}`,
-                    EmployeName: d.Name,
+                    EmployeName: d.Initiator.Title,
                     PendingWith: d.PendingWith == "Approver" || d.PendingWith == "Manager" ? "Reporting Manager" : d.PendingWith,
                     Status: this.getStatus(d.Status),
                     BillableTotalHrs: isBillable ? parseFloat(parseFloat(d.WeeklyTotalHrs).toFixed(2)) : parseFloat(parseFloat(JSON.parse(d.SynergyOfficeHrs)[0].Total).toFixed(2)),
@@ -214,7 +214,7 @@ class ApproversApprovals extends React.Component<ApproversProps, ApproversState>
                             Id: d.Id,
                             Date: DateUtilities.getDateMMDDYYYY(date),
                             DateForGrid: `<span class='d-none'>${DateUtilities.getDateYYYYMMDDForSorting(date)}</span>${DateUtilities.getDateMMDDYYYY(date)}`,
-                            EmployeName: d.Name,
+                            EmployeName: d.Initiator.Title,
                             PendingWith: d.PendingWith == "Approver" || d.PendingWith == "Manager" ? "Reporting Manager" : d.PendingWith,
                             Status: this.getStatus(d.Status),
                             BillableTotalHrs: isBillable ? parseFloat(parseFloat(d.WeeklyTotalHrs).toFixed(2)) : parseFloat(parseFloat(JSON.parse(d.SynergyOfficeHrs)[0].Total).toFixed(2)),
@@ -785,7 +785,7 @@ class ApproversApprovals extends React.Component<ApproversProps, ApproversState>
                         if (row.Id == ItemsJustBeforeActionPerform[T].Id && row.StatusInList == ItemsJustBeforeActionPerform[T].Status) {
                             sp.web.lists.getByTitle('WeeklyTimeSheet').items.getById(row.Id).inBatch(batch).update(formData);
                             //COMMENTED TO STOP PTO CONSIDERATION FROM TIMESHEET FORM
-                            if (row.PTOHrs != 0 && TimeOffRec.length && TimeOffRec[0].IsSubmittedFromTimesheetForm && [StatusType.Submit].includes(TimeOffRec[0].Status)) {
+                            if (row.PTOHrs != 0 && TimeOffRec.length && TimeOffRec[0].IsSubmittedFromTimesheetForm && [StatusType.Submit,StatusType.ReviewerApprove].includes(TimeOffRec[0].Status)) {
                                 if (row.EligibleforPTO && parseFloat(PTOHrs) > 0) {
                                     sp.web.lists.getByTitle('EmployeePTO').items.getById(currentEmployeePTO[0].Id).inBatch(EmployeePTOBatch).update(PTOData);
                                     PTOTransactionRecords
@@ -886,7 +886,7 @@ class ApproversApprovals extends React.Component<ApproversProps, ApproversState>
         let delegationQuery = "DelegateTo/Id eq '" + userId + "'"
         try {
             let [responseData, ManagerDelegations] = await Promise.all([
-                sp.web.lists.getByTitle('WeeklyTimeSheet').items.top(2000).filter(filterString + filterQuery).expand("ReportingManager,Reviewers,Initiator").select('ReportingManager/Title,ReportingManager/EMail,Reviewers/EMail,Reviewers/Id,Initiator/EMail,Initiator/Id,*').orderBy('WeekStartDate,DateSubmitted', false).get(),
+                sp.web.lists.getByTitle('WeeklyTimeSheet').items.top(2000).filter(filterString + filterQuery).expand("ReportingManager,Reviewers,Initiator").select('ReportingManager/Title,ReportingManager/EMail,Reviewers/EMail,Reviewers/Id,Initiator/EMail,Initiator/Title,Initiator/Id,*').orderBy('WeekStartDate,DateSubmitted', false).get(),
                 sp.web.lists.getByTitle('Delegations').items.filter(delegationQuery).expand("Authorizer,DelegateTo").select('Authorizer/Title,Authorizer/ID,DelegateTo/ID,*').orderBy('Authorizer/ID', false).get(),
             ])
             let managers = []
@@ -912,13 +912,13 @@ class ApproversApprovals extends React.Component<ApproversProps, ApproversState>
             }
             let delRmData = [];
             if (managers.length)
-                delRmData = await sp.web.lists.getByTitle('WeeklyTimeSheet').items.top(2000).filter(getDelTSQry).expand("ReportingManager,Reviewers,Initiator").select('ReportingManager/Title,ReportingManager/EMail,Reviewers/EMail,Reviewers/Id,Initiator/EMail,Initiator/Id,*').orderBy('WeekStartDate,DateSubmitted', false).get()
+                delRmData = await sp.web.lists.getByTitle('WeeklyTimeSheet').items.top(2000).filter(getDelTSQry).expand("ReportingManager,Reviewers,Initiator").select('ReportingManager/Title,ReportingManager/EMail,Reviewers/EMail,Reviewers/Id,Initiator/EMail,Initiator/Title,Initiator/Id,*').orderBy('WeekStartDate,DateSubmitted', false).get()
 
             let ItemsJustBeforeActionPerform = [];
             for (const d of responseData) {
                 ItemsJustBeforeActionPerform.push({
                     Id: d.Id,
-                    EmployeName: d.Name,
+                    EmployeName: d.Initiator.Title,
                     Status: d.Status,
                 })
             }
@@ -926,7 +926,7 @@ class ApproversApprovals extends React.Component<ApproversProps, ApproversState>
                 for (const d of delRmData) {
                     ItemsJustBeforeActionPerform.push({
                         Id: d.Id,
-                        EmployeName: d.Name,
+                        EmployeName: d.Initiator.Title,
                         Status: d.Status,
                     })
                 }

@@ -52,7 +52,7 @@ class AllRequests extends React.Component<AllRequestsProps,AllRequestsState> {
         let date = DateUtilities.getDateMMDDYYYY(dateFilter);
         var TimeSheetFilterQuery = "WeekStartDate ge '"+date+"'";
         let EmpMasterSelQuery = "Employee/ID,Employee/Title,ReportingManager/EMail,Reviewers/EMail,ReportingManager/ID,Reviewers/ID";
-        let TimeSheetSelQuery = "Initiator/ID,Initiator/EMail,Reviewers/EMail,Reviewers/Id,ReportingManager/Id,ReportingManager/EMail,ReportingManager/Title,*";
+        let TimeSheetSelQuery = "Initiator/ID,Initiator/Title,Initiator/EMail,Reviewers/EMail,Reviewers/Id,ReportingManager/Id,ReportingManager/EMail,ReportingManager/Title,*";
 
         try{
             
@@ -105,7 +105,7 @@ class AllRequests extends React.Component<AllRequestsProps,AllRequestsState> {
                     Id : d.Id,
                     Date : DateUtilities.getDateMMDDYYYY(date),
                     DateForGrid : `<span class='d-none'>${DateUtilities.getDateYYYYMMDDForSorting(date)}</span>${DateUtilities.getDateMMDDYYYY(date)}`,
-                    EmployeName: d.Name,
+                    EmployeName: d.Initiator.Title,
                     // Status : d.Status == StatusType.Submit?'Pending With Reporting Manager':d.Status== StatusType.InProgress?'Pending With Reviewer':d.Status,
                     Status : this.getStatus(d.Status),
                     Client: d.ClientName,
@@ -123,7 +123,7 @@ class AllRequests extends React.Component<AllRequestsProps,AllRequestsState> {
                 ExcelData.push({
                     Id : d.Id,
                     Date : DateUtilities.getDateMMDDYYYY(date),
-                    EmployeName: d.Name,
+                    EmployeName: d.Initiator.Title,
                     // Status : d.Status == StatusType.Submit?'Pending With Reporting Manager':d.Status== StatusType.InProgress?'Pending With Reviewer':d.Status,
                     Status : this.getStatus(d.Status),
                     Client: d.ClientName,
