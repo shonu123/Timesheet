@@ -236,7 +236,7 @@ class TimeOffRequestForm extends React.Component<TimeOffRequestFormProps, TimeOf
 
             }
             //To get latest PTO credentials           
-            let EmpPTO = await this.getLatestPTOData(this.state.EmployeeId, new Date(), this.state.EmployeeData[0].Id); //To get latest PTO Record
+            let EmpPTO = await this.getLatestPTOData(this.state.EmployeeId, this.props.match.params.id != undefined ? this.state.FromDate : new Date(), this.state.EmployeeData[0].Id); //To get latest PTO Record
             let EmpPTOData = this.getEmpPTOData(EmpPTO, TimeOffTypesData, this.state.isPTOEligible, this.state.Status); // To extract the PTOData,TimeOffTypesObj from latest PTO record
             let PTOData = EmpPTOData['PTOData'];
             TimeOffTypesObj = EmpPTOData['TimeOffTypesObj'];
@@ -317,6 +317,16 @@ class TimeOffRequestForm extends React.Component<TimeOffRequestFormProps, TimeOf
                 PTOAvailableBalance: PTOAvailableBalance,
             };
         }
+        else {
+            PTOData = {
+                PTOAvailed: '0',
+                PTOBalance: '0',
+                PTOApplied: '0',
+                PTOBalanceAfterDeduction: '0',
+                EmpPTOID: 0,
+                PTOAvailableBalance: '0',
+            }
+        }
 
         return { PTOData: PTOData, TimeOffTypesObj: TimeOffTypesObj };
     }
@@ -343,7 +353,7 @@ class TimeOffRequestForm extends React.Component<TimeOffRequestFormProps, TimeOf
         let EmpMatrixObj = await this.getEmpMatrixData(this.state.EmployeeData);
         let isPTOEligible = EmpMatrixObj.isPTOEligible;
         //To get latest PTO credentials 
-        let EmpPTO = await this.getLatestPTOData(this.state.EmployeeId, new Date(), this.state.EmployeeData[0].Id);//To get latest PTO Record
+        let EmpPTO = await this.getLatestPTOData(this.state.EmployeeId, this.state.FromDate ?? this.state.FromDate, this.state.EmployeeData[0].Id);//To get latest PTO Record
         let EmpPTOData = await this.getEmpPTOData(EmpPTO, this.state.AllTimeOffTypesObj, isPTOEligible, ''); // To extract the PTOData,TimeOffTypesObj from latest PTO record
         let PTOData = EmpPTOData['PTOData'];
         let TimeOffTypesObj = EmpPTOData['TimeOffTypesObj'];
@@ -482,7 +492,7 @@ class TimeOffRequestForm extends React.Component<TimeOffRequestFormProps, TimeOf
                     }
                 }
             }
-            this.setState({ TimesheetRec: TimesheetRec, ButtonsVisibility: ButtonsVisibility});
+            this.setState({ TimesheetRec: TimesheetRec, ButtonsVisibility: ButtonsVisibility });
             this.userAccessableRecord(userGroups, EmployeeId, SynergyManagerIds);
         }
         catch (error) {
@@ -557,6 +567,7 @@ class TimeOffRequestForm extends React.Component<TimeOffRequestFormProps, TimeOf
             }
         }
         else if (Status == StatusType.Revoke) {
+            ButtonsVisibility.Submit = false;
             if (loginUserID == EmployeeID) {
                 ButtonsVisibility.Submit = true;
                 ButtonsVisibility.Approve = false;
@@ -564,14 +575,14 @@ class TimeOffRequestForm extends React.Component<TimeOffRequestFormProps, TimeOf
                 ButtonsVisibility.Revoke = false;
                 ButtonsVisibility.Withdraw = false;
             }
-            else if (SynergyManagerIds.results.includes(loginUserID)) {
+            else if (SynergyManagerIds.results.includes(loginUserID) || isHR ) {
                 ButtonsVisibility.Submit = false;
                 result.isDisabled = true;
             }
-            else if (isHR) {
-                ButtonsVisibility.Submit = false;
-                result.isDisabled = true;
-            }
+            // else if (isHR) {
+            //     ButtonsVisibility.Submit = false;
+            //     result.isDisabled = true;
+            // }
         }
         else if (Status == StatusType.Approved || Status == StatusType.Updated) {
             result.isDisabled = true;
@@ -679,6 +690,13 @@ class TimeOffRequestForm extends React.Component<TimeOffRequestFormProps, TimeOf
                     customToaster('toster-error', ToasterTypes.Error, isValid.message, 4000)
                     return false;
                 }
+                isValid = this.validateUniqueYear(this.state.FromDate, this.state.ToDate);
+                if (!isValid.status) {
+                    this.setState({ loading: false });
+                    customToaster('toster-error', ToasterTypes.Error, isValid.message, 4000)
+                    return false;
+                }
+
             }
         });
 
@@ -1121,6 +1139,7 @@ class TimeOffRequestForm extends React.Component<TimeOffRequestFormProps, TimeOf
                     PTOBalanceAfterDeduction: (parseFloat(this.state.PTOData.PTOBalanceAfterDeduction) + AppliedTOHours).toFixed(4),
                 }
                 if (this.state.Status == StatusType.Approved) {
+                    PTOPostData['PTOBalance'] = (parseFloat(this.state.PTOData.PTOBalance) + AppliedTOHours).toFixed(4);
                     PTOPostData['PTOAvailed'] = (parseFloat(this.state.PTOData.PTOAvailed) - AppliedTOHours).toFixed(4);
                 }
                 else {
@@ -1221,10 +1240,10 @@ class TimeOffRequestForm extends React.Component<TimeOffRequestFormProps, TimeOf
             postObject['PreviousPTOBalance'] = this.state.PTOData.PTOBalanceAfterDeduction;
             postObject['CurrentPTOBalance'] = this.state.PTOData.PTOAvailableBalance;
         }
-        this.InsertorUpdatedata(postObject, PTOPostData, IsPTOEligibleTOSelected, isHRModifyData, isHRModifyPTOData);
+        this.InsertorUpdatedata(postObject, PTOPostData, IsPTOEligibleTOSelected, isHRModifyData, isHRModifyPTOData, ActionStatus);
     }
     // this function is used save data in the list
-    private async InsertorUpdatedata(formdata, PTOPostData, IsPTOEligibleTOSelected, isHRModifyData, isHRModifyPTOData) {
+    private async InsertorUpdatedata(formdata, PTOPostData, IsPTOEligibleTOSelected, isHRModifyData, isHRModifyPTOData, ActionStatus) {
         try {
             if (this.state.ItemID > 0) {   //update existing recordl
                 this.setState({ loading: true });
@@ -1241,7 +1260,7 @@ class TimeOffRequestForm extends React.Component<TimeOffRequestFormProps, TimeOf
                 }
                 sp.web.lists.getByTitle('TimeOffEmployees').items.getById(this.state.ItemID).update(formdata).then((res) => {
                     if (IsPTOEligibleTOSelected) {
-                        this.updatePTOAndPTOTransactionsDayWise(PTOPostData, formdata, this.state.ItemID, isHRModifyPTOData);
+                        this.updatePTOAndPTOTransactionsDayWise(PTOPostData, formdata, this.state.ItemID, isHRModifyPTOData, ActionStatus);
                     }
                     else {
                         this.showSuccessToaster(formdata.Status);
@@ -1254,7 +1273,7 @@ class TimeOffRequestForm extends React.Component<TimeOffRequestFormProps, TimeOf
                 this.setState({ loading: true });
                 sp.web.lists.getByTitle('TimeOffEmployees').items.add(formdata).then((res) => {
                     if (IsPTOEligibleTOSelected) {
-                        this.updatePTOAndPTOTransactionsDayWise(PTOPostData, formdata, res.data.Id, isHRModifyPTOData);
+                        this.updatePTOAndPTOTransactionsDayWise(PTOPostData, formdata, res.data.Id, isHRModifyPTOData, ActionStatus);
                     }
                     else {
                         this.showSuccessToaster(formdata.Status);
@@ -1279,13 +1298,13 @@ class TimeOffRequestForm extends React.Component<TimeOffRequestFormProps, TimeOf
                     .then((response) => {
                         EmployeePTO = response;
                     }, (error) => {
-                        this.setState({ ActionToasterMessage: 'Error', loading: false, redirect: true })
+                        this.setState({ ActionToasterMessage: 'Error', loading: false, redirect: true });
                         console.log(error);
                     });
             }
             catch (e) {
                 console.log('Failed to get PTO Data');
-                this.setState({ ActionToasterMessage: 'Error', loading: false, redirect: true })
+                this.setState({ ActionToasterMessage: 'Error', loading: false, redirect: true });
             }
         }
         return EmployeePTO;
@@ -1300,7 +1319,7 @@ class TimeOffRequestForm extends React.Component<TimeOffRequestFormProps, TimeOf
         }
     }
     //This function is used when PTO Transaction is updated with multiple reocords day wise
-    private async updatePTOAndPTOTransactionsDayWise(PTOPostData, formdata, TimeOffID, isHRModifyPTOData) {
+    private async updatePTOAndPTOTransactionsDayWise(PTOPostData, formdata, TimeOffID, isHRModifyPTOData, ActionStatus) {
         try {
             let PTOBatch = sp.web.createBatch();
             let PTOTransactionsDayWise = this.getPTOtransactionsDayWise();
@@ -1421,7 +1440,17 @@ class TimeOffRequestForm extends React.Component<TimeOffRequestFormProps, TimeOf
                 }
             }
 
-            Promise.all([PTOBatch.execute()]).then(PTORes => {
+            Promise.all([PTOBatch.execute()]).then(async (PTORes) => {
+                // Handling If an employee submits a time-off range within the previous year and the submission date is in the current year
+                // considering date Based on SubmittedDate :
+                // Case 1:In Case of Employee applied for Date range in previous year and submitting in current year
+                let SubmittedDate = new Date(); // Default current date
+                if (this.state.ItemID > 0 && this.state.PTOTransactionListData.length) { // if existing record found consider the existing Submitted date
+                    SubmittedDate = new Date(DateUtilities.GetDateMMDDYYYYAsInList(this.state.PTOTransactionListData[0].SubmittedDate));
+                }
+                if (new Date(this.state.FromDate).getFullYear() == (new Date(SubmittedDate).getFullYear() - 1) && ([StatusType.Submit,StatusType.Withdraw,StatusType.Revoke, StatusType.ManagerReject, StatusType.HRReject].includes(ActionStatus))) {
+                    await this.updateEmployeePTOAndOpeningPTOTnForCurrentYear(ActionStatus);
+                }
                 this.showSuccessToaster(formdata.Status);
             }).catch(PTOError => {
                 console.log(PTOError);
@@ -1432,6 +1461,51 @@ class TimeOffRequestForm extends React.Component<TimeOffRequestFormProps, TimeOf
         catch (e) {
             console.log('Failed to add PTO Data');
             this.setState({ ActionToasterMessage: 'Error', loading: false, redirect: true });
+        }
+    }
+    private async updateEmployeePTOAndOpeningPTOTnForCurrentYear(ActionStatus) {
+        try {
+            let currentYear = new Date().getFullYear();
+            let PTOfilterQuery = `Employee/Id eq '${this.state.EmployeeId}' and Year eq '${currentYear}' and IsActive eq 1 and EmpMatrixID eq ${this.state.EmployeeData[0].Id}`;
+            let TranfilterQuery = `Employee/Id eq '${this.state.EmployeeId}' and Year eq '${currentYear}' and IsActive eq 1 and EmpMatrixID eq ${this.state.EmployeeData[0].Id} and TransactionType eq 'Opening PTO Balance'`;
+            let [EmpPTODataCurrentYear, EmpOpeningPTOTran] = await Promise.all([
+                sp.web.lists.getByTitle('EmployeePTO').items.filter(PTOfilterQuery).select('Id,PTOBalance,PTOBalanceAfterDeduction,Employee/Title,Employee/Id,*').expand("Employee").getAll(),
+                sp.web.lists.getByTitle('PTOTransactions').items.filter(TranfilterQuery).select('Id,Employee/Title,Employee/Id,*').expand("Employee").getAll()
+            ]
+            );
+            let AppliedPTOHours = this.state.TimeOffTableData.PTOTotal;
+            if (EmpPTODataCurrentYear.length) {
+                let updatedPTODataCurryear = {
+                    PTOBalance: parseFloat(EmpPTODataCurrentYear[0].PTOBalance).toFixed(4),
+                    PTOBalanceAfterDeduction: parseFloat(EmpPTODataCurrentYear[0].PTOBalanceAfterDeduction).toFixed(4),
+                }
+                let updatedOpeningPTOTranCurryear = {
+                    PreviousPTOBalance: parseFloat(EmpOpeningPTOTran[0].PreviousPTOBalance).toFixed(4),
+                    Hours: parseFloat(EmpOpeningPTOTran[0].Hours).toFixed(4),
+                    CurrentPTOBalance: parseFloat(EmpOpeningPTOTran[0].CurrentPTOBalance).toFixed(4),
+                }
+                if (ActionStatus == StatusType.Submit) {
+                    updatedPTODataCurryear.PTOBalance = (parseFloat(EmpPTODataCurrentYear[0].PTOBalance) - AppliedPTOHours).toFixed(4);
+                    updatedPTODataCurryear.PTOBalanceAfterDeduction = (parseFloat(EmpPTODataCurrentYear[0].PTOBalanceAfterDeduction) - AppliedPTOHours).toFixed(4);
+                    updatedOpeningPTOTranCurryear.PreviousPTOBalance = (parseFloat(EmpOpeningPTOTran[0].PreviousPTOBalance) - AppliedPTOHours).toFixed(4);
+                    updatedOpeningPTOTranCurryear.Hours = (parseFloat(EmpOpeningPTOTran[0].Hours) - AppliedPTOHours).toFixed(4);
+                    updatedOpeningPTOTranCurryear.CurrentPTOBalance = (parseFloat(EmpOpeningPTOTran[0].CurrentPTOBalance) - AppliedPTOHours).toFixed(4);
+                }
+                else if ([StatusType.Withdraw, StatusType.Revoke, StatusType.ManagerReject, StatusType.HRReject].includes(ActionStatus)) {
+                    updatedPTODataCurryear.PTOBalance = (parseFloat(EmpPTODataCurrentYear[0].PTOBalance) + AppliedPTOHours).toFixed(4);
+                    updatedPTODataCurryear.PTOBalanceAfterDeduction = (parseFloat(EmpPTODataCurrentYear[0].PTOBalanceAfterDeduction) + AppliedPTOHours).toFixed(4);
+                    updatedOpeningPTOTranCurryear.PreviousPTOBalance = (parseFloat(EmpOpeningPTOTran[0].PreviousPTOBalance) + AppliedPTOHours).toFixed(4);
+                    updatedOpeningPTOTranCurryear.Hours = (parseFloat(EmpOpeningPTOTran[0].Hours) + AppliedPTOHours).toFixed(4);
+                    updatedOpeningPTOTranCurryear.PreviousPTOBalance = (parseFloat(EmpOpeningPTOTran[0].PreviousPTOBalance) + AppliedPTOHours).toFixed(4);
+                }
+
+                await sp.web.lists.getByTitle('EmployeePTO').items.getById(EmpPTODataCurrentYear[0].Id).update(updatedPTODataCurryear);
+                await sp.web.lists.getByTitle('PTOTransactions').items.getById(EmpOpeningPTOTran[0].Id).update(updatedOpeningPTOTranCurryear);
+            }
+        }
+        catch (e) {
+            console.log('Failed to update EmployeePTO for current year');
+            this.setState({ ActionToasterMessage: 'Error', loading: false, redirect: true })
         }
     }
     // Below is used to handle correct Date insertion irrespective of Timezone
@@ -1452,6 +1526,10 @@ class TimeOffRequestForm extends React.Component<TimeOffRequestFormProps, TimeOf
         let Time;
         var isAllDaysEmpty;
         var weeks = TimeOffTableData.dayKeys;
+        isValid = this.validateUniqueYear(this.state.FromDate, this.state.ToDate);
+        if (!isValid.status) {
+            return isValid;
+        }
         for (let i in TimeOffTableData.TimeOffRowsData) {
             if (TimeOffTableData.TimeOffRowsData[i].TimeOffType.trim() == "") { // Time Off Type cannot be blank
                 isValid.message = "Time Off Type cannot be blank.";
@@ -1579,6 +1657,15 @@ class TimeOffRequestForm extends React.Component<TimeOffRequestFormProps, TimeOf
         this.RemoveAll_mandatory_FormContent_focus(TimeOffTableData);
         return isValid;
     }
+    private validateUniqueYear(FromDate, ToDate) {
+        let isValid = { status: true, message: '' };
+        if (new Date(FromDate).getFullYear() != new Date(ToDate).getFullYear()) {
+            isValid.status = false;
+            isValid.message = 'Please select From and To dates within the same year.';
+        }
+        return isValid;
+    }
+
     private RemoveAll_mandatory_FormContent_focus = (TimeOffTableData) => {
         var weeks = TimeOffTableData.dayKeys;
         for (let i in TimeOffTableData.TimeOffRowsData) {
@@ -1602,7 +1689,7 @@ class TimeOffRequestForm extends React.Component<TimeOffRequestFormProps, TimeOf
         let To = DateUtilities.getDateMMDDYYYY(addDays(new Date(this.state.ToDate), 1));
         let from = new Date(this.state.FromDate);
         let to = new Date(this.state.ToDate);
-        let filterQuery = `Employee/Id eq '${this.state.EmployeeId}' and From le '${To}' and To ge '${From}' and Status ne '${StatusType.Withdraw}' and Status ne '${StatusType.Revoke}' and Status ne '${StatusType.ManagerReject}' and Status ne '${StatusType.HRReject}'`;
+        let filterQuery = `Employee/Id eq '${this.state.EmployeeId}' and From le '${To}' and To ge '${From}' and Status ne '${StatusType.Withdraw}' and Status ne '${StatusType.Revoke}' and Status ne '${StatusType.ManagerReject}' and Status ne '${StatusType.HRReject}' and IsActive eq 1`;
         let selectQuery = "Employee/Title,Employee/ID,*";
         try {
             let duplicateRecord = await sp.web.lists.getByTitle('TimeOffEmployees').items.filter(filterQuery).select(selectQuery).expand('Employee').orderBy('Title').getAll()

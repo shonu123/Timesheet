@@ -1837,7 +1837,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                         }
                         if (formObject.Status == StatusType.Approved) //calculations for Revoked after reviewer Approve 
                         {
-                            PTOData['PTOBalance'] = (parseFloat(formObject.PTOBalanceAfterDeduction) + parseFloat(PTOHrs)).toFixed(4);
+                            PTOData['PTOBalance'] = (parseFloat(formObject.PTOBalance) + parseFloat(PTOHrs)).toFixed(4);
                             PTOData['PTOAvailed'] = (parseFloat(formObject.PTOAvailed) - parseFloat(PTOHrs)).toFixed(4);
                         }
                         else if ([StatusType.Submit, StatusType.ManagerApprove].includes(formObject.Status))//calculations for Revoked after manager Approve[but currently Revoke is not provided after manager approve. future purpose included this status also] or submit
@@ -1845,7 +1845,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                             PTOData['PTOApplied'] = (parseFloat(formObject.PTOApplied) - parseFloat(PTOHrs)).toFixed(4);
                         }
                         //COMMENTED TO  STOP PTO CONSIDERATION FROM TIMESHEET FORM
-                        if (this.state.TimeOffRec.length && this.state.TimeOffRec[0].IsSubmittedFromTimesheetForm && [StatusType.Submit].includes(this.state.TimeOffRec[0].Status)) //if TimeOffRec exists for week and Staus is in Submit state, then only Revoke the TimeOffRequest
+                        if (this.state.TimeOffRec.length && this.state.TimeOffRec[0].IsSubmittedFromTimesheetForm && [StatusType.Submit,StatusType.Approved].includes(this.state.TimeOffRec[0].Status)) //if TimeOffRec exists for week and Staus is in Submit state, then only Revoke the TimeOffRequest
                         {
                             //Below is for : after revoke, form is not get reloaded, so to get updated PTO balance
                             formObject.PTOBalanceAfterDeduction = (parseFloat(formObject.PTOBalanceAfterDeduction) + parseFloat(PTOHrs)).toFixed(4);
@@ -1867,7 +1867,7 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
                         }
                     }
                     //Code for PTO Addition after Revoke end
-                    if (parseFloat(formObject.PTOHrs[0].Total) != 0 && this.state.TimeOffRec.length && this.state.TimeOffRec[0].IsSubmittedFromTimesheetForm && [StatusType.Submit].includes(this.state.TimeOffRec[0].Status)) {
+                    if (parseFloat(formObject.PTOHrs[0].Total) != 0 && this.state.TimeOffRec.length && this.state.TimeOffRec[0].IsSubmittedFromTimesheetForm && [StatusType.Submit,StatusType.Approved].includes(this.state.TimeOffRec[0].Status)) {
                         await this.AddTimeOffRequestAndTransactions(TransactionsData, formdata, formObject);
                     }
                     this.setState({ loading: false, trFormdata: formObject });
@@ -2170,7 +2170,17 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
             {
                 const PTOTransactionBatch = await this.getTimeOffAndtransactionBatchCalls(TimeOffFormRequestPostObj, Status, formObject, TransactionsData);
 
-                Promise.all([PTOTransactionBatch.execute()]).then((PTOTranc) => {
+                Promise.all([PTOTransactionBatch.execute()]).then( async (PTOTranc) => {
+                    // Handling If an employee submits a time-off range within the previous year and the submission date is in the current year
+                // considering date Based on SubmittedDate :
+                // Case 1:In Case of Employee applied for Date range in previous year and submitting in current year
+                let SubmittedDate = new Date(); // Default current date
+                if (this.state.ItemID > 0 && this.state.PTOTransactionsListData.length) { // if existing record found consider the existing Submitted date
+                    SubmittedDate = new Date(DateUtilities.GetDateMMDDYYYYAsInList(this.state.PTOTransactionsListData[0].SubmittedDate));
+                }
+                if (new Date(formObject.WeekStartDate).getFullYear() == (new Date(SubmittedDate).getFullYear() - 1) && ([StatusType.Submit,StatusType.Revoke, StatusType.ManagerReject,StatusType.ReviewerReject, StatusType.HRReject].includes(Status))) {
+                    await this.updateEmployeePTOAndOpeningPTOTnForCurrentYear(Status);
+                }
                 }, (error) => {
                     this.setState({ ActionToasterMessage: 'Error', loading: false, redirect: true });
                     console.log(error);
@@ -2219,6 +2229,51 @@ class WeeklyTimesheet extends Component<WeeklyTimesheetProps, WeeklyTimesheetSta
         }
         return PTOTransactionBatch;
     }
+     private async updateEmployeePTOAndOpeningPTOTnForCurrentYear(ActionStatus) {
+            try {
+                let currentYear = new Date().getFullYear();
+                let PTOfilterQuery = `Employee/Id eq '${this.state.currentUserId}' and Year eq '${currentYear}' and IsActive eq 1 and EmpMatrixID eq ${this.state.EmpMatrixRec.length ? this.state.EmpMatrixRec[0].Id : 0}`;
+                let TranfilterQuery = `Employee/Id eq '${this.state.currentUserId}' and Year eq '${currentYear}' and IsActive eq 1 and EmpMatrixID eq ${this.state.EmpMatrixRec.length ? this.state.EmpMatrixRec[0].Id : 0} and TransactionType eq 'Opening PTO Balance'`;
+                let [EmpPTODataCurrentYear, EmpOpeningPTOTran] = await Promise.all([
+                    sp.web.lists.getByTitle('EmployeePTO').items.filter(PTOfilterQuery).select('Id,PTOBalance,PTOBalanceAfterDeduction,Employee/Title,Employee/Id,*').expand("Employee").getAll(),
+                    sp.web.lists.getByTitle('PTOTransactions').items.filter(TranfilterQuery).select('Id,Employee/Title,Employee/Id,*').expand("Employee").getAll()
+                ]
+                );
+                let AppliedPTOHours = this.state.totalPTOFormData.PTOTotal;
+                if (EmpPTODataCurrentYear.length) {
+                    let updatedPTODataCurryear = {
+                        PTOBalance: parseFloat(EmpPTODataCurrentYear[0].PTOBalance).toFixed(4),
+                        PTOBalanceAfterDeduction: parseFloat(EmpPTODataCurrentYear[0].PTOBalanceAfterDeduction).toFixed(4),
+                    }
+                    let updatedOpeningPTOTranCurryear = {
+                        PreviousPTOBalance: parseFloat(EmpOpeningPTOTran[0].PreviousPTOBalance).toFixed(4),
+                        Hours: parseFloat(EmpOpeningPTOTran[0].Hours).toFixed(4),
+                        CurrentPTOBalance: parseFloat(EmpOpeningPTOTran[0].CurrentPTOBalance).toFixed(4),
+                    }
+                    if (ActionStatus == StatusType.Submit) {
+                        updatedPTODataCurryear.PTOBalance = (parseFloat(EmpPTODataCurrentYear[0].PTOBalance) - AppliedPTOHours).toFixed(4);
+                        updatedPTODataCurryear.PTOBalanceAfterDeduction = (parseFloat(EmpPTODataCurrentYear[0].PTOBalanceAfterDeduction) - AppliedPTOHours).toFixed(4);
+                        updatedOpeningPTOTranCurryear.PreviousPTOBalance = (parseFloat(EmpOpeningPTOTran[0].PreviousPTOBalance) - AppliedPTOHours).toFixed(4);
+                        updatedOpeningPTOTranCurryear.Hours = (parseFloat(EmpOpeningPTOTran[0].Hours) - AppliedPTOHours).toFixed(4);
+                        updatedOpeningPTOTranCurryear.CurrentPTOBalance = (parseFloat(EmpOpeningPTOTran[0].CurrentPTOBalance) - AppliedPTOHours).toFixed(4);
+                    }
+                    else if ([StatusType.Revoke, StatusType.ManagerReject,StatusType.ReviewerReject, StatusType.HRReject].includes(ActionStatus)) {
+                        updatedPTODataCurryear.PTOBalance = (parseFloat(EmpPTODataCurrentYear[0].PTOBalance) + AppliedPTOHours).toFixed(4);
+                        updatedPTODataCurryear.PTOBalanceAfterDeduction = (parseFloat(EmpPTODataCurrentYear[0].PTOBalanceAfterDeduction) + AppliedPTOHours).toFixed(4);
+                        updatedOpeningPTOTranCurryear.PreviousPTOBalance = (parseFloat(EmpOpeningPTOTran[0].PreviousPTOBalance) + AppliedPTOHours).toFixed(4);
+                        updatedOpeningPTOTranCurryear.Hours = (parseFloat(EmpOpeningPTOTran[0].Hours) + AppliedPTOHours).toFixed(4);
+                        updatedOpeningPTOTranCurryear.PreviousPTOBalance = (parseFloat(EmpOpeningPTOTran[0].PreviousPTOBalance) + AppliedPTOHours).toFixed(4);
+                    }
+    
+                    await sp.web.lists.getByTitle('EmployeePTO').items.getById(EmpPTODataCurrentYear[0].Id).update(updatedPTODataCurryear);
+                    await sp.web.lists.getByTitle('PTOTransactions').items.getById(EmpOpeningPTOTran[0].Id).update(updatedOpeningPTOTranCurryear);
+                }
+            }
+            catch (e) {
+                console.log('Failed to update EmployeePTO for current year');
+                this.setState({ ActionToasterMessage: 'Error', loading: false, redirect: true })
+            }
+        }
     private getTimeOffRequestPostObj = async (Status) => {
         let SynergyManagerIds = await this.getSynergyManagerIds();
         //update comments history if status is Submit/Revoke
