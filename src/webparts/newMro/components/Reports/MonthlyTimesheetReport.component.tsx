@@ -18,6 +18,7 @@ import { highlightCurrentNav} from '../../Utilities/HighlightCurrentComponent';
 import DatePicker from "../Shared/DatePickerField";
 import CustomDatePicker from "../Shared/DatePicker";
 import SearchableDropdown from '../Shared/SearchableDropdown';
+import MultiSelectDropdown from '../Shared/MultiSelectDropdown';
 import { Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import customToaster from '../Shared/Toaster.component';
@@ -65,7 +66,7 @@ class MonthlyTimesheetReport extends React.Component<MonthlyTimesheetReportProps
         // EmployeeEmail: '',
         ClientName: '',
         IsThisReportForInternal: false,
-        InitiatorId: '0',
+        InitiatorId: [],
         startDate: null,
         endDate: null,
         ClientsObject: [],
@@ -122,7 +123,7 @@ class MonthlyTimesheetReport extends React.Component<MonthlyTimesheetReportProps
         EmpObj.sort((a,b)=>a.Title.localeCompare(b.Title));
         if (Clients.length > 0){
             //Clients.unshift({Title:"All Clients"});
-            EmpObj.unshift({ID:"0",Title:"All Employees"});
+            // EmpObj.unshift({ID:"0",Title:"All Employees"});
             this.setState({ AllEmployees: EmpObj, EmployeesObj: EmpObj, ClientsObject: Clients, loading: false, isHavingClients: true, showToaster: true })
         }
         else
@@ -162,18 +163,19 @@ class MonthlyTimesheetReport extends React.Component<MonthlyTimesheetReportProps
                     EmpObj.push({ ID: name.Employee.ID, Title: name.Employee.Title })
                 }
             }
+            EmpObj.sort((a,b)=>a.Title.localeCompare(b.Title));
             if (EmpObj.length > 0)
             {
-                EmpObj.unshift({ID:"0",Title:"All Employees"});
-                 this.setState({ EmployeesObj: EmpObj, loading: false, isHavingEmployees: true, InitiatorId: '0', weekStartDay: clientEmployees[0].WeekStartDay })
+                // EmpObj.unshift({ID:"0",Title:"All Employees"});
+                 this.setState({ EmployeesObj: EmpObj, loading: false, isHavingEmployees: true, InitiatorId: [], weekStartDay: clientEmployees[0].WeekStartDay })
             }
             else {
-                this.setState({ EmployeesObj: EmpObj, loading: false, isHavingEmployees: false, InitiatorId: '-1', weekStartDay: weekDay })
+                this.setState({ EmployeesObj: EmpObj, loading: false, isHavingEmployees: false, InitiatorId: [], weekStartDay: weekDay })
                 customToaster('toster-error', ToasterTypes.Error, 'There are no employees associated with this client', 4000);
             }
         }
         else {
-            this.setState({ EmployeesObj: this.state.AllEmployees, loading: false, isHavingEmployees: true, InitiatorId: '0' })
+            this.setState({ EmployeesObj: this.state.AllEmployees, loading: false, isHavingEmployees: true, InitiatorId: [] })
         }
     }
     private handleChangeEvents = (event,actionMeta?) => {
@@ -184,11 +186,15 @@ class MonthlyTimesheetReport extends React.Component<MonthlyTimesheetReportProps
             name = event.target.name;
             inputvalue = event.target.value;
             value = event.target.type == 'checkbox' ? event.target.checked : inputvalue;
+            // for Employee multi select dropdown
+            if (name == 'InitiatorId' && inputvalue[inputvalue.length - 1] === "all") {
+                value = this.state.InitiatorId.length === this.state.EmployeesObj.length ? [] : this.state.EmployeesObj.map(emp => emp.ID);
+            }
         }
         else if(actionMeta!= undefined)
         {
             name = actionMeta.name;
-            value =actionMeta.action =='clear'?name =='InitiatorId'?-1:'': event.value; 
+            value =actionMeta.action =='clear'?name =='InitiatorId'?[]:'': event.value; 
         }
         this.setState({ [name]: value,ReportData: [] });
     }
@@ -256,13 +262,13 @@ class MonthlyTimesheetReport extends React.Component<MonthlyTimesheetReportProps
         // this.setState({ Homeredirect: true,showToaster:false });
         // document.getElementById('divNavReportItems').classList.remove('show');
         // document.getElementById('Reports').classList.remove('heighlightMasters');
-        this.setState({ClientName: '',IsThisReportForInternal:false,InitiatorId: '0',startDate: null,endDate: null,EmployeesObj:this.state.AllEmployees, ExportExcelData: [], weekStartDay: 'Monday',ReportData: [],PDFData: []});
+        this.setState({ClientName: '',IsThisReportForInternal:false,InitiatorId: [],startDate: null,endDate: null,EmployeesObj:this.state.AllEmployees, ExportExcelData: [], weekStartDay: 'Monday',ReportData: [],PDFData: []});
     }
     private handleSubmit = () => {
         this.setState({loading:true})
         let data = {
             Client: { val: this.state.ClientName, required: true, Name: 'Client', Type: ControlType.reactSelect, Focusid: 'Client' },
-            Employee: { val: parseInt(this.state.InitiatorId), required: true, Name: 'Employee', Type: ControlType.reactSelect, Focusid:'Employee'},
+            Employee: { val:this.state.InitiatorId, required: true, Name: 'Employee', Type: ControlType.MUIMultiSelect, Focusid:'Employee'},
             // WeeklyStartDate: { val: this.state.startDate, required: true, Name: 'Weekly Start Date', Type: ControlType.date, Focusid: "divWeekStartDate" }
         }
         let isValid = this.checkIsvalid(data, this.state.startDate, this.state.endDate);
@@ -279,7 +285,7 @@ class MonthlyTimesheetReport extends React.Component<MonthlyTimesheetReportProps
         let postObject = {
             Client: this.state.ClientName,
             IsThisReportForInternal: this.state.IsThisReportForInternal,
-            Employee: parseInt(this.state.InitiatorId),
+            Employee: this.state.InitiatorId,
             StartDate: selectedStartDate,
             EndDate: selectedEndDate
         }
@@ -296,25 +302,29 @@ class MonthlyTimesheetReport extends React.Component<MonthlyTimesheetReportProps
         let next = DateUtilities.getDateMMDDYYYY(nextDate);
         let filterQuery = ''
         if (client == "All") {
-            if (Employee == 0) {
+            //if (Employee.length == this.state.EmployeesObj.length) {
                 filterQuery = "WeekStartDate gt '" + prev + "' and WeekStartDate lt '" + next + "'";
-            }
-            else {
-                filterQuery = "InitiatorId eq '" + Employee + "' and WeekStartDate gt '" + prev + "' and WeekStartDate lt '" + next + "'";
-            }
+            // }
+            // else {
+            //     filterQuery = "InitiatorId eq '" + Employee + "' and WeekStartDate gt '" + prev + "' and WeekStartDate lt '" + next + "'";
+            // }
         }
         else {
-            if (Employee == 0) {
+            //if (Employee == 0) {
                 filterQuery = "ClientName eq '" + client.replace(/'/g,"''") + "' and WeekStartDate gt '" + prev + "' and WeekStartDate lt '" + next + "'";
-            }
-            else {
-                filterQuery = "ClientName eq '" + client.replace(/'/g,"''") + "' and InitiatorId eq '" + Employee + "' and WeekStartDate gt '" + prev + "' and WeekStartDate lt '" + next + "'";
-            }
+            // }
+            // else {
+            //     filterQuery = "ClientName eq '" + client.replace(/'/g,"''") + "' and InitiatorId eq '" + Employee + "' and WeekStartDate gt '" + prev + "' and WeekStartDate lt '" + next + "'";
+            // }
         }
         filterQuery += "and Status ne '" + StatusType.Save + "' and Status ne '" + StatusType.Revoke + "'";
         try{
         let Response = await sp.web.lists.getByTitle('WeeklyTimeSheet').items.top(5000).filter(filterQuery).expand('Initiator').select('Initiator/Title,Initiator/Id,TotalHrs,BillableSubtotalHrs,NonBillableSubTotalHrs,ClientName,WeekStartDate,Status,*').orderBy('WeekStartDate,ClientName,Initiator/Title', true).getAll()
         if (Response.length > 0) {
+            if(Employee.length != this.state.EmployeesObj.length)
+            {
+                Response = Response.filter(report => Employee.includes(report.Initiator.Id));
+            }
             var PDFData = [];
             //PDFData = reportData.filter(report => [StatusType.Approved, StatusType.ManagerApprove].includes(report.Status));
             PDFData = Response;
@@ -1259,7 +1269,9 @@ class MonthlyTimesheetReport extends React.Component<MonthlyTimesheetReportProps
                                         </div>
                                         <div className="col-md-3">
                                             <div className="custom-dropdown">
-                                                <SearchableDropdown label="Employee" Title="Employee" name="InitiatorId" id="Employee" placeholderText="Select Employee" className="" selectedValue={this.state.InitiatorId} optionLabel={'Title'} optionValue={'ID'} OptionsList={this.state.EmployeesObj} onChange={(selectedOption, actionMeta) => { this.handleChangeEvents(selectedOption, actionMeta) }} isRequired={true} refElement={this.EmployeeDropdown} noOptionsMessage="No Employee"></SearchableDropdown>
+                                                {/* <SearchableDropdown label="Employee" Title="Employee" name="InitiatorId" id="Employee" placeholderText="Select Employee" className="" selectedValue={this.state.InitiatorId} optionLabel={'Title'} optionValue={'ID'} OptionsList={this.state.EmployeesObj} onChange={(selectedOption, actionMeta) => { this.handleChangeEvents(selectedOption, actionMeta) }} isRequired={true} refElement={this.EmployeeDropdown} noOptionsMessage="No Employee"></SearchableDropdown> */}
+                                                 <MultiSelectDropdown label="Employee" Title="Employee" name="InitiatorId" id="Employee" placeholderText="Select Employee" className="" selectedValue={this.state.InitiatorId} optionLabel={'Title'} optionValue={'ID'} OptionsList={this.state.EmployeesObj} onChange={(selectedOption, actionMeta) => { this.handleChangeEvents(selectedOption, actionMeta) }} isRequired={true} refElement={this.EmployeeDropdown} noOptionsMessage="No Employee"></MultiSelectDropdown>
+
                                             </div>
                                         </div>
                                         <div className="col-md-3">

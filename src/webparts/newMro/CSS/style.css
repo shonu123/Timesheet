@@ -4011,6 +4011,10 @@ a#btnDownloadPDFFile:hover.a-export-pdf-button .fa-file-pdf {
   box-shadow: 0 0 0 0.2rem rgba(223, 43, 42, .75) !important;
   border-color: transparent !important;
 }
+.multiSelectMandatory {
+  box-shadow: 0 0 0 0.2rem rgba(223, 43, 42, .75) !important;
+  border-color: transparent !important;
+}
 
 .css-1nmdiq5-menu {
   z-index: 100 !important;
