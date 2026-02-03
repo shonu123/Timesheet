@@ -17,6 +17,7 @@ import "@pnp/sp/site-groups";
 import { highlightCurrentNav } from '../../Utilities/HighlightCurrentComponent';
 import DatePicker from "../Shared/DatePickerField";
 import SearchableDropdown from '../Shared/SearchableDropdown';
+import MultiSelectDropdown from '../Shared/MultiSelectDropdown';
 import { Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import customToaster from '../Shared/Toaster.component';
@@ -61,23 +62,23 @@ class DailyTimesheetReport extends React.Component<DailyTimesheetReportProps, Da
         // EmployeeId: null,
         // EmployeeEmail: '',
         ClientName: "All Clients",
-        InitiatorId: '0',
+        InitiatorId: [],
         startDate: null,
         endDate: null,
         ClientsObject: [],
         EmployeesObj: [],
         AllEmployees: [],
-        
+
         loading: false,
         Homeredirect: false,
         isPageAccessable: true,
         showToaster: false,
         isHavingClients: true,
         isHavingEmployees: true,
-        ResultExcelData : [],
-        ColumnsHeaders:[],
-        ReportData:[],
-        ExportExcelData:[],
+        ResultExcelData: [],
+        ColumnsHeaders: [],
+        ReportData: [],
+        ExportExcelData: [],
     }
     public componentDidMount() {
         highlightCurrentNav("DailyTimesheetReport");
@@ -113,36 +114,33 @@ class DailyTimesheetReport extends React.Component<DailyTimesheetReportProps, Da
             }
         }
         EmpObj.sort((a, b) => a.Title.localeCompare(b.Title));
-        if (Clients.length > 0)
-        {
-            Clients.unshift({Title:"All Clients"});
-            EmpObj.unshift({ID:"0",Title:"All Employees"});
+        if (Clients.length > 0) {
+            Clients.unshift({ Title: "All Clients" });
+            // EmpObj.unshift({ID:"0",Title:"All Employees"});
             this.setState({ AllEmployees: EmpObj, EmployeesObj: EmpObj, ClientsObject: Clients, loading: false, isHavingClients: true, showToaster: true })
         }
         else
             this.setState({ AllEmployees: EmpObj, EmployeesObj: EmpObj, ClientsObject: Clients, loading: false, isHavingClients: false, showToaster: true })
     }
-    private handleClientChange = (event,actionMeta?) => {
+    private handleClientChange = (event, actionMeta?) => {
         this.setState({ loading: true });
         // let { name } = event.target;
         // let value = event.target.value;
         // this.setState({ [name]: value });
         // this.setState({ ReportData: [] });
-        let  name,inputvalue,value;
+        let name, inputvalue, value;
         //Below is condition for handle common change function for both react select dropdown  and normal controls
-        if(![null, undefined].includes(event) && event.target != undefined)
-        {
+        if (![null, undefined].includes(event) && event.target != undefined) {
             name = event.target.name;
             inputvalue = event.target.value;
             value = event.target.type == 'checkbox' ? event.target.checked : inputvalue;
         }
-        else if(actionMeta!= undefined)
-        {
+        else if (actionMeta != undefined) {
             name = actionMeta.name;
-            value =actionMeta.action =='clear'?'': event.value; 
+            value = actionMeta.action == 'clear' ? '' : event.value;
         }
-       this.setState({ [name] : value,ReportData: [] });
-       this.getClientEmployees(value);
+        this.setState({ [name]: value, ReportData: [] });
+        this.getClientEmployees(value);
     }
     private async getClientEmployees(value) {
         if (value != "All Clients") {
@@ -158,45 +156,46 @@ class DailyTimesheetReport extends React.Component<DailyTimesheetReportProps, Da
                 }
             }
             EmpObj.sort((a, b) => a.Title.localeCompare(b.Title));
-            if (EmpObj.length > 0)
-            {
-                EmpObj.unshift({ID:"0",Title:"All Employees"});
-                this.setState({ EmployeesObj: EmpObj, loading: false, isHavingEmployees: true, InitiatorId: '0' });
+            if (EmpObj.length > 0) {
+                // EmpObj.unshift({ID:"0",Title:"All Employees"});
+                this.setState({ EmployeesObj: EmpObj, loading: false, isHavingEmployees: true, InitiatorId: [] });
             }
             else {
-                this.setState({ EmployeesObj: EmpObj, loading: false, isHavingEmployees: false, InitiatorId: '-1' });
+                this.setState({ EmployeesObj: EmpObj, loading: false, isHavingEmployees: false, InitiatorId: [] });
                 customToaster('toster-error', ToasterTypes.Error, 'There are no employees associated with this client', 4000);
             }
         }
         else {
-            this.setState({ EmployeesObj: this.state.AllEmployees, loading: false, isHavingEmployees: true, InitiatorId: '0' })
+            this.setState({ EmployeesObj: this.state.AllEmployees, loading: false, isHavingEmployees: true, InitiatorId: [] })
         }
     }
-    private handleChangeEvents = (event,actionMeta?) => {
-        let  name,inputvalue,value;
+    private handleChangeEvents = (event, actionMeta?) => {
+        let name, inputvalue, value;
         //Below is condition for handle common change function for both react select dropdown  and normal controls
-        if(![null, undefined].includes(event) && event.target != undefined)
-        {
+        if (![null, undefined].includes(event) && event.target != undefined) {
             name = event.target.name;
             inputvalue = event.target.value;
             value = event.target.type == 'checkbox' ? event.target.checked : inputvalue;
+            // for Employee multi select dropdown
+            if (name == 'InitiatorId' && inputvalue[inputvalue.length - 1] === "all") {
+                value = this.state.InitiatorId.length === this.state.EmployeesObj.length ? [] : this.state.EmployeesObj.map(emp => emp.ID);
+            }
         }
-        else if(actionMeta!= undefined)
-        {
+        else if (actionMeta != undefined) {
             name = actionMeta.name;
-            value =actionMeta.action =='clear'?name =='InitiatorId'?-1:'': event.value; 
+            value = actionMeta.action == 'clear' ? name == 'InitiatorId' ? [] : '' : event.value;
         }
-        this.setState({ [name]: value,ReportData: [] });
+        this.setState({ [name]: value, ReportData: [] });
     }
     private handleStartDate = (dateprops) => {
         // console.log(dateprops)
         let date = new Date()
         if (dateprops[0] != null) {
             date = new Date(dateprops[0])
-            this.setState({ startDate: date,ReportData:[] });
+            this.setState({ startDate: date, ReportData: [] });
         }
-        else{
-            this.setState({ startDate: null,ReportData:[] });
+        else {
+            this.setState({ startDate: null, ReportData: [] });
         }
     }
     private handleEndDate = (dateprops) => {
@@ -204,10 +203,10 @@ class DailyTimesheetReport extends React.Component<DailyTimesheetReportProps, Da
         let date = new Date()
         if (dateprops[0] != null) {
             date = new Date(dateprops[0])
-            this.setState({ endDate: date,ReportData:[] });
+            this.setState({ endDate: date, ReportData: [] });
         }
-        else{
-            this.setState({ endDate: null,ReportData:[] });
+        else {
+            this.setState({ endDate: null, ReportData: [] });
         }
     }
     private checkIsvalid = (data, selectedStartDate, selectedEndDate) => {
@@ -227,10 +226,10 @@ class DailyTimesheetReport extends React.Component<DailyTimesheetReportProps, Da
             let element = document.getElementById('txtStartDate');
             element.focus();
             //element.classList.add('mandatory-FormContent-focus');
-            setTimeout(function (){
+            setTimeout(function () {
                 // prpel.current.input.classList.add('mandatory-FormContent-focus');
                 element.classList.add('mandatory-FormContent-focus');
-            },0)
+            }, 0)
         }
         else if (this.state.endDate == null) {
             isvalid.status = false;
@@ -241,9 +240,9 @@ class DailyTimesheetReport extends React.Component<DailyTimesheetReportProps, Da
             //element.classList.add('mandatory-FormContent-focus');
 
             // prpel.current.input.focus();
-            setTimeout(function (){
+            setTimeout(function () {
                 element.classList.add('mandatory-FormContent-focus');
-            },0)
+            }, 0)
         }
         else if (new Date(selectedStartDate) > new Date(selectedEndDate)) {
             isvalid.status = false;
@@ -253,28 +252,28 @@ class DailyTimesheetReport extends React.Component<DailyTimesheetReportProps, Da
             //element.classList.add('mandatory-FormContent-focus');
             // let prpel =  this.startDate
             // prpel.current.input.focus();
-            setTimeout(function (){
+            setTimeout(function () {
                 element.classList.add('mandatory-FormContent-focus');
-            },0)
+            }, 0)
         }
         return isvalid;
     }
-    private handleCancel = async (e)=>{
+    private handleCancel = async (e) => {
         // this.setState({Homeredirect : true,showToaster:false});
         // document.getElementById('divNavReportItems').classList.remove('show');
         // document.getElementById('Reports').classList.remove('heighlightMasters');
-        this.setState({ ClientName: "All Clients",InitiatorId: '0', startDate: null,endDate: null,EmployeesObj:this.state.AllEmployees,ReportData:[],ExportExcelData:[]});
+        this.setState({ ClientName: "All Clients", InitiatorId: [], startDate: null, endDate: null, EmployeesObj: this.state.AllEmployees, ReportData: [], ExportExcelData: [] });
     }
     private handleSubmit = () => {
-        this.setState({loading:true})
+        this.setState({ loading: true })
         let data = {
             Client: { val: this.state.ClientName, required: true, Name: 'Client', Type: ControlType.reactSelect, Focusid: 'Client' },
-            Employee: { val: parseInt(this.state.InitiatorId), required: true, Name: 'Employee', Type: ControlType.reactSelect, Focusid: 'Employee' },
+            Employee: { val: this.state.InitiatorId, required: true, Name: 'Employee', Type: ControlType.MUIMultiSelect, Focusid: 'Employee' },
         }
         let isValid = this.checkIsvalid(data, this.state.startDate, this.state.endDate)
         if (!isValid.status) {
             customToaster('toster-error', ToasterTypes.Error, isValid.message, 4000);
-            this.setState({loading:false})
+            this.setState({ loading: false })
             return false
         }
         let date = new Date(this.state.startDate)
@@ -284,14 +283,14 @@ class DailyTimesheetReport extends React.Component<DailyTimesheetReportProps, Da
 
         let postObject = {
             Client: this.state.ClientName,
-            Employee: parseInt(this.state.InitiatorId),
+            Employee: this.state.InitiatorId,
             StartDate: selectedStartDate,
             EndDate: selectedEndDate
         }
         // console.log(postObject)
         this.generateExcelData(postObject)
     }
-    private generateDateRange = (startDate,endDate) => {
+    private generateDateRange = (startDate, endDate) => {
         const dateRangeArray: string[] = [];
         const start = new Date(startDate);
         const end = new Date(endDate);
@@ -314,24 +313,27 @@ class DailyTimesheetReport extends React.Component<DailyTimesheetReportProps, Da
         let next = DateUtilities.getDateMMDDYYYY(nextDate);
 
         let filterQuery = ''
-        if (client =="All Clients") {
-            if (Employee == 0) {
-                filterQuery = "WeekStartDate gt '" + prev + "' and WeekStartDate lt '" + next + "'";
-            }
-            else {
-                filterQuery = "InitiatorId eq '" + Employee + "' and WeekStartDate gt '" + prev + "' and WeekStartDate lt '" + next + "'";
-            }
+        if (client == "All Clients") {
+            //if (Employee == 0) {
+            filterQuery = "WeekStartDate gt '" + prev + "' and WeekStartDate lt '" + next + "'";
+            // }
+            // else {
+            //     filterQuery = "InitiatorId eq '" + Employee + "' and WeekStartDate gt '" + prev + "' and WeekStartDate lt '" + next + "'";
+            // }
         }
         else {
-            if (Employee == 0) {
-                filterQuery = "ClientName eq'" + client.replace(/'/g, "''") + "' and WeekStartDate gt '" + prev + "' and WeekStartDate lt '" + next + "'";
-            }
-            else {
-                filterQuery = "ClientName eq'" + client.replace(/'/g, "''") + "' and InitiatorId eq '" + Employee + "' and WeekStartDate gt '" + prev + "' and WeekStartDate lt '" + next + "'";
-            }
+            //if (Employee == 0) {
+            filterQuery = "ClientName eq'" + client.replace(/'/g, "''") + "' and WeekStartDate gt '" + prev + "' and WeekStartDate lt '" + next + "'";
+            // }
+            // else {
+            //     filterQuery = "ClientName eq'" + client.replace(/'/g, "''") + "' and InitiatorId eq '" + Employee + "' and WeekStartDate gt '" + prev + "' and WeekStartDate lt '" + next + "'";
+            // }
         }
-        filterQuery+="and Status ne '"+StatusType.Save+"' and Status ne '"+StatusType.Revoke+"'"
-        let reportData = await sp.web.lists.getByTitle('WeeklyTimeSheet').items.top(5000).filter(filterQuery).expand('Initiator').select('Initiator/Title,TotalHrs,ClientName,WeekStartDate,Status').orderBy('WeekStartDate,ClientName,Initiator/Title', true).getAll()
+        filterQuery += "and Status ne '" + StatusType.Save + "' and Status ne '" + StatusType.Revoke + "'"
+        let reportData = await sp.web.lists.getByTitle('WeeklyTimeSheet').items.top(5000).filter(filterQuery).expand('Initiator').select('Initiator/Title,Initiator/Id,TotalHrs,ClientName,WeekStartDate,Status').orderBy('WeekStartDate,ClientName,Initiator/Title', true).getAll()
+        if (Employee.length != this.state.EmployeesObj.length) {
+            reportData = reportData.filter(report => Employee.includes(report.Initiator.Id));
+        }
         if (reportData.length > 0) {
             // console.log(reportData)
             let ExcelData = []
@@ -361,18 +363,18 @@ class DailyTimesheetReport extends React.Component<DailyTimesheetReportProps, Da
                         Client: '',
                         Date: '',
                         Hours: '',
-                        Status:''
+                        Status: ''
                     };
                     obj.Initiator = Initiator.Title,
                         obj.Client = ClientName,
-                         obj.Date= d,
+                        obj.Date = d,
                         obj.Hours = arrangedWeekDays[new Date(d).getDay()],
                         obj.Status = Status
                     ExcelData.push(obj);
                 }
             });
             // console.log(ExcelData)
-            headerDates = this.generateDateRange(startDate,EndDate)
+            headerDates = this.generateDateRange(startDate, EndDate)
             // console.log(headerDates)
             ExcelData.sort((a, b) => {
                 const dateA = new Date(a.Date).getTime();
@@ -390,96 +392,108 @@ class DailyTimesheetReport extends React.Component<DailyTimesheetReportProps, Da
             this.state.ResultExcelData = ExcelData;
             let finalArray = [];
 
-//Process the original array
-for (const item of ExcelData) {
-    // Ensure that the Date and Hours properties are present and valid
-    if (item.Date && item.Hours) {
-        // Find if there is an existing entry in finalArray for the same client and initiator
-        const existingEntryIndex = finalArray.findIndex(entry => entry.Client === item.Client && entry.Initiator === item.Initiator);
-        
-        // If there is no existing entry, create a new one
-        if (existingEntryIndex === -1) {
-            const newObj = { Client: item.Client, Initiator: item.Initiator };
-            // Initialize all dates with empty string
-            for (const date of headerDates) {
-                newObj[date] = '';
+            //Process the original array
+            for (const item of ExcelData) {
+                // Ensure that the Date and Hours properties are present and valid
+                if (item.Date && item.Hours) {
+                    // Find if there is an existing entry in finalArray for the same client and initiator
+                    const existingEntryIndex = finalArray.findIndex(entry => entry.Client === item.Client && entry.Initiator === item.Initiator);
+
+                    // If there is no existing entry, create a new one
+                    if (existingEntryIndex === -1) {
+                        const newObj = { Client: item.Client, Initiator: item.Initiator };
+                        // Initialize all dates with empty string
+                        for (const date of headerDates) {
+                            newObj[date] = '';
+                        }
+                        newObj[item.Date] = item.Hours;
+                        finalArray.push(newObj);
+                    } else {
+                        // If there is an existing entry, update the working hours for the corresponding date
+                        finalArray[existingEntryIndex][item.Date] = item.Hours;
+                    }
+                } else {
+                    console.log(`Invalid item encountered: ${JSON.stringify(item)}`);
+                }
             }
-            newObj[item.Date] = item.Hours;
-            finalArray.push(newObj);
-        } else {
-            // If there is an existing entry, update the working hours for the corresponding date
-            finalArray[existingEntryIndex][item.Date] = item.Hours;
-        }
-    } else {
-        console.log(`Invalid item encountered: ${JSON.stringify(item)}`);
-    }
-}
 
-// Sort the final array based on client and initiator
-finalArray.sort((a, b) => {
-    if (a.Client !== b.Client) {
-        return a.Client.localeCompare(b.Client);
-    } else {
-        return a.Initiator.localeCompare(b.Initiator);
-    }
-});
+            // Sort the final array based on client and initiator
+            finalArray.sort((a, b) => {
+                if (a.Client !== b.Client) {
+                    return a.Client.localeCompare(b.Client);
+                } else {
+                    return a.Initiator.localeCompare(b.Initiator);
+                }
+            });
 
-// Output the final array
-// console.log(finalArray);
- this.generateExcel(finalArray, headerDates,startDate,EndDate);
+            // Output the final array
+            // console.log(finalArray);
+            this.generateExcel(finalArray, headerDates, startDate, EndDate);
         }
         else {
-            customToaster('toster-error', ToasterTypes.Error, 'No data found!', 4000);
-            this.setState({loading:false})
+            customToaster('toster-error', ToasterTypes.Error, 'No timesheets found!', 4000);
+            this.setState({ loading: false })
         }
     }
     private getStatusFromExcelData(client, initiator, date) {
         let ExcelData = this.state.ResultExcelData
         const item = ExcelData.find(entry => entry.Client === client && entry.Initiator === initiator && entry.Date === date);
-        if(item){
-            if([StatusType.ManagerReject.toString().toLowerCase(),StatusType.ReviewerReject.toString().toLowerCase()].includes(item.Status.toLowerCase()))
+        if (item) {
+            if ([StatusType.ManagerReject.toString().toLowerCase(), StatusType.ReviewerReject.toString().toLowerCase()].includes(item.Status.toLowerCase()))
                 return StatusType.Reject;
-            else if(StatusType.Submit.toString().toLowerCase()==item.Status.toLowerCase())
+            else if (StatusType.Submit.toString().toLowerCase() == item.Status.toLowerCase())
                 return StatusType.Submit;
-            else if(StatusType.Revoke.toString().toLowerCase()==item.Status.toLowerCase())
+            else if (StatusType.Revoke.toString().toLowerCase() == item.Status.toLowerCase())
                 return StatusType.Revoke;
-            else if(StatusType.ManagerApprove.toString().toLowerCase()==item.Status.toLowerCase())
+            else if (StatusType.ManagerApprove.toString().toLowerCase() == item.Status.toLowerCase())
                 return StatusType.ManagerApprove;
-            else if(StatusType.ReviewerApprove.toString().toLowerCase()==item.Status.toLowerCase())
+            else if (StatusType.ReviewerApprove.toString().toLowerCase() == item.Status.toLowerCase())
                 return StatusType.ReviewerApprove;
-            else if(StatusType.Approved.toString().toLowerCase()==item.Status.toLowerCase())
+            else if (StatusType.Approved.toString().toLowerCase() == item.Status.toLowerCase())
                 return StatusType.Approved;
             else
-            return "" ;
+                return "";
         }
-        else{
+        else {
             return ""
         }
     }
-    private constructMergedCellsData(headermessage,length,fontsize){
-        let heading = [{ v: headermessage, t: "s", s: { alignment: { vertical: "center",horizontal:"center" },font: { bold: true,sz: fontsize },fill: { fgColor: { rgb: 'ffffff' } },border: {
-            top: { style: 'thin', color: { rgb: "000000" } },
-            left: { style: 'thin', color: { rgb: "000000" } },
-            bottom: { style: 'thin', color: { rgb: "000000" } },
-            right: { style: 'thin', color: { rgb: "000000" } },
-        } } }];
-        for(let i=1;i<=length;i++){
-                heading.push({ v: '', t: "s", s: {alignment: { vertical: "center",horizontal:"center" }, font: { bold: true,sz: fontsize },fill: { fgColor: { rgb: 'ffffff' } },border: {
-                     top: { style: 'thin', color: { rgb: "000000" } },
-                     left: { style: 'thin', color: { rgb: "000000" } },
-                     bottom: { style: 'thin', color: { rgb: "000000" } },
-                     right: { style: '', color: { rgb: "000000" } },
-                 } } })
+    private constructMergedCellsData(headermessage, length, fontsize) {
+        let heading = [{
+            v: headermessage, t: "s", s: {
+                alignment: { vertical: "center", horizontal: "center" }, font: { bold: true, sz: fontsize }, fill: { fgColor: { rgb: 'ffffff' } }, border: {
+                    top: { style: 'thin', color: { rgb: "000000" } },
+                    left: { style: 'thin', color: { rgb: "000000" } },
+                    bottom: { style: 'thin', color: { rgb: "000000" } },
+                    right: { style: 'thin', color: { rgb: "000000" } },
+                }
+            }
+        }];
+        for (let i = 1; i <= length; i++) {
+            heading.push({
+                v: '', t: "s", s: {
+                    alignment: { vertical: "center", horizontal: "center" }, font: { bold: true, sz: fontsize }, fill: { fgColor: { rgb: 'ffffff' } }, border: {
+                        top: { style: 'thin', color: { rgb: "000000" } },
+                        left: { style: 'thin', color: { rgb: "000000" } },
+                        bottom: { style: 'thin', color: { rgb: "000000" } },
+                        right: { style: '', color: { rgb: "000000" } },
+                    }
+                }
+            })
         }
-        heading.push({ v: '', t: "s", s: {alignment: { vertical: "center",horizontal:"center" }, font: { bold: true,sz: fontsize },fill: { fgColor: { rgb: 'ffffff' } },border: {
-            top: { style: 'thin', color: { rgb: "000000" } },
-            left: { style: 'thin', color: { rgb: "000000" } },
-            bottom: { style: 'thin', color: { rgb: "000000" } },
-            right: { style: 'thin', color: { rgb: "000000" } },
-        } } })
+        heading.push({
+            v: '', t: "s", s: {
+                alignment: { vertical: "center", horizontal: "center" }, font: { bold: true, sz: fontsize }, fill: { fgColor: { rgb: 'ffffff' } }, border: {
+                    top: { style: 'thin', color: { rgb: "000000" } },
+                    left: { style: 'thin', color: { rgb: "000000" } },
+                    bottom: { style: 'thin', color: { rgb: "000000" } },
+                    right: { style: 'thin', color: { rgb: "000000" } },
+                }
+            }
+        })
         return heading
     }
-    private generateExcel(dataTable, headerDates,startDate,endDate) {
+    private generateExcel(dataTable, headerDates, startDate, endDate) {
         const wb = XLSX.utils.book_new();
         const workSheetRows = []
         let filename = 'Timesheet Daily Report';
@@ -490,9 +504,9 @@ finalArray.sort((a, b) => {
             left: { style: 'thin', color: { rgb: "000000" } },
             bottom: { style: 'thin', color: { rgb: "000000" } },
             right: { style: 'thin', color: { rgb: "000000" } },
-            }
-        headerRow.push({ v: 'Client Name', t: "s", s: { font: { bold: true },border: allBorders } });
-        headerRow.push({ v: 'Employee Name', t: "s", s: { font: { bold: true },border: allBorders } })
+        }
+        headerRow.push({ v: 'Client Name', t: "s", s: { font: { bold: true }, border: allBorders } });
+        headerRow.push({ v: 'Employee Name', t: "s", s: { font: { bold: true }, border: allBorders } })
         let columnOrder = []
         columnOrder.push("Client")
         columnOrder.push("Initiator")
@@ -500,36 +514,36 @@ finalArray.sort((a, b) => {
             columnOrder.push(d)
         }
         // columnOrder.push("Total")
-let legend = [
-    { v: '', t: "s", s: { font: { bold: true },fill: { fgColor: { rgb: 'ffffff' },border: allBorders }} },
-    { v: '', t: "s", s: { font: { bold: true },fill: { fgColor: { rgb: 'ffffff' },border: allBorders }} },
-    // { v: 'Legend', t: "s", s: { font: { bold: true },fill: { fgColor: { rgb: 'ffffff' } },border: allBorders } },
-    { v: 'Submitted', t: "s", s: { font: { bold: true },fill: { fgColor: { rgb: 'fafac5' } },border: allBorders } },
-    // { v: 'Revoked', t: "s", s: { font: { bold: true },fill: { fgColor: { rgb: 'fae3ea' } },border: allBorders } },dbf6ff
-    { v: 'Approved by Manager', t: "s", s: { font: { bold: true },fill: { fgColor: { rgb: 'dbf6ff' } },border: allBorders } },
-    { v: 'Approved by Reviewer', t: "s", s: { font: { bold: true },fill: { fgColor: { rgb: 'AFEAFF' } },border: allBorders } },
-    { v: 'Approved', t: "s", s: { font: { bold: true },fill: { fgColor: { rgb: 'CBC8EA' } },border: allBorders } },
-    { v: 'Rejected', t: "s", s: { font: { bold: true },fill: { fgColor: { rgb: 'fad2d2' } },border: allBorders } }
-]
-workSheetRows.push(legend)
-workSheetRows.push([])
-let headingRow = this.constructMergedCellsData(`Synergy Computer Solutions, Inc.`,columnOrder.length-1>6?columnOrder.length-1:6,28);
+        let legend = [
+            { v: '', t: "s", s: { font: { bold: true }, fill: { fgColor: { rgb: 'ffffff' }, border: allBorders } } },
+            { v: '', t: "s", s: { font: { bold: true }, fill: { fgColor: { rgb: 'ffffff' }, border: allBorders } } },
+            // { v: 'Legend', t: "s", s: { font: { bold: true },fill: { fgColor: { rgb: 'ffffff' } },border: allBorders } },
+            { v: 'Submitted', t: "s", s: { font: { bold: true }, fill: { fgColor: { rgb: 'fafac5' } }, border: allBorders } },
+            // { v: 'Revoked', t: "s", s: { font: { bold: true },fill: { fgColor: { rgb: 'fae3ea' } },border: allBorders } },dbf6ff
+            { v: 'Approved by Manager', t: "s", s: { font: { bold: true }, fill: { fgColor: { rgb: 'dbf6ff' } }, border: allBorders } },
+            { v: 'Approved by Reviewer', t: "s", s: { font: { bold: true }, fill: { fgColor: { rgb: 'AFEAFF' } }, border: allBorders } },
+            { v: 'Approved', t: "s", s: { font: { bold: true }, fill: { fgColor: { rgb: 'CBC8EA' } }, border: allBorders } },
+            { v: 'Rejected', t: "s", s: { font: { bold: true }, fill: { fgColor: { rgb: 'fad2d2' } }, border: allBorders } }
+        ]
+        workSheetRows.push(legend)
+        workSheetRows.push([])
+        let headingRow = this.constructMergedCellsData(`Synergy Computer Solutions, Inc.`, columnOrder.length - 1 > 6 ? columnOrder.length - 1 : 6, 28);
 
-workSheetRows.push(headingRow)// header 
-workSheetRows.push([])// giving a line gap
- headingRow = this.constructMergedCellsData(`Timesheet(${startDate} to ${endDate})`,columnOrder.length-1>6?columnOrder.length-1:6,20);
- workSheetRows.push(headingRow)// header 
- workSheetRows.push([])// giving a line gap
-let dataColums = []
+        workSheetRows.push(headingRow)// header 
+        workSheetRows.push([])// giving a line gap
+        headingRow = this.constructMergedCellsData(`Timesheet(${startDate} to ${endDate})`, columnOrder.length - 1 > 6 ? columnOrder.length - 1 : 6, 20);
+        workSheetRows.push(headingRow)// header 
+        workSheetRows.push([])// giving a line gap
+        let dataColums = []
         for (const h of headerDates) {
-            let obj = {},dataObj ={}
-            obj = { v: h, t: "s", s: { font: { bold: true },border: allBorders } }
+            let obj = {}, dataObj = {}
+            obj = { v: h, t: "s", s: { font: { bold: true }, border: allBorders } }
             // dataObj ={ Header: h, accessor: 'col1' }  
             headerRow.push(obj);
         }
-        headerRow.push({ v: 'Total (Approved)', t: "s", s: { font: { bold: true },border: allBorders } })
+        headerRow.push({ v: 'Total (Approved)', t: "s", s: { font: { bold: true }, border: allBorders } })
         workSheetRows.push(headerRow)
-        
+
         //-------------------new code starts---------------
         dataTable.forEach((item) => {
             let tempArr = [];
@@ -537,10 +551,10 @@ let dataColums = []
                 if (key !== "Id" && item.hasOwnProperty(key)) {
                     let value = item[key];
                     let cellObj = {};
-                    
+
                     // Get the status from ExcelData based on the current item's Client, Initiator, and Date
                     let status = this.getStatusFromExcelData(item.Client, item.Initiator, key);
-        
+
                     // Set color based on status
                     let color = "";
                     switch (status) {
@@ -554,50 +568,50 @@ let dataColums = []
                             color = "fae3ea"; // Color for Revoked
                             break;
                         case StatusType.ManagerApprove:
-                            color ="dbf6ff"// Color for Manager Approved
+                            color = "dbf6ff"// Color for Manager Approved
                             break;
                         case StatusType.ReviewerApprove:
-                            color ="AFEAFF"// Color for Reviewer Approved
+                            color = "AFEAFF"// Color for Reviewer Approved
                             break;
                         case StatusType.Approved:
-                            color ="CBC8EA"// Color for Approved a9e6fc/eedcf7
+                            color = "CBC8EA"// Color for Approved a9e6fc/eedcf7
                             break;
                         default:
                             color = "ffffff"; // Default color
                     }
 
                     if (wrapColumnsArray.includes(key)) {
-                        if(["Client","Initiator"].includes(key))
-                            cellObj = { v: value, t: "s", s: { alignment: { wrapText: true },border: allBorders, font: { bold: false}, fill: { fgColor: { rgb: color }} } };
+                        if (["Client", "Initiator"].includes(key))
+                            cellObj = { v: value, t: "s", s: { alignment: { wrapText: true }, border: allBorders, font: { bold: false }, fill: { fgColor: { rgb: color } } } };
                         else
-                        cellObj = { v: value!=""?parseFloat(parseFloat(value).toFixed(2)):"", t: "s", s: { alignment: { wrapText: true },border: allBorders, font: { bold: false}, fill: { fgColor: { rgb: color }} } };
+                            cellObj = { v: value != "" ? parseFloat(parseFloat(value).toFixed(2)) : "", t: "s", s: { alignment: { wrapText: true }, border: allBorders, font: { bold: false }, fill: { fgColor: { rgb: color } } } };
                     } else {
-                        if(["Client","Initiator"].includes(key))
-                            cellObj = { v: value, t: "s", s: { alignment: { wrapText: true },border: allBorders, font: { bold: false}, fill: { fgColor: { rgb: color }} } };
+                        if (["Client", "Initiator"].includes(key))
+                            cellObj = { v: value, t: "s", s: { alignment: { wrapText: true }, border: allBorders, font: { bold: false }, fill: { fgColor: { rgb: color } } } };
                         else
-                        cellObj = { v: value!=""?parseFloat(parseFloat(value).toFixed(2)):"", t: "s", s: {border: allBorders, font: { bold: false,color:'1a1818'}, fill: { fgColor: { rgb: color }}} };
+                            cellObj = { v: value != "" ? parseFloat(parseFloat(value).toFixed(2)) : "", t: "s", s: { border: allBorders, font: { bold: false, color: '1a1818' }, fill: { fgColor: { rgb: color } } } };
                     }
                     tempArr.push(cellObj);
                 }
             });
-            let Total =0
-            for(let t of tempArr){
+            let Total = 0
+            for (let t of tempArr) {
                 // console.log(t.s.fill.fgColor.rgb)
-                if(t.s.fill.fgColor.rgb == 'CBC8EA'){
+                if (t.s.fill.fgColor.rgb == 'CBC8EA') {
                     Total += parseFloat(t.v)
                 }
-            } 
+            }
             // console.log("Approved Total = "+Total)
-            tempArr.push({ v: Total, t: "s", s: { alignment: { wrapText: true },border: allBorders, font: { bold: false}, fill: { fgColor: { rgb: 'CBC8EA' }} } })
+            tempArr.push({ v: Total, t: "s", s: { alignment: { wrapText: true }, border: allBorders, font: { bold: false }, fill: { fgColor: { rgb: 'CBC8EA' } } } })
             workSheetRows.push(tempArr);
         });
         let lastColumn = columnOrder.length
         //--------------new codes ends----------------------
         let cell = 1;
         let hColumns = []
-        for(let b of workSheetRows[6]){
-            let obj={};
-            obj ={Header:b.v,accessor: `col${cell}`}
+        for (let b of workSheetRows[6]) {
+            let obj = {};
+            obj = { Header: b.v, accessor: `col${cell}` }
             hColumns.push(obj)
             cell++;
         }
@@ -608,7 +622,7 @@ let dataColums = []
         // for (let i = 7; i < workSheetRows.length; i++) {
         //     let rowData = workSheetRows[i];
         //     let dataObj = {};
-        
+
         //     for (let j = 0; j < rowData.length; j++) {
         //         let cellData = rowData[j];
         //         if (cellData.v !== undefined) {
@@ -617,40 +631,40 @@ let dataColums = []
         //             dataObj["colorClass"] = fgColorRgb == "fad2d2" ? "R-LRed" : fgColorRgb == "fafac5" ? "R-LYellow" : fgColorRgb == "eedcf7" ? "R-LBlue" : "R-White";
         //         }
         //     }
-        
+
         //     SampleData.push(dataObj);
         // }
         // console.log(SampleData);
 
         // Assuming workSheetRows is the array of rows containing data
-let SampleData = [];
+        let SampleData = [];
 
-// Assuming workSheetRows[7] contains the row data
-for (let i = 7; i < workSheetRows.length; i++) {
-    let rowData = workSheetRows[i];
-    let dataObj = {};
+        // Assuming workSheetRows[7] contains the row data
+        for (let i = 7; i < workSheetRows.length; i++) {
+            let rowData = workSheetRows[i];
+            let dataObj = {};
 
-    for (let j = 0; j < rowData.length; j++) {
-        let cellData = rowData[j];
-        dataObj["col" + (j + 1)] = cellData.v;
-        let fgColorRgb = cellData.s.fill.fgColor.rgb;
-        dataObj["colorClass" + (j + 1)] = fgColorRgb == "fad2d2" ? "R-LRed" : fgColorRgb == "fafac5" ? "R-LYellow" : fgColorRgb == "CBC8EA" ? "R-LPurple" :fgColorRgb == "dbf6ff"?'R-LBlue':fgColorRgb == "AFEAFF"?"R-LSkBlue":"R-White";
-    }
+            for (let j = 0; j < rowData.length; j++) {
+                let cellData = rowData[j];
+                dataObj["col" + (j + 1)] = cellData.v;
+                let fgColorRgb = cellData.s.fill.fgColor.rgb;
+                dataObj["colorClass" + (j + 1)] = fgColorRgb == "fad2d2" ? "R-LRed" : fgColorRgb == "fafac5" ? "R-LYellow" : fgColorRgb == "CBC8EA" ? "R-LPurple" : fgColorRgb == "dbf6ff" ? 'R-LBlue' : fgColorRgb == "AFEAFF" ? "R-LSkBlue" : "R-White";
+            }
 
-    SampleData.push(dataObj);
-}
+            SampleData.push(dataObj);
+        }
 
- //console.log(SampleData);
+        //console.log(SampleData);
 
-        
 
-                let requiredData = []
-                requiredData.push(workSheetRows)
-                requiredData.push(filename)
-                requiredData.push(startDate)
-                requiredData.push(endDate)
-                requiredData.push(columnOrder.length)
-this.setState({ColumnsHeaders:hColumns,ReportData:SampleData,ExportExcelData:requiredData,loading:false})
+
+        let requiredData = []
+        requiredData.push(workSheetRows)
+        requiredData.push(filename)
+        requiredData.push(startDate)
+        requiredData.push(endDate)
+        requiredData.push(columnOrder.length)
+        this.setState({ ColumnsHeaders: hColumns, ReportData: SampleData, ExportExcelData: requiredData, loading: false })
 
         // const finalWorkshetData = XLSX.utils.aoa_to_sheet(workSheetRows)
         // finalWorkshetData['!autofilter'] = { ref: 'A7:B7' };
@@ -678,13 +692,13 @@ this.setState({ColumnsHeaders:hColumns,ReportData:SampleData,ExportExcelData:req
         // XLSX.writeFile(wb, `${filename}(${startDate} to ${endDate}).xlsx`);
 
     }
-    private getcurrWeekSunDay=()=>{
-        let date=new Date();
-        if(new Date(date).getDay() === 0){
-          return new Date(date)
+    private getcurrWeekSunDay = () => {
+        let date = new Date();
+        if (new Date(date).getDay() === 0) {
+            return new Date(date)
         }
-        else{
-          return addDays(new Date(),7-(new Date().getDay()));
+        else {
+            return addDays(new Date(), 7 - (new Date().getDay()));
         }
     }
     // private generateExcel(dataTable){
@@ -756,29 +770,29 @@ this.setState({ColumnsHeaders:hColumns,ReportData:SampleData,ExportExcelData:req
     public render() {
         if (!this.state.isPageAccessable) {
             // let url = `https://synergycomcom.sharepoint.com/sites/Billing.Timesheet/SitePages/AccessDenied.aspx?`
-            let url = this.siteURL+"/SitePages/AccessDenied.aspx"
+            let url = this.siteURL + "/SitePages/AccessDenied.aspx"
             window.location.href = url
         }
         if (this.state.Homeredirect) {
-             let url = `/Dashboard/`
-             return (<Navigate to={url}/>);
-         }
+            let url = `/Dashboard/`
+            return (<Navigate to={url} />);
+        }
         else {
             return (
                 <React.Fragment>
-                     <div id="content" className="content p-2 pt-2">
-                    <div className='container-fluid'>
-                        <div className='FormContent'>
-                            <div className="title"> Daily Report
-                                <div className='mandatory-note'>
-                                    <span className='mandatoryhastrick'>*</span> indicates a required field
+                    <div id="content" className="content p-2 pt-2">
+                        <div className='container-fluid'>
+                            <div className='FormContent'>
+                                <div className="title"> Daily Report
+                                    <div className='mandatory-note'>
+                                        <span className='mandatoryhastrick'>*</span> indicates a required field
+                                    </div>
                                 </div>
-                            </div>
-                            <div className="after-title"></div>
-                            <div className="media-m-2 media-p-1">
-                <div className="my-2">
-                                    <div className="row pt-2 px-2">
-                                        {/* <div className="col-md-3">
+                                <div className="after-title"></div>
+                                <div className="media-m-2 media-p-1">
+                                    <div className="my-2">
+                                        <div className="row pt-2 px-2">
+                                            {/* <div className="col-md-3">
                                             <div className="light-text">
                                                 <label>Client<span className="mandatoryhastrick">*</span></label>
                                                 <select className="form-control" required={true} name="ClientName" title="Client" id='client' ref={this.client} onChange={this.handleClientChange}>
@@ -789,12 +803,12 @@ this.setState({ColumnsHeaders:hColumns,ReportData:SampleData,ExportExcelData:req
                                                 </select>
                                             </div>
                                         </div> */}
-                                        <div className="col-md-3">
-                                            <div className="custom-dropdown">
-                                                <SearchableDropdown label="Client" Title="Client" name="ClientName" id="Client" placeholderText="Select Client" className="" selectedValue={this.state.ClientName} optionLabel={'Title'} optionValue={'Title'} OptionsList={this.state.ClientsObject} onChange={(selectedOption, actionMeta) => { this.handleClientChange(selectedOption, actionMeta) }} isRequired={true} refElement={this.client} noOptionsMessage="No Client"></SearchableDropdown>
+                                            <div className="col-md-3">
+                                                <div className="custom-dropdown">
+                                                    <SearchableDropdown label="Client" Title="Client" name="ClientName" id="Client" placeholderText="Select Client" className="" selectedValue={this.state.ClientName} optionLabel={'Title'} optionValue={'Title'} OptionsList={this.state.ClientsObject} onChange={(selectedOption, actionMeta) => { this.handleClientChange(selectedOption, actionMeta) }} isRequired={true} refElement={this.client} noOptionsMessage="No Client"></SearchableDropdown>
+                                                </div>
                                             </div>
-                                        </div>
-                                        {/* <div className="col-md-3">
+                                            {/* <div className="col-md-3">
                                             <div className="light-text ">
                                                 <label>Employee<span className="mandatoryhastrick">*</span></label>
                                                 <select className="form-control" required={true} name="InitiatorId" title="Employee" onChange={this.handleChangeEvents} ref={this.EmployeeDropdown}>
@@ -806,51 +820,52 @@ this.setState({ColumnsHeaders:hColumns,ReportData:SampleData,ExportExcelData:req
                                             </div>
                                         </div> */}
 
-                                        <div className="col-md-3">
-                                            <div className="custom-dropdown">
-                                                <SearchableDropdown label="Employee" Title="Employee" name="InitiatorId" id="Employee" placeholderText="Select Employee" className="" selectedValue={this.state.InitiatorId} optionLabel={'Title'} optionValue={'ID'} OptionsList={this.state.EmployeesObj} onChange={(selectedOption, actionMeta) => { this.handleChangeEvents(selectedOption, actionMeta) }} isRequired={true} refElement={this.EmployeeDropdown} noOptionsMessage="No Employee"></SearchableDropdown>
-                                            </div>
-                                        </div>
-
-                                        <div className="col-md-3">
-                                            <div className="light-text div-readonly">
-                                                <label className="z-in-9">Start Date<span className="mandatoryhastrick">*</span></label>
-                                                <div className="custom-datepicker" id="divStartDate">
-
-                                                    <DatePicker onDatechange={this.handleStartDate} selectedDate={this.state.startDate} ref={this.startDate} endDate={new Date()} placeholderText='MM/DD/YYYY' id={'txtStartDate'} title={"Start Date"}/>
+                                            <div className="col-md-3">
+                                                <div className="custom-dropdown">
+                                                    {/* <SearchableDropdown label="Employee" Title="Employee" name="InitiatorId" id="Employee" placeholderText="Select Employee" className="" selectedValue={this.state.InitiatorId} optionLabel={'Title'} optionValue={'ID'} OptionsList={this.state.EmployeesObj} onChange={(selectedOption, actionMeta) => { this.handleChangeEvents(selectedOption, actionMeta) }} isRequired={true} refElement={this.EmployeeDropdown} noOptionsMessage="No Employee"></SearchableDropdown> */}
+                                                    <MultiSelectDropdown label="Employee" Title="Employee" name="InitiatorId" id="Employee" placeholderText="Select Employee" className="" selectedValue={this.state.InitiatorId} optionLabel={'Title'} optionValue={'ID'} OptionsList={this.state.EmployeesObj} onChange={(selectedOption, actionMeta) => { this.handleChangeEvents(selectedOption, actionMeta) }} isRequired={true} refElement={this.EmployeeDropdown} noOptionsMessage="No Employee"></MultiSelectDropdown>
                                                 </div>
                                             </div>
-                                        </div>
 
-                                        <div className="col-md-3">
-                                            <div className="light-text div-readonly">
-                                                <label className="z-in-9">End Date<span className="mandatoryhastrick">*</span></label>
-                                                <div className="custom-datepicker" id="divEndDate">
+                                            <div className="col-md-3">
+                                                <div className="light-text div-readonly">
+                                                    <label className="z-in-9">Start Date<span className="mandatoryhastrick">*</span></label>
+                                                    <div className="custom-datepicker" id="divStartDate">
 
-                                                    <DatePicker onDatechange={this.handleEndDate} ref={this.endDate} endDate={this.getcurrWeekSunDay()} selectedDate={this.state.endDate} id={'txtEndDate'} title={"End Date"}/>
+                                                        <DatePicker onDatechange={this.handleStartDate} selectedDate={this.state.startDate} ref={this.startDate} endDate={new Date()} placeholderText='MM/DD/YYYY' id={'txtStartDate'} title={"Start Date"} />
+                                                    </div>
                                                 </div>
                                             </div>
+
+                                            <div className="col-md-3">
+                                                <div className="light-text div-readonly">
+                                                    <label className="z-in-9">End Date<span className="mandatoryhastrick">*</span></label>
+                                                    <div className="custom-datepicker" id="divEndDate">
+
+                                                        <DatePicker onDatechange={this.handleEndDate} ref={this.endDate} endDate={this.getcurrWeekSunDay()} selectedDate={this.state.endDate} id={'txtEndDate'} title={"End Date"} />
+                                                    </div>
+                                                </div>
+                                            </div>
+
                                         </div>
 
                                     </div>
-
-                                </div>
-                                <div className="row mx-1" id="">
-                                    <div className="col-sm-12 text-center my-4" id="">
-                                        {/* <button type="button" className="DownloadButtons btn" onClick={this.handleSubmit}>
+                                    <div className="row mx-1" id="">
+                                        <div className="col-sm-12 text-center my-4" id="">
+                                            {/* <button type="button" className="DownloadButtons btn" onClick={this.handleSubmit}>
                                         <FontAwesomeIcon icon={faCloudDownload} className=''></FontAwesomeIcon>Download</button> */}
-                                        {/* <button type="button" className="ReportCancelButtons btn" onClick={this.handleCancel}>Cancel</button> */}
-                                        <button type="button" className="SubmitButtons btn" onClick={this.handleSubmit} title='Search'>Search</button>
-                                        <button type="button" className="CancelButtons btn" onClick={this.handleCancel} title='Clear'>Clear</button>
+                                            {/* <button type="button" className="ReportCancelButtons btn" onClick={this.handleCancel}>Cancel</button> */}
+                                            <button type="button" className="SubmitButtons btn" onClick={this.handleSubmit} title='Search'>Search</button>
+                                            <button type="button" className="CancelButtons btn" onClick={this.handleCancel} title='Clear'>Clear</button>
+                                        </div>
                                     </div>
+                                    {this.state.ReportData.length > 0 &&
+                                        <div className="c-v-table p-2 FormContent">
+                                            <MyDataTable columns={this.state.ColumnsHeaders} data={this.state.ReportData} ExcelData={this.state.ExportExcelData}></MyDataTable>
+                                        </div>}
                                 </div>
-                                {this.state.ReportData.length>0 &&
-                                <div className="c-v-table p-2 FormContent">
-                                <MyDataTable columns={this.state.ColumnsHeaders} data={this.state.ReportData} ExcelData={this.state.ExportExcelData}></MyDataTable>
-                                </div>}
                             </div>
                         </div>
-                    </div>
                     </div>
                     {this.state.showToaster && <Toaster />}
                     {this.state.loading && <Loader />}

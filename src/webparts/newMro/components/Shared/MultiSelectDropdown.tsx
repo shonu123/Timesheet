@@ -64,7 +64,7 @@ function MultiSelectDropdown(Props) {
             .join(", "));
     }, []);
     useEffect(() => {
-        setSearchText('');
+        // setSearchText('');
         setSelVal(Props.OptionsList
             .filter(opt => Props.selectedValue.includes(opt[Props.optionValue]))
             .map(opt => opt[Props.optionLabel])
