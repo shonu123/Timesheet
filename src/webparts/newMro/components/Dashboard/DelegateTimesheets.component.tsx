@@ -17,6 +17,7 @@ import "@pnp/sp/lists";
 import "@pnp/sp/items";
 import InputText from '../Shared/InputText';
 import InputCheckBox from '../Shared/InputCheckBox';
+import SearchableDropdown from '../Shared/SearchableDropdown';
 import { highlightCurrentNav } from '../../Utilities/HighlightCurrentComponent';
 import "../Shared/Menuhandler";
 import toast, { Toaster } from 'react-hot-toast';
@@ -26,6 +27,8 @@ import ImportExcel from '../Shared/ImportExcel';
 import DatePicker from "../Shared/DatePickerField";
 import { addDays } from 'office-ui-fabric-react';
 import { PeoplePicker, PrincipalType } from "@pnp/spfx-controls-react/lib/PeoplePicker";
+import DateUtilities from '../../Utilities/DateUtilities';
+
 
 interface TimesheetDelegationProps {
     match: any;
@@ -84,7 +87,6 @@ class TimesheetDelegation extends Component<TimesheetDelegationProps, TimesheetD
         DelegateToEMail:'',
         isSynergyEmployee:false,
     };
-
     public componentDidMount() {
 
         this.setState({ loading: true });
@@ -126,14 +128,28 @@ class TimesheetDelegation extends Component<TimesheetDelegationProps, TimesheetD
                 addNewRequest: false
             });
     }
-
-    handleChangeEvents = (event) => {
-        let value = event.target.type == 'checkbox' ? event.target.checked : event.target.value;
-        let { name } = event.target;
+    handleChangeEvents = (event,actionMeta?) => {
+        // let value = event.target.type == 'checkbox' ? event.target.checked : event.target.value;
+        // let { name } = event.target;
+        let  name,inputvalue,value;
+        //Below is condition for handle common change function for both react select dropdown  and normal controls
+        if(![null, undefined].includes(event) && event.target != undefined)
+        {
+            name = event.target.name;
+            inputvalue = event.target.value;
+            value = event.target.type == 'checkbox' ? event.target.checked : inputvalue;
+        }
+        else if(actionMeta!= undefined)
+        {
+            name = actionMeta.name;
+            value =actionMeta.action =='clear'?'': event.value; 
+        }
         if (name == "AuthorizerId") {
             this.setState({ AuthorizerId: parseInt(value), loading: true })
-            if (value != 'None') {
-                let EMail = event.target.selectedOptions[0].getAttribute('data-EMail');
+            // if (value != 'None') {
+            if (value != '') {
+                // let EMail = event.target.selectedOptions[0].getAttribute('data-EMail');
+                let EMail = [null,undefined].includes(event)? '':event.EMail;
                 let ClientName, Delegateobj = [], mangers;
                 if (EMail.toLowerCase().includes('synergy')) {
                     let obj = this.state.ClientDeligatesObj.find(item => {
@@ -200,7 +216,6 @@ class TimesheetDelegation extends Component<TimesheetDelegationProps, TimesheetD
             this.setState({ [name]: value })
         }
     }
-
     async getAuthorizerData(ManagerID,Delegateobj,Client){
         let data = await  sp.web.lists.getByTitle('Delegations').items.filter("Authorizer/ID eq'"+ManagerID+"'").expand('ReportingManager,DelegateTo').select('ReportingManager/Title,ReportingManager/ID,DelegateTo/Title,DelegateTo/ID,*').orderBy('ReportingManager/Title', true).get()
         if(data.length>0){
@@ -227,7 +242,6 @@ class TimesheetDelegation extends Component<TimesheetDelegationProps, TimesheetD
         }
   
       }
-
     private SetFromDate = (dateprops) => {
         let date = new Date()
         if (dateprops[0] != null) {
@@ -235,7 +249,6 @@ class TimesheetDelegation extends Component<TimesheetDelegationProps, TimesheetD
         }
         this.setState({ From: date });
     }
-
     private SetToDate = (dateprops) => {
         let date = new Date()
         if (dateprops[0] != null) {
@@ -243,7 +256,6 @@ class TimesheetDelegation extends Component<TimesheetDelegationProps, TimesheetD
         }
         this.setState({ To: date });
     }
-
     // private _getPeoplePickerItems(items, name) {
     //     let values = { results: [] };
     //     let formData = {...this.state.formData}
@@ -269,7 +281,6 @@ class TimesheetDelegation extends Component<TimesheetDelegationProps, TimesheetD
         }
         this.setState({ DelegateToId: value,DelegateToName:items.text })
     }
-
     private async getOnLoadData() {
         // this.setState({isRedirect:false})
         let [Authorizer,Clients,groups,DelegationData] = await Promise.all([
@@ -318,21 +329,25 @@ class TimesheetDelegation extends Component<TimesheetDelegationProps, TimesheetD
         let tableDataObj = []
         let excelData = []
         for (const d of filterDelegates) {
+            let From=new Date(DateUtilities.GetDateMMDDYYYYAsInList(d.From));
+            let To=new Date(DateUtilities.GetDateMMDDYYYYAsInList(d.To));
                     tableDataObj.push({
                         Id : d.Id,
                         Client: d.Client==null?'':d.Client,
                         ReportingManager: d.Authorizer.Title,
                         DelegateTo:d.DelegateTo.Title,
-                        FromDate : d.From.split('-')[1]+'/'+d.From.split('-')[2].split('T')[0]+'/'+d.From.split('-')[0],
-                        ToDate: d.To.split('-')[1]+'/'+d.To.split('-')[2].split('T')[0]+'/'+d.To.split('-')[0],
+                        FromDate : DateUtilities.getDateMMDDYYYY(From),
+                        FromDateForGrid : `<span class='d-none'>${DateUtilities.getDateYYYYMMDDForSorting(From)}</span>${DateUtilities.getDateMMDDYYYY(From)}`,
+                        ToDate : DateUtilities.getDateMMDDYYYY(From),
+                        ToDateForGrid : `<span class='d-none'>${DateUtilities.getDateYYYYMMDDForSorting(To)}</span>${DateUtilities.getDateMMDDYYYY(To)}`,
                     })
                     excelData.push({
                         Id : d.Id,
                         Client: d.Client,
                         ReportingManager: d.Authorizer.Title,
                         DelegateTo:d.DelegateTo.Title,
-                        FromDate : d.From.split('-')[1]+'/'+d.From.split('-')[2].split('T')[0]+'/'+d.From.split('-')[0],
-                        ToDate: d.To.split('-')[1]+'/'+d.To.split('-')[2].split('T')[0]+'/'+d.To.split('-')[0],
+                        FromDate : DateUtilities.getDateMMDDYYYY(From),
+                        ToDate : DateUtilities.getDateMMDDYYYY(From),
                     })
         }
         //
@@ -406,7 +421,6 @@ class TimesheetDelegation extends Component<TimesheetDelegationProps, TimesheetD
 
         // this.getItemIDdata
     }
-
     // private checkDuplicates = (formData, id) => {
     //     let ClientList = 'Client';
 
@@ -505,7 +519,6 @@ class TimesheetDelegation extends Component<TimesheetDelegationProps, TimesheetD
             loading: false, modalTitle: 'Error', modalText: 'Sorry! something went wrong', showHideModal: true, isSuccess: false, errorMessage: ''
         });
     }
-
     private async loadListData() {
         // var Clients = await  sp.web.lists.getByTitle('Client').items.filter("IsActive eq 1").select('*').orderBy('Title').get()
         this.setState({isRedirect:false})
@@ -565,7 +578,6 @@ class TimesheetDelegation extends Component<TimesheetDelegationProps, TimesheetD
                 });
             });
     }
-
     private async onEditClickHandler(id) {
         try {
             var data = await sp.web.lists.getByTitle('Delegations').items.filter("ID eq'"+id+"'").expand('Authorizer,DelegateTo').select('Authorizer/Title,Authorizer/ID,DelegateTo/Title,DelegateTo/ID,DelegateTo/EMail,*').orderBy('Authorizer/Title', true).get()
@@ -595,12 +607,12 @@ class TimesheetDelegation extends Component<TimesheetDelegationProps, TimesheetD
             }
              }
              if(!data[0].Client.toLowerCase().includes('synergy')){
-                this.setState({isSynergyEmployee:false,AuthorizerId:data[0].AuthorizerId,DelegateToId:data[0].DelegateToId,DelegateToObj: Delegateobj,DelegateToName:data[0].DelegateTo.Title,From :new Date(data[0].From.split('-')[1]+'/'+data[0].From.split('-')[2].split('T')[0]+'/'+data[0].From.split('-')[0]),To: new Date(data[0].To.split('-')[1]+'/'+data[0].To.split('-')[2].split('T')[0]+'/'+data[0].To.split('-')[0]),ActionHistory:JSON.parse(data[0].ActionHistory),PreviousDateHistory:JSON.parse(data[0].PreviousDateHistory),Client: data[0].Client,ItemID:data[0].ID,SaveUpdateText:'Update',addNewRequest:true,DelegateToEMail:data[0].DelegateTo.EMail,loading:false})
+                this.setState({isSynergyEmployee:false,AuthorizerId:data[0].AuthorizerId,DelegateToId:data[0].DelegateToId,DelegateToObj: Delegateobj,DelegateToName:data[0].DelegateTo.Title,From : new Date(DateUtilities.getDateMMDDYYYY(data[0].From)),To: new Date(DateUtilities.getDateMMDDYYYY(data[0].To)),ActionHistory:JSON.parse(data[0].ActionHistory),PreviousDateHistory:JSON.parse(data[0].PreviousDateHistory),Client: data[0].Client,ItemID:data[0].ID,SaveUpdateText:'Update',addNewRequest:true,DelegateToEMail:data[0].DelegateTo.EMail,loading:false})
                 if(Delegateobj.length==0)
                 customToaster('toster-error',ToasterTypes.Error,"'Delegate To' not configured for '"+data[0].Client+"' client.",4000);
              }
              else{
-                this.setState({isSynergyEmployee:true,AuthorizerId:data[0].AuthorizerId,DelegateToId:data[0].DelegateToId,DelegateToObj: Delegateobj,DelegateToName:data[0].DelegateTo.Title,From :new Date(data[0].From.split('-')[1]+'/'+data[0].From.split('-')[2].split('T')[0]+'/'+data[0].From.split('-')[0]),To: new Date(data[0].To.split('-')[1]+'/'+data[0].To.split('-')[2].split('T')[0]+'/'+data[0].To.split('-')[0]),ActionHistory:JSON.parse(data[0].ActionHistory),PreviousDateHistory:JSON.parse(data[0].PreviousDateHistory),Client: data[0].Client,ItemID:data[0].ID,SaveUpdateText:'Update',addNewRequest:true,DelegateToEMail:data[0].DelegateTo.EMail,loading:false})
+                this.setState({isSynergyEmployee:true,AuthorizerId:data[0].AuthorizerId,DelegateToId:data[0].DelegateToId,DelegateToObj: Delegateobj,DelegateToName:data[0].DelegateTo.Title,From :new Date(DateUtilities.getDateMMDDYYYY(data[0].From)),To: new Date(DateUtilities.getDateMMDDYYYY(data[0].To)),ActionHistory:JSON.parse(data[0].ActionHistory),PreviousDateHistory:JSON.parse(data[0].PreviousDateHistory),Client: data[0].Client,ItemID:data[0].ID,SaveUpdateText:'Update',addNewRequest:true,DelegateToEMail:data[0].DelegateTo.EMail,loading:false})
              }
                 //Comments: data[0].Comments,
                 // document.getElementById("txtClientName").scrollIntoView({behavior: 'smooth', block: 'start'});
@@ -610,7 +622,6 @@ class TimesheetDelegation extends Component<TimesheetDelegationProps, TimesheetD
             console.log('failed to fetch data for record :' + id);
         }
     }
-
     private resetForm = () => {
         this.setState({
             AuthorizerName: this.props.spContext.userDisplayName,
@@ -641,34 +652,27 @@ class TimesheetDelegation extends Component<TimesheetDelegationProps, TimesheetD
             addNewRequest: false
         });
     }
-
-    private  handleRowClicked = (row) => {
-        window.location.hash=`#/TimesheetDelegation/${row.Id}`;
-        this.props.match.params.id = row.Id
-        this.onEditClickHandler(row.Id)
+    private  handleRowClicked = (row,Id?) => {
+        let ID=row.Id?row.Id:Id;
+        window.location.hash=`#/TimesheetDelegation/${ID}`;
+        this.props.match.params.id = ID;
+        this.onEditClickHandler(ID);
       }
-      
     private cancelHandler(){
         this.resetForm()
     }
-
     public handleClose = () => {
         // this.setState({ showHideModal: false});
         this.resetForm();
     }
-
     private addNewRequest = () => {
         // var formdata = { ...this.state.formData };
         this.setState({ addNewRequest: true, showLabel: false});
     }
-
     private onMenuItemClick(event) {
         let item = document.getElementById('sideMenuNav');
         item.classList.toggle('menu-hide');
     }
-
-
-
     async delegateToGroups(id,postObject){
         //  return user
         let   user = await sp.web.siteUsers.getById(id).groups.get()
@@ -710,13 +714,12 @@ class TimesheetDelegation extends Component<TimesheetDelegationProps, TimesheetD
         }
 
     }
-
      handleSubmit = () =>{
         let data;
         if(this.state.isAdmin){
             if(!this.state.Client.toLowerCase().includes('synergy')){
                 data = {
-                    Authorizer: { val: this.state.AuthorizerId, required: true, Name: 'Name', Type: ControlType.string, Focusid: this.Authorizer },
+                    Authorizer: { val: this.state.AuthorizerId, required: true, Name: 'Name', Type: ControlType.reactSelect, Focusid: 'Authorizer' },
                     DelegateTo: { val: this.state.DelegateToId, required: true, Name: 'Delegate To', Type: ControlType.string, Focusid: this.DelegateTo },
                     From: { val: this.state.From, required: true, Name: 'From Date', Type: ControlType.date, Focusid: "divFromDate" },
                     To: { val: this.state.To, required: true, Name: 'To Date', Type: ControlType.date, Focusid: "divToDate" },
@@ -724,7 +727,7 @@ class TimesheetDelegation extends Component<TimesheetDelegationProps, TimesheetD
             }
             else{
                 data = {
-                    Authorizer: { val: this.state.AuthorizerId, required: true, Name: 'Name', Type: ControlType.string, Focusid: this.Authorizer },
+                    Authorizer: { val: this.state.AuthorizerId, required: true, Name: 'Name', Type: ControlType.reactSelect, Focusid: 'Authorizer'},
                     DelegateTo: { val: this.state.DelegateToId, required: true, Name: 'Delegate To', Type: ControlType.people, Focusid:"divDelegateTo" },
                     From: { val: this.state.From, required: true, Name: 'From Date', Type: ControlType.date, Focusid: "divFromDate" },
                     To: { val: this.state.To, required: true, Name: 'To Date', Type: ControlType.date, Focusid: "divToDate" },
@@ -779,7 +782,6 @@ class TimesheetDelegation extends Component<TimesheetDelegationProps, TimesheetD
             // this.InsertorUpdatedata(postObject, '');
         }
     }
-
     private InsertorUpdatedata(formdata, actionStatus) {
         if (this.state.ItemID > 0) {
             this.setState({ loading: true });
@@ -819,7 +821,6 @@ class TimesheetDelegation extends Component<TimesheetDelegationProps, TimesheetD
 
         }
     }
-
     private addBrowserwrtServer(date) {
         if (date != '') {
             var utcOffsetMinutes = date.getTimezoneOffset();
@@ -828,7 +829,6 @@ class TimesheetDelegation extends Component<TimesheetDelegationProps, TimesheetD
             return newDate;
         }
     }
-
     getCurrentWeekMonday=()=>{
         let today =  new Date()
         while(today.getDay()!=1){
@@ -836,7 +836,6 @@ class TimesheetDelegation extends Component<TimesheetDelegationProps, TimesheetD
         }
         return new Date(today)
     }
-
     public render() {
         const columns = [
             {
@@ -864,68 +863,70 @@ class TimesheetDelegation extends Component<TimesheetDelegationProps, TimesheetD
             },
             {
                 name: "From",
-                selector: (row, i) => row.FromDate,
+                selector: (row, i) => row.FromDateForGrid,
+                cell: row => <div className='' dangerouslySetInnerHTML={{ __html: row.FromDateForGrid }} onClick={(event)=>this.handleRowClicked(event,row.Id)}/>,
                 // width: '250px',
                 sortable: true
             },
             {
                 name: "To",
-                selector: (row, i) => row.ToDate,
+                selector: (row, i) => row.ToDateForGrid,
+                cell: row => <div className='' dangerouslySetInnerHTML={{ __html: row.ToDateForGrid }} onClick={(event)=>this.handleRowClicked(event,row.Id)}/>,
                 // width: '250px',
                 sortable: true
             }
            
         ];
-        const AdminColumns = [
-            {
-                name: "Edit",
-                selector: (row, i) => row.Id,
-                export: false,
-                cell: record => {
-                    return (
-                        <React.Fragment>
-                            <div style={{ paddingLeft: '10px' }}>
-                                <NavLink title="Edit"  className="csrLink ms-draggable" to={''}>
-                                    <FontAwesomeIcon icon={faEdit} onClick={() => { this.onEditClickHandler(record.Id);}}></FontAwesomeIcon>
-                                </NavLink>
-                            </div>
-                        </React.Fragment>
-                    );
-                },
-                width: '100px'
-            },
-            {
-                name: "Client",
-                selector: (row, i) => row.Client,
-                // width: '250px',
-                sortable: true
-            },
-            {
-                name: "Reporting Manager",
-                selector: (row, i) => row.ReportingManager,
-                // width: '250px',
-                sortable: true
-            },
-            {
-                name: "Delegate To",
-                selector: (row, i) => row.DelegateTo,
-                // width: '250px',
-                sortable: true
-            },
-            {
-                name: "From",
-                selector: (row, i) => row.FromDate,
-                width: '250px',
-                sortable: true
-            },
-            {
-                name: "To",
-                selector: (row, i) => row.ToDate,
-                // width: '250px',
-                sortable: true
-            }
+        // const AdminColumns = [
+        //     {
+        //         name: "Edit",
+        //         selector: (row, i) => row.Id,
+        //         export: false,
+        //         cell: record => {
+        //             return (
+        //                 <React.Fragment>
+        //                     <div style={{ paddingLeft: '10px' }}>
+        //                         <NavLink title="Edit"  className="csrLink ms-draggable" to={''}>
+        //                             <FontAwesomeIcon icon={faEdit} onClick={() => { this.onEditClickHandler(record.Id);}}></FontAwesomeIcon>
+        //                         </NavLink>
+        //                     </div>
+        //                 </React.Fragment>
+        //             );
+        //         },
+        //         width: '100px'
+        //     },
+        //     {
+        //         name: "Client",
+        //         selector: (row, i) => row.Client,
+        //         // width: '250px',
+        //         sortable: true
+        //     },
+        //     {
+        //         name: "Reporting Manager",
+        //         selector: (row, i) => row.ReportingManager,
+        //         // width: '250px',
+        //         sortable: true
+        //     },
+        //     {
+        //         name: "Delegate To",
+        //         selector: (row, i) => row.DelegateTo,
+        //         // width: '250px',
+        //         sortable: true
+        //     },
+        //     {
+        //         name: "From",
+        //         selector: (row, i) => row.FromDate,
+        //         width: '250px',
+        //         sortable: true
+        //     },
+        //     {
+        //         name: "To",
+        //         selector: (row, i) => row.ToDate,
+        //         // width: '250px',
+        //         sortable: true
+        //     }
            
-        ];
+        // ];
         const ExcelColumns = [
             {
                 name: "Client",
@@ -952,6 +953,22 @@ class TimesheetDelegation extends Component<TimesheetDelegationProps, TimesheetD
             }
            
         ];
+        const searchKeys=['DelegateTo','FromDate','ToDate'];
+
+        if(this.state.isAdmin)
+        {
+            columns.splice(1,0,  {
+                name: "Client",
+                selector: (row, i) => row.Client,
+                sortable: true
+            },
+            {
+                name: "Reporting Manager",
+                selector: (row, i) => row.ReportingManager,
+                sortable: true
+            });
+            searchKeys.splice(0,0,'Client','ReportingManager');
+        }
         if(this.state.isRedirect){
                 return (<Navigate to={'/ClientMaster'} />);
         }
@@ -994,17 +1011,22 @@ class TimesheetDelegation extends Component<TimesheetDelegationProps, TimesheetD
                                                     <div className="my-2">
                                                     <div className="row pt-2 px-2">
                                                 {this.state.isAdmin ?
-                                                <div className="col-md-3">
-                                                <div className="light-text">
-                                                    <label>Name<span className="mandatoryhastrick">*</span></label>
-                                                    <select className="form-control" required={true} name="AuthorizerId" title="Name" id='Authorizer' ref={this.Authorizer} onChange={this.handleChangeEvents}>
-                                                        <option value='None'>None</option>
-                                                        {this.state.AuthorizerObj.map((option) => (
-                                                            <option value={option.ID} data-name={option.Title} data-EMail = {option.EMail} selected={option.ID == this.state.AuthorizerId}>{option.Title}</option>
-                                                        ))}
-                                                    </select>
+                                                // <div className="col-md-3">
+                                                // <div className="light-text">
+                                                //     <label>Name<span className="mandatoryhastrick">*</span></label>
+                                                //     <select className="form-control" required={true} name="AuthorizerId" title="Name" id='Authorizer' ref={this.Authorizer} onChange={this.handleChangeEvents}>
+                                                //         <option value='None'>None</option>
+                                                //         {this.state.AuthorizerObj.map((option) => (
+                                                //             <option value={option.ID} data-name={option.Title} data-EMail = {option.EMail} selected={option.ID == this.state.AuthorizerId}>{option.Title}</option>
+                                                //         ))}
+                                                //     </select>
+                                                // </div>
+                                                // </div>
+                                                 <div className="col-md-3">
+                                                 <div className="custom-dropdown">
+                                                    <SearchableDropdown label="Name" Title="Name" name="AuthorizerId" id="Authorizer" placeholderText="Select Name" className="" selectedValue={this.state.AuthorizerId} optionLabel={'Title'} optionValue={'ID'} OptionsList={this.state.AuthorizerObj} onChange={(selectedOption, actionMeta) => { this.handleChangeEvents(selectedOption, actionMeta) }} isRequired={true} refElement={this.Authorizer} noOptionsMessage="No Name"></SearchableDropdown>
                                                 </div>
-                                            </div>
+                                                 </div>
                                                 :<div className={"col-md-3"}>
                                                     <div className="light-text">
                                                         <label>Name</label>
@@ -1017,7 +1039,7 @@ class TimesheetDelegation extends Component<TimesheetDelegationProps, TimesheetD
                                                 <div className="light-text">
                                                     <label>Delegate To<span className="mandatoryhastrick">*</span></label>
                                                     <select className="form-control" required={true} name="DelegateToId" title="Delegate To" id='ddlDelegateTo' ref={this.DelegateTo} onChange={this.handleChangeEvents}>
-                                                        <option value=''>None</option>
+                                                        <option value='-1'>None</option>
                                                         {this.state.DelegateToObj.map((option) => (
                                                             <option value={option.ID} data-name={option.Title} selected={option.ID == this.state.DelegateToId}>{option.Title}</option>
                                                         ))}
@@ -1082,8 +1104,8 @@ class TimesheetDelegation extends Component<TimesheetDelegationProps, TimesheetD
                                             </div>
                                         </div>
                                         {this.state.showToaster&&<Toaster /> }
-                                        <div className="c-v-table table-head-1st-td">
-                                            <TableGenerator columns={this.state.isAdmin?AdminColumns:columns} data={this.state.DelegationsListData} fileName={'Timesheet Delegations'}showExportExcel={true} ExportExcelCustomisedColumns={ExcelColumns} ExportExcelCustomisedData={this.state.ExportExcelData} wrapColumns={"DelegateTo"} onRowClick={this.handleRowClicked}></TableGenerator>
+                                        <div className="c-v-table">
+                                            <TableGenerator columns={columns} searchKeys={searchKeys} data={this.state.DelegationsListData} fileName={'Timesheet Delegations'}showExportExcel={this.state.DelegationsListData.length?true:false} searchBoxLeft={true} ExportExcelCustomisedColumns={ExcelColumns} ExportExcelCustomisedData={this.state.ExportExcelData} wrapColumns={"DelegateTo"} LargeWidthColumns={[,"Client","ReportingManager","DelegateTo"]} onRowClick={this.handleRowClicked}></TableGenerator>
                                         </div>
                                     </div>
                                 </div>

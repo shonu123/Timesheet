@@ -297,6 +297,7 @@ const { globalFilter } = state;
             <div className='div-indiactor'>
               <span className='RIndiactor'><span className='R-LYellow'></span>Submitted</span>
               <span className='RIndiactor'><span className='R-LBlue'></span>Approved by Manager</span>
+              <span className='RIndiactor'><span className='R-LSkBlue'></span>Approved by Reviewer</span>
               <span className='RIndiactor'><span className='R-LPurple'></span>Approved</span>
               <span className='RIndiactor'><span className='R-LRed'></span>Rejected</span>
             </div>

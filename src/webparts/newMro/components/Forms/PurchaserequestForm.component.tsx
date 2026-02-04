@@ -2689,6 +2689,7 @@ class PurchaseRequestForm extends React.Component<PurchaseRequestProps, Purchase
                                                 onChange={this.handleChange}
                                                 isforMasters={false}
                                                 isdisable={!this.state.isInitiatorEdit}
+                                                id='ToolRequired'
                                             />
 
                                             <InputCheckBox
@@ -2698,6 +2699,7 @@ class PurchaseRequestForm extends React.Component<PurchaseRequestProps, Purchase
                                                 onChange={this.handleChange}
                                                 isforMasters={false}
                                                 isdisable={(this.state.trFormdata.ApprovalLevel=='5')?true:false}
+                                                id='IsUrgent'
                                             />
                                             
                                         </div>
@@ -3156,6 +3158,7 @@ class PurchaseRequestForm extends React.Component<PurchaseRequestProps, Purchase
                                                             onChange={this.handleChange}
                                                             isforMasters={false}
                                                             isdisable={false}
+                                                            id='ToolRequired'
                                                     />
 
                                                     <InputCheckBox
@@ -3165,6 +3168,8 @@ class PurchaseRequestForm extends React.Component<PurchaseRequestProps, Purchase
                                                             onChange={this.handleChange}
                                                             isforMasters={false}
                                                             isdisable={(this.state.trFormdata.ApprovalLevel=='5')?true:false}
+                                                            id='IsUrgent'
+
                                                     />
                                                    { !(this.state.isDeptNew) && <div className="col-md-6">
                                                         <div className="light-text mt-1">

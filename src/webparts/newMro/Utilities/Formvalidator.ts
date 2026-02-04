@@ -4,12 +4,43 @@ import { ControlType } from '../Constants/Constants';
 function validate(data){
     let status = true;
     let message ="";
-    let propertieTypes={Number:ControlType.number,String:ControlType.string,MobileNumber:ControlType.mobileNumber,Email:ControlType.email,People:ControlType.people,Date:ControlType.date,compareDates:ControlType.compareDates};
+    let propertieTypes={Number:ControlType.number,String:ControlType.string,MobileNumber:ControlType.mobileNumber,Email:ControlType.email,People:ControlType.people,Date:ControlType.date,compareDates:ControlType.compareDates,reactSelect:ControlType.reactSelect,MUIMultiSelect:ControlType.MUIMultiSelect};
     for (let key in data) {
         let value = data[key].val;
         let type =data[key].Type;
         let isrequired =data[key].required;
-        if([undefined,null,'',-1].includes(value) && propertieTypes.People!=type && propertieTypes.Date!=type && isrequired)
+        if([undefined,null,'',-1].includes(value) && propertieTypes.reactSelect==type && isrequired)
+        {
+            // let prpel =data[key].divId;
+            // message =data[key].Name+" cannot be blank.";
+            // prpel.current.classList.add('searchMandatory');
+            // //prpel.current.props.classNames={control:'mandatory-FormContent-focus'} searchMandatory;
+            // prpel.current.focus();
+            // status = false;
+            message =data[key].Name+" cannot be blank.";
+            let ddlSearchId =data[key].Focusid;
+            document.getElementById(ddlSearchId).getElementsByTagName('input')[0].focus();
+            document.getElementById(ddlSearchId).classList.add('searchMandatory');
+            status = false;
+            break;
+        }
+        else if(propertieTypes.MUIMultiSelect==type && isrequired && value.length==0)
+        {
+            
+            message =data[key].Name+" cannot be blank.";
+            let ddlMulSelId =data[key].Focusid;
+                setTimeout(() => {
+            const select = document.getElementById(ddlMulSelId) as HTMLElement;
+
+                if (select) {
+                select.focus()
+                select.closest(".MuiInputBase-root")?.classList.add("multiSelectMandatory");
+                }
+            }, 300);
+            status = false;
+            break;
+        }
+       else if([undefined,null,'',-1].includes(value) && propertieTypes.People!=type && propertieTypes.Date!=type && isrequired)
         {
             let prpel =data[key].Focusid;
             message =data[key].Name+" cannot be blank.";
@@ -52,7 +83,7 @@ function validate(data){
             message =data[key].Name+" cannot be blank.";
             let prpData =data[key].Focusid;
             document.getElementById(prpData).getElementsByTagName('input')[0].focus();
-            document.getElementById(prpData).getElementsByTagName('input')[0].classList.add('mandatory-FormContent-focus');
+             setTimeout(()=>document.getElementById(prpData).getElementsByTagName('input')[0].classList.add('mandatory-FormContent-focus'),300);
             status = false;
             break;
         }

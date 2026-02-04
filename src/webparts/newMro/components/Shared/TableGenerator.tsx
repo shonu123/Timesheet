@@ -35,6 +35,7 @@ const customStyles = {
 };
 interface TableGeneratorProps {
   columns: any;
+  searchKeys?:any;
   data: any;
   fileName: string;
   showExportExcel?: boolean;
@@ -44,6 +45,7 @@ interface TableGeneratorProps {
   onClickApproveOrReject?:any;
   ExportExcelCustomisedColumns?:any;
   ExportExcelCustomisedData?:any;
+  ExcelHeader?:string;
   prvPageNumber?: number;
   prvSort?:any;
   prvDirection?:boolean;
@@ -59,15 +61,17 @@ interface TableGeneratorProps {
   customBtnClass?:string;
   searchBoxLeft?:boolean;
   wrapColumns?:any;
+  LargeWidthColumns?:any;
   selectableRows?:boolean;
   handleSelectedRows?:any;
   customButton?:boolean;
   customButtonClick?:any;
   clearSelectedRows?:boolean;
   onRowClick?:any;
+  paginationPerPage?:number;
 }
 
-const TableGenerator = ({ columns, data, fileName,showExportExcel,showExportPDF=false,logoUrlToPDF,showMultiApproveOrReject=false,onClickApproveOrReject, ExportExcelCustomisedColumns,ExportExcelCustomisedData, prvPageNumber,prvSort,prvDirection,onChange,onSortChange,onSortDirection,showAddButton,btnSpanID,btnTitle,navigateOnBtnClick,btnCaption,customBtnClass,btnDivID,searchBoxLeft,wrapColumns,selectableRows,handleSelectedRows,customButton=false,customButtonClick,onRowClick,clearSelectedRows=true}: TableGeneratorProps) => {
+const TableGenerator = ({ columns,searchKeys=[], data, fileName,showExportExcel,showExportPDF=false,logoUrlToPDF,showMultiApproveOrReject=false,onClickApproveOrReject, ExportExcelCustomisedColumns,ExportExcelCustomisedData,ExcelHeader, prvPageNumber,prvSort,prvDirection,onChange,onSortChange,onSortDirection,showAddButton,btnSpanID,btnTitle,navigateOnBtnClick,btnCaption,customBtnClass,btnDivID,searchBoxLeft,wrapColumns,LargeWidthColumns,selectableRows,handleSelectedRows,customButton=false,customButtonClick,onRowClick,clearSelectedRows=true,paginationPerPage=10}: TableGeneratorProps) => {
   //let lsMyrequests = localStorage.getItem('PrvData');
  // const tableData = { columns, data };
   const [totalData, setData] = useState([]);
@@ -88,7 +92,7 @@ const TableGenerator = ({ columns, data, fileName,showExportExcel,showExportPDF=
       search='';
     }
     if (search) {
-      var allKeys = Object.keys(data[0]);
+      var allKeys =searchKeys.length?searchKeys:Object.keys(data[0]);
       totaldata = totaldata.filter(l => allKeys.some(field => {
         return (l[field] && l[field].toString().toLowerCase().includes(search.toLowerCase()));
       }));
@@ -125,7 +129,7 @@ const TableGenerator = ({ columns, data, fileName,showExportExcel,showExportPDF=
        {
        <div className="col-6 text-right pr-4">
          {/* <ExportExcel tableData={ExportExcelCustomisedData ? ExportExcelCustomisedData : data} filename={fileName} columns={ExportExcelCustomisedColumns ? ExportExcelCustomisedColumns : columns}></ExportExcel> */}
-          { showExportExcel && <ExportExcelwithStyles tableData={ExportExcelCustomisedData ? ExportExcelCustomisedData : data} filename={fileName} columns={ExportExcelCustomisedColumns ? ExportExcelCustomisedColumns : columns} wrapColumnsArray={wrapColumns}></ExportExcelwithStyles>}
+          { showExportExcel && <ExportExcelwithStyles tableData={ExportExcelCustomisedData ? ExportExcelCustomisedData : data} ExcelHeader={ExcelHeader} filename={fileName} columns={ExportExcelCustomisedColumns ? ExportExcelCustomisedColumns : columns} wrapColumnsArray={wrapColumns} LargeWidthColumnsArray={LargeWidthColumns}></ExportExcelwithStyles>}
           { showExportPDF && <ExportToPDF AllTimesheetsData={data} filename={fileName}  LogoImgUrl={logoUrlToPDF}></ExportToPDF>}
           { showMultiApproveOrReject && <><button type="button" id="btnApprove" name={"Approve"} onClick={onClickApproveOrReject} className="SubmitButtons btn" title="Approve">Approve</button><button type="button" id="btnReject" name={"Reject"} onClick={onClickApproveOrReject} className="RejectButtons btn" title="Reject">Reject</button></>}
             </div> }
@@ -145,6 +149,7 @@ const TableGenerator = ({ columns, data, fileName,showExportExcel,showExportPDF=
           actions
           customStyles={customStyles}
           paginationDefaultPage={1}
+          paginationPerPage={paginationPerPage}
           persistTableHead={true}
           onChangePage={onChange}
           onSort={onSortChange}
@@ -154,6 +159,7 @@ const TableGenerator = ({ columns, data, fileName,showExportExcel,showExportPDF=
           onSelectedRowsChange={handleSelectedRows}
           clearSelectedRows={clearSelectedRows}
           onRowClicked={onRowClick}
+          selectableRowsVisibleOnly={true}
         />
       </div>
     </div>

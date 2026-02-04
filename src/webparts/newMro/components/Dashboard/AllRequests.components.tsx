@@ -9,6 +9,7 @@ import "@pnp/sp/webs";
 import "@pnp/sp/lists";
 import "@pnp/sp/items";
 import Loader from '../Shared/Loader';
+import DateUtilities from '../../Utilities/DateUtilities';
 export interface AllRequestsProps {
     match: any;
     spContext: any;
@@ -45,92 +46,194 @@ class AllRequests extends React.Component<AllRequestsProps,AllRequestsState> {
     }
 // this function is used to get 1 month records of weeklytime data of all employees from weeklytimesheet list
     private AllRequests = async () => {
-        const userId = this.props.spContext.userId;
-        let dateFilter = new Date()
+        let userID = this.props.spContext.userId;
+        let dateFilter = new Date();
         dateFilter.setDate(new Date().getDate()-60);
-        let date = `${dateFilter.getMonth() + 1}/${dateFilter.getDate()}/${dateFilter.getFullYear()}`
-        var filterString = "WeekStartDate ge '"+date+"'"
-        sp.web.lists.getByTitle('WeeklyTimeSheet').items.top(5000).filter(filterString).expand("ReportingManager").select('ReportingManager/Title','*').orderBy('WeekStartDate', false).get()
-            .then((response) => {
-                // console.log(response)
-                let Data = [];
-                let ExcelData  =[]
-                for (const d of response) {
-                    let Rm = '';
-                    let ExcelRm = ''
-                    d.ReportingManager.sort((a, b) => a.Title.localeCompare(b.Title));
-                    if(d.ReportingManager.length>0)
-                    {
-                        for(let r of d.ReportingManager){
-                            Rm += "<div>"+r.Title+"</div>"
-                            ExcelRm += r.Title+"\n"
-                        }
-                        // ExcelRm = ExcelRm.substring(0, ExcelRm.lastIndexOf("\n"));
+        let date = DateUtilities.getDateMMDDYYYY(dateFilter);
+        var TimeSheetFilterQuery = "WeekStartDate ge '"+date+"'";
+        let EmpMasterSelQuery = "Employee/ID,Employee/Title,ReportingManager/EMail,Reviewers/EMail,ReportingManager/ID,Reviewers/ID";
+        let TimeSheetSelQuery = "Initiator/ID,Initiator/Title,Initiator/EMail,Reviewers/EMail,Reviewers/Id,ReportingManager/Id,ReportingManager/EMail,ReportingManager/Title,*";
+
+        try{
+            
+            let [ApprovalMatrix,WeeklyTimesheets,groups] = await Promise.all([
+                sp.web.lists.getByTitle('EmployeeMaster').items.top(5000).select(EmpMasterSelQuery).expand('Employee,ReportingManager,Reviewers').getAll(),
+                sp.web.lists.getByTitle('WeeklyTimeSheet').items.top(5000).filter(TimeSheetFilterQuery).expand("Initiator,ReportingManager,Reviewers").select(TimeSheetSelQuery).orderBy('WeekStartDate', false).getAll(),
+                sp.web.currentUser.groups(),        
+            ])
+            let userGroups = [],isAdmin=false;
+            for (const grp of groups) {
+                userGroups.push(grp.Title);
+            }
+            if (userGroups.includes('Timesheet Administrators') || userGroups.includes('Dashboard Admins'))
+                isAdmin=true;  
+            //for Reviewers on Behalf Submission
+            let IsCurrUserReviewer=false;
+            for(let Emp of ApprovalMatrix)
+            {
+                if (Emp.Reviewers && Emp.Reviewers.some(reviewer => reviewer.ID === userID)) {
+                    IsCurrUserReviewer = true;
+                    break;
+                } 
+            }
+            if(IsCurrUserReviewer && !isAdmin)
+            {
+                //filter only current user timesheets and his reported employees
+                WeeklyTimesheets=WeeklyTimesheets.filter(timesheet=>timesheet.Initiator.ID==userID || timesheet.Reviewers.some(Rev=>Rev.Id==userID));
+            }
+
+            let Data = [],ExcelData  =[];
+            WeeklyTimesheets.sort((a,b)=>b.Id-a.Id);
+            for (const d of WeeklyTimesheets) {
+                let Rm = '';
+                let ExcelRm = ''
+                d.ReportingManager.sort((a, b) => a.Title.localeCompare(b.Title));
+                if(d.ReportingManager.length>0)
+                {
+                    for(let r of d.ReportingManager){
+                        Rm += "<div>"+r.Title+"</div>"
+                        ExcelRm += r.Title+"\n"
                     }
-                    let date = new Date(d.WeekStartDate.split('-')[1]+'/'+d.WeekStartDate.split('-')[2].split('T')[0]+'/'+d.WeekStartDate.split('-')[0]);
-                    let isBillable = true;
-                    if(d.ClientName.toLowerCase().includes('synergy')){
-                        isBillable = false
-                    }
-                    Data.push({
-                        Id : d.Id,
-                        Date : `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`,
-                        EmployeName: d.Name,
-                        // Status : d.Status == StatusType.Submit?'Pending With Reporting Manager':d.Status== StatusType.InProgress?'Pending With Reviewer':d.Status,
-                        Status : this.getStatus(d.Status),
-                        Client: d.ClientName,
-                        PendingWith: d.PendingWith == "Approver" ||d.PendingWith == "Manager" ?"Reporting Manager":d.PendingWith,
-                        BillableHours: isBillable?parseFloat(parseFloat(d.WeeklyTotalHrs).toFixed(2)):parseFloat(parseFloat(JSON.parse(d.SynergyOfficeHrs)[0].Total).toFixed(2)),
-                        OTTotalHrs : parseFloat(parseFloat(d.OTTotalHrs).toFixed(2)),
-                        TotalBillableHrs: parseFloat(parseFloat(d.BillableTotalHrs).toFixed(2)),
-                        // NonBillableTotalHrs: d.NonBillableTotalHrs,
-                        HolidayHrs:parseFloat(parseFloat(JSON.parse(d.ClientHolidayHrs)[0].Total).toFixed(2)),
-                        PTOHrs:parseFloat(parseFloat(JSON.parse(d.PTOHrs)[0].Total).toFixed(2)),
-                        TotalHours: parseFloat(parseFloat(d.GrandTotal).toFixed(2)),
-                        RM : Rm
-                    })
-                    ExcelData.push({
-                        Id : d.Id,
-                        Date : `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`,
-                        EmployeName: d.Name,
-                        // Status : d.Status == StatusType.Submit?'Pending With Reporting Manager':d.Status== StatusType.InProgress?'Pending With Reviewer':d.Status,
-                        Status : this.getStatus(d.Status),
-                        Client: d.ClientName,
-                        PendingWith: d.PendingWith == "Approver" ||d.PendingWith == "Manager" ?"Reporting Manager":d.PendingWith,
-                        BillableHours: isBillable?d.WeeklyTotalHrs:JSON.parse(d.SynergyOfficeHrs)[0].Total,
-                        OTTotalHrs : d.OTTotalHrs,
-                        TotalBillableHrs: d.BillableTotalHrs,
-                        // NonBillableTotalHrs: d.NonBillableTotalHrs,
-                        HolidayHrs:JSON.parse(d.ClientHolidayHrs)[0].Total,
-                        PTOHrs:JSON.parse(d.PTOHrs)[0].Total,
-                        TotalHours: d.GrandTotal,
-                        RM : ExcelRm
-                    })
+                    // ExcelRm = ExcelRm.substring(0, ExcelRm.lastIndexOf("\n"));
                 }
-                // console.log(Data);
-                this.setState({ AllRequests: Data,ExportExcelData:ExcelData,loading: false });
-            }).catch(err => {
-                console.log('Failed to fetch data.', err);
-            });
+                let date = new Date(DateUtilities.GetDateMMDDYYYYAsInList(d.WeekStartDate));
+                let isBillable = true;
+                if(d.ClientName.toLowerCase().includes('synergy')){
+                    isBillable = false
+                }
+                Data.push({
+                    Id : d.Id,
+                    Date : DateUtilities.getDateMMDDYYYY(date),
+                    DateForGrid : `<span class='d-none'>${DateUtilities.getDateYYYYMMDDForSorting(date)}</span>${DateUtilities.getDateMMDDYYYY(date)}`,
+                    EmployeName: d.Initiator.Title,
+                    // Status : d.Status == StatusType.Submit?'Pending With Reporting Manager':d.Status== StatusType.InProgress?'Pending With Reviewer':d.Status,
+                    Status : this.getStatus(d.Status),
+                    Client: d.ClientName,
+                    PendingWith: d.PendingWith == "Approver" ||d.PendingWith == "Manager" ?"Reporting Manager":d.PendingWith,
+                    BillableHours: isBillable?parseFloat(parseFloat(d.WeeklyTotalHrs).toFixed(2)):parseFloat(parseFloat(JSON.parse(d.SynergyOfficeHrs)[0].Total).toFixed(2)),
+                    OTTotalHrs : parseFloat(parseFloat(d.OTTotalHrs).toFixed(2)),
+                    TotalBillableHrs: parseFloat(parseFloat(d.BillableTotalHrs).toFixed(2)),
+                    // NonBillableTotalHrs: d.NonBillableTotalHrs,
+                    HolidayHrs:parseFloat(parseFloat(JSON.parse(d.ClientHolidayHrs)[0].Total).toFixed(2)),
+                    PTOHrs:parseFloat(parseFloat(JSON.parse(d.PTOHrs)[0].Total).toFixed(2)),
+                    TotalHours: parseFloat(parseFloat(d.GrandTotal).toFixed(2)),
+                    RM : ExcelRm,
+                    RMForGrid : Rm
+                })
+                ExcelData.push({
+                    Id : d.Id,
+                    Date : DateUtilities.getDateMMDDYYYY(date),
+                    EmployeName: d.Initiator.Title,
+                    // Status : d.Status == StatusType.Submit?'Pending With Reporting Manager':d.Status== StatusType.InProgress?'Pending With Reviewer':d.Status,
+                    Status : this.getStatus(d.Status),
+                    Client: d.ClientName,
+                    PendingWith: d.PendingWith == "Approver" ||d.PendingWith == "Manager" ?"Reporting Manager":d.PendingWith,
+                    BillableHours: isBillable?d.WeeklyTotalHrs:JSON.parse(d.SynergyOfficeHrs)[0].Total,
+                    OTTotalHrs : d.OTTotalHrs,
+                    TotalBillableHrs: d.BillableTotalHrs,
+                    // NonBillableTotalHrs: d.NonBillableTotalHrs,
+                    HolidayHrs:JSON.parse(d.ClientHolidayHrs)[0].Total,
+                    PTOHrs:JSON.parse(d.PTOHrs)[0].Total,
+                    TotalHours: d.GrandTotal,
+                    RM : ExcelRm
+                })
+            }
+            // console.log(Data);
+            this.setState({ AllRequests: Data,ExportExcelData:ExcelData,loading: false });
+        }
+        catch(err)
+        {
+            console.log('Failed to fetch data.', err); 
+        }
+        // sp.web.lists.getByTitle('WeeklyTimeSheet').items.top(5000).filter(filterString).expand("ReportingManager").select('ReportingManager/Title','*').orderBy('WeekStartDate', false).get()
+        //     .then((response) => {
+        //         // console.log(response)
+        //         let Data = [];
+        //         let ExcelData  =[]
+        //         for (const d of response) {
+        //             let Rm = '';
+        //             let ExcelRm = ''
+        //             d.ReportingManager.sort((a, b) => a.Title.localeCompare(b.Title));
+        //             if(d.ReportingManager.length>0)
+        //             {
+        //                 for(let r of d.ReportingManager){
+        //                     Rm += "<div>"+r.Title+"</div>"
+        //                     ExcelRm += r.Title+"\n"
+        //                 }
+        //                 // ExcelRm = ExcelRm.substring(0, ExcelRm.lastIndexOf("\n"));
+        //             }
+        //             let date = new Date(d.WeekStartDate.split('-')[1]+'/'+d.WeekStartDate.split('-')[2].split('T')[0]+'/'+d.WeekStartDate.split('-')[0]);
+        //             let isBillable = true;
+        //             if(d.ClientName.toLowerCase().includes('synergy')){
+        //                 isBillable = false
+        //             }
+        //             Data.push({
+        //                 Id : d.Id,
+        //                 Date : `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`,
+        //                 EmployeName: d.Name,
+        //                 // Status : d.Status == StatusType.Submit?'Pending With Reporting Manager':d.Status== StatusType.InProgress?'Pending With Reviewer':d.Status,
+        //                 Status : this.getStatus(d.Status),
+        //                 Client: d.ClientName,
+        //                 PendingWith: d.PendingWith == "Approver" ||d.PendingWith == "Manager" ?"Reporting Manager":d.PendingWith,
+        //                 BillableHours: isBillable?parseFloat(parseFloat(d.WeeklyTotalHrs).toFixed(2)):parseFloat(parseFloat(JSON.parse(d.SynergyOfficeHrs)[0].Total).toFixed(2)),
+        //                 OTTotalHrs : parseFloat(parseFloat(d.OTTotalHrs).toFixed(2)),
+        //                 TotalBillableHrs: parseFloat(parseFloat(d.BillableTotalHrs).toFixed(2)),
+        //                 // NonBillableTotalHrs: d.NonBillableTotalHrs,
+        //                 HolidayHrs:parseFloat(parseFloat(JSON.parse(d.ClientHolidayHrs)[0].Total).toFixed(2)),
+        //                 PTOHrs:parseFloat(parseFloat(JSON.parse(d.PTOHrs)[0].Total).toFixed(2)),
+        //                 TotalHours: parseFloat(parseFloat(d.GrandTotal).toFixed(2)),
+        //                 RM : Rm
+        //             })
+        //             ExcelData.push({
+        //                 Id : d.Id,
+        //                 Date : `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`,
+        //                 EmployeName: d.Name,
+        //                 // Status : d.Status == StatusType.Submit?'Pending With Reporting Manager':d.Status== StatusType.InProgress?'Pending With Reviewer':d.Status,
+        //                 Status : this.getStatus(d.Status),
+        //                 Client: d.ClientName,
+        //                 PendingWith: d.PendingWith == "Approver" ||d.PendingWith == "Manager" ?"Reporting Manager":d.PendingWith,
+        //                 BillableHours: isBillable?d.WeeklyTotalHrs:JSON.parse(d.SynergyOfficeHrs)[0].Total,
+        //                 OTTotalHrs : d.OTTotalHrs,
+        //                 TotalBillableHrs: d.BillableTotalHrs,
+        //                 // NonBillableTotalHrs: d.NonBillableTotalHrs,
+        //                 HolidayHrs:JSON.parse(d.ClientHolidayHrs)[0].Total,
+        //                 PTOHrs:JSON.parse(d.PTOHrs)[0].Total,
+        //                 TotalHours: d.GrandTotal,
+        //                 RM : ExcelRm
+        //             })
+        //         }
+        //         // console.log(Data);
+        //         this.setState({ AllRequests: Data,ExportExcelData:ExcelData,loading: false });
+        //     }).catch(err => {
+        //         console.log('Failed to fetch data.', err);
+        //     });
     }
     private getStatus(value){
         let Status=value
         if(value =="approved by Manager")
         {
-            Status = "Approved by Reporting Manager"
+            Status = "Approved by Reporting Manager";
         }
         else if(value == "rejected by Manager"){
-                Status = "Rejected by Reporting Manager"
+                Status = "Rejected by Reporting Manager";
+            }
+        else if(value =="approved by Synergy")
+            {
+                Status = "Approved by Reviewer";
             }
         else if(value =="rejected by Synergy")
             {
-                Status = "Rejected by Synergy"
+                Status = "Rejected by Synergy";
+            }
+        else if(value =="rejected by HR")
+            {
+                Status = "Rejected by HR";
             }
         return Status
     }
-    private  handleRowClicked = (row) => {
-        let ID = row.Id
-        this.setState({TimesheetID:ID,redirect:true})
+    private  handleRowClicked = (row,Id?) => {
+        let ID = row.Id?row.Id:Id;
+        this.setState({TimesheetID:ID,redirect:true});
       }
     public render() {
         const columns = [
@@ -153,69 +256,76 @@ class AllRequests extends React.Component<AllRequestsProps,AllRequestsState> {
             },
             {
                 name: "Date",
-                selector: (row, i) => row.Date,
-                width: '120px',
+                selector: (row, i) => row.DateForGrid,
+                cell: row => <div className='' dangerouslySetInnerHTML={{ __html: row.DateForGrid }} onClick={(event)=>this.handleRowClicked(event,row.Id)}/>,
+                // width: '120px',
                 sortable: true
             },
             {
                 name: "Employee Name",
                 selector: (row, i) => row.EmployeName,
-                width: '250px',
+                // width: '250px',
                 sortable: true
             },
             {
                 name: "Client",
                 selector: (row, i) => row.Client,
-                width: '130px',
+                // width: '130px',
                 sortable: true
             },
             {
                 name: "Reporting Manager",
-                selector: (row, i) => row.RM,
-                cell: row => <div className='divManagers' dangerouslySetInnerHTML={{ __html: row.RM }} />,
-                width: '230px',
+                selector: (row, i) => row.RMForGrid,
+                cell: row => <div className='divManagers' dangerouslySetInnerHTML={{ __html: row.RMForGrid }} onClick={(event)=>this.handleRowClicked(event,row.Id)}/>,
+                // width: '230px',
                 sortable: true
             },
             {
                 name: "Status",
                 selector: (row, i) => row.Status,
-                width: '220px',
+                // width: '220px',
                 sortable: true
             },
             {
                 name: "Pending With",
                 selector: (row, i) => row.PendingWith,
-                width: '180px',
+                // width: '180px',
                 sortable: true
             },
             {
                 name: "Hours",
                 selector: (row, i) => row.BillableHours,
-                width: '110px',
+                // width: '100px',
                 sortable: true,
             },
             {
                 name: "OT",
                 selector: (row, i) => row.OTTotalHrs,
-                width: '100px',
+                // width: '100px',
                 sortable: true,
             },
+            // {
+            //     name: "Paid Time Off",
+            //     selector: (row, i) =>row.PTONewHrs,
+            //     width: '120px',
+            //     sortable: true,
+            // },
             {
                 name: "Total Billable",
                 selector: (row, i) => row.TotalBillableHrs,
-                width: '150px',
+                // width: '150px',
                 sortable: true,
             },
             {
                 name: "Holiday",
                 selector: (row, i) =>row.HolidayHrs,
-                width: '130px',
+                // width: '100px',
                 sortable: true,
             },
             {
                 name: "Time Off",
                 selector: (row, i) =>row.PTOHrs,
-                width: '110px',
+                // width: '110px',
                 sortable: true,
             },
             // {
@@ -293,6 +403,11 @@ class AllRequests extends React.Component<AllRequestsProps,AllRequestsState> {
                 selector: "PTOHrs",
                 sortable: true,
             },
+            // {
+            //     name: "Paid Time Off Hours",
+            //     selector: "PTONewHrs",
+            //     sortable: true,
+            // },
             {
                 name: "Grand Total Hours",
                 selector: "TotalHours",
@@ -300,6 +415,8 @@ class AllRequests extends React.Component<AllRequestsProps,AllRequestsState> {
                 sortable: true
             }
         ];
+        const searchKeys=['Date','EmployeName','Client','RM','Status','PendingWith','BillableHours','OTTotalHrs','TotalBillableHrs','HolidayHrs','PTOHrs','TotalHours'];
+
         if(this.state.redirect){
             let url = `/WeeklyTimesheet/${this.state.TimesheetID}`;
         return (<Navigate to={url}/>);
@@ -313,8 +430,8 @@ class AllRequests extends React.Component<AllRequestsProps,AllRequestsState> {
                         <span className='' id='WeeklyTimeSheet'><FontAwesomeIcon icon={faPlus}></FontAwesomeIcon> New</span>
                         </button></NavLink>
                 </div></div>
-                <div className='c-v-table table-head-1st-td'>
-                    <TableGenerator columns={columns} data={this.state.AllRequests} fileName={'All Timesheets'} showExportExcel={true} ExportExcelCustomisedColumns={Exportcolumns} ExportExcelCustomisedData={this.state.ExportExcelData} wrapColumns={["RM","Client"]} onRowClick={this.handleRowClicked}></TableGenerator>
+                <div className='c-v-table'>
+                    <TableGenerator columns={columns} searchKeys={searchKeys} data={this.state.AllRequests} fileName={'All Timesheets'} showExportExcel={this.state.AllRequests.length?true:false} searchBoxLeft={true} ExportExcelCustomisedColumns={Exportcolumns} ExportExcelCustomisedData={this.state.ExportExcelData} wrapColumns={["RM","Client"]} LargeWidthColumns={["EmployeName","Client","RM"]} onRowClick={this.handleRowClicked}></TableGenerator>
                 </div>
             </div>
             {this.state.loading && <Loader />}

@@ -2,7 +2,7 @@ import React from 'react';
 // import * as XLSX from 'xlsx';
 import * as XLSX from 'xlsx-js-style';
 
-const ImportExcel = ({ onDataFetch, submitData, filename, columns, ErrorFileSelect }) => {
+const ImportExcel = ({ onDataFetch, submitData, filename, columns, ErrorFileSelect,title='Import Excel' }) => {
 
   const exportExcelFile = (workbook) => {
     return XLSX.writeFile(workbook, `${filename}.xlsx`);
@@ -59,7 +59,12 @@ const ImportExcel = ({ onDataFetch, submitData, filename, columns, ErrorFileSele
     var row =[]
 for (const c of columns) {
   let obj = {}
-  obj = {v:c,t:"s",s:{font: { bold: true}}}
+  obj = {v:c,t:"s",s:{font: { bold: true,color: { rgb: 'FFFFFF' },sz: 13},fill: { fgColor: { rgb: '0D2F4B' } }, border: {
+    top: { style: 'thin', color: { rgb: "D9D9D9" } },
+    left: { style: 'thin', color: { rgb: "D9D9D9" } },
+    bottom: { style: 'thin', color: { rgb: "D9D9D9" } },
+    right: { style: 'thin', color: { rgb: "D9D9D9" } },
+}}}
   row.push(obj)
 }
 Heading.push(row);
@@ -69,6 +74,14 @@ Heading.push(row);
     //   skipHeader: true,
     //   origin: -1
     // });
+    //custom widths for columns
+let Widths=[];
+// Adjust the width here (in characters)
+columns.forEach(column => {
+    Widths.push({ wch: 25 }) //for rest of columns
+});
+ws['!cols'] =Widths;
+
     var wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "Holidays List");
     XLSX.writeFile(wb, `${filename}.xlsx`);
@@ -88,7 +101,7 @@ Heading.push(row);
         readExcel(file, e);
       }} hidden></input>
       {/* <button id="btnImport" style={{ width: "inherit" }} className="SubmitButtons btn" type="button" onClick={submitData}>Import Excel</button> */}
-      <button id="btnImport" className="SubmitButtons btn" style={{ width: "inherit" }} onClick={openDialog} type="button" title='Import Excel'>Import Excel</button>
+      <button id="btnImport" className="SubmitButtons btn" style={{ width: "inherit" }} onClick={openDialog} type="button" title={title}>Import Excel</button>
     </React.Fragment>
   );
 };

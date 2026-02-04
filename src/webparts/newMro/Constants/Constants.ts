@@ -15,6 +15,7 @@ export enum StatusType {
   HRApprove = "approved by HR",
   HRReject = "rejected by HR",
   RecordModified="Record Modified",
+  Updated="Updated"
 }
 
 export enum ToasterTypes {
@@ -33,6 +34,8 @@ export enum ControlType {
     people='PeoplePicker',
     date='DatePicker',
     compareDates='CompareDates',
+    reactSelect='reactSelect',
+    MUIMultiSelect='MUIMultiSelect',
   }
   
   

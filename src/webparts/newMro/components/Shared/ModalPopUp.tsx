@@ -9,7 +9,6 @@ interface modalProps {
 }
 
 const ModalPopUp = ({ modalText, isVisible, onClose, title , isSuccess } : modalProps) => {
-
   return isVisible ? (
     <div className="modal" tabIndex={-1} style={{display:'block',background:'rgb(165 165 165 / 25%)'}} >
       <div className="modal-dialog modal-dialog-centered">

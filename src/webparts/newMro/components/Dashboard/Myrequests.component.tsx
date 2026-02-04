@@ -9,6 +9,8 @@ import "@pnp/sp/webs";
 import "@pnp/sp/lists";
 import "@pnp/sp/items";
 import Loader from '../Shared/Loader';
+import DateUtilities from '../../Utilities/DateUtilities';
+
 export interface MyRequestsProps {
     match: any;
     spContext: any;
@@ -47,27 +49,30 @@ class MyRequests extends React.Component<MyRequestsProps, MyRequestsState> {
     private MyRequests = async () => {
         this.setState({ loading: true });
         const userId = this.props.spContext.userId;
-        let dateFilter = new Date()
+        let dateFilter = new Date();
         dateFilter.setDate(new Date().getDate()-60);
-        let date = `${dateFilter.getMonth() + 1}/${dateFilter.getDate()}/${dateFilter.getFullYear()}`
-        var filterQuery = "and WeekStartDate ge '"+date+"'"
-
-        var filterString = "Initiator/Id eq '"+userId+"' "+filterQuery
-
-        sp.web.lists.getByTitle('WeeklyTimeSheet').items.top(2000).filter(filterString).expand("Initiator").select('Initiator/Title','*').orderBy('Modified', false).get()
+        let date =DateUtilities.getDateMMDDYYYY(dateFilter);
+        try{
+         let EmpFilterQuery=`Employee/Id eq '${userId}' and IsActive eq 1`;
+         let Employees = await sp.web.lists.getByTitle('Employees').items.top(5000).filter(EmpFilterQuery).expand("Employee").select('Employee/Title','*').getAll();
+         let EmpMatrixID=Employees.length?Employees[0].Id:0;
+        var filterQuery = `WeekStartDate ge '${date}' and Initiator/Id eq '${userId}' and EmpMatrixID eq '${EmpMatrixID}'`;
+        
+        sp.web.lists.getByTitle('WeeklyTimeSheet').items.top(2000).filter(filterQuery).expand("Initiator").select('Initiator/Title','*').orderBy('Modified', false).getAll()
             .then((response) => {
                 // console.log(response)
                 let Data = [];
+                response.sort((a,b)=>b.Id-a.Id);
                 for (const d of response) {
                     let date;
                     if(!["",undefined,null].includes(d.WeekStartDate)){
-                        date = new Date(d.WeekStartDate.split('-')[1]+'/'+d.WeekStartDate.split('-')[2].split('T')[0]+'/'+d.WeekStartDate.split('-')[0])
-                        date = `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`
+                        date = new Date(DateUtilities.GetDateMMDDYYYYAsInList(d.WeekStartDate));
                     }
 
                     Data.push({
                         Id : d.Id,
-                        Date : date,
+                        Date : DateUtilities.getDateMMDDYYYY(date),
+                        DateForGrid : `<span class='d-none'>${DateUtilities.getDateYYYYMMDDForSorting(date)}</span>${DateUtilities.getDateMMDDYYYY(date)}`,
                         Company: d.ClientName,
                         PendingWith: d.PendingWith == "Approver" ||d.PendingWith == "Manager" ?"Reporting Manager":d.PendingWith,
                         Status : this.getStatus(d.Status),
@@ -79,24 +84,37 @@ class MyRequests extends React.Component<MyRequestsProps, MyRequestsState> {
             }).catch(err => {
                 console.log('Failed to fetch data.', err);
             });
+        }
+        catch(err)
+        {
+             console.log('Failed to load My Time Offs' ,err);
+        }
     }
     private getStatus(value){
         let Status=value
         if(value =="approved by Manager")
         {
-            Status = "Approved by Reporting Manager"
+            Status = "Approved by Reporting Manager";
         }
         else if(value == "rejected by Manager"){
-                Status = "Rejected by Reporting Manager"
+                Status = "Rejected by Reporting Manager";
+            }
+        else if(value =="approved by Synergy")
+            {
+                Status = "Approved by Reviewer";
             }
         else if(value =="rejected by Synergy")
             {
-                Status = "Rejected by Synergy"
+                Status = "Rejected by Synergy";
+            }
+        else if(value =="rejected by HR")
+            {
+                Status = "Rejected by HR";
             }
         return Status
     }
-    private  handleRowClicked = (row) => {
-        let ID = row.Id
+    private  handleRowClicked = (row,Id?) => {
+        let ID = row.Id?row.Id:Id;
         this.setState({TimesheetID:ID,redirect:true})
       }
 
@@ -117,10 +135,12 @@ class MyRequests extends React.Component<MyRequestsProps, MyRequestsState> {
                         </React.Fragment>
                     );
                 },
+                width: '100px'
             },
             {
                 name: "Week Start Date",
-                selector: (row, i) => row.Date,
+                selector: (row, i) => row.DateForGrid,
+                cell: row => <div className='' dangerouslySetInnerHTML={{ __html: row.DateForGrid }} onClick={(event)=>this.handleRowClicked(event,row.Id)}/>,
                 sortable: true
             },
             {
@@ -129,16 +149,18 @@ class MyRequests extends React.Component<MyRequestsProps, MyRequestsState> {
                 sortable: true
             },
             {
-                name: "Pending With",
-                selector: (row, i) => row.PendingWith,
-                sortable: true,
-            },
-            {
                 name: "Status",
                 selector: (row, i) => row.Status,
                 sortable: true
+            },
+            {
+                name: "Pending With",
+                selector: (row, i) => row.PendingWith,
+                sortable: true,
             }
+            
         ];
+        const searchKeys=['Date','Company','PendingWith','Status'];
         if(this.state.redirect){
             let url = `/WeeklyTimesheet/${this.state.TimesheetID}`;
         return (<Navigate to={url}/>);
@@ -146,8 +168,8 @@ class MyRequests extends React.Component<MyRequestsProps, MyRequestsState> {
         return (
             <React.Fragment>
             <div>
-                <div className='table-head-1st-td'>
-                    <TableGenerator columns={columns} data={this.state.Requests} fileName={'My Timesheets'} showExportExcel={false} showAddButton={true} customBtnClass='px-1 text-right' navigateOnBtnClick={`/WeeklyTimesheet`} btnDivID='divAddNewWeeklyTimeSheet' btnSpanID='newWeeklyTimeSheet' btnCaption=' New' btnTitle='New Weekly Timesheet' searchBoxLeft={false} onRowClick={this.handleRowClicked}></TableGenerator>
+                <div className=''>
+                    <TableGenerator columns={columns} searchKeys={searchKeys} data={this.state.Requests} fileName={'My Timesheets'} showExportExcel={false} showAddButton={true} customBtnClass='px-1 text-right' navigateOnBtnClick={`/WeeklyTimesheet`} btnDivID='divAddNewWeeklyTimeSheet' btnSpanID='newWeeklyTimeSheet' btnCaption=' New' btnTitle='New Weekly Timesheet' searchBoxLeft={false} onRowClick={this.handleRowClicked}></TableGenerator>
                 </div>
             </div>
             {this.state.loading && <Loader />}
