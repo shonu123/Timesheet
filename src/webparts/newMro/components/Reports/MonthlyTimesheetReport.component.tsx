@@ -14,10 +14,11 @@ import "@pnp/sp/files";
 import "@pnp/sp/folders";
 import "@pnp/sp/site-users/web";
 import "@pnp/sp/site-groups";
-import { highlightCurrentNav} from '../../Utilities/HighlightCurrentComponent';
+import { highlightCurrentNav } from '../../Utilities/HighlightCurrentComponent';
 import DatePicker from "../Shared/DatePickerField";
 import CustomDatePicker from "../Shared/DatePicker";
 import SearchableDropdown from '../Shared/SearchableDropdown';
+import MultiSelectDropdown from '../Shared/MultiSelectDropdown';
 import { Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import customToaster from '../Shared/Toaster.component';
@@ -65,13 +66,13 @@ class MonthlyTimesheetReport extends React.Component<MonthlyTimesheetReportProps
         // EmployeeEmail: '',
         ClientName: '',
         IsThisReportForInternal: false,
-        InitiatorId: '0',
+        InitiatorId: [],
         startDate: null,
         endDate: null,
         ClientsObject: [],
         EmployeesObj: [],
         AllEmployees: [],
-       
+
         loading: false,
         Homeredirect: false,
         isPageAccessable: true,
@@ -119,33 +120,31 @@ class MonthlyTimesheetReport extends React.Component<MonthlyTimesheetReportProps
                 EmpObj.push({ ID: name.Employee.ID, Title: name.Employee.Title })
             }
         }
-        EmpObj.sort((a,b)=>a.Title.localeCompare(b.Title));
-        if (Clients.length > 0){
+        EmpObj.sort((a, b) => a.Title.localeCompare(b.Title));
+        if (Clients.length > 0) {
             //Clients.unshift({Title:"All Clients"});
-            EmpObj.unshift({ID:"0",Title:"All Employees"});
+            // EmpObj.unshift({ID:"0",Title:"All Employees"});
             this.setState({ AllEmployees: EmpObj, EmployeesObj: EmpObj, ClientsObject: Clients, loading: false, isHavingClients: true, showToaster: true })
         }
         else
             this.setState({ AllEmployees: EmpObj, EmployeesObj: EmpObj, ClientsObject: Clients, loading: false, isHavingClients: false, showToaster: true })
     }
-    private handleClientChange = (event,actionMeta?) => {
+    private handleClientChange = (event, actionMeta?) => {
         this.setState({ loading: true });
         // let { name } = event.target;
         // let value = event.target.value;
-        let  name,inputvalue,value;
+        let name, inputvalue, value;
         //Below is condition for handle common change function for both react select dropdown  and normal controls
-        if(![null, undefined].includes(event) && event.target != undefined)
-        {
+        if (![null, undefined].includes(event) && event.target != undefined) {
             name = event.target.name;
             inputvalue = event.target.value;
             value = event.target.type == 'checkbox' ? event.target.checked : inputvalue;
         }
-        else if(actionMeta!= undefined)
-        {
+        else if (actionMeta != undefined) {
             name = actionMeta.name;
-            value =actionMeta.action =='clear'?'': event.value; 
+            value = actionMeta.action == 'clear' ? '' : event.value;
         }
-        this.setState({ [name]: value, ReportData: []});
+        this.setState({ [name]: value, ReportData: [] });
         this.getClientEmployees(value)
     }
     private async getClientEmployees(value) {
@@ -162,45 +161,47 @@ class MonthlyTimesheetReport extends React.Component<MonthlyTimesheetReportProps
                     EmpObj.push({ ID: name.Employee.ID, Title: name.Employee.Title })
                 }
             }
-            if (EmpObj.length > 0)
-            {
-                EmpObj.unshift({ID:"0",Title:"All Employees"});
-                 this.setState({ EmployeesObj: EmpObj, loading: false, isHavingEmployees: true, InitiatorId: '0', weekStartDay: clientEmployees[0].WeekStartDay })
+            EmpObj.sort((a, b) => a.Title.localeCompare(b.Title));
+            if (EmpObj.length > 0) {
+                // EmpObj.unshift({ID:"0",Title:"All Employees"});
+                this.setState({ EmployeesObj: EmpObj, loading: false, isHavingEmployees: true, InitiatorId: [], weekStartDay: clientEmployees[0].WeekStartDay })
             }
             else {
-                this.setState({ EmployeesObj: EmpObj, loading: false, isHavingEmployees: false, InitiatorId: '-1', weekStartDay: weekDay })
+                this.setState({ EmployeesObj: EmpObj, loading: false, isHavingEmployees: false, InitiatorId: [], weekStartDay: weekDay })
                 customToaster('toster-error', ToasterTypes.Error, 'There are no employees associated with this client', 4000);
             }
         }
         else {
-            this.setState({ EmployeesObj: this.state.AllEmployees, loading: false, isHavingEmployees: true, InitiatorId: '0' })
+            this.setState({ EmployeesObj: this.state.AllEmployees, loading: false, isHavingEmployees: true, InitiatorId: [] })
         }
     }
-    private handleChangeEvents = (event,actionMeta?) => {
-        let  name,inputvalue,value;
+    private handleChangeEvents = (event, actionMeta?) => {
+        let name, inputvalue, value;
         //Below is condition for handle common change function for both react select dropdown  and normal controls
-        if(![null, undefined].includes(event) && event.target != undefined)
-        {
+        if (![null, undefined].includes(event) && event.target != undefined) {
             name = event.target.name;
             inputvalue = event.target.value;
             value = event.target.type == 'checkbox' ? event.target.checked : inputvalue;
+            // for Employee multi select dropdown
+            if (name == 'InitiatorId' && inputvalue[inputvalue.length - 1] === "all") {
+                value = this.state.InitiatorId.length === this.state.EmployeesObj.length ? [] : this.state.EmployeesObj.map(emp => emp.ID);
+            }
         }
-        else if(actionMeta!= undefined)
-        {
+        else if (actionMeta != undefined) {
             name = actionMeta.name;
-            value =actionMeta.action =='clear'?name =='InitiatorId'?-1:'': event.value; 
+            value = actionMeta.action == 'clear' ? name == 'InitiatorId' ? [] : '' : event.value;
         }
-        this.setState({ [name]: value,ReportData: [] });
+        this.setState({ [name]: value, ReportData: [] });
     }
     private handleStartorEndDate = (dateprops) => {
         let date = new Date();
-        let DateField=dateprops[1]=="txtStartDate"?'startDate':dateprops[1]=="txtEndDate"?'endDate':'';
+        let DateField = dateprops[1] == "txtStartDate" ? 'startDate' : dateprops[1] == "txtEndDate" ? 'endDate' : '';
         if (dateprops[0] != null) {
             date = new Date(dateprops[0])
-            this.setState({ [DateField]: date,ReportData: [] });
+            this.setState({ [DateField]: date, ReportData: [] });
         }
-        else{
-            this.setState({  [DateField]: null,ReportData: [] });
+        else {
+            this.setState({ [DateField]: null, ReportData: [] });
         }
     }
     private checkIsvalid = (data, selectedStartDate, selectedEndDate) => {
@@ -220,10 +221,10 @@ class MonthlyTimesheetReport extends React.Component<MonthlyTimesheetReportProps
             let element = document.getElementById('txtStartDate')
             element.focus()
             element.classList.add('mandatory-FormContent-focus');
-            setTimeout(function (){
+            setTimeout(function () {
                 // prpel.current.input.classList.add('mandatory-FormContent-focus');
                 element.classList.add('mandatory-FormContent-focus');
-            },0)
+            }, 0)
         }
         else if (this.state.endDate == null) {
             isvalid.status = false;
@@ -234,9 +235,9 @@ class MonthlyTimesheetReport extends React.Component<MonthlyTimesheetReportProps
             element.classList.add('mandatory-FormContent-focus');
 
             // prpel.current.input.focus();
-            setTimeout(function (){
+            setTimeout(function () {
                 element.classList.add('mandatory-FormContent-focus');
-            },0)
+            }, 0)
         }
         else if (new Date(selectedStartDate) > new Date(selectedEndDate)) {
             isvalid.status = false;
@@ -246,9 +247,9 @@ class MonthlyTimesheetReport extends React.Component<MonthlyTimesheetReportProps
             element.classList.add('mandatory-FormContent-focus');
             // let prpel =  this.startDate
             // prpel.current.input.focus();
-            setTimeout(function (){
+            setTimeout(function () {
                 element.classList.add('mandatory-FormContent-focus');
-            },0)
+            }, 0)
         }
         return isvalid;
     }
@@ -256,19 +257,19 @@ class MonthlyTimesheetReport extends React.Component<MonthlyTimesheetReportProps
         // this.setState({ Homeredirect: true,showToaster:false });
         // document.getElementById('divNavReportItems').classList.remove('show');
         // document.getElementById('Reports').classList.remove('heighlightMasters');
-        this.setState({ClientName: '',IsThisReportForInternal:false,InitiatorId: '0',startDate: null,endDate: null,EmployeesObj:this.state.AllEmployees, ExportExcelData: [], weekStartDay: 'Monday',ReportData: [],PDFData: []});
+        this.setState({ ClientName: '', IsThisReportForInternal: false, InitiatorId: [], startDate: null, endDate: null, EmployeesObj: this.state.AllEmployees, ExportExcelData: [], weekStartDay: 'Monday', ReportData: [], PDFData: [] });
     }
     private handleSubmit = () => {
-        this.setState({loading:true})
+        this.setState({ loading: true })
         let data = {
             Client: { val: this.state.ClientName, required: true, Name: 'Client', Type: ControlType.reactSelect, Focusid: 'Client' },
-            Employee: { val: parseInt(this.state.InitiatorId), required: true, Name: 'Employee', Type: ControlType.reactSelect, Focusid:'Employee'},
+            Employee: { val: this.state.InitiatorId, required: true, Name: 'Employee', Type: ControlType.MUIMultiSelect, Focusid: 'Employee' },
             // WeeklyStartDate: { val: this.state.startDate, required: true, Name: 'Weekly Start Date', Type: ControlType.date, Focusid: "divWeekStartDate" }
         }
         let isValid = this.checkIsvalid(data, this.state.startDate, this.state.endDate);
         if (!isValid.status) {
             customToaster('toster-error', ToasterTypes.Error, isValid.message, 4000);
-            this.setState({loading:false})
+            this.setState({ loading: false })
             return false
         }
         let Sdate = new Date(this.state.startDate)
@@ -279,7 +280,7 @@ class MonthlyTimesheetReport extends React.Component<MonthlyTimesheetReportProps
         let postObject = {
             Client: this.state.ClientName,
             IsThisReportForInternal: this.state.IsThisReportForInternal,
-            Employee: parseInt(this.state.InitiatorId),
+            Employee: this.state.InitiatorId,
             StartDate: selectedStartDate,
             EndDate: selectedEndDate
         }
@@ -296,249 +297,244 @@ class MonthlyTimesheetReport extends React.Component<MonthlyTimesheetReportProps
         let next = DateUtilities.getDateMMDDYYYY(nextDate);
         let filterQuery = ''
         if (client == "All") {
-            if (Employee == 0) {
-                filterQuery = "WeekStartDate gt '" + prev + "' and WeekStartDate lt '" + next + "'";
-            }
-            else {
-                filterQuery = "InitiatorId eq '" + Employee + "' and WeekStartDate gt '" + prev + "' and WeekStartDate lt '" + next + "'";
-            }
+            //if (Employee.length == this.state.EmployeesObj.length) {
+            filterQuery = "WeekStartDate gt '" + prev + "' and WeekStartDate lt '" + next + "'";
+            // }
+            // else {
+            //     filterQuery = "InitiatorId eq '" + Employee + "' and WeekStartDate gt '" + prev + "' and WeekStartDate lt '" + next + "'";
+            // }
         }
         else {
-            if (Employee == 0) {
-                filterQuery = "ClientName eq '" + client.replace(/'/g,"''") + "' and WeekStartDate gt '" + prev + "' and WeekStartDate lt '" + next + "'";
-            }
-            else {
-                filterQuery = "ClientName eq '" + client.replace(/'/g,"''") + "' and InitiatorId eq '" + Employee + "' and WeekStartDate gt '" + prev + "' and WeekStartDate lt '" + next + "'";
-            }
+            //if (Employee == 0) {
+            filterQuery = "ClientName eq '" + client.replace(/'/g, "''") + "' and WeekStartDate gt '" + prev + "' and WeekStartDate lt '" + next + "'";
+            // }
+            // else {
+            //     filterQuery = "ClientName eq '" + client.replace(/'/g,"''") + "' and InitiatorId eq '" + Employee + "' and WeekStartDate gt '" + prev + "' and WeekStartDate lt '" + next + "'";
+            // }
         }
         filterQuery += "and Status ne '" + StatusType.Save + "' and Status ne '" + StatusType.Revoke + "'";
-        try{
-        let Response = await sp.web.lists.getByTitle('WeeklyTimeSheet').items.top(5000).filter(filterQuery).expand('Initiator').select('Initiator/Title,Initiator/Id,TotalHrs,BillableSubtotalHrs,NonBillableSubTotalHrs,ClientName,WeekStartDate,Status,*').orderBy('WeekStartDate,ClientName,Initiator/Title', true).getAll()
-        if (Response.length > 0) {
-            var PDFData = [];
-            //PDFData = reportData.filter(report => [StatusType.Approved, StatusType.ManagerApprove].includes(report.Status));
-            PDFData = Response;
-            let ReportData = [];
-            let row = 1;
-            Response.sort((a,b)=>{return new Date(a.WeekStartDate).getTime() - new Date(b.WeekStartDate).getTime()}); //to sort based on WeekStartDate
-            Response.forEach(report => {
-                let { Initiator, WeekStartDate, TotalHrs, ClientName, Status } = report;
-                const startDate = new Date(DateUtilities.GetDateMMDDYYYYAsInList(report.WeekStartDate));
-                let weekDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-                TotalHrs = JSON.parse(TotalHrs);
-                let dates = [];
-                const currentDate = new Date(startDate);
-                for (let i = 0; i < 7; i++) {
-                    let date = new Date(currentDate)
-                    dates.push(DateUtilities.getDateMMDDYYYY(date));
-                    currentDate.setDate(currentDate.getDate() + 1);
-                }
-                const arrangedWeekDays = [];
+        try {
+            let Response = await sp.web.lists.getByTitle('WeeklyTimeSheet').items.top(5000).filter(filterQuery).expand('Initiator').select('Initiator/Title,Initiator/Id,TotalHrs,BillableSubtotalHrs,NonBillableSubTotalHrs,ClientName,WeekStartDate,Status,*').orderBy('WeekStartDate,ClientName,Initiator/Title', true).getAll()
+            if (Employee.length != this.state.EmployeesObj.length) {
+                Response = Response.filter(report => Employee.includes(report.Initiator.Id));
+            }
+            if (Response.length > 0) {
+                var PDFData = [];
+                //PDFData = reportData.filter(report => [StatusType.Approved, StatusType.ManagerApprove].includes(report.Status));
+                PDFData = Response;
+                let ReportData = [];
+                let row = 1;
+                Response.sort((a, b) => { return new Date(a.WeekStartDate).getTime() - new Date(b.WeekStartDate).getTime() }); //to sort based on WeekStartDate
+                Response.forEach(report => {
+                    let { Initiator, WeekStartDate, TotalHrs, ClientName, Status } = report;
+                    const startDate = new Date(DateUtilities.GetDateMMDDYYYYAsInList(report.WeekStartDate));
+                    let weekDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+                    TotalHrs = JSON.parse(TotalHrs);
+                    let dates = [];
+                    const currentDate = new Date(startDate);
+                    for (let i = 0; i < 7; i++) {
+                        let date = new Date(currentDate)
+                        dates.push(DateUtilities.getDateMMDDYYYY(date));
+                        currentDate.setDate(currentDate.getDate() + 1);
+                    }
+                    const arrangedWeekDays = [];
 
-                weekDays.forEach(day => {
-                    arrangedWeekDays.push(TotalHrs[0][day]);
-                });
+                    weekDays.forEach(day => {
+                        arrangedWeekDays.push(TotalHrs[0][day]);
+                    });
 
-                let BillHrs = JSON.parse(report.BillableSubtotalHrs)[0],SynergyOfficeHrs=JSON.parse(report.SynergyOfficeHrs)[0],NonBillhrs = JSON.parse(report.NonBillableSubTotalHrs)[0],Totalhrs = JSON.parse(report.TotalHrs)[0],blanksHrs = [{ Mon: '0.00', Tue: '0.00', Wed: '0.00', Thu: '0.00', Fri: '0.00', Sat: '0.00', Sun: '0.00', Total: '0.00' }] ;
-                let PTOSubTotal=[null,undefined,''].includes(report.PTOSubTotal)?[]:JSON.parse(report.PTOSubTotal);
-                let TOSubTotal=[null,undefined,''].includes(report.TOSubTotal)?[]:JSON.parse(report.TOSubTotal);
-                let HolidayTotal=[null,undefined,''].includes(report.ClientHolidayHrs)?[]:JSON.parse(report.ClientHolidayHrs);
-                let b={},PTOHours = JSON.parse(report.PTOHrs),ClientHolidayHrs = JSON.parse(report.ClientHolidayHrs);
-                 // Code for PTO Hours to be included in Billable hours :start
-                //  if(report.EligibleforPTO && !report.ClientName.toLowerCase().includes('synergy'))
-                //  {
-                //      let WeekDays=['Mon','Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-                //      let PTOHrs=PTOHours[0].Total;
-                //      if(parseFloat(PTOHours[0].PTOAfterDeduction)<0)
-                //      PTOHrs=parseFloat(PTOHours[0].Total)+parseFloat(PTOHours[0].PTOAfterDeduction);// Code for PTO:Calculating PTOHrs considering from Timeoff Hrs 
-                //      let PTOBalance=PTOHours[0].PTOBalance;
-                //      if(parseFloat(PTOHours[0].Total)!=0 && parseFloat(PTOHrs)>0)
-                //      {
-                //         WeekDays.forEach(day=>{
-                //             if(PTOHours[0][day]!='' && parseFloat(PTOBalance)>0)
-                //             {
-                //                 let DayTimeOffHrs=parseFloat(PTOHours[0][day])>PTOBalance?PTOBalance:PTOHours[0][day];
-                //                 NonBillhrs[day]=Number(parseFloat(NonBillhrs[day])-parseFloat(DayTimeOffHrs)).toFixed(4);//reduce from NonBillable day
-                //                 PTOHours[0][day]=Number(parseFloat(DayTimeOffHrs)-parseFloat(DayTimeOffHrs)).toFixed(4);//reduce from TimeOff day
-                //                 NonBillhrs['Total']=Number(parseFloat(NonBillhrs['Total'])-parseFloat(DayTimeOffHrs)).toFixed(4);//reduce from NonBillable Total
-                //                 BillHrs[day]=Number(parseFloat(BillHrs[day])+parseFloat(DayTimeOffHrs)).toFixed(4);// increase Billable day
-                //                 BillHrs['Total']=Number(parseFloat(BillHrs['Total'])+parseFloat(DayTimeOffHrs)).toFixed(4);//increase Billable Total
-                //                 PTOBalance=parseFloat(PTOBalance)-parseFloat(DayTimeOffHrs)// reduced from PTOBalance
-                //             }
-                //         })
-                //      }
-                //  }
-                 // Code for PTO Hours to be included in Billable hours :end
-                // report.ClientName.toLowerCase().includes('synergy') ? BillHrs = blanksHrs : '';
-                report.ClientName.toLowerCase().includes('synergy') ? BillHrs = SynergyOfficeHrs : '';
-                // NonBillhrs = {
-                //     Mon: NonBillhrs.Mon =="0.00"?PTOHours[0].Mon ==""?ClientHolidayHrs[0].Mon==""?'':ClientHolidayHrs[0].Mon:ClientHolidayHrs[0].Mon==""?PTOHours[0].Mon:Number(parseFloat(PTOHours[0].Mon)+parseFloat(ClientHolidayHrs[0].Mon)).toFixed(4)
-                //     :NonBillhrs.Mon,
-                //     Tue: NonBillhrs.Tue =="0.00"?PTOHours[0].Tue ==""?ClientHolidayHrs[0].Tue==""?'':ClientHolidayHrs[0].Tue:ClientHolidayHrs[0].Tue==""?PTOHours[0].Tue:Number(parseFloat(PTOHours[0].Tue)+parseFloat(ClientHolidayHrs[0].Tue)).toFixed(4)
-                //     :NonBillhrs.Tue,
-                //     Wed: NonBillhrs.Wed =="0.00"?PTOHours[0].Wed ==""?ClientHolidayHrs[0].Wed==""?'':ClientHolidayHrs[0].Wed:ClientHolidayHrs[0].Wed==""?PTOHours[0].Wed:Number(parseFloat(PTOHours[0].Wed)+parseFloat(ClientHolidayHrs[0].Wed)).toFixed(4)
-                //     :NonBillhrs.Wed,
-                //     Thu: NonBillhrs.Thu =="0.00"?PTOHours[0].Thu ==""?ClientHolidayHrs[0].Thu==""?'':ClientHolidayHrs[0].Thu:ClientHolidayHrs[0].Thu==""?PTOHours[0].Thu:Number(parseFloat(PTOHours[0].Thu)+parseFloat(ClientHolidayHrs[0].Thu)).toFixed(4)
-                //     :NonBillhrs.Thu,
-                //     Fri: NonBillhrs.Fri =="0.00"?PTOHours[0].Fri ==""?ClientHolidayHrs[0].Fri==""?'':ClientHolidayHrs[0].Fri:ClientHolidayHrs[0].Fri==""?PTOHours[0].Fri:Number(parseFloat(PTOHours[0].Fri)+parseFloat(ClientHolidayHrs[0].Fri)).toFixed(4)
-                //     :NonBillhrs.Fri,
-                //     Sat: NonBillhrs.Sat =="0.00"?PTOHours[0].Sat ==""?ClientHolidayHrs[0].Sat==""?'':ClientHolidayHrs[0].Sat:ClientHolidayHrs[0].Sat==""?PTOHours[0].Sat:Number(parseFloat(PTOHours[0].Sat)+parseFloat(ClientHolidayHrs[0].Sat)).toFixed(4)
-                //     :NonBillhrs.Sat,
-                //     Sun: NonBillhrs.Sun =="0.00"?PTOHours[0].Sun ==""?ClientHolidayHrs[0].Sun==""?'':ClientHolidayHrs[0].Sun:ClientHolidayHrs[0].Sun==""?PTOHours[0].Sun:Number(parseFloat(PTOHours[0].Sun)+parseFloat(ClientHolidayHrs[0].Sun)).toFixed(4)
-                //     :NonBillhrs.Sun,
-                //     Total: NonBillhrs.Total
-                // }
-                // ReportData.push({
-                //     SNo: row,
-                //     Employee: report.Initiator.Title,
-                //     MNB: NonBillhrs.Mon,
-                //     MB: BillHrs.Mon,
-                //     TNB: NonBillhrs.Tue,
-                //     TB: BillHrs.Tue,
-                //     WNB: NonBillhrs.Wed,
-                //     WB: BillHrs.Wed,
-                //     ThNB: NonBillhrs.Thu,
-                //     ThB: BillHrs.Thu,
-                //     FB: BillHrs.Fri,
-                //     FNB: NonBillhrs.Fri,
-                //     // commented on 25 july 2024
-                //     // SB: BillHrs.Sat == "" ? "0" : BillHrs.Sat,
-                //     // SNB: NonBillhrs.Sat == "" ? "0" : NonBillhrs.Sat,
-                //     // SuB: BillHrs.Sun == "" ? "0" : BillHrs.Sun,
-                //     // SuNB: NonBillhrs.Sun == "" ? "0" : NonBillhrs.Sun,
-                //     SB: BillHrs.Sat,
-                //     SNB: NonBillhrs.Sat,
-                //     SuB: BillHrs.Sun,
-                //     SuNB: NonBillhrs.Sun,
-                //     Status: this.getStatus(report.Status),
-                //     TotalNB: NonBillhrs.Total,
-                //     TotalB: BillHrs.Total,
-                //     TotalH: Totalhrs.Total,
-                // })
+                    let BillHrs = JSON.parse(report.BillableSubtotalHrs)[0], SynergyOfficeHrs = JSON.parse(report.SynergyOfficeHrs)[0], NonBillhrs = JSON.parse(report.NonBillableSubTotalHrs)[0], Totalhrs = JSON.parse(report.TotalHrs)[0], blanksHrs = [{ Mon: '0.00', Tue: '0.00', Wed: '0.00', Thu: '0.00', Fri: '0.00', Sat: '0.00', Sun: '0.00', Total: '0.00' }];
+                    let PTOSubTotal = [null, undefined, ''].includes(report.PTOSubTotal) ? [] : JSON.parse(report.PTOSubTotal);
+                    let TOSubTotal = [null, undefined, ''].includes(report.TOSubTotal) ? [] : JSON.parse(report.TOSubTotal);
+                    let HolidayTotal = [null, undefined, ''].includes(report.ClientHolidayHrs) ? [] : JSON.parse(report.ClientHolidayHrs);
+                    let b = {}, PTOHours = JSON.parse(report.PTOHrs), ClientHolidayHrs = JSON.parse(report.ClientHolidayHrs);
+                    // Code for PTO Hours to be included in Billable hours :start
+                    //  if(report.EligibleforPTO && !report.ClientName.toLowerCase().includes('synergy'))
+                    //  {
+                    //      let WeekDays=['Mon','Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+                    //      let PTOHrs=PTOHours[0].Total;
+                    //      if(parseFloat(PTOHours[0].PTOAfterDeduction)<0)
+                    //      PTOHrs=parseFloat(PTOHours[0].Total)+parseFloat(PTOHours[0].PTOAfterDeduction);// Code for PTO:Calculating PTOHrs considering from Timeoff Hrs 
+                    //      let PTOBalance=PTOHours[0].PTOBalance;
+                    //      if(parseFloat(PTOHours[0].Total)!=0 && parseFloat(PTOHrs)>0)
+                    //      {
+                    //         WeekDays.forEach(day=>{
+                    //             if(PTOHours[0][day]!='' && parseFloat(PTOBalance)>0)
+                    //             {
+                    //                 let DayTimeOffHrs=parseFloat(PTOHours[0][day])>PTOBalance?PTOBalance:PTOHours[0][day];
+                    //                 NonBillhrs[day]=Number(parseFloat(NonBillhrs[day])-parseFloat(DayTimeOffHrs)).toFixed(4);//reduce from NonBillable day
+                    //                 PTOHours[0][day]=Number(parseFloat(DayTimeOffHrs)-parseFloat(DayTimeOffHrs)).toFixed(4);//reduce from TimeOff day
+                    //                 NonBillhrs['Total']=Number(parseFloat(NonBillhrs['Total'])-parseFloat(DayTimeOffHrs)).toFixed(4);//reduce from NonBillable Total
+                    //                 BillHrs[day]=Number(parseFloat(BillHrs[day])+parseFloat(DayTimeOffHrs)).toFixed(4);// increase Billable day
+                    //                 BillHrs['Total']=Number(parseFloat(BillHrs['Total'])+parseFloat(DayTimeOffHrs)).toFixed(4);//increase Billable Total
+                    //                 PTOBalance=parseFloat(PTOBalance)-parseFloat(DayTimeOffHrs)// reduced from PTOBalance
+                    //             }
+                    //         })
+                    //      }
+                    //  }
+                    // Code for PTO Hours to be included in Billable hours :end
+                    // report.ClientName.toLowerCase().includes('synergy') ? BillHrs = blanksHrs : '';
+                    report.ClientName.toLowerCase().includes('synergy') ? BillHrs = SynergyOfficeHrs : '';
+                    // NonBillhrs = {
+                    //     Mon: NonBillhrs.Mon =="0.00"?PTOHours[0].Mon ==""?ClientHolidayHrs[0].Mon==""?'':ClientHolidayHrs[0].Mon:ClientHolidayHrs[0].Mon==""?PTOHours[0].Mon:Number(parseFloat(PTOHours[0].Mon)+parseFloat(ClientHolidayHrs[0].Mon)).toFixed(4)
+                    //     :NonBillhrs.Mon,
+                    //     Tue: NonBillhrs.Tue =="0.00"?PTOHours[0].Tue ==""?ClientHolidayHrs[0].Tue==""?'':ClientHolidayHrs[0].Tue:ClientHolidayHrs[0].Tue==""?PTOHours[0].Tue:Number(parseFloat(PTOHours[0].Tue)+parseFloat(ClientHolidayHrs[0].Tue)).toFixed(4)
+                    //     :NonBillhrs.Tue,
+                    //     Wed: NonBillhrs.Wed =="0.00"?PTOHours[0].Wed ==""?ClientHolidayHrs[0].Wed==""?'':ClientHolidayHrs[0].Wed:ClientHolidayHrs[0].Wed==""?PTOHours[0].Wed:Number(parseFloat(PTOHours[0].Wed)+parseFloat(ClientHolidayHrs[0].Wed)).toFixed(4)
+                    //     :NonBillhrs.Wed,
+                    //     Thu: NonBillhrs.Thu =="0.00"?PTOHours[0].Thu ==""?ClientHolidayHrs[0].Thu==""?'':ClientHolidayHrs[0].Thu:ClientHolidayHrs[0].Thu==""?PTOHours[0].Thu:Number(parseFloat(PTOHours[0].Thu)+parseFloat(ClientHolidayHrs[0].Thu)).toFixed(4)
+                    //     :NonBillhrs.Thu,
+                    //     Fri: NonBillhrs.Fri =="0.00"?PTOHours[0].Fri ==""?ClientHolidayHrs[0].Fri==""?'':ClientHolidayHrs[0].Fri:ClientHolidayHrs[0].Fri==""?PTOHours[0].Fri:Number(parseFloat(PTOHours[0].Fri)+parseFloat(ClientHolidayHrs[0].Fri)).toFixed(4)
+                    //     :NonBillhrs.Fri,
+                    //     Sat: NonBillhrs.Sat =="0.00"?PTOHours[0].Sat ==""?ClientHolidayHrs[0].Sat==""?'':ClientHolidayHrs[0].Sat:ClientHolidayHrs[0].Sat==""?PTOHours[0].Sat:Number(parseFloat(PTOHours[0].Sat)+parseFloat(ClientHolidayHrs[0].Sat)).toFixed(4)
+                    //     :NonBillhrs.Sat,
+                    //     Sun: NonBillhrs.Sun =="0.00"?PTOHours[0].Sun ==""?ClientHolidayHrs[0].Sun==""?'':ClientHolidayHrs[0].Sun:ClientHolidayHrs[0].Sun==""?PTOHours[0].Sun:Number(parseFloat(PTOHours[0].Sun)+parseFloat(ClientHolidayHrs[0].Sun)).toFixed(4)
+                    //     :NonBillhrs.Sun,
+                    //     Total: NonBillhrs.Total
+                    // }
+                    // ReportData.push({
+                    //     SNo: row,
+                    //     Employee: report.Initiator.Title,
+                    //     MNB: NonBillhrs.Mon,
+                    //     MB: BillHrs.Mon,
+                    //     TNB: NonBillhrs.Tue,
+                    //     TB: BillHrs.Tue,
+                    //     WNB: NonBillhrs.Wed,
+                    //     WB: BillHrs.Wed,
+                    //     ThNB: NonBillhrs.Thu,
+                    //     ThB: BillHrs.Thu,
+                    //     FB: BillHrs.Fri,
+                    //     FNB: NonBillhrs.Fri,
+                    //     // commented on 25 july 2024
+                    //     // SB: BillHrs.Sat == "" ? "0" : BillHrs.Sat,
+                    //     // SNB: NonBillhrs.Sat == "" ? "0" : NonBillhrs.Sat,
+                    //     // SuB: BillHrs.Sun == "" ? "0" : BillHrs.Sun,
+                    //     // SuNB: NonBillhrs.Sun == "" ? "0" : NonBillhrs.Sun,
+                    //     SB: BillHrs.Sat,
+                    //     SNB: NonBillhrs.Sat,
+                    //     SuB: BillHrs.Sun,
+                    //     SuNB: NonBillhrs.Sun,
+                    //     Status: this.getStatus(report.Status),
+                    //     TotalNB: NonBillhrs.Total,
+                    //     TotalB: BillHrs.Total,
+                    //     TotalH: Totalhrs.Total,
+                    // })
 
-                //Below code for Monthly Report
-                let Start=new Date(DateUtilities.GetDateMMDDYYYYAsInList(report.WeekStartDate));
-                let End=addDays(Start,6);
-                let Hours=BillHrs.Total;
-                //IsThisReportForInternal check box related data
-                let [PaidTimeOff,TimeOff,Holiday]=['0', PTOHours.length?PTOHours[0].Total:'0',HolidayTotal.length?parseFloat(HolidayTotal[0].Total):'0'];// if employee not eligible for PTO, consider total time off hours, PTO hours as 0
-                if(report.EligibleforPTO)// if employee eligible for PTO, consider time off hours, PTO hours individually
-                {
-                    [PaidTimeOff,TimeOff]=[PTOSubTotal.length?PTOSubTotal[0].Total:'0', TOSubTotal.length?TOSubTotal[0].Total:'0'];
-                }
-                let GrandTotal =(parseFloat(Hours)+parseFloat(PaidTimeOff)+parseFloat(TimeOff)+parseFloat(Holiday.toString())).toFixed(4); //which excludes the Holiday hours from timesheet
-                let [StartDate,EndDate]=[DateUtilities.getDateMMDDYYYY(Start),DateUtilities.getDateMMDDYYYY(End)];
-                //Below condition is for Handle , scenarios where:
-                // 1.the selected start date falls within the previous month week's timesheet.
-                // 1.the selected end date falls within the next month week's timesheet.
-                if(Start<new Date(SelStartDate) || End>new Date(SelEndDate))
-                {
-                     let Response=this.GetExceedWeekData(BillHrs,blanksHrs,PTOHours,HolidayTotal,StartDate,EndDate,SelStartDate,SelEndDate); // if employee not eligible for PTO, consider total time off hours, PTO hours as 0
-                     if(report.EligibleforPTO)
-                     {
-                         Response=this.GetExceedWeekData(BillHrs,PTOSubTotal,TOSubTotal,HolidayTotal,StartDate,EndDate,SelStartDate,SelEndDate);// if employee eligible for PTO, consider time off hours, PTO hours individually
-                     }
-                     Hours=Response.Hours;
-                     PaidTimeOff=Response.PaidTimeOff;
-                     TimeOff=Response.TimeOff;
-                     Holiday=Response.Holiday;
-                     GrandTotal=Response.GrandTotal;
-                     StartDate=Response.StartDate;
-                     EndDate=Response.EndDate;
-                }
-                let CommentsHistory=[null, undefined ,''].includes(report.CommentsHistory)?[]:JSON.parse(report.CommentsHistory);
-                let [ApprovedBy,ApprovedOn]=['',''];
-                for(let i=CommentsHistory.length-1;i>=0;i--)
-                {
-                       if(CommentsHistory[i].Role.toLowerCase()=="manager" && CommentsHistory[i].Action==StatusType.Approved)
-                       {
-                        let ApprDate=new Date(CommentsHistory[i]["Date"]);
-                        ApprovedBy=CommentsHistory[i].User;
-                        ApprovedOn=DateUtilities.getDateMMDDYYYY(ApprDate)+"  " + ApprDate.toLocaleString('en-US', { timeZone: 'America/New_York', hour12: false }).split(",")[1];
-                        break;
-                       }
-                }
-                if(new Date(StartDate)>=new Date(SelStartDate) && new Date(StartDate)<=new Date(SelEndDate))
-                {
-                    ReportData.push(
-                        {
-                            SNo: row,
-                            EmployeeId: report.Initiator.Id,  
-                            EmployeeName: report.Initiator.Title,
-                            DateRange:`${StartDate} - ${EndDate}`,
-                            BillableHours:parseFloat(Hours) ,
-                            PaidTimeOff:parseFloat(PaidTimeOff) ,
-                            TimeOff:parseFloat(TimeOff) ,
-                            Holiday:parseFloat(Holiday.toString()) ,
-                            GrandTotal:parseFloat(GrandTotal) ,
-                            ApprovedBy: ApprovedBy,
-                            ApprovedOn: ApprovedOn,
-                            //Status : this.getStatus(report.Status)
+                    //Below code for Monthly Report
+                    let Start = new Date(DateUtilities.GetDateMMDDYYYYAsInList(report.WeekStartDate));
+                    let End = addDays(Start, 6);
+                    let Hours = BillHrs.Total;
+                    //IsThisReportForInternal check box related data
+                    let [PaidTimeOff, TimeOff, Holiday] = ['0', PTOHours.length ? PTOHours[0].Total : '0', HolidayTotal.length ? parseFloat(HolidayTotal[0].Total) : '0'];// if employee not eligible for PTO, consider total time off hours, PTO hours as 0
+                    if (report.EligibleforPTO)// if employee eligible for PTO, consider time off hours, PTO hours individually
+                    {
+                        [PaidTimeOff, TimeOff] = [PTOSubTotal.length ? PTOSubTotal[0].Total : '0', TOSubTotal.length ? TOSubTotal[0].Total : '0'];
+                    }
+                    let GrandTotal = (parseFloat(Hours) + parseFloat(PaidTimeOff) + parseFloat(TimeOff) + parseFloat(Holiday.toString())).toFixed(4); //which excludes the Holiday hours from timesheet
+                    let [StartDate, EndDate] = [DateUtilities.getDateMMDDYYYY(Start), DateUtilities.getDateMMDDYYYY(End)];
+                    //Below condition is for Handle , scenarios where:
+                    // 1.the selected start date falls within the previous month week's timesheet.
+                    // 1.the selected end date falls within the next month week's timesheet.
+                    if (Start < new Date(SelStartDate) || End > new Date(SelEndDate)) {
+                        let Response = this.GetExceedWeekData(BillHrs, blanksHrs, PTOHours, HolidayTotal, StartDate, EndDate, SelStartDate, SelEndDate); // if employee not eligible for PTO, consider total time off hours, PTO hours as 0
+                        if (report.EligibleforPTO) {
+                            Response = this.GetExceedWeekData(BillHrs, PTOSubTotal, TOSubTotal, HolidayTotal, StartDate, EndDate, SelStartDate, SelEndDate);// if employee eligible for PTO, consider time off hours, PTO hours individually
                         }
-                    );
-                }
-                row++;
-            });
-            // To Group the data
-           let  GroupedData=ReportData.reduce((acc, item) => {
-                const EmployeeName = item.EmployeeName;
-                if (!acc[EmployeeName]) {
-                    acc[EmployeeName] = [];
-                }
-                acc[EmployeeName].push(item);
-                return acc;
-            }, {});
-           // To sort the Data
-           let SortedReportData = Object.keys(GroupedData)
-           .sort()  // Sort EmployeeName alphabetically
-           .reduce((acc, EmployeeName) => {
-               acc[EmployeeName] = Object.keys(GroupedData[EmployeeName]);
-               acc[EmployeeName] =GroupedData[EmployeeName];
-               return acc;
-           }, {});
+                        Hours = Response.Hours;
+                        PaidTimeOff = Response.PaidTimeOff;
+                        TimeOff = Response.TimeOff;
+                        Holiday = Response.Holiday;
+                        GrandTotal = Response.GrandTotal;
+                        StartDate = Response.StartDate;
+                        EndDate = Response.EndDate;
+                    }
+                    let CommentsHistory = [null, undefined, ''].includes(report.CommentsHistory) ? [] : JSON.parse(report.CommentsHistory);
+                    let [ApprovedBy, ApprovedOn] = ['', ''];
+                    for (let i = CommentsHistory.length - 1; i >= 0; i--) {
+                        if (CommentsHistory[i].Role.toLowerCase() == "manager" && CommentsHistory[i].Action == StatusType.Approved) {
+                            let ApprDate = new Date(CommentsHistory[i]["Date"]);
+                            ApprovedBy = CommentsHistory[i].User;
+                            ApprovedOn = DateUtilities.getDateMMDDYYYY(ApprDate) + "  " + ApprDate.toLocaleString('en-US', { timeZone: 'America/New_York', hour12: false }).split(",")[1];
+                            break;
+                        }
+                    }
+                    if (new Date(StartDate) >= new Date(SelStartDate) && new Date(StartDate) <= new Date(SelEndDate)) {
+                        ReportData.push(
+                            {
+                                SNo: row,
+                                EmployeeId: report.Initiator.Id,
+                                EmployeeName: report.Initiator.Title,
+                                DateRange: `${StartDate} - ${EndDate}`,
+                                BillableHours: parseFloat(Hours),
+                                PaidTimeOff: parseFloat(PaidTimeOff),
+                                TimeOff: parseFloat(TimeOff),
+                                Holiday: parseFloat(Holiday.toString()),
+                                GrandTotal: parseFloat(GrandTotal),
+                                ApprovedBy: ApprovedBy,
+                                ApprovedOn: ApprovedOn,
+                                //Status : this.getStatus(report.Status)
+                            }
+                        );
+                    }
+                    row++;
+                });
+                // To Group the data
+                let GroupedData = ReportData.reduce((acc, item) => {
+                    const EmployeeName = item.EmployeeName;
+                    if (!acc[EmployeeName]) {
+                        acc[EmployeeName] = [];
+                    }
+                    acc[EmployeeName].push(item);
+                    return acc;
+                }, {});
+                // To sort the Data
+                let SortedReportData = Object.keys(GroupedData)
+                    .sort()  // Sort EmployeeName alphabetically
+                    .reduce((acc, EmployeeName) => {
+                        acc[EmployeeName] = Object.keys(GroupedData[EmployeeName]);
+                        acc[EmployeeName] = GroupedData[EmployeeName];
+                        return acc;
+                    }, {});
 
-            // Sort the final array based on client and initiator
-            PDFData.sort((a, b) => {
-                if (a.ClientName !== b.ClientName) {
-                    return a.ClientName.localeCompare(b.ClientName);
-                } else {
-                    return a.Name.localeCompare(b.Name);
-                }
-            });
-            this.setState({ ReportData: SortedReportData, PDFData: PDFData, loading: false ,fileName: `Timesheet Report (${SelStartDate.replaceAll("/", "-")} To ${SelEndDate.replaceAll("/", "-")}) -  ${client}`});
+                // Sort the final array based on client and initiator
+                PDFData.sort((a, b) => {
+                    if (a.ClientName !== b.ClientName) {
+                        return a.ClientName.localeCompare(b.ClientName);
+                    } else {
+                        return a.Name.localeCompare(b.Name);
+                    }
+                });
+                this.setState({ ReportData: SortedReportData, PDFData: PDFData, loading: false, fileName: `Timesheet Report (${SelStartDate.replaceAll("/", "-")} To ${SelEndDate.replaceAll("/", "-")}) -  ${client}` });
+            }
+            else {
+                customToaster('toster-error', ToasterTypes.Error, 'No timesheets found!', 4000);
+                this.setState({ ReportData: [], PDFData: [], loading: false });
+            }
         }
-        else {
-            customToaster('toster-error', ToasterTypes.Error, 'No timesheets found!', 4000);
-            this.setState({ReportData: [], PDFData: [], loading: false });
-        }
-        }
-        catch(Error)
-        {
-            console.log('Failed to get Reort Data' +Error);
-            this.setState({loading: false});
+        catch (Error) {
+            console.log('Failed to get Reort Data' + Error);
+            this.setState({ loading: false });
         }
     }
-    private GetExceedWeekData=(BillHrs,PTOSubTotal,TOSubTotal,HolidayTotal,StartDate,EndDate,SelStartDate,SelEndDate)=>{
-        let Obj={Hours:'0',PaidTimeOff:'0',TimeOff:'0',Holiday:'0',GrandTotal:'0',StartDate:'',EndDate:''};
+    private GetExceedWeekData = (BillHrs, PTOSubTotal, TOSubTotal, HolidayTotal, StartDate, EndDate, SelStartDate, SelEndDate) => {
+        let Obj = { Hours: '0', PaidTimeOff: '0', TimeOff: '0', Holiday: '0', GrandTotal: '0', StartDate: '', EndDate: '' };
         let days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-        let currDate=new Date(StartDate);
-        let [Hours,PaidTimeOff,TimeOff,Holiday,GrandTotal,Start,End]=[0,0,0,0,0,null,null];
+        let currDate = new Date(StartDate);
+        let [Hours, PaidTimeOff, TimeOff, Holiday, GrandTotal, Start, End] = [0, 0, 0, 0, 0, null, null];
         for (let i = 0; i < 7; i++) {
             let date = new Date(currDate);
-            if(date>=new Date(SelStartDate) && date <=new Date(SelEndDate))
-            {
-                Hours+=parseFloat(['',null,undefined].includes(BillHrs[days[date.getDay()]])?0:BillHrs[days[date.getDay()]]); //null handling for case of Synergy Office hours includes may be empty
-                if(PTOSubTotal.length && !["Sat","Sun"].includes(days[date.getDay()]))
-                PaidTimeOff+=parseFloat(PTOSubTotal[0][days[date.getDay()]]); //for calculating Paid time off
-                if(TOSubTotal.length && !["Sat","Sun"].includes(days[date.getDay()]))
-                TimeOff+=parseFloat(['',null,undefined].includes(TOSubTotal[0][days[date.getDay()]])?0:TOSubTotal[0][days[date.getDay()]]); //for calculating  time off ,null handling for case of time off hours for PTO not eligible employees includes may be empty
-                Holiday+=parseFloat(['',null,undefined].includes(HolidayTotal[0][days[date.getDay()]])?0:HolidayTotal[0][days[date.getDay()]]); //for calculating Holiday ,null handling for case of holiday hours includes may be empty
-                GrandTotal+=(parseFloat(['',null,undefined].includes(BillHrs[days[date.getDay()]])?0:BillHrs[days[date.getDay()]]) + ((PTOSubTotal.length && !["Sat","Sun"].includes(days[date.getDay()]))?parseFloat(PTOSubTotal[0][days[date.getDay()]]):0) + ((TOSubTotal.length && !["Sat","Sun"].includes(days[date.getDay()]))?parseFloat(['',null,undefined].includes(TOSubTotal[0][days[date.getDay()]])?0:TOSubTotal[0][days[date.getDay()]]):0) +parseFloat(['',null,undefined].includes(HolidayTotal[0][days[date.getDay()]])?0:HolidayTotal[0][days[date.getDay()]])); // for calculating Grand total = Biil hours + paid time off + time off
-                if(Start==null)
-                {
+            if (date >= new Date(SelStartDate) && date <= new Date(SelEndDate)) {
+                Hours += parseFloat(['', null, undefined].includes(BillHrs[days[date.getDay()]]) ? 0 : BillHrs[days[date.getDay()]]); //null handling for case of Synergy Office hours includes may be empty
+                if (PTOSubTotal.length && !["Sat", "Sun"].includes(days[date.getDay()]))
+                    PaidTimeOff += parseFloat(PTOSubTotal[0][days[date.getDay()]]); //for calculating Paid time off
+                if (TOSubTotal.length && !["Sat", "Sun"].includes(days[date.getDay()]))
+                    TimeOff += parseFloat(['', null, undefined].includes(TOSubTotal[0][days[date.getDay()]]) ? 0 : TOSubTotal[0][days[date.getDay()]]); //for calculating  time off ,null handling for case of time off hours for PTO not eligible employees includes may be empty
+                Holiday += parseFloat(['', null, undefined].includes(HolidayTotal[0][days[date.getDay()]]) ? 0 : HolidayTotal[0][days[date.getDay()]]); //for calculating Holiday ,null handling for case of holiday hours includes may be empty
+                GrandTotal += (parseFloat(['', null, undefined].includes(BillHrs[days[date.getDay()]]) ? 0 : BillHrs[days[date.getDay()]]) + ((PTOSubTotal.length && !["Sat", "Sun"].includes(days[date.getDay()])) ? parseFloat(PTOSubTotal[0][days[date.getDay()]]) : 0) + ((TOSubTotal.length && !["Sat", "Sun"].includes(days[date.getDay()])) ? parseFloat(['', null, undefined].includes(TOSubTotal[0][days[date.getDay()]]) ? 0 : TOSubTotal[0][days[date.getDay()]]) : 0) + parseFloat(['', null, undefined].includes(HolidayTotal[0][days[date.getDay()]]) ? 0 : HolidayTotal[0][days[date.getDay()]])); // for calculating Grand total = Biil hours + paid time off + time off
+                if (Start == null) {
                     Start = date;
                 }
-                    End=date;
+                End = date;
             }
             currDate.setDate(currDate.getDate() + 1);
         }
@@ -553,7 +549,7 @@ class MonthlyTimesheetReport extends React.Component<MonthlyTimesheetReportProps
         return Obj;
     }
     private downloadExcel(startDate) {
-        this.setState({loading:true})
+        this.setState({ loading: true })
         const wb = XLSX.utils.book_new();
         let Excelheaders = this.constructExcelHeader()
         let finalData = this.generateExcelData(this.state.ReportData, Excelheaders)
@@ -596,15 +592,15 @@ class MonthlyTimesheetReport extends React.Component<MonthlyTimesheetReportProps
         let SD = startDate.replaceAll("/", "-")
         XLSX.utils.book_append_sheet(wb, finalWorkshetData, `WE ${SD}`);
         // STEP 4: Write Excel file to browser
-        XLSX.writeFile(wb, this.state.fileName+'.xlsx');
-        this.setState({loading:false})
+        XLSX.writeFile(wb, this.state.fileName + '.xlsx');
+        this.setState({ loading: false })
     }
     private constructTable(ReportData) {
-        let [StartDate,EndDate]=[new Date(this.state.startDate),new Date(this.state.endDate)];
-        let [Start,End]=[DateUtilities.getDateMMDDYYYY(StartDate),DateUtilities.getDateMMDDYYYY(EndDate)];
-        let TableHeaders=['S.NO','Employee Name','Date Range','Billable Hours','Approved By','Approved On (EST)'];
-        if(this.state.IsThisReportForInternal)
-         TableHeaders=['S.NO','Employee Name','Date Range','Billable Hours','Paid Time Off','Time off','Holiday','Grand Total','Approved By','Approved On (EST)'];
+        let [StartDate, EndDate] = [new Date(this.state.startDate), new Date(this.state.endDate)];
+        let [Start, End] = [DateUtilities.getDateMMDDYYYY(StartDate), DateUtilities.getDateMMDDYYYY(EndDate)];
+        let TableHeaders = ['S.NO', 'Employee Name', 'Date Range', 'Billable Hours', 'Approved By', 'Approved On (EST)'];
+        if (this.state.IsThisReportForInternal)
+            TableHeaders = ['S.NO', 'Employee Name', 'Date Range', 'Billable Hours', 'Paid Time Off', 'Time off', 'Holiday', 'Grand Total', 'Approved By', 'Approved On (EST)'];
         // let date = new Date(this.state.startDate);
         // let dateArray = []
         // let days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
@@ -616,18 +612,18 @@ class MonthlyTimesheetReport extends React.Component<MonthlyTimesheetReportProps
         return (
             <div className='border-box-shadow light-box p-2'>
                 <div className='t-div txt-center dataTables_wrapper-overflow'>
-                     {/* <div id='pdfMessage'>Note: The PDF button generates only individual timesheets that have been approved by the manager or reviewer.</div> btnTitle='Export manager/reviewer approved individual timesheets in PDF'*/}
-                     {/* <a type="button" id="btnDownloadFile" title='Export all timesheets to excel' className="a-export-excel txt-center" onClick={(e) => this.downloadExcel(`${this.state.startDate.getMonth() + 1}/${this.state.startDate.getDate()}/${this.state.startDate.getFullYear()}`)}> Export to Excel
+                    {/* <div id='pdfMessage'>Note: The PDF button generates only individual timesheets that have been approved by the manager or reviewer.</div> btnTitle='Export manager/reviewer approved individual timesheets in PDF'*/}
+                    {/* <a type="button" id="btnDownloadFile" title='Export all timesheets to excel' className="a-export-excel txt-center" onClick={(e) => this.downloadExcel(`${this.state.startDate.getMonth() + 1}/${this.state.startDate.getDate()}/${this.state.startDate.getFullYear()}`)}> Export to Excel
                     <FontAwesomeIcon icon={faFileExcel} className=''></FontAwesomeIcon>
                     </a> */}
-                    <ExportPDFMonthlyReport ReportData={this.state.ReportData} ReportHeaders={TableHeaders} IsThisReportForInternal={this.state.IsThisReportForInternal} ReportFields={{'ClientName':this.state.ClientName,'StartDate':Start,'EndDate':End}}  ClientName={this.state.ClientName} DateRange={`${Start} - ${End}`} LogoImgUrl={this.siteURL + '/PublishingImages/SynergyLogo.png'} filename={this.state.fileName} btnTitle='Export Bi-Weekly report to PDF' className='a-export-pdf-button'></ExportPDFMonthlyReport>
+                    <ExportPDFMonthlyReport ReportData={this.state.ReportData} ReportHeaders={TableHeaders} IsThisReportForInternal={this.state.IsThisReportForInternal} ReportFields={{ 'ClientName': this.state.ClientName, 'StartDate': Start, 'EndDate': End }} ClientName={this.state.ClientName} DateRange={`${Start} - ${End}`} LogoImgUrl={this.siteURL + '/PublishingImages/SynergyLogo.png'} filename={this.state.fileName} btnTitle='Export Bi-Weekly report to PDF' className='a-export-pdf-button'></ExportPDFMonthlyReport>
                 </div>
                 <div id="WeeklyTableResponsive" className='table-responsive dataTables_wrapper-overflow mt-2'>
                     <table className="tblMonthlyTimesheetReport" width="100%">
                         <thead id="theadMonthlyTimesheetReport">
                             <tr className='tr-brd'>
                                 <th colSpan={2}><div className='Wr-fz-16 text-center'>{this.state.ClientName}</div></th>
-                                <th colSpan={this.state.IsThisReportForInternal?8:4}><div className='Wr-fz-16 text-center'>{Start} - {End}</div></th>
+                                <th colSpan={this.state.IsThisReportForInternal ? 8 : 4}><div className='Wr-fz-16 text-center'>{Start} - {End}</div></th>
                             </tr>
                             <tr className='tr-brd-2'>
                                 {this.getTableHeadings(TableHeaders)}
@@ -643,73 +639,68 @@ class MonthlyTimesheetReport extends React.Component<MonthlyTimesheetReportProps
         );
     }
     private generateTableRows(ReportData) {
-        let EmpRows=[];
-        let count=1;
-        for(let Emp in ReportData)
-        {
-            EmpRows.push(this.getEmpWeekStartDateRows(ReportData[Emp],count));
+        let EmpRows = [];
+        let count = 1;
+        for (let Emp in ReportData) {
+            EmpRows.push(this.getEmpWeekStartDateRows(ReportData[Emp], count));
             count++;
         }
         return EmpRows;
     }
-    private getEmpWeekStartDateRows(EmpData,count) {
-        let WSRows=[];
-        let rowCount=1;
-        for(let i in EmpData)
-        {
-            if(rowCount==1)
-            {
-                if(this.state.IsThisReportForInternal)
-                {
-              WSRows.push(<tr className='' key={count}>
-                         <td className={`txt-center ${count%2==1?'OddSlNo':'EvenSlNo'}`} rowSpan={EmpData.length}>{count}</td>
-                         <td className={`text-dark ${count%2==1?'OddSlNo':'EvenSlNo'}`}  rowSpan={EmpData.length}>{EmpData[i].EmployeeName}</td>
-                         <td className=''>{EmpData[i].DateRange}</td>
-                         <td className=''>{EmpData[i].BillableHours}</td>
-                         <td className=''>{EmpData[i].PaidTimeOff}</td>
-                         <td className=''>{EmpData[i].TimeOff}</td>
-                         <td className=''>{EmpData[i].Holiday}</td>
-                         <td className=''>{EmpData[i].GrandTotal}</td>
-                         <td className=''>{EmpData[i].ApprovedBy}</td>
-                         <td className=''>{EmpData[i].ApprovedOn}</td>
-                         {/* <td className='text-center' title={EmpData[i].Status}><span className={`${this.getStatusClass(EmpData[i].Status)}`}>{this.showRMStatus(EmpData[i].Status)}</span></td> */}
-                        </tr>)
+    private getEmpWeekStartDateRows(EmpData, count) {
+        let WSRows = [];
+        let rowCount = 1;
+        for (let i in EmpData) {
+            if (rowCount == 1) {
+                if (this.state.IsThisReportForInternal) {
+                    WSRows.push(<tr className='' key={count}>
+                        <td className={`txt-center ${count % 2 == 1 ? 'OddSlNo' : 'EvenSlNo'}`} rowSpan={EmpData.length}>{count}</td>
+                        <td className={`text-dark ${count % 2 == 1 ? 'OddSlNo' : 'EvenSlNo'}`} rowSpan={EmpData.length}>{EmpData[i].EmployeeName}</td>
+                        <td className=''>{EmpData[i].DateRange}</td>
+                        <td className=''>{EmpData[i].BillableHours}</td>
+                        <td className=''>{EmpData[i].PaidTimeOff}</td>
+                        <td className=''>{EmpData[i].TimeOff}</td>
+                        <td className=''>{EmpData[i].Holiday}</td>
+                        <td className=''>{EmpData[i].GrandTotal}</td>
+                        <td className=''>{EmpData[i].ApprovedBy}</td>
+                        <td className=''>{EmpData[i].ApprovedOn}</td>
+                        {/* <td className='text-center' title={EmpData[i].Status}><span className={`${this.getStatusClass(EmpData[i].Status)}`}>{this.showRMStatus(EmpData[i].Status)}</span></td> */}
+                    </tr>)
                 }
-                else{
-                      WSRows.push(<tr className='' key={count}>
-                         <td className={`txt-center ${count%2==1?'OddSlNo':'EvenSlNo'}`} rowSpan={EmpData.length}>{count}</td>
-                         <td className={`text-dark ${count%2==1?'OddSlNo':'EvenSlNo'}`}  rowSpan={EmpData.length}>{EmpData[i].EmployeeName}</td>
-                         <td className=''>{EmpData[i].DateRange}</td>
-                         <td className=''>{EmpData[i].BillableHours}</td>
-                         <td className=''>{EmpData[i].ApprovedBy}</td>
-                         <td className=''>{EmpData[i].ApprovedOn}</td>
-                         {/* <td className='text-center' title={EmpData[i].Status}><span className={`${this.getStatusClass(EmpData[i].Status)}`}>{this.showRMStatus(EmpData[i].Status)}</span></td> */}
-                        </tr>)
+                else {
+                    WSRows.push(<tr className='' key={count}>
+                        <td className={`txt-center ${count % 2 == 1 ? 'OddSlNo' : 'EvenSlNo'}`} rowSpan={EmpData.length}>{count}</td>
+                        <td className={`text-dark ${count % 2 == 1 ? 'OddSlNo' : 'EvenSlNo'}`} rowSpan={EmpData.length}>{EmpData[i].EmployeeName}</td>
+                        <td className=''>{EmpData[i].DateRange}</td>
+                        <td className=''>{EmpData[i].BillableHours}</td>
+                        <td className=''>{EmpData[i].ApprovedBy}</td>
+                        <td className=''>{EmpData[i].ApprovedOn}</td>
+                        {/* <td className='text-center' title={EmpData[i].Status}><span className={`${this.getStatusClass(EmpData[i].Status)}`}>{this.showRMStatus(EmpData[i].Status)}</span></td> */}
+                    </tr>)
                 }
             }
-            else{
-                if(this.state.IsThisReportForInternal)
-                {
-                WSRows.push(<tr className='' key={count}>
-                    <td className=''>{EmpData[i].DateRange}</td>
-                    <td className=''>{EmpData[i].BillableHours}</td>
-                     <td className=''>{EmpData[i].PaidTimeOff}</td>
-                    <td className=''>{EmpData[i].TimeOff}</td>
-                    <td className=''>{EmpData[i].Holiday}</td>
-                    <td className=''>{EmpData[i].GrandTotal}</td>
-                    <td className=''>{EmpData[i].ApprovedBy}</td>
-                    <td className=''>{EmpData[i].ApprovedOn}</td>
-                    {/* <td className='text-center' title={EmpData[i].Status}><span className={`${this.getStatusClass(EmpData[i].Status)}`}>{this.showRMStatus(EmpData[i].Status)}</span></td> */}
-                   </tr>)
-                }
-                else{
+            else {
+                if (this.state.IsThisReportForInternal) {
                     WSRows.push(<tr className='' key={count}>
-                    <td className=''>{EmpData[i].DateRange}</td>
-                    <td className=''>{EmpData[i].BillableHours}</td>
-                    <td className=''>{EmpData[i].ApprovedBy}</td>
-                    <td className=''>{EmpData[i].ApprovedOn}</td>
-                    {/* <td className='text-center' title={EmpData[i].Status}><span className={`${this.getStatusClass(EmpData[i].Status)}`}>{this.showRMStatus(EmpData[i].Status)}</span></td> */}
-                   </tr>)
+                        <td className=''>{EmpData[i].DateRange}</td>
+                        <td className=''>{EmpData[i].BillableHours}</td>
+                        <td className=''>{EmpData[i].PaidTimeOff}</td>
+                        <td className=''>{EmpData[i].TimeOff}</td>
+                        <td className=''>{EmpData[i].Holiday}</td>
+                        <td className=''>{EmpData[i].GrandTotal}</td>
+                        <td className=''>{EmpData[i].ApprovedBy}</td>
+                        <td className=''>{EmpData[i].ApprovedOn}</td>
+                        {/* <td className='text-center' title={EmpData[i].Status}><span className={`${this.getStatusClass(EmpData[i].Status)}`}>{this.showRMStatus(EmpData[i].Status)}</span></td> */}
+                    </tr>)
+                }
+                else {
+                    WSRows.push(<tr className='' key={count}>
+                        <td className=''>{EmpData[i].DateRange}</td>
+                        <td className=''>{EmpData[i].BillableHours}</td>
+                        <td className=''>{EmpData[i].ApprovedBy}</td>
+                        <td className=''>{EmpData[i].ApprovedOn}</td>
+                        {/* <td className='text-center' title={EmpData[i].Status}><span className={`${this.getStatusClass(EmpData[i].Status)}`}>{this.showRMStatus(EmpData[i].Status)}</span></td> */}
+                    </tr>)
                 }
             }
             rowCount++;
@@ -726,16 +717,15 @@ class MonthlyTimesheetReport extends React.Component<MonthlyTimesheetReportProps
         // ));
         return WSRows;
     }
-    private getTableHeadings=(TableHeaders)=>
-    {
-        let headings=[];
-        for(let index in TableHeaders){
+    private getTableHeadings = (TableHeaders) => {
+        let headings = [];
+        for (let index in TableHeaders) {
             if (Number(index) == 0)
                 headings.push(<th ><div className='text-center'>{TableHeaders[index]}</div></th>);
             else if (Number(index) == 1)
                 headings.push(<th ><div className='WR-w-155'>{TableHeaders[index]}</div></th>);
             else
-            headings.push(<th ><div className=''>{TableHeaders[index]}</div></th>);
+                headings.push(<th ><div className=''>{TableHeaders[index]}</div></th>);
         }
         return headings;
     }
@@ -752,14 +742,14 @@ class MonthlyTimesheetReport extends React.Component<MonthlyTimesheetReportProps
         }
         return Status
     }
-    private showRMStatus(status){
-        if(status == 'Approved by Reporting Manager'){
+    private showRMStatus(status) {
+        if (status == 'Approved by Reporting Manager') {
             return 'RM Approved'
         }
-        else if(status == 'Rejected by Reporting Manager'){
+        else if (status == 'Rejected by Reporting Manager') {
             return "RM Rejected"
         }
-        else if(status=="Rejected by Synergy"){
+        else if (status == "Rejected by Synergy") {
             return "Reviewer Rejected"
         }
         return status
@@ -1185,23 +1175,23 @@ class MonthlyTimesheetReport extends React.Component<MonthlyTimesheetReportProps
             else if ([11, 13].includes(i))
                 bgColor = 'FCE4D6'
 
-             if (![15,16,17,18].includes(i)){
-                i !=19?
-                row2.push({
-                    v: '', t: "s", s: {
-                        alignment: { vertical: "center", horizontal: "left" }, font: { bold: false, sz: 12, color: { rgb: "000000" } }, fill: { fgColor: { rgb: bgColor } }, border: {}
-                    }
-                }):
-                row2.push({
-                    v: '', t: "s", s: {
-                        alignment: { vertical: "center", horizontal: "left" }, font: { bold: false, sz: 12, color: { rgb: "000000" } }, fill: { fgColor: { rgb: bgColor } }, border: {
-                            // top: { style: 'thin', color: { rgb: "000000" } },
-                            // left: { style: 'thin', color: { rgb: "000000" } },
-                            bottom: { style: 'thin', color: { rgb: "000000" } },
-                            right: { style: 'thin', color: { rgb: "000000" } },
+            if (![15, 16, 17, 18].includes(i)) {
+                i != 19 ?
+                    row2.push({
+                        v: '', t: "s", s: {
+                            alignment: { vertical: "center", horizontal: "left" }, font: { bold: false, sz: 12, color: { rgb: "000000" } }, fill: { fgColor: { rgb: bgColor } }, border: {}
                         }
-                    }
-                })
+                    }) :
+                    row2.push({
+                        v: '', t: "s", s: {
+                            alignment: { vertical: "center", horizontal: "left" }, font: { bold: false, sz: 12, color: { rgb: "000000" } }, fill: { fgColor: { rgb: bgColor } }, border: {
+                                // top: { style: 'thin', color: { rgb: "000000" } },
+                                // left: { style: 'thin', color: { rgb: "000000" } },
+                                bottom: { style: 'thin', color: { rgb: "000000" } },
+                                right: { style: 'thin', color: { rgb: "000000" } },
+                            }
+                        }
+                    })
             }
             else
                 row2.push({
@@ -1218,16 +1208,16 @@ class MonthlyTimesheetReport extends React.Component<MonthlyTimesheetReportProps
         worksheetRows.push(row2)
         return worksheetRows
     }
-     private getcurrWeekSunDay=()=>{
-            let date=new Date();
-            if(new Date(date).getDay() === 0){
-              return new Date(date)
-            }
-            else{
-              return addDays(new Date(),7-(new Date().getDay()));
-            }
+    private getcurrWeekSunDay = () => {
+        let date = new Date();
+        if (new Date(date).getDay() === 0) {
+            return new Date(date)
         }
-    
+        else {
+            return addDays(new Date(), 7 - (new Date().getDay()));
+        }
+    }
+
     public render() {
         if (!this.state.isPageAccessable) {
             let url = this.siteURL + "/SitePages/AccessDenied.aspx";
@@ -1241,46 +1231,48 @@ class MonthlyTimesheetReport extends React.Component<MonthlyTimesheetReportProps
             return (
                 <React.Fragment>
                     <div id="content" className="content p-2 pt-2">
-                    <div className='container-fluid'>
-                        <div className='FormContent'>
-                            <div className="title"> Bi-Weekly Report
-                                <div className='mandatory-note'>
-                                    <span className='mandatoryhastrick'>*</span> indicates a required field
-                                </div>
-                            </div>
-                            <div className="after-title"></div>
-                            <div className="media-m-2 media-p-1">
-                                <div className="my-2">
-                                    <div className="row pt-2 px-2">
-                                        <div className="col-md-3">
-                                            <div className="custom-dropdown">
-                                                <SearchableDropdown label="Client" Title="Client" name="ClientName" id="Client" placeholderText="Select Client" className="" selectedValue={this.state.ClientName} optionLabel={'Title'} optionValue={'Title'} OptionsList={this.state.ClientsObject} onChange={(selectedOption, actionMeta) => { this.handleClientChange(selectedOption, actionMeta) }} isRequired={true} refElement={this.client} noOptionsMessage="No Client"></SearchableDropdown>
-                                            </div>
-                                        </div>
-                                        <div className="col-md-3">
-                                            <div className="custom-dropdown">
-                                                <SearchableDropdown label="Employee" Title="Employee" name="InitiatorId" id="Employee" placeholderText="Select Employee" className="" selectedValue={this.state.InitiatorId} optionLabel={'Title'} optionValue={'ID'} OptionsList={this.state.EmployeesObj} onChange={(selectedOption, actionMeta) => { this.handleChangeEvents(selectedOption, actionMeta) }} isRequired={true} refElement={this.EmployeeDropdown} noOptionsMessage="No Employee"></SearchableDropdown>
-                                            </div>
-                                        </div>
-                                        <div className="col-md-3">
-                                            <div className="light-text div-readonly">
-                                                <label className="z-in-9">Start Date<span className="mandatoryhastrick">*</span></label>
-                                                <div className="custom-datepicker" id="divStartDate">
-                                                    <DatePicker onDatechange={this.handleStartorEndDate} selectedDate={this.state.startDate} ref={this.startDate} endDate={new Date()} placeholderText='MM/DD/YYYY' id={'txtStartDate'} title={"Start Date"}/>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div className="col-md-3">
-                                            <div className="light-text div-readonly">
-                                                <label className="z-in-9">End Date<span className="mandatoryhastrick">*</span></label>
-                                                <div className="custom-datepicker" id="divEndDate">
-                                                    <DatePicker onDatechange={this.handleStartorEndDate} ref={this.endDate} endDate={this.getcurrWeekSunDay()} selectedDate={this.state.endDate} id={'txtEndDate'} title={"End Date"}/>
-                                                </div>
-                                            </div>
-                                        </div>
+                        <div className='container-fluid'>
+                            <div className='FormContent'>
+                                <div className="title"> Bi-Weekly Report
+                                    <div className='mandatory-note'>
+                                        <span className='mandatoryhastrick'>*</span> indicates a required field
                                     </div>
-                                    <div className="row pt-2 px-2">
-                                         <div className="col-md-3">
+                                </div>
+                                <div className="after-title"></div>
+                                <div className="media-m-2 media-p-1">
+                                    <div className="my-2">
+                                        <div className="row pt-2 px-2">
+                                            <div className="col-md-3">
+                                                <div className="custom-dropdown">
+                                                    <SearchableDropdown label="Client" Title="Client" name="ClientName" id="Client" placeholderText="Select Client" className="" selectedValue={this.state.ClientName} optionLabel={'Title'} optionValue={'Title'} OptionsList={this.state.ClientsObject} onChange={(selectedOption, actionMeta) => { this.handleClientChange(selectedOption, actionMeta) }} isRequired={true} refElement={this.client} noOptionsMessage="No Client"></SearchableDropdown>
+                                                </div>
+                                            </div>
+                                            <div className="col-md-3">
+                                                <div className="custom-dropdown">
+                                                    {/* <SearchableDropdown label="Employee" Title="Employee" name="InitiatorId" id="Employee" placeholderText="Select Employee" className="" selectedValue={this.state.InitiatorId} optionLabel={'Title'} optionValue={'ID'} OptionsList={this.state.EmployeesObj} onChange={(selectedOption, actionMeta) => { this.handleChangeEvents(selectedOption, actionMeta) }} isRequired={true} refElement={this.EmployeeDropdown} noOptionsMessage="No Employee"></SearchableDropdown> */}
+                                                    <MultiSelectDropdown label="Employee" Title="Employee" name="InitiatorId" id="Employee" placeholderText="Select Employee" className="" selectedValue={this.state.InitiatorId} optionLabel={'Title'} optionValue={'ID'} OptionsList={this.state.EmployeesObj} onChange={(selectedOption, actionMeta) => { this.handleChangeEvents(selectedOption, actionMeta) }} isRequired={true} refElement={this.EmployeeDropdown} noOptionsMessage="No Employee"></MultiSelectDropdown>
+
+                                                </div>
+                                            </div>
+                                            <div className="col-md-3">
+                                                <div className="light-text div-readonly">
+                                                    <label className="z-in-9">Start Date<span className="mandatoryhastrick">*</span></label>
+                                                    <div className="custom-datepicker" id="divStartDate">
+                                                        <DatePicker onDatechange={this.handleStartorEndDate} selectedDate={this.state.startDate} ref={this.startDate} endDate={new Date()} placeholderText='MM/DD/YYYY' id={'txtStartDate'} title={"Start Date"} />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div className="col-md-3">
+                                                <div className="light-text div-readonly">
+                                                    <label className="z-in-9">End Date<span className="mandatoryhastrick">*</span></label>
+                                                    <div className="custom-datepicker" id="divEndDate">
+                                                        <DatePicker onDatechange={this.handleStartorEndDate} ref={this.endDate} endDate={this.getcurrWeekSunDay()} selectedDate={this.state.endDate} id={'txtEndDate'} title={"End Date"} />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div className="row pt-2 px-2">
+                                            <div className="col-md-3">
                                                 <div className="light-text">
                                                     <InputCheckBox
                                                         label={"Is This Report for Internal?"}
@@ -1293,18 +1285,18 @@ class MonthlyTimesheetReport extends React.Component<MonthlyTimesheetReportProps
                                                     />
                                                 </div>
                                             </div>
+                                        </div>
                                     </div>
-                                </div>
-                                <div className="row mx-1" id="">
-                                    <div className="col-sm-12 text-center my-4" id="">
-                                        <button type="button" className="SubmitButtons btn" onClick={this.handleSubmit} title={'Search'}>Search</button>
-                                        <button type="button" className="CancelButtons btn" onClick={this.handleCancel} title={'Clear'}>Clear</button>
+                                    <div className="row mx-1" id="">
+                                        <div className="col-sm-12 text-center my-4" id="">
+                                            <button type="button" className="SubmitButtons btn" onClick={this.handleSubmit} title={'Search'}>Search</button>
+                                            <button type="button" className="CancelButtons btn" onClick={this.handleCancel} title={'Clear'}>Clear</button>
+                                        </div>
                                     </div>
+                                    {Object.keys(this.state.ReportData).length > 0 ? this.constructTable(this.state.ReportData) : ''}
                                 </div>
-                                {Object.keys(this.state.ReportData).length > 0 ? this.constructTable(this.state.ReportData) : ''}
                             </div>
                         </div>
-                    </div>
                     </div>
                     {this.state.showToaster && <Toaster />}
                     {this.state.loading && <Loader />}

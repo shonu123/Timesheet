@@ -4011,6 +4011,10 @@ a#btnDownloadPDFFile:hover.a-export-pdf-button .fa-file-pdf {
   box-shadow: 0 0 0 0.2rem rgba(223, 43, 42, .75) !important;
   border-color: transparent !important;
 }
+.multiSelectMandatory {
+  box-shadow: 0 0 0 0.2rem rgba(223, 43, 42, .75) !important;
+  border-color: transparent !important;
+}
 
 .css-1nmdiq5-menu {
   z-index: 100 !important;
@@ -4246,4 +4250,28 @@ a#btnDownloadPDFFile:hover.a-export-pdf-button .fa-file-pdf {
   border-radius: 22px;
   font-size: 15px;
   border: 2px solid#bba71bad;
+}
+/* Multiselect dropdown css */
+.custom-dropdown .MuiInput-formControl {
+    margin-top: 0;
+    border: 1px solid #cccccc;
+    border-radius: 4px;
+    box-shadow: none;
+    min-height: 38px;
+    padding: 2px 8px;
+}
+.custom-dropdown .MuiFormControl-root {
+    margin: 0 !important;
+    width: 100% !important;
+}
+.MuiInput-underline:before{
+    border-bottom: none;
+}
+.MuiSelect-selectMenu {
+    max-width: 550px;
+}
+.light-text .form-control {
+    width: 100%;
+    border: 1px solid #cccccc !important;
+    min-height: 38px;
 }

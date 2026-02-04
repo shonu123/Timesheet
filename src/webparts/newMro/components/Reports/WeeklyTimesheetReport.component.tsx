@@ -14,9 +14,10 @@ import "@pnp/sp/files";
 import "@pnp/sp/folders";
 import "@pnp/sp/site-users/web";
 import "@pnp/sp/site-groups";
-import { highlightCurrentNav} from '../../Utilities/HighlightCurrentComponent';
+import { highlightCurrentNav } from '../../Utilities/HighlightCurrentComponent';
 import CustomDatePicker from "../Shared/DatePicker";
 import SearchableDropdown from '../Shared/SearchableDropdown';
+import MultiSelectDropdown from '../Shared/MultiSelectDropdown';
 import { Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import customToaster from '../Shared/Toaster.component';
@@ -62,13 +63,13 @@ class WeeklyTimesheetReport extends React.Component<WeeklyTimesheetReportProps, 
         // EmployeeId: null,
         // EmployeeEmail: '',
         ClientName: '',
-        InitiatorId: '0',
+        InitiatorId: [],
         startDate: null,
         endDate: null,
         ClientsObject: [],
         EmployeesObj: [],
         AllEmployees: [],
-       
+
         loading: false,
         Homeredirect: false,
         isPageAccessable: true,
@@ -116,31 +117,29 @@ class WeeklyTimesheetReport extends React.Component<WeeklyTimesheetReportProps, 
                 EmpObj.push({ ID: name.Employee.ID, Title: name.Employee.Title })
             }
         }
-        EmpObj.sort((a,b)=>a.Title.localeCompare(b.Title));
-        if (Clients.length > 0){
+        EmpObj.sort((a, b) => a.Title.localeCompare(b.Title));
+        if (Clients.length > 0) {
             //Clients.unshift({Title:"All Clients"});
-            EmpObj.unshift({ID:"0",Title:"All Employees"});
+            //EmpObj.unshift({ID:"0",Title:"All Employees"});
             this.setState({ AllEmployees: EmpObj, EmployeesObj: EmpObj, ClientsObject: Clients, loading: false, isHavingClients: true, showToaster: true })
         }
         else
             this.setState({ AllEmployees: EmpObj, EmployeesObj: EmpObj, ClientsObject: Clients, loading: false, isHavingClients: false, showToaster: true })
     }
-    private handleClientChange = (event,actionMeta?) => {
+    private handleClientChange = (event, actionMeta?) => {
         this.setState({ loading: true });
         // let { name } = event.target;
         // let value = event.target.value;
-        let  name,inputvalue,value;
+        let name, inputvalue, value;
         //Below is condition for handle common change function for both react select dropdown  and normal controls
-        if(![null, undefined].includes(event) && event.target != undefined)
-        {
+        if (![null, undefined].includes(event) && event.target != undefined) {
             name = event.target.name;
             inputvalue = event.target.value;
             value = event.target.type == 'checkbox' ? event.target.checked : inputvalue;
         }
-        else if(actionMeta!= undefined)
-        {
+        else if (actionMeta != undefined) {
             name = actionMeta.name;
-            value =actionMeta.action =='clear'?'': event.value; 
+            value = actionMeta.action == 'clear' ? '' : event.value;
         }
         this.setState({ [name]: value, WeeklyData: [], fileName: 'Weekly Timesheet Report - ' + value });
         this.getClientEmployees(value)
@@ -159,35 +158,37 @@ class WeeklyTimesheetReport extends React.Component<WeeklyTimesheetReportProps, 
                     EmpObj.push({ ID: name.Employee.ID, Title: name.Employee.Title })
                 }
             }
-            if (EmpObj.length > 0)
-            {
-                EmpObj.unshift({ID:"0",Title:"All Employees"});
-                 this.setState({ EmployeesObj: EmpObj, loading: false, isHavingEmployees: true, InitiatorId: '0', weekStartDay: clientEmployees[0].WeekStartDay })
+            EmpObj.sort((a, b) => a.Title.localeCompare(b.Title));
+            if (EmpObj.length > 0) {
+                //EmpObj.unshift({ID:"0",Title:"All Employees"});
+                this.setState({ EmployeesObj: EmpObj, loading: false, isHavingEmployees: true, InitiatorId: [], weekStartDay: clientEmployees[0].WeekStartDay })
             }
             else {
-                this.setState({ EmployeesObj: EmpObj, loading: false, isHavingEmployees: false, InitiatorId: '-1', weekStartDay: weekDay })
+                this.setState({ EmployeesObj: EmpObj, loading: false, isHavingEmployees: false, InitiatorId: [], weekStartDay: weekDay })
                 customToaster('toster-error', ToasterTypes.Error, 'There are no employees associated with this client', 4000);
             }
         }
         else {
-            this.setState({ EmployeesObj: this.state.AllEmployees, loading: false, isHavingEmployees: true, InitiatorId: '0' })
+            this.setState({ EmployeesObj: this.state.AllEmployees, loading: false, isHavingEmployees: true, InitiatorId: [] })
         }
     }
-    private handleChangeEvents = (event,actionMeta?) => {
-        let  name,inputvalue,value;
+    private handleChangeEvents = (event, actionMeta?) => {
+        let name, inputvalue, value;
         //Below is condition for handle common change function for both react select dropdown  and normal controls
-        if(![null, undefined].includes(event) && event.target != undefined)
-        {
+        if (![null, undefined].includes(event) && event.target != undefined) {
             name = event.target.name;
             inputvalue = event.target.value;
             value = event.target.type == 'checkbox' ? event.target.checked : inputvalue;
+            // for Employee multi select dropdown
+            if (name == 'InitiatorId' && inputvalue[inputvalue.length - 1] === "all") {
+                value = this.state.InitiatorId.length === this.state.EmployeesObj.length ? [] : this.state.EmployeesObj.map(emp => emp.ID);
+            }
         }
-        else if(actionMeta!= undefined)
-        {
+        else if (actionMeta != undefined) {
             name = actionMeta.name;
-            value =actionMeta.action =='clear'?name =='InitiatorId'?-1:'': event.value; 
+            value = actionMeta.action == 'clear' ? name == 'InitiatorId' ? [] : '' : event.value;
         }
-        this.setState({ [name]: value,WeeklyData: [] });
+        this.setState({ [name]: value, WeeklyData: [] });
     }
     private handleStartDate = (dateprops) => {
         if (dateprops != null) {
@@ -203,19 +204,19 @@ class WeeklyTimesheetReport extends React.Component<WeeklyTimesheetReportProps, 
         // this.setState({ Homeredirect: true,showToaster:false });
         // document.getElementById('divNavReportItems').classList.remove('show');
         // document.getElementById('Reports').classList.remove('heighlightMasters');
-        this.setState({ClientName: '',InitiatorId: '0',startDate: null,endDate: null,EmployeesObj:this.state.AllEmployees, ExportExcelData: [], weekStartDay: 'Monday',WeeklyData: [],PDFData: []});
+        this.setState({ ClientName: '', InitiatorId: [], startDate: null, endDate: null, EmployeesObj: this.state.AllEmployees, ExportExcelData: [], weekStartDay: 'Monday', WeeklyData: [], PDFData: [] });
     }
     private handleSubmit = () => {
-        this.setState({loading:true})
+        this.setState({ loading: true })
         let data = {
             Client: { val: this.state.ClientName, required: true, Name: 'Client', Type: ControlType.reactSelect, Focusid: 'Client' },
-            Employee: { val: parseInt(this.state.InitiatorId), required: true, Name: 'Employee', Type: ControlType.reactSelect, Focusid:'Employee'},
+            Employee: { val: this.state.InitiatorId, required: true, Name: 'Employee', Type: ControlType.MUIMultiSelect, Focusid: 'Employee' },
             WeeklyStartDate: { val: this.state.startDate, required: true, Name: 'Weekly Start Date', Type: ControlType.date, Focusid: "divWeekStartDate" }
         }
         let isValid = Formvalidator.checkValidations(data)
         if (!isValid.status) {
             customToaster('toster-error', ToasterTypes.Error, isValid.message, 4000);
-            this.setState({loading:false})
+            this.setState({ loading: false })
             return false
         }
         let date = new Date(this.state.startDate)
@@ -225,7 +226,7 @@ class WeeklyTimesheetReport extends React.Component<WeeklyTimesheetReportProps, 
 
         let postObject = {
             Client: this.state.ClientName,
-            Employee: parseInt(this.state.InitiatorId),
+            Employee: this.state.InitiatorId,
             StartDate: selectedStartDate,
             EndDate: selectedEndDate
         }
@@ -263,30 +264,33 @@ class WeeklyTimesheetReport extends React.Component<WeeklyTimesheetReportProps, 
         let next = DateUtilities.getDateMMDDYYYY(nextDate);
         let filterQuery = ''
         if (client == "All") {
-            if (Employee == 0) {
-                filterQuery = "WeekStartDate gt '" + prev + "' and WeekStartDate lt '" + next + "'"
-            }
-            else {
-                filterQuery = "InitiatorId eq '" + Employee + "' and WeekStartDate gt '" + prev + "' and WeekStartDate lt '" + next + "'"
-            }
+            //if (Employee == 0) {
+            filterQuery = "WeekStartDate gt '" + prev + "' and WeekStartDate lt '" + next + "'"
+            // }
+            // else {
+            //     filterQuery = "InitiatorId eq '" + Employee + "' and WeekStartDate gt '" + prev + "' and WeekStartDate lt '" + next + "'"
+            // }
         }
         else {
-            if (Employee == 0) {
-                filterQuery = "ClientName eq'" + client.replace(/'/g, "''") + "' and WeekStartDate gt '" + prev + "' and WeekStartDate lt '" + next + "'"
-            }
-            else {
-                filterQuery = "ClientName eq'" + client.replace(/'/g, "''") + "' and InitiatorId eq '" + Employee + "' and WeekStartDate gt '" + prev + "' and WeekStartDate lt '" + next + "'"
-            }
+            //if (Employee == 0) {
+            filterQuery = "ClientName eq'" + client.replace(/'/g, "''") + "' and WeekStartDate gt '" + prev + "' and WeekStartDate lt '" + next + "'"
+            // }
+            // else {
+            //     filterQuery = "ClientName eq'" + client.replace(/'/g, "''") + "' and InitiatorId eq '" + Employee + "' and WeekStartDate gt '" + prev + "' and WeekStartDate lt '" + next + "'"
+            // }
         }
         filterQuery += "and Status ne '" + StatusType.Save + "' and Status ne '" + StatusType.Revoke + "'";
         let reportData = await sp.web.lists.getByTitle('WeeklyTimeSheet').items.top(5000).filter(filterQuery).expand('Initiator').select('Initiator/Title,Initiator/Id,TotalHrs,BillableSubtotalHrs,NonBillableSubTotalHrs,ClientName,WeekStartDate,Status,*').orderBy('WeekStartDate,ClientName,Initiator/Title', true).getAll()
+        if (Employee.length != this.state.EmployeesObj.length) {
+            reportData = reportData.filter(report => Employee.includes(report.Initiator.Id));
+        }
         if (reportData.length > 0) {
             var PDFData = [];
             //PDFData = reportData.filter(report => [StatusType.Approved, StatusType.ManagerApprove].includes(report.Status));
             PDFData = reportData;
             let weeklyData = [];
             let row = 1;
-            reportData.forEach( report  =>  {
+            reportData.forEach(report => {
                 let { Initiator, WeekStartDate, TotalHrs, ClientName, Status } = report;
                 const startDate = new Date(DateUtilities.GetDateMMDDYYYYAsInList(report.WeekStartDate));
                 let weekDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
@@ -304,9 +308,9 @@ class WeeklyTimesheetReport extends React.Component<WeeklyTimesheetReportProps, 
                     arrangedWeekDays.push(TotalHrs[0][day]);
                 });
 
-                let BillHrs = JSON.parse(report.BillableSubtotalHrs)[0],NonBillhrs = JSON.parse(report.NonBillableSubTotalHrs)[0],Totalhrs = JSON.parse(report.TotalHrs)[0],blanksHrs = { Mon: '', Tue: '', Wed: '', Thu: '', Fri: '', Sat: '', Sun: '', Total: '0' };
-                let b={},PTOHours = JSON.parse(report.PTOHrs),ClientHolidayHrs = JSON.parse(report.ClientHolidayHrs);
-                 // Code for PTO Hours to be included in Billable hours :start
+                let BillHrs = JSON.parse(report.BillableSubtotalHrs)[0], NonBillhrs = JSON.parse(report.NonBillableSubTotalHrs)[0], Totalhrs = JSON.parse(report.TotalHrs)[0], blanksHrs = { Mon: '', Tue: '', Wed: '', Thu: '', Fri: '', Sat: '', Sun: '', Total: '0' };
+                let b = {}, PTOHours = JSON.parse(report.PTOHrs), ClientHolidayHrs = JSON.parse(report.ClientHolidayHrs);
+                // Code for PTO Hours to be included in Billable hours :start
                 //  if(report.EligibleforPTO && !report.ClientName.toLowerCase().includes('synergy'))
                 //  {
                 //      let WeekDays=['Mon','Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
@@ -332,65 +336,61 @@ class WeeklyTimesheetReport extends React.Component<WeeklyTimesheetReportProps, 
                 //  }
                 //Above code is for PTO hours considering from time off row in timesheet from. 
                 //But now PTO hours considering from Time Off Request form, so below code is required.
-                 if(report.EligibleforPTO && !report.ClientName.toLowerCase().includes('synergy'))
-                 {
-                        let WeekDays=['Mon','Tue', 'Wed', 'Thu', 'Fri'];
-                        let PTOSubTotalRow=[null,undefined,''].includes(report.PTOSubTotal)?[]:JSON.parse(report.PTOSubTotal);
-                        if(PTOSubTotalRow.length)
-                        {
-                            let PTOHrs=parseFloat(PTOSubTotalRow[0].Total);
-                            if(parseFloat(PTOSubTotalRow[0].Total)!=0 && PTOHrs>0)
-                            {
-                               WeekDays.forEach(day=>{
-                                   if(PTOSubTotalRow[0][day]!='')
-                                   {
-                                       let DayTimeOffHrs=PTOSubTotalRow[0][day];
-                                       NonBillhrs[day]=parseFloat((parseFloat(NonBillhrs[day])-parseFloat(DayTimeOffHrs)).toFixed(4));//reduce from NonBillable day
-                                       PTOHours[0][day]=parseFloat((parseFloat(DayTimeOffHrs)-parseFloat(DayTimeOffHrs)).toFixed(4));//reduce from TimeOff day
-                                       NonBillhrs['Total']=parseFloat((parseFloat(NonBillhrs['Total'])-parseFloat(DayTimeOffHrs)).toFixed(4));//reduce from NonBillable Total
-                                       BillHrs[day]=parseFloat((parseFloat(BillHrs[day])+parseFloat(DayTimeOffHrs)).toFixed(4));// increase Billable day
-                                       BillHrs['Total']=parseFloat((parseFloat(BillHrs['Total'])+parseFloat(DayTimeOffHrs)).toFixed(4));//increase Billable Total
-                                   }
-                               })
-                            }
+                if (report.EligibleforPTO && !report.ClientName.toLowerCase().includes('synergy')) {
+                    let WeekDays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
+                    let PTOSubTotalRow = [null, undefined, ''].includes(report.PTOSubTotal) ? [] : JSON.parse(report.PTOSubTotal);
+                    if (PTOSubTotalRow.length) {
+                        let PTOHrs = parseFloat(PTOSubTotalRow[0].Total);
+                        if (parseFloat(PTOSubTotalRow[0].Total) != 0 && PTOHrs > 0) {
+                            WeekDays.forEach(day => {
+                                if (PTOSubTotalRow[0][day] != '') {
+                                    let DayTimeOffHrs = PTOSubTotalRow[0][day];
+                                    NonBillhrs[day] = parseFloat((parseFloat(NonBillhrs[day]) - parseFloat(DayTimeOffHrs)).toFixed(4));//reduce from NonBillable day
+                                    PTOHours[0][day] = parseFloat((parseFloat(DayTimeOffHrs) - parseFloat(DayTimeOffHrs)).toFixed(4));//reduce from TimeOff day
+                                    NonBillhrs['Total'] = parseFloat((parseFloat(NonBillhrs['Total']) - parseFloat(DayTimeOffHrs)).toFixed(4));//reduce from NonBillable Total
+                                    BillHrs[day] = parseFloat((parseFloat(BillHrs[day]) + parseFloat(DayTimeOffHrs)).toFixed(4));// increase Billable day
+                                    BillHrs['Total'] = parseFloat((parseFloat(BillHrs['Total']) + parseFloat(DayTimeOffHrs)).toFixed(4));//increase Billable Total
+                                }
+                            })
                         }
-                 }
-                 // Code for PTO Hours to be included in Billable hours :end
+                    }
+                }
+                // Code for PTO Hours to be included in Billable hours :end
                 report.ClientName.toLowerCase().includes('synergy') ? BillHrs = blanksHrs : '';
                 NonBillhrs = {
-                    Mon: NonBillhrs.Mon =="0.00"?PTOHours[0].Mon ==""?ClientHolidayHrs[0].Mon==""?'':ClientHolidayHrs[0].Mon:ClientHolidayHrs[0].Mon==""?PTOHours[0].Mon:parseFloat((parseFloat(PTOHours[0].Mon)+parseFloat(ClientHolidayHrs[0].Mon)).toFixed(4))
-                    :NonBillhrs.Mon,
-                    Tue: NonBillhrs.Tue =="0.00"?PTOHours[0].Tue ==""?ClientHolidayHrs[0].Tue==""?'':ClientHolidayHrs[0].Tue:ClientHolidayHrs[0].Tue==""?PTOHours[0].Tue:parseFloat((parseFloat(PTOHours[0].Tue)+parseFloat(ClientHolidayHrs[0].Tue)).toFixed(4))
-                    :NonBillhrs.Tue,
-                    Wed: NonBillhrs.Wed =="0.00"?PTOHours[0].Wed ==""?ClientHolidayHrs[0].Wed==""?'':ClientHolidayHrs[0].Wed:ClientHolidayHrs[0].Wed==""?PTOHours[0].Wed:parseFloat((parseFloat(PTOHours[0].Wed)+parseFloat(ClientHolidayHrs[0].Wed)).toFixed(4))
-                    :NonBillhrs.Wed,
-                    Thu: NonBillhrs.Thu =="0.00"?PTOHours[0].Thu ==""?ClientHolidayHrs[0].Thu==""?'':ClientHolidayHrs[0].Thu:ClientHolidayHrs[0].Thu==""?PTOHours[0].Thu:parseFloat((parseFloat(PTOHours[0].Thu)+parseFloat(ClientHolidayHrs[0].Thu)).toFixed(4))
-                    :NonBillhrs.Thu,
-                    Fri: NonBillhrs.Fri =="0.00"?PTOHours[0].Fri ==""?ClientHolidayHrs[0].Fri==""?'':ClientHolidayHrs[0].Fri:ClientHolidayHrs[0].Fri==""?PTOHours[0].Fri:parseFloat((parseFloat(PTOHours[0].Fri)+parseFloat(ClientHolidayHrs[0].Fri)).toFixed(4))
-                    :NonBillhrs.Fri,
-                    Sat: NonBillhrs.Sat =="0.00"?PTOHours[0].Sat ==""?ClientHolidayHrs[0].Sat==""?'':ClientHolidayHrs[0].Sat:ClientHolidayHrs[0].Sat==""?PTOHours[0].Sat:parseFloat((parseFloat(PTOHours[0].Sat)+parseFloat(ClientHolidayHrs[0].Sat)).toFixed(4))
-                    :NonBillhrs.Sat,
-                    Sun: NonBillhrs.Sun =="0.00"?PTOHours[0].Sun ==""?ClientHolidayHrs[0].Sun==""?'':ClientHolidayHrs[0].Sun:ClientHolidayHrs[0].Sun==""?PTOHours[0].Sun:parseFloat((parseFloat(PTOHours[0].Sun)+parseFloat(ClientHolidayHrs[0].Sun)).toFixed(4))
-                    :NonBillhrs.Sun,
+                    Mon: NonBillhrs.Mon == "0.00" ? PTOHours[0].Mon == "" ? ClientHolidayHrs[0].Mon == "" ? '' : ClientHolidayHrs[0].Mon : ClientHolidayHrs[0].Mon == "" ? PTOHours[0].Mon : parseFloat((parseFloat(PTOHours[0].Mon) + parseFloat(ClientHolidayHrs[0].Mon)).toFixed(4))
+                        : NonBillhrs.Mon,
+                    Tue: NonBillhrs.Tue == "0.00" ? PTOHours[0].Tue == "" ? ClientHolidayHrs[0].Tue == "" ? '' : ClientHolidayHrs[0].Tue : ClientHolidayHrs[0].Tue == "" ? PTOHours[0].Tue : parseFloat((parseFloat(PTOHours[0].Tue) + parseFloat(ClientHolidayHrs[0].Tue)).toFixed(4))
+                        : NonBillhrs.Tue,
+                    Wed: NonBillhrs.Wed == "0.00" ? PTOHours[0].Wed == "" ? ClientHolidayHrs[0].Wed == "" ? '' : ClientHolidayHrs[0].Wed : ClientHolidayHrs[0].Wed == "" ? PTOHours[0].Wed : parseFloat((parseFloat(PTOHours[0].Wed) + parseFloat(ClientHolidayHrs[0].Wed)).toFixed(4))
+                        : NonBillhrs.Wed,
+                    Thu: NonBillhrs.Thu == "0.00" ? PTOHours[0].Thu == "" ? ClientHolidayHrs[0].Thu == "" ? '' : ClientHolidayHrs[0].Thu : ClientHolidayHrs[0].Thu == "" ? PTOHours[0].Thu : parseFloat((parseFloat(PTOHours[0].Thu) + parseFloat(ClientHolidayHrs[0].Thu)).toFixed(4))
+                        : NonBillhrs.Thu,
+                    Fri: NonBillhrs.Fri == "0.00" ? PTOHours[0].Fri == "" ? ClientHolidayHrs[0].Fri == "" ? '' : ClientHolidayHrs[0].Fri : ClientHolidayHrs[0].Fri == "" ? PTOHours[0].Fri : parseFloat((parseFloat(PTOHours[0].Fri) + parseFloat(ClientHolidayHrs[0].Fri)).toFixed(4))
+                        : NonBillhrs.Fri,
+                    Sat: NonBillhrs.Sat == "0.00" ? PTOHours[0].Sat == "" ? ClientHolidayHrs[0].Sat == "" ? '' : ClientHolidayHrs[0].Sat : ClientHolidayHrs[0].Sat == "" ? PTOHours[0].Sat : parseFloat((parseFloat(PTOHours[0].Sat) + parseFloat(ClientHolidayHrs[0].Sat)).toFixed(4))
+                        : NonBillhrs.Sat,
+                    Sun: NonBillhrs.Sun == "0.00" ? PTOHours[0].Sun == "" ? ClientHolidayHrs[0].Sun == "" ? '' : ClientHolidayHrs[0].Sun : ClientHolidayHrs[0].Sun == "" ? PTOHours[0].Sun : parseFloat((parseFloat(PTOHours[0].Sun) + parseFloat(ClientHolidayHrs[0].Sun)).toFixed(4))
+                        : NonBillhrs.Sun,
                     Total: NonBillhrs.Total
                 }
                 weeklyData.push({
                     SNo: row,
                     Employee: report.Initiator.Title,
-                    MNB:[''].includes(NonBillhrs.Mon)?'':parseFloat(NonBillhrs.Mon),
-                    MB:  [''].includes(BillHrs.Mon)?'':parseFloat(BillHrs.Mon),
-                    TNB:[''].includes(NonBillhrs.Tue)?'':parseFloat(NonBillhrs.Tue),
-                    TB:  [''].includes(BillHrs.Tue)?'':parseFloat(BillHrs.Tue),
-                    WNB:[''].includes(NonBillhrs.Wed)?'':parseFloat(NonBillhrs.Wed),
-                    WB:  [''].includes(BillHrs.Wed)?'':parseFloat(BillHrs.Wed),
-                    ThNB:[''].includes(NonBillhrs.Thu)?'':parseFloat(NonBillhrs.Thu),
-                    ThB:  [''].includes(BillHrs.Thu)?'':parseFloat(BillHrs.Thu),
-                    FNB:[''].includes(NonBillhrs.Fri)?'':parseFloat(NonBillhrs.Fri),
-                    FB:  [''].includes(BillHrs.Fri)?'':parseFloat(BillHrs.Fri),
-                    SNB:[''].includes(NonBillhrs.Sat)?'':parseFloat(NonBillhrs.Sat),
-                    SB:  [''].includes(BillHrs.Sat)?'':parseFloat(BillHrs.Sat),
-                    SuNB:[''].includes(NonBillhrs.Sun)?'':parseFloat(NonBillhrs.Sun),
-                    SuB: [''].includes(BillHrs.Sun)?'':parseFloat(BillHrs.Sun),
+                    MNB: [''].includes(NonBillhrs.Mon) ? '' : parseFloat(NonBillhrs.Mon),
+                    MB: [''].includes(BillHrs.Mon) ? '' : parseFloat(BillHrs.Mon),
+                    TNB: [''].includes(NonBillhrs.Tue) ? '' : parseFloat(NonBillhrs.Tue),
+                    TB: [''].includes(BillHrs.Tue) ? '' : parseFloat(BillHrs.Tue),
+                    WNB: [''].includes(NonBillhrs.Wed) ? '' : parseFloat(NonBillhrs.Wed),
+                    WB: [''].includes(BillHrs.Wed) ? '' : parseFloat(BillHrs.Wed),
+                    ThNB: [''].includes(NonBillhrs.Thu) ? '' : parseFloat(NonBillhrs.Thu),
+                    ThB: [''].includes(BillHrs.Thu) ? '' : parseFloat(BillHrs.Thu),
+                    FNB: [''].includes(NonBillhrs.Fri) ? '' : parseFloat(NonBillhrs.Fri),
+                    FB: [''].includes(BillHrs.Fri) ? '' : parseFloat(BillHrs.Fri),
+                    SNB: [''].includes(NonBillhrs.Sat) ? '' : parseFloat(NonBillhrs.Sat),
+                    SB: [''].includes(BillHrs.Sat) ? '' : parseFloat(BillHrs.Sat),
+                    SuNB: [''].includes(NonBillhrs.Sun) ? '' : parseFloat(NonBillhrs.Sun),
+                    SuB: [''].includes(BillHrs.Sun) ? '' : parseFloat(BillHrs.Sun),
                     Status: this.getStatus(report.Status),
                     TotalNB: parseFloat(NonBillhrs.Total),
                     TotalB: parseFloat(BillHrs.Total),
@@ -410,11 +410,11 @@ class WeeklyTimesheetReport extends React.Component<WeeklyTimesheetReportProps, 
         }
         else {
             customToaster('toster-error', ToasterTypes.Error, 'No timesheets found!', 4000);
-            this.setState({ WeeklyData:[], PDFData: [],loading: false });
+            this.setState({ WeeklyData: [], PDFData: [], loading: false });
         }
     }
     private downloadExcel(startDate) {
-        this.setState({loading:true})
+        this.setState({ loading: true })
         const wb = XLSX.utils.book_new();
         let Excelheaders = this.constructExcelHeader()
         let finalData = this.generateExcelData(this.state.WeeklyData, Excelheaders)
@@ -457,8 +457,8 @@ class WeeklyTimesheetReport extends React.Component<WeeklyTimesheetReportProps, 
         let SD = startDate.replaceAll("/", "-")
         XLSX.utils.book_append_sheet(wb, finalWorkshetData, `WE ${SD}`);
         // STEP 4: Write Excel file to browser
-        XLSX.writeFile(wb, this.state.fileName+'.xlsx');
-        this.setState({loading:false})
+        XLSX.writeFile(wb, this.state.fileName + '.xlsx');
+        this.setState({ loading: false })
     }
     private constructTable(weeklyData) {
         let date = new Date(this.state.startDate);
@@ -473,8 +473,8 @@ class WeeklyTimesheetReport extends React.Component<WeeklyTimesheetReportProps, 
             <div className='border-box-shadow light-box p-2'>
                 <div className='t-div txt-center dataTables_wrapper-overflow'>
                     {/* <div id='pdfMessage'>Note: The PDF button generates only individual timesheets that have been approved by the manager or reviewer.</div> btnTitle='Export manager/reviewer approved individual timesheets in PDF' */}
-                     <a type="button" id="btnDownloadFile" title='Export all timesheets to excel' className="a-export-excel txt-center" onClick={(e) => this.downloadExcel(DateUtilities.getDateMMDDYYYY(this.state.startDate))}> Export to Excel
-                    <FontAwesomeIcon icon={faFileExcel} className=''></FontAwesomeIcon>
+                    <a type="button" id="btnDownloadFile" title='Export all timesheets to excel' className="a-export-excel txt-center" onClick={(e) => this.downloadExcel(DateUtilities.getDateMMDDYYYY(this.state.startDate))}> Export to Excel
+                        <FontAwesomeIcon icon={faFileExcel} className=''></FontAwesomeIcon>
                     </a>
                     <ExportToPDF AllTimesheetsData={this.state.PDFData} LogoImgUrl={this.siteURL + '/PublishingImages/SynergyLogo.png'} filename={this.state.fileName} btnTitle='Export all timesheets to PDF' className='a-export-pdf-button'></ExportToPDF>
                 </div>
@@ -520,7 +520,7 @@ class WeeklyTimesheetReport extends React.Component<WeeklyTimesheetReportProps, 
                         <tbody>
                             <tr className='Billable-Salary'>
                                 {/* <td></td>
-                                <td></td> */} 
+                                <td></td> */}
                                 {/* previosouly colspan 14 an drest td are uncommented */}
                                 <td className='text-center' colSpan={20}>{this.state.ClientName.toLowerCase().includes('synergy') ? 'Billable Salary' : 'Billable Hourly'}</td>
                                 {/* <td></td>
@@ -560,25 +560,25 @@ class WeeklyTimesheetReport extends React.Component<WeeklyTimesheetReportProps, 
                 <td className=''>{item.TotalNB}</td>
                 <td className=''>{item.TotalB}</td>
                 <td className=''>{item.TotalH}</td>
-                <td className='text-center' title={this.getStatus(item.Status)}><span className={this.getStatusClass(item.Status)+" weekly-report-AppStat"}>{this.showRMStatus(item.Status)}</span></td>
+                <td className='text-center' title={this.getStatus(item.Status)}><span className={this.getStatusClass(item.Status) + " weekly-report-AppStat"}>{this.showRMStatus(item.Status)}</span></td>
             </tr>
         ));
     }
-    private showRMStatus(status){
-        if(status == 'Approved by Reporting Manager'){
+    private showRMStatus(status) {
+        if (status == 'Approved by Reporting Manager') {
             return 'RM Approved';
         }
-        else if(status == 'Approved by Reviewer'){
+        else if (status == 'Approved by Reviewer') {
             // return 'Reviewer Approved';
             return 'Approved';
         }
-        else if(status == 'Rejected by Reporting Manager'){
+        else if (status == 'Rejected by Reporting Manager') {
             return "RM Rejected";
         }
-        else if(status=="Rejected by Synergy"){
+        else if (status == "Rejected by Synergy") {
             return "Reviewer Rejected";
         }
-        else if(status=="Rejected by HR"){
+        else if (status == "Rejected by HR") {
             return "HR Rejected";
         }
         return status;
@@ -595,7 +595,7 @@ class WeeklyTimesheetReport extends React.Component<WeeklyTimesheetReportProps, 
         }
         else if (Status == "Approved by Reviewer") {
             // return "span-reviewer-approve";
-              return "span-green";
+            return "span-green";
         }
         else if (Status == "Rejected by Reporting Manager" || Status == "Rejected by Synergy" || Status == "Rejected by HR") {
             return "span-rejected";
@@ -1144,23 +1144,23 @@ class WeeklyTimesheetReport extends React.Component<WeeklyTimesheetReportProps, 
             else if ([11, 13].includes(i))
                 bgColor = 'FCE4D6'
 
-             if (![15,16,17,18].includes(i)){
-                i !=19?
-                row2.push({
-                    v: '', t: "s", s: {
-                        alignment: { vertical: "center", horizontal: "left" }, font: { bold: false, sz: 12, color: { rgb: "000000" } }, fill: { fgColor: { rgb: bgColor } }, border: {}
-                    }
-                }):
-                row2.push({
-                    v: '', t: "s", s: {
-                        alignment: { vertical: "center", horizontal: "left" }, font: { bold: false, sz: 12, color: { rgb: "000000" } }, fill: { fgColor: { rgb: bgColor } }, border: {
-                            // top: { style: 'thin', color: { rgb: "000000" } },
-                            // left: { style: 'thin', color: { rgb: "000000" } },
-                            bottom: { style: 'thin', color: { rgb: "000000" } },
-                            right: { style: 'thin', color: { rgb: "000000" } },
+            if (![15, 16, 17, 18].includes(i)) {
+                i != 19 ?
+                    row2.push({
+                        v: '', t: "s", s: {
+                            alignment: { vertical: "center", horizontal: "left" }, font: { bold: false, sz: 12, color: { rgb: "000000" } }, fill: { fgColor: { rgb: bgColor } }, border: {}
                         }
-                    }
-                })
+                    }) :
+                    row2.push({
+                        v: '', t: "s", s: {
+                            alignment: { vertical: "center", horizontal: "left" }, font: { bold: false, sz: 12, color: { rgb: "000000" } }, fill: { fgColor: { rgb: bgColor } }, border: {
+                                // top: { style: 'thin', color: { rgb: "000000" } },
+                                // left: { style: 'thin', color: { rgb: "000000" } },
+                                bottom: { style: 'thin', color: { rgb: "000000" } },
+                                right: { style: 'thin', color: { rgb: "000000" } },
+                            }
+                        }
+                    })
             }
             else
                 row2.push({
@@ -1190,18 +1190,18 @@ class WeeklyTimesheetReport extends React.Component<WeeklyTimesheetReportProps, 
             return (
                 <React.Fragment>
                     <div id="content" className="content p-2 pt-2">
-                    <div className='container-fluid'>
-                        <div className='FormContent'>
-                            <div className="title"> Weekly Report
-                                <div className='mandatory-note'>
-                                    <span className='mandatoryhastrick'>*</span> indicates a required field
+                        <div className='container-fluid'>
+                            <div className='FormContent'>
+                                <div className="title"> Weekly Report
+                                    <div className='mandatory-note'>
+                                        <span className='mandatoryhastrick'>*</span> indicates a required field
+                                    </div>
                                 </div>
-                            </div>
-                            <div className="after-title"></div>
-                            <div className="media-m-2 media-p-1">
-                                <div className="my-2">
-                                    <div className="row pt-2 px-2">
-                                        {/* <div className="col-md-4">
+                                <div className="after-title"></div>
+                                <div className="media-m-2 media-p-1">
+                                    <div className="my-2">
+                                        <div className="row pt-2 px-2">
+                                            {/* <div className="col-md-4">
                                             <div className="light-text">
                                                 <label>Client<span className="mandatoryhastrick">*</span></label>
                                                 <select className="form-control" required={true} name="ClientName" title="Client" id='client' ref={this.client} onChange={this.handleClientChange}>
@@ -1212,12 +1212,12 @@ class WeeklyTimesheetReport extends React.Component<WeeklyTimesheetReportProps, 
                                                 </select>
                                             </div>
                                         </div> */}
-                                        <div className="col-md-4">
-                                            <div className="custom-dropdown">
-                                                <SearchableDropdown label="Client" Title="Client" name="ClientName" id="Client" placeholderText="Select Client" className="" selectedValue={this.state.ClientName} optionLabel={'Title'} optionValue={'Title'} OptionsList={this.state.ClientsObject} onChange={(selectedOption, actionMeta) => { this.handleClientChange(selectedOption, actionMeta) }} isRequired={true} refElement={this.client} noOptionsMessage="No Client"></SearchableDropdown>
+                                            <div className="col-md-4">
+                                                <div className="custom-dropdown">
+                                                    <SearchableDropdown label="Client" Title="Client" name="ClientName" id="Client" placeholderText="Select Client" className="" selectedValue={this.state.ClientName} optionLabel={'Title'} optionValue={'Title'} OptionsList={this.state.ClientsObject} onChange={(selectedOption, actionMeta) => { this.handleClientChange(selectedOption, actionMeta) }} isRequired={true} refElement={this.client} noOptionsMessage="No Client"></SearchableDropdown>
+                                                </div>
                                             </div>
-                                        </div>
-                                        {/* <div className="col-md-4">
+                                            {/* <div className="col-md-4">
                                             <div className="light-text ">
                                                 <label>Employee<span className="mandatoryhastrick">*</span></label>
                                                 <select className="form-control" required={true} name="InitiatorId" title="Employee" onChange={this.handleChangeEvents} ref={this.EmployeeDropdown}>
@@ -1228,41 +1228,42 @@ class WeeklyTimesheetReport extends React.Component<WeeklyTimesheetReportProps, 
                                                 </select>
                                             </div>
                                         </div> */}
-                                        <div className="col-md-4">
-                                            <div className="custom-dropdown">
-                                                <SearchableDropdown label="Employee" Title="Employee" name="InitiatorId" id="Employee" placeholderText="Select Employee" className="" selectedValue={this.state.InitiatorId} optionLabel={'Title'} optionValue={'ID'} OptionsList={this.state.EmployeesObj} onChange={(selectedOption, actionMeta) => { this.handleChangeEvents(selectedOption, actionMeta) }} isRequired={true} refElement={this.EmployeeDropdown} noOptionsMessage="No Employee"></SearchableDropdown>
+                                            <div className="col-md-4">
+                                                <div className="custom-dropdown">
+                                                    {/* <SearchableDropdown label="Employee" Title="Employee" name="InitiatorId" id="Employee" placeholderText="Select Employee" className="" selectedValue={this.state.InitiatorId} optionLabel={'Title'} optionValue={'ID'} OptionsList={this.state.EmployeesObj} onChange={(selectedOption, actionMeta) => { this.handleChangeEvents(selectedOption, actionMeta) }} isRequired={true} refElement={this.EmployeeDropdown} noOptionsMessage="No Employee"></SearchableDropdown> */}
+                                                    <MultiSelectDropdown label="Employee" Title="Employee" name="InitiatorId" id="Employee" placeholderText="Select Employee" className="" selectedValue={this.state.InitiatorId} optionLabel={'Title'} optionValue={'ID'} OptionsList={this.state.EmployeesObj} onChange={(selectedOption, actionMeta) => { this.handleChangeEvents(selectedOption, actionMeta) }} isRequired={true} refElement={this.EmployeeDropdown} noOptionsMessage="No Employee"></MultiSelectDropdown>
+                                                </div>
                                             </div>
-                                        </div>
-                                        <div className="col-md-4">
-                                            <div className="light-text div-readonly">
-                                                <div className="custom-datepicker" id="divWeekStartDate">
-                                                    <CustomDatePicker
-                                                        handleChange={this.handleStartDate}
-                                                        selectedDate={this.state.startDate}
-                                                        className='txtstartDate form-control'
-                                                        labelName='Week Start Date'
-                                                        ref={this.startDate}
-                                                        Day={this.state.weekStartDay}
-                                                        isDisabled={false}
-                                                        isDateRange={false}
-                                                        maxDate={new Date()}
-                                                    />
+                                            <div className="col-md-4">
+                                                <div className="light-text div-readonly">
+                                                    <div className="custom-datepicker" id="divWeekStartDate">
+                                                        <CustomDatePicker
+                                                            handleChange={this.handleStartDate}
+                                                            selectedDate={this.state.startDate}
+                                                            className='txtstartDate form-control'
+                                                            labelName='Week Start Date'
+                                                            ref={this.startDate}
+                                                            Day={this.state.weekStartDay}
+                                                            isDisabled={false}
+                                                            isDateRange={false}
+                                                            maxDate={new Date()}
+                                                        />
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
-                                    </div>
 
-                                </div>
-                                <div className="row mx-1" id="">
-                                    <div className="col-sm-12 text-center my-4" id="">
-                                        <button type="button" className="SubmitButtons btn" onClick={this.handleSubmit} title={'Search'}>Search</button>
-                                        <button type="button" className="CancelButtons btn" onClick={this.handleCancel} title={'Clear'}>Clear</button>
                                     </div>
+                                    <div className="row mx-1" id="">
+                                        <div className="col-sm-12 text-center my-4" id="">
+                                            <button type="button" className="SubmitButtons btn" onClick={this.handleSubmit} title={'Search'}>Search</button>
+                                            <button type="button" className="CancelButtons btn" onClick={this.handleCancel} title={'Clear'}>Clear</button>
+                                        </div>
+                                    </div>
+                                    {this.state.WeeklyData.length > 0 ? this.constructTable(this.state.WeeklyData) : ''}
                                 </div>
-                                {this.state.WeeklyData.length > 0 ? this.constructTable(this.state.WeeklyData) : ''}
                             </div>
                         </div>
-                    </div>
                     </div>
                     {this.state.showToaster && <Toaster />}
                     {this.state.loading && <Loader />}
