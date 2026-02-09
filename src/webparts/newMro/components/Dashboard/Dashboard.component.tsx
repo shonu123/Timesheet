@@ -34,8 +34,9 @@ export interface DashboardState {
     showApproveComp : boolean;
     showMyRequestsComp : boolean;
     isInitiator:boolean;
-    isApprover: boolean;
+    isManager: boolean;
     isReviewer: boolean;
+    adminloggedin: boolean;
     isAdmin : boolean;
     showRequestTab: boolean;
     showMyApprovalsTab: boolean;
@@ -67,8 +68,9 @@ class Dashboard extends React.Component<DashboardProps, DashboardState> {
             showMyRequestsComp : false,
             showDelegateApprovalsComp:false,
             isInitiator:false,
-            isApprover: false,
+            isManager: false,
             isReviewer: false,
+            adminloggedin: false,
             isAdmin : false,
             showRequestTab :false,
             showMyApprovalsTab:false,
@@ -203,7 +205,7 @@ class Dashboard extends React.Component<DashboardProps, DashboardState> {
             EmployeeConfigured = true;
         }        
     //conditins updated to stop unwanted calls
-    this.setState({isEmployeeConfigured: EmployeeConfigured,isReviewer:isReviewer,justDelegateToPerson:justDelegateToPerson,loading:false});
+    this.setState({isEmployeeConfigured: EmployeeConfigured,isReviewer:isReviewer,isManager:isManager,adminloggedin:isAdminloggedin,justDelegateToPerson:justDelegateToPerson,loading:false});
         if(![null,undefined,''].includes(localStorage.getItem('PreviouslySelectedTab')))
         {
             this.onHandleClick(localStorage.getItem('PreviouslySelectedTab'));
@@ -385,7 +387,7 @@ class Dashboard extends React.Component<DashboardProps, DashboardState> {
                             <div className="light-box m-2">
                                 <ul className="nav nav-tabs nav-fill" id="myTab" role="tablist">
 
-                                {(this.state.showAllRequestsTab) &&<li className="nav-item" role="presentation" onClick={() =>{this.onHandleClick('AllRequests');localStorage.setItem('PreviouslySelectedTab','AllRequests');}} >
+                                {(this.state.showAllRequestsTab || this.state.showMyApprovalsTab || this.state.showMyReviewersTab ) &&<li className="nav-item" role="presentation" onClick={() =>{this.onHandleClick('AllRequests');localStorage.setItem('PreviouslySelectedTab','AllRequests');}} >
                                         <a className="nav-link" id="AllRequests-tab" data-toggle="tab" href="#/AllTimesheets" role="tab" aria-controls="AdminRequests" aria-selected="false">All Timesheets</a>
                                     </li>}
                                     
@@ -399,13 +401,13 @@ class Dashboard extends React.Component<DashboardProps, DashboardState> {
                                     {this.state.showMyReviewersTab &&<li className="nav-item" role="presentation" onClick={() =>{ this.onHandleClick('Reviewers');localStorage.setItem('PreviouslySelectedTab','Reviewers');}} >
                                         <a className="nav-link" id="ReviewersApprovals-tab" data-toggle="tab" href="#/Reviewers" role="tab" aria-controls="profile" aria-selected="false">My Reviews</a>
                                     </li>}
-                                    {(this.state.showAllRequestsTab || this.state.showMyApprovalsTab || this.state.isReviewer) &&<li className="nav-item" role="presentation" onClick={() =>{ this.onHandleClick('DelegateApprovals');localStorage.setItem('PreviouslySelectedTab','DelegateApprovals');}} >
+                                    {(this.state.showAllRequestsTab || this.state.isManager || this.state.isReviewer) &&<li className="nav-item" role="presentation" onClick={() =>{ this.onHandleClick('DelegateApprovals');localStorage.setItem('PreviouslySelectedTab','DelegateApprovals');}} >
                                         <a className="nav-link" id="DelegateApprovals-tab" data-toggle="tab" href="#/DelegateApprovals" role="tab" aria-controls="DelegateApprovals" aria-selected="false">Delegate Timesheets</a>
                                     </li>}
                                     {/* {(this.state.showAllRequestsTab || this.state.showMyReviewersTab) &&<li className="nav-item" role="presentation" onClick={() => this.onHandleClick('ReviewerDelegationsView')} >
                                         <a className="nav-link" id="ReviewerDelegationsView-tab" data-toggle="tab" href="#/DelegateReviews" role="tab" aria-controls="ReviewerDelegationsView" aria-selected="false">Delegate Reviews</a>
                                     </li>} */}
-                                    {this.state.showMyApprovalsTab && !this.state.justDelegateToPerson &&   <li className="nav-item" role="presentation" onClick={() =>{ this.onHandleClick('MyTeam');localStorage.setItem('PreviouslySelectedTab','MyTeam');}} >
+                                    {this.state.isManager &&   <li className="nav-item" role="presentation" onClick={() =>{ this.onHandleClick('MyTeam');localStorage.setItem('PreviouslySelectedTab','MyTeam');}} >
                                         <a className="nav-link" id="MyTeam-tab" data-toggle="tab" href="#/MyTeam" role="tab" aria-controls="MyTeam" aria-selected="true">My Team</a>
                                     </li>}
                                 </ul>

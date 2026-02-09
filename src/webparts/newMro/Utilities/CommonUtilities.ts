@@ -83,5 +83,50 @@ class CommonUtilities {
             return "span-indraft";
         }
     }
+    // common functions for Status dispalying in Dashboard
+    public static getTSStatus(value) {
+        let Status = value
+        if (value == "approved by Manager") {
+            Status = "Pending with Reviewer";
+        }
+        else if (value == "Submitted") {
+            Status = "Pending with Manager";  // in back end stored as Submitted ,but in Front end displayed as Pending with Manager
+        }
+        else if (value == "rejected by Manager") {
+            Status = "Rejected by Reporting Manager";
+        }
+        else if (value == "approved by Synergy") {
+            Status = "Approved by Reviewer";
+        }
+        else if (value == "rejected by Synergy") {
+            Status = "Rejected by Synergy";
+        }
+        else if (value == "rejected by HR") {
+            Status = "Rejected by HR";
+        }
+        return Status;
+    }
+    public static getTSStatusInShortForm(value) {
+        let Status = value;
+        if (value == "approved by Manager") {
+            Status = "Pending with Reviewer";
+        }
+        else if (value == "Submitted") {
+            Status = "Pending with Manager"; // in back end stored as Submitted ,but in Front end displayed as Pending with Manager
+        }
+        else if (value == "rejected by Manager") {
+            Status = "Manager Rejected";
+        }
+        else if (value == "rejected by Synergy") {
+            Status = "Reviewer Rejected";
+        }
+        else if (value == "approved by Synergy") {
+            Status = "Pending with HR";
+        }
+        else if (value == "rejected by HR") {
+            Status = "HR Rejected";
+        }
+        return Status;
+    }
 }
 export default CommonUtilities;
