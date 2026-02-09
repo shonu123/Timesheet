@@ -182,8 +182,8 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
                             Date: DateUtilities.getDateMMDDYYYY(date),
                             DateForGrid: `<span class='d-none'>${DateUtilities.getDateYYYYMMDDForSorting(date)}</span>${DateUtilities.getDateMMDDYYYY(date)}`,
                             EmployeName: d.Initiator.Title,
-                            PendingWith: d.PendingWith == "Approver" || d.PendingWith == "Manager" ? "Reporting Manager" : d.PendingWith,
-                            Status: d.Status == StatusType.ReviewerReject ? 'Rejected by Synergy' : d.Status == StatusType.ManagerReject ? 'Rejected by Reporting Manager' : d.Status,
+                            PendingWith: d.PendingWith,
+                            Status: this.getStatus(d.Status),
                             BillableHrs: isBillable ? parseFloat(parseFloat(d.WeeklyTotalHrs).toFixed(2)) : parseFloat(parseFloat(JSON.parse(d.SynergyOfficeHrs)[0].Total).toFixed(2)),
                             OTTotalHrs: parseFloat(parseFloat(d.OTTotalHrs).toFixed(2)),
                             TotalBillableHours: parseFloat(parseFloat(d.BillableTotalHrs).toFixed(2)),
@@ -452,7 +452,7 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
         //     {
         //         Transaction['TransactionType']=StatusType.ReviewerApprove;
         //     }
-        if (this.state.TimeOffRecord.length && this.state.TimeOffRecord[0].IsSubmittedFromTimesheetForm && !this.state.userGroups.includes('Timesheet HR') && JSON.stringify(this.state.TimeOffRecord[0].TimeOffRows).toLowerCase().includes('bereavement') || JSON.stringify(this.state.TimeOffRecord[0].TimeOffRows).toLowerCase().includes('jury duty')) {
+        if (this.state.TimeOffRecord.length && this.state.TimeOffRecord[0].IsSubmittedFromTimesheetForm && !this.state.userGroups.includes('Timesheet HR') && (JSON.stringify(this.state.TimeOffRecord[0].TimeOffRows).toLowerCase().includes('bereavement') || JSON.stringify(this.state.TimeOffRecord[0].TimeOffRows).toLowerCase().includes('jury duty'))) {
             postObject.Status = StatusType.ReviewerApprove;
             postObject.PendingWith = 'HR';
             TimeOffPostData['Status'] = StatusType.ReviewerApprove;
@@ -558,6 +558,8 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
         let recordId = this.state.ItemID;
         if (['', undefined, null].includes(this.state.comments.trim())) {
             this.setState({ loading: false });
+            document.getElementById('txtComments').focus();
+            document.getElementById('txtComments').classList.add('mandatory-FormContent-focus');
             customToaster('toster-error', ToasterTypes.Error, 'Comments cannot be Blank.', 4000);
         }
         else {
@@ -608,11 +610,11 @@ class ReviewerApprovals extends React.Component<ReviewerApprovalsProps, Reviewer
             if (this.state.TimeOffRecord.length) {
                 PTOHrs = this.state.TimeOffRecord[0].PTOTotal;// PTO hours geting from TimeOff Record
                 let timeOffCommentsObj = JSON.parse(this.state.TimeOffRecord[0].CommentsHistory);
-                timeOffCommentsObj.push({ Action: StatusType.Reject, Role: InitialRecord[0].Status == StatusType.ManagerApprove ? "Reviewer" : "HR", User: this.props.spContext.userDisplayName, Comments: this.state.comments, Date: new Date().toISOString() });
+                timeOffCommentsObj.push({ Action: StatusType.Reject, Role: InitialRecord[0].Status == this.getStatus(StatusType.ManagerApprove) ? "Reviewer" : "HR", User: this.props.spContext.userDisplayName, Comments: this.state.comments, Date: new Date().toISOString() });
                 TimeOffPostData =
                 {
                     CommentsHistory: JSON.stringify(timeOffCommentsObj),
-                    Status: InitialRecord[0].Status == StatusType.ManagerApprove ? StatusType.ReviewerReject : StatusType.HRReject,
+                    Status: InitialRecord[0].Status == this.getStatus(StatusType.ManagerApprove) ? StatusType.ReviewerReject : StatusType.HRReject,
                     PendingWith: 'Initiator',
                 }
             }

@@ -551,7 +551,7 @@ class ApproversApprovals extends React.Component<ApproversProps, ApproversState>
                     timeOffCommentsObj.push({ Action: StatusType.Approved, Role: "Manager", User: this.props.spContext.userDisplayName, Comments: this.state.comments, Date: new Date().toISOString() });
                     if (TimeOffRec[0].IsSubmittedFromTimesheetForm) {
                         // if (IsReportingManagerReviewerSame && (this.state.userGroups.includes('Timesheet HR') || !row.EligibleforPTO)) // ReportingManager/Reviewer/HR same or PTO not eligible
-                        if (IsReportingManagerReviewerSame && TimeOffRec[0].IsSubmittedFromTimesheetForm && !this.state.userGroups.includes('Timesheet HR') && JSON.stringify(TimeOffRec[0].TimeOffRows).toLowerCase().includes('bereavement') || JSON.stringify(TimeOffRec[0].TimeOffRows).toLowerCase().includes('jury duty')) {
+                        if (IsReportingManagerReviewerSame && TimeOffRec[0].IsSubmittedFromTimesheetForm && !this.state.userGroups.includes('Timesheet HR') && (JSON.stringify(TimeOffRec[0].TimeOffRows).toLowerCase().includes('bereavement') || JSON.stringify(TimeOffRec[0].TimeOffRows).toLowerCase().includes('jury duty'))) {
                             //Timesheet data
                             formData.Status = StatusType.ReviewerApprove;
                             formData.PendingWith = "HR";
@@ -880,13 +880,13 @@ class ApproversApprovals extends React.Component<ApproversProps, ApproversState>
         let dateFilter = new Date()
         dateFilter.setDate(new Date().getDate() - 60);
         let date = DateUtilities.getDateMMDDYYYY(dateFilter);
-        var filterQuery = "and WeekStartDate ge '" + date + "'"
+        var filterQuery = " and WeekStartDate ge '" + date + "'"
         // var filterString = "ReportingManager/Id eq '"+userId+"' and PendingWith eq 'Manager' and Status eq '"+StatusType.Submit+"'"
-        var filterString = "(AssignedTo/Id eq '" + userId + "' or ReportingManager/Id eq '" + userId + "') and PendingWith eq 'Manager'";
+        var filterString = "(AssignedTo/Id eq '" + userId + "' or ReportingManager/Id eq '" + userId + "') and Status eq '" + StatusType.Submit + "' and PendingWith eq 'Manager'";
         let delegationQuery = "DelegateTo/Id eq '" + userId + "'"
         try {
             let [responseData, ManagerDelegations] = await Promise.all([
-                sp.web.lists.getByTitle('WeeklyTimeSheet').items.top(2000).filter(filterString + filterQuery).expand("ReportingManager,Reviewers,Initiator").select('ReportingManager/Title,ReportingManager/EMail,Reviewers/EMail,Reviewers/Id,Initiator/EMail,Initiator/Title,Initiator/Id,*').orderBy('WeekStartDate,DateSubmitted', false).get(),
+                sp.web.lists.getByTitle('WeeklyTimeSheet').items.top(2000).filter(filterString).expand("ReportingManager,Reviewers,Initiator").select('ReportingManager/Title,ReportingManager/EMail,Reviewers/EMail,Reviewers/Id,Initiator/EMail,Initiator/Title,Initiator/Id,*').orderBy('WeekStartDate,DateSubmitted', false).get(),
                 sp.web.lists.getByTitle('Delegations').items.filter(delegationQuery).expand("Authorizer,DelegateTo").select('Authorizer/Title,Authorizer/ID,DelegateTo/ID,*').orderBy('Authorizer/ID', false).get(),
             ])
             let managers = []
