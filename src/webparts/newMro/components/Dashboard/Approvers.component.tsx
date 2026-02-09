@@ -793,6 +793,16 @@ class ApproversApprovals extends React.Component<ApproversProps, ApproversState>
                                         .forEach(pto => {
                                             sp.web.lists.getByTitle('PTOTransactions').items.getById(pto.ID).inBatch(PTOTransactionBatch).update(Transaction);
                                         });
+                                        // Handling If an employee submits a time-off range within the previous year and the submission date is in the current year
+                                    // considering date Based on SubmittedDate :
+                                    // Case 1:In Case of Employee applied for Date range in previous year and submitting in current year
+                                    let SubmittedDate = new Date(); // Default current date
+                                    if (PTOTransactionRecords.length) { // if existing record found consider the existing Submitted date
+                                        SubmittedDate = new Date(DateUtilities.GetDateMMDDYYYYAsInList(PTOTransactionRecords.filter(item => item.IsActive && parseInt(item.TimeOffID) === parseInt(TimeOffRec[0].Id))[0]?.SubmittedDate));
+                                    }
+                                    if (new Date(row.Date).getFullYear() == (new Date(SubmittedDate).getFullYear() - 1)) {
+                                        await this.updateEmployeePTOAndOpeningPTOTnForCurrentYear(TimeOffPostData['Status'],row.EmployeeId,PTOHrs);
+                                    }
                                 }
                                 sp.web.lists.getByTitle('TimeOffEmployees').items.getById(TimeOffRec[0].Id).inBatch(PTOTransactionBatch).update(TimeOffPostData);//TimeOff update
 
@@ -837,6 +847,51 @@ class ApproversApprovals extends React.Component<ApproversProps, ApproversState>
         }
         return EmployeePTO;
     }
+    private async updateEmployeePTOAndOpeningPTOTnForCurrentYear(ActionStatus,currentUserId,AppliedPTO) {
+                try {
+                    let currentYear = new Date().getFullYear();
+                    let PTOfilterQuery = `Employee/Id eq '${currentUserId}' and Year eq '${currentYear}' and IsActive eq 1`;
+                    let TranfilterQuery = `Employee/Id eq '${currentUserId}' and Year eq '${currentYear}' and IsActive eq 1 and TransactionType eq 'Opening PTO Balance'`;
+                    let [EmpPTODataCurrentYear, EmpOpeningPTOTran] = await Promise.all([
+                        sp.web.lists.getByTitle('EmployeePTO').items.filter(PTOfilterQuery).select('Id,PTOBalance,PTOBalanceAfterDeduction,Employee/Title,Employee/Id,*').expand("Employee").getAll(),
+                        sp.web.lists.getByTitle('PTOTransactions').items.filter(TranfilterQuery).select('Id,Employee/Title,Employee/Id,*').expand("Employee").getAll()
+                    ]
+                    );
+                    let AppliedPTOHours = parseFloat(AppliedPTO);
+                    if (EmpPTODataCurrentYear.length) {
+                        let updatedPTODataCurryear = {
+                            PTOBalance: parseFloat(EmpPTODataCurrentYear[0].PTOBalance).toFixed(4),
+                            PTOBalanceAfterDeduction: parseFloat(EmpPTODataCurrentYear[0].PTOBalanceAfterDeduction).toFixed(4),
+                        }
+                        let updatedOpeningPTOTranCurryear = {
+                            PreviousPTOBalance: parseFloat(EmpOpeningPTOTran[0].PreviousPTOBalance).toFixed(4),
+                            Hours: parseFloat(EmpOpeningPTOTran[0].Hours).toFixed(4),
+                            CurrentPTOBalance: parseFloat(EmpOpeningPTOTran[0].CurrentPTOBalance).toFixed(4),
+                        }
+                        // if (ActionStatus == StatusType.Submit) {
+                        //     updatedPTODataCurryear.PTOBalance = (parseFloat(EmpPTODataCurrentYear[0].PTOBalance) - AppliedPTOHours).toFixed(4);
+                        //     updatedPTODataCurryear.PTOBalanceAfterDeduction = (parseFloat(EmpPTODataCurrentYear[0].PTOBalanceAfterDeduction) - AppliedPTOHours).toFixed(4);
+                        //     updatedOpeningPTOTranCurryear.PreviousPTOBalance = (parseFloat(EmpOpeningPTOTran[0].PreviousPTOBalance) - AppliedPTOHours).toFixed(4);
+                        //     updatedOpeningPTOTranCurryear.Hours = (parseFloat(EmpOpeningPTOTran[0].Hours) - AppliedPTOHours).toFixed(4);
+                        //     updatedOpeningPTOTranCurryear.CurrentPTOBalance = (parseFloat(EmpOpeningPTOTran[0].CurrentPTOBalance) - AppliedPTOHours).toFixed(4);
+                        // }
+                        // else if ([StatusType.Revoke, StatusType.ManagerReject,StatusType.ReviewerReject, StatusType.HRReject].includes(ActionStatus)) {
+                            updatedPTODataCurryear.PTOBalance = (parseFloat(EmpPTODataCurrentYear[0].PTOBalance) + AppliedPTOHours).toFixed(4);
+                            updatedPTODataCurryear.PTOBalanceAfterDeduction = (parseFloat(EmpPTODataCurrentYear[0].PTOBalanceAfterDeduction) + AppliedPTOHours).toFixed(4);
+                            updatedOpeningPTOTranCurryear.PreviousPTOBalance = (parseFloat(EmpOpeningPTOTran[0].PreviousPTOBalance) + AppliedPTOHours).toFixed(4);
+                            updatedOpeningPTOTranCurryear.Hours = (parseFloat(EmpOpeningPTOTran[0].Hours) + AppliedPTOHours).toFixed(4);
+                            updatedOpeningPTOTranCurryear.PreviousPTOBalance = (parseFloat(EmpOpeningPTOTran[0].PreviousPTOBalance) + AppliedPTOHours).toFixed(4);
+                        // }
+        
+                        await sp.web.lists.getByTitle('EmployeePTO').items.getById(EmpPTODataCurrentYear[0].Id).update(updatedPTODataCurryear);
+                        await sp.web.lists.getByTitle('PTOTransactions').items.getById(EmpOpeningPTOTran[0].Id).update(updatedOpeningPTOTranCurryear);
+                    }
+                }
+                catch (e) {
+                    console.log('Failed to update EmployeePTO for current year');
+                    this.setState({loading: false});
+                }
+            }
     private async getItemStatusBeforeActionPerform(TimesheetID, OpenedTimeStatus) {
         let filterQuery = "ID eq '" + TimesheetID + "'";
         let data = await sp.web.lists.getByTitle('WeeklyTimeSheet').items.filter(filterQuery).select('Status').get();
