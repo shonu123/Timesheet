@@ -5,8 +5,8 @@
     "new-mro-web-part": {
       "components": [
         {
-          "entrypoint": "./lib/webparts/newMro/Timesheet.js",
-          "manifest": "./src/webparts/newMro/Timesheet.manifest.json"
+          "entrypoint": "./lib/webparts/HQTimesheet/Timesheet.js",
+          "manifest": "./src/webparts/HQTimesheet/Timesheet.manifest.json"
         }
       ]
     }
@@ -14,7 +14,7 @@
   "externals": {    
   },
   "localizedResources": {
-    "TimesheetStrings": "lib/webparts/newMro/loc/{locale}.js",
+    "TimesheetStrings": "lib/webparts/HQTimesheet/loc/{locale}.js",
     "ControlStrings": "node_modules/@pnp/spfx-controls-react/lib/loc/{locale}.js"
   }
 }
